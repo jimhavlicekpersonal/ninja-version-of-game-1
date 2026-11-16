@@ -126,14 +126,17 @@ item below closes one of these holes; if a change you are considering does not, 
 |---|---|---|---|
 | 30 seconds: decisions inside a raid | Choices whose effect is felt and learnable | The entry point is worth 16 to 21 destruction points and scouting cannot predict it; formation is worth 10 to 20 and has no screen; Smoke is worth 2 to 3 points; Rally is worth 0 (`combat.md` 1, 4, 5) | Phases 4 and 6 |
 | 5 minutes: one raid and its result | A result that teaches and invites one more | No review of what another approach would have done; declared stakes are a losing button; nothing rotates between sessions (`combat.md` 1, `defense-raids.md` DEF-09, `retention.md` RET-11) | Phases 2, 5, 6 |
-| A session: 2 to 10 minutes | Always one thing that pays | After two raids nothing pays for 50 to 100 minutes; the next-objective chip dead-ends on "Next Artisan free in..." (`pacing.md` 3, RET-10) | Phases 3, 5, 6 |
+| A session: 2 to 10 minutes | Always one thing that pays | After two raids nothing pays for 50 to 100 minutes; the result screen ends in "Return home"; the next-objective chip dead-ends on "Next Artisan free in..." (`pacing.md` 3, RET-10, UIS-01) | Phases 3, 5, 6 |
 | A day | Varied tasks that mean something | 15 task templates, all seen within a week, two of eight daily ones complete on the first collect, tasks pay nothing for the last 11 days of a season (`retention.md` 2) | Phases 1, 5 |
 | A week | An appointment | Four event kinds on a 14-day loop, one playable event for 72 of 336 hours (`retention.md` RET-01) | Phase 5 |
 | A month | A season worth finishing | The Scroll is identical every season, its paid look repeats, unclaimed tiers vanish; the league win bonus fades to 1.4% of a raid (`retention.md` RET-02 to 04, RET-14) | Phases 1, 2, 5 |
 | Months: the long horizon | Goals that outlast Keep 15 | Nothing new after day 113; the "endless" Trials end near tier 68; Keeps 9, 10, 13, 14, 15 unlock no building; no collection layer is live (`pacing.md` 2, 4; `retention.md` 3) | Phases 3, 5, and the built-not-live work in Phase 4 |
 | The defender's game | Building a base is a decision with a payoff | A held raid still loses a third of everything raidable and is paid 5 to 11% of that back; a stronger base is raided more often (`defense-raids.md` 1.3, 1.4) | Phase 2 |
-| The first hour | A raid within minutes | First raid after about 12 minutes and two idle waits; the first Keep 3 raid is a loss (`pacing.md` 3) | Phase 3 |
+| The first hour | A raid within minutes | First raid after about 14 minutes and two idle waits without Jade; storage full after raid 1; the first Keep 3 raid is a loss; "Skip tutorial" sits over the Army button (`pacing.md` 3, `playthrough.md`) | Phases 3, 6 |
 | The casual player | Progress on one visit a day | Keep 5 to 6 takes 26 days because raids take back 105% of what the collectors produce (`pacing.md` 1) | Phases 2, 3 |
+
+Under all of them sits integrity. A ladder, a chest or a league means nothing if it can be minted: `exploits.md`
+reproduced three ways to do that on a server-held village today. Phase 1 closes them before anything is added.
 
 ### 1.2 "Addictive" stays inside the project's own rules
 
@@ -253,6 +256,42 @@ change only where a work item names the number.
     test.
 40. **Result-stale gates**: the campaign fingerprint, the combat fingerprint, the explicit known-failing assertion.
     They are why this pass can be done safely at all.
+
+### 2.7 Interface
+
+41. **The honest, teaching result screen** (`src/presentation/ui/battleHud.ts`, `ui/feedback.ts`): loot counted up
+    to what was really banked, explicit overflow, the stake's outcome, the squad's carry share, a close-call line
+    only when true. Phase 6 adds to it. Nothing on it is ever an estimate or a consolation.
+42. **The scout drawer and the Infiltration Point presentation**: a chip per point, the path highlight, tips
+    filtered to the army brought, the temper profile, the stake row.
+43. **Battle motion and feedback that only read the simulation** (`render/motion.ts`, `battleMarks.ts`,
+    `calloutLayout.ts`). Rendering never changes a result; a camera or speed control added in Phase 6 keeps that.
+44. **The source-text translation layer** (`locales/runtime.ts`, `ui/i18n.ts`): canonical English in the simulator,
+    the server and saves, translated only at owned display boundaries.
+45. **The Army panel's shortcuts and redraw discipline** (Suggested army, Refill last raid, Fill, Save this army;
+    `sim/armyView.ts`).
+46. **"Try" practice battles**, labelled "nothing is spent or won".
+47. **Progressive disclosure with honest labels**: rail buttons appear as systems open, and every generated
+    opponent says what it is.
+48. **The warrior unlock ceremony and the 50-class Codex.**
+49. **The welcome-back report** with defense replays and "(simulated raider)".
+50. **The first-raid coach line**, which teaches from live battle state.
+51. **Dialog, lazy-panel and toast plumbing**: every modal can be closed, panels load on first open.
+
+### 2.8 Server flow and planned content
+
+52. **The raid ticket flow** (`server/core/pvp.ts`): the seed comes only with `startAttack`, the stake is fixed
+    before the seed, a started ticket that is never reported settles as a loss, a used ticket returns its stored
+    answer, both players are locked and re-read before anything is written.
+53. **One pure `applyCommand` for the game and the server**, checked by `economyHash` over canonical JSON. Phase 1
+    fixes holes inside it. Never fork the logic or add a server-only copy of a rule.
+54. **Rewards from bases the server rebuilds from seeds** (`trialBase`, `bountyBase`, `rematchBase`). The hole
+    Phase 1 closes is the other setup fields, not this.
+55. **Reference-derived level tables for planned content** (`planned.json` `ref`, `hpMult`, `damageMult`,
+    `costMult`) and **the body-versus-effect measurement** in `tools/balance/preview.ts`, which separates what a
+    rule does from what the building's health does.
+56. **Mastery's guard rails** (`sim/mastery.ts` `masteryMatches`: never more than earned; donated warriors and the
+    hero earn none; an asymptotic cap). The shape is right. Only the scale is wrong (P5-07).
 
 If you believe one of these must change shape to complete a work item, stop that item and record why. Do not
 decide it alone.
@@ -430,6 +469,15 @@ Two ways to run TypeScript against the simulator without a build:
 | `retention/r1.mjs`, `r2.mjs`, `r3.mjs` | Task repetition, reward value by Keep, the Scroll rollover and look reproductions, Trial battles past tier 60 |
 | `combat/common.ts` with `t1.ts` to `t14.ts` | Entry-point spread, hero and Rally, Smoke, army panel by temper profile, every warrior's marginal and kit value, formations, scouting-metric correlation, candidate fixes |
 | `publish/det.ts` | A hash of generated bases, bot deployments and results for 48 raids, for cross-engine comparison |
+| `exploits/repro1.xpl.ts` to `repro4.xpl.ts` | Reproductions of XPL-01 to XPL-06, XPL-09 and XPL-10. Run from the repository root: `npx vitest run --config docs/audit/understand-2026-11-16/scripts/exploits/vitest.config.mts repro1` |
+| `exploits/matched.xpl.ts`, `matched2.xpl.ts`, `iso/` | The matched-raid test row by row: determinism, sensitivity to the Keep's slack, process isolation (XPL-07) |
+| `built-not-live/squad.mjs` | Nine squad orders through six entry points per base |
+| `built-not-live/heroes.mjs`, `herolast.mjs` | Each planned hero against the Shadow Captain and against no hero, sent first and sent last |
+| `built-not-live/counters.mjs` | Each planned counter: with it, without it, and with its body only |
+| `built-not-live/mastery.mjs`, `masterypower.mjs` | Raids needed per mastery level; what a bonus does to destruction |
+| `built-not-live/caps.mjs`, `tables.mjs` | Cost and builder time of the planned buildings against the live defense budget |
+| `ui-surface/i18n-probe.test.ts`, `objective-lengths.cjs` | Which strings the interface builds translate; the objective chip's length in 50 languages |
+| `playthrough/daemon.cjs`, `tut_*.js`, `raid*.js`, `panels.js` | Playwright drivers for the first run, raids and every panel at 360×640 and 844×390 (Chromium and Playwright must be installed); `shots/` holds the screenshots the report cites |
 
 Noise, from the investigators' own notes:
 
@@ -469,27 +517,44 @@ differs, find out why before changing anything. Create the ledger (3.9).
 - Done when: with a local Postgres 16 (start one if the machine allows; otherwise say so in the record) the Postgres
   suites pass three runs in a row.
 
-**P0-04 (PUB-02) `tests/gameplay/balance/matched.test.ts` fails on CI and passes locally.**
-- Why: CI measured Keep 8 at 2.75 stars against a 2.2 ceiling on `9bf76af`; the same tree gives 2.167 on Node
-  22.23.4, Node 24.22.1 and Bun (`scripts/publish/det-*.txt`, byte-identical). CI's Node was a later 24.x patch. In
-  the same failing run the combat fingerprint and the pinned aura battles passed. Either one Node version computes
-  something differently (which would make the server reject honest battles) or the test depends on something
-  outside the tree. This is the most important unknown in the repository. `exploits.md` has a further analysis; read
-  it first.
-- Do: (1) run `scripts/publish/det.ts` on the exact Node the `Dockerfile` pins and on the version CI resolved, and
-  diff against `det-node22.txt` to find the stage that differs (base generation, bot deployment or the battle).
-  (2) Add `.node-version` and make all workflows and the `Dockerfile` read one exact version. (3) Add a small
-  cross-engine fixture test: the hash of a few generated bases, bot deployment lists and battle results, pinned, so
-  an engine change fails loudly rather than through a balance band. (4) Only then look at the gate itself: 2.167
-  against 2.2 leaves a margin of one star in twelve raids, which is a fragile gate even when deterministic. More
-  seeds or the mean of adjacent Keeps (CMB-12) is the fix; widening the band is not.
+**P0-04 (PUB-02, XPL-07) `tests/gameplay/balance/matched.test.ts` fails on CI and passes everywhere else.**
+- What is known. CI has computed the Keep 8 row as 2.75 stars against a 2.2 ceiling on at least three runs
+  (`dbe487f` attempt 1, which passed on attempt 2; `9bf76af` on `main` and on `theory/rules10`), and passed on
+  `9bb9a44` ten minutes before, where the only difference is one document. The same tree gives 2.167 on Node
+  22.23.4, Node 24.22.1 and Bun, byte-identical down to each base, deployment list and result
+  (`scripts/publish/det-*.txt`). In the failing runs the combat fingerprint and the pinned aura battles passed.
+- What the number says. 2.75 is 33 stars in 36, exactly what the Keep 8 row **two research levels behind** gives
+  every time; the hybrids (cap levels against the lagging village's opponents, and the reverse) give 36 and 16. So
+  the failing runs computed the whole lag-0 row as lag 2. `lag` is used once, in `tools/balance/matched.ts`. No
+  clock, random source or module-level state is on the path, and test files run in separate processes.
+- What remains: the engine build CI ran. The workflows ask for `node-version: 24` (floating); the `Dockerfile` pins
+  `node:24.22.3-slim`; neither investigator could run that exact version. A compiler fault that makes one closure
+  see another call's parameter is the only thing found that fits, and it matters far beyond the test: the server
+  re-simulates every battle on the same major version, and would reject honest battles.
+- Do, in this order:
+  1. Run `scripts/publish/det.ts` and `scripts/exploits/matched.xpl.ts` on the exact Node the `Dockerfile` pins and
+     on whatever `24` resolves to on the runners, with and without the optimizing compilers (`--jitless`, and
+     `--no-opt` or the current equivalent). Diff against `det-node22.txt`. Name the stage that differs.
+  2. Add `.node-version` and make every workflow and the `Dockerfile` read one exact version.
+  3. Make the test print each battle's hash, opponent Keep and warrior levels, and assert the opponent Keep before
+     it asserts stars, so a wrong-row result fails with its cause.
+  4. Add a small pinned fixture for the path the existing pins do not cover (generated bases, matchmaking, bot
+     deployments, the battles), and run that file a second time in CI without the optimizing compilers.
+  5. Add an alert on `tk_desyncs_total` in `ops/prometheus/alerts.yml` if none exists.
+  6. Only then look at the gate itself: 2.167 against 2.2 leaves one star in twelve raids, and the row swings from
+     1.33 to 2.83 as that Keep's slack goes from 0.25 to 1.0. More seeds or the mean of adjacent Keeps (P4-08) is
+     the fix. Widening the band is not.
 - Done when: the cause is named with evidence, or the record says exactly what was ruled out and what could not be
-  run here. Do not close this by changing the number.
+  run here. Do not close this by changing the number. If you find an engine fault, write it at the top of the
+  phase's closure record and in `docs/backend/REQUESTS.md`: the server must not run on that version.
 
 ## 6. Phase 1: defects of honesty and integrity
 
-Small, certain fixes. None needs a balance judgement. Several change stored state: this phase introduces the pass's
-one `SAVE_VERSION` bump (3.2).
+Certain fixes. None needs a balance judgement. Do the exploit items (P1-11 to P1-22, at the end of this section)
+first: three of them mint Jade on a server-held village. Several items change stored state: this phase introduces
+the pass's one `SAVE_VERSION` bump (3.2).
+
+### Honesty defects (P1-01 to P1-10)
 
 **P1-01 (RET-03, ECO-02) Unclaimed Season Scroll rewards, including paid ones, vanish when the season rolls.**
 - Why: reproduced. `sim/pass.ts` replaces the pass state at the roll; a village with the premium Scroll and 20 tiers
@@ -594,11 +659,99 @@ sold under it. Confirm that in the code and the shipping notes, then remove it f
 `npm run store:storekit` and `npm run status`, and fix the shipping table. If anything suggests a receipt could
 exist, leave it and record why.
 
-**P1-11 Exploits and logic defects from `exploits.md`.** Work through that report's list in its order. Each item
-there has a reproduction script under `scripts/exploits/`: turn the reproduction into a failing test, fix the cause
-in the simulator (never by a client-side check alone when the server replays the command), and confirm the server's
-replay refuses the same input. Anything the report marks as a determinism hazard is fixed before Phase 4's rules
-bump, with a pinned test.
+### Exploits: do these first (P1-11 to P1-22)
+
+`exploits.md` reproduced each of these against today's simulator; the scripts are in `scripts/exploits/`. Three are
+critical: on a server-held village they mint resources and Jade at the battle-command rate, with no army. For each
+one, turn the reproduction into a failing test, fix the cause inside the shared simulator (protected item 53: one
+`applyCommand`, never a client-only check), and add a server test that the replay refuses the same input. None
+changes a battle rule, so none needs a rules bump.
+
+**P1-11 (XPL-01, critical) Battle commands trust the client's setup.**
+- Why: `trialEnd`, `bountyEnd` and `rematchEnd` rebuild the base and keep every other field the client sent.
+  `checkBattleSetup` checks the army, levels, reinforcements and mastery only. `startDamage` (every building id
+  with a huge number) gives three stars at tick 0 with an empty army; a Keep 1 village cleared Trial tiers 1 to 40
+  in 40 commands, and the server's own `replayVillage` applied them. `hero` accepts any hero at any level;
+  `infiltration` left out restores free placement.
+- Change: `checkBattleSetup` returns a sanitized setup built from a whitelist (`seed`, `army`, `levels`,
+  `reinforcements`, `mastery`), forces `infiltration: true`, sets `hero` from `heroFor(state, data)` (never above
+  it, with the one Keep of slack the raid path allows) and drops `startDamage` (only the server's Gang War path
+  builds it). Use it in `trialEnd`, `bountyEnd`, `rematchEnd`, `groveBattleEnd`, `abandonBattle` and the ticketless
+  `battleEnd`. Require that warriors fought for a Trial clear, a Bounty step and a rematch win.
+- Tests beside `tests/gameplay/sim/trials.test.ts`, and one through `replayVillage`.
+
+**P1-12 (XPL-02, critical) A battle record's time is client-supplied and bounded only above.**
+- Why: `bountyEnd` uses `min(now, record.at)`, so any past Bounty Hunt can be attacked at any time, and alternating
+  two old occurrences pays the whole ladder every time: 20 commands paid 700 Jade. The same shape is in
+  `rematchEnd` (the 72-hour window never closes) and `groveBattleEnd`.
+- Change: a lower bound on `at` (the battle's length plus a resume window, from data), and refuse an occurrence
+  that started before the one already stored in `state.goalEvent`. No save change.
+
+**P1-13 (XPL-03, critical) The server import takes liabilities it never looks at, and two loops the attacker
+sizes.**
+- Why: a forged save with 500 Jade on hand passed the import checks and two ordinary commands left 280,500 Jade:
+  a stipend with a forged balance, and a timer with a forged top-up share that `cancel` refunds. A `season` set
+  3,000 months back paid 3,000 league chests; 3,000,000 forged seasons made one command run 9.1 seconds inside the
+  row lock. The offline war's `settledWeek` loop has the same shape. For honest players the same loop pays a league
+  chest for every month away, played or not.
+- Change: cap the season catch-up with a data value (as the war already has `settleWeeksMax`); bound `season` and
+  `settledWeek` in `validateVillage`; in the import, zero the stipend unless a credited stipend purchase covers it,
+  strip `topUp` and `armyPaid` from timers and the army, and clamp a timer's `cost` to the catalog.
+- Tests: the forged file from `repro2.xpl.ts`; a command on a village 10,000 seasons behind returns in
+  milliseconds and pays at most the cap.
+
+**P1-14 (XPL-04) A refund debt is wiped by top-up, train, cancel.** `shortfallQuote` computes the shortfall from a
+negative balance, so a top-up buys the debt too, and `cancelTraining` returns all the Jade. A top-up never covers a
+debt: compute the shortfall from `max(0, balance)`, so the action stays refused until income repays the debt. This
+protects item 7.
+
+**P1-15 (XPL-05) A hero-only battle is a free way out of a started raid.** An unmodified player can do it from
+Keep 7: a raid with only the hero deployed counts as practice, so honor and shield stay, the scout is cleared and
+the next look skips the Next fee; a hero-only abandon keeps the same opponent and seed (watch the traps, then
+attack for real); online a hero-only report burns the ticket with no forfeit. A started raid in which the hero
+went in and no warrior did is a lost attack, in `battleEnd`, `abandonBattle` and the server's `attack()`
+(`forfeitTicket`). A battle with nobody deployed stays rejected as today.
+
+**P1-16 (XPL-06) The client picks tomorrow's daily chest.** `openDailyChest` mixes the client's `entropy` into the
+next salt and the server replays the value sent; a search found a salt that makes the next chest the best one in
+57 tries. For a server-held village the server draws the entropy and returns it in the command's outcome (an
+additive protocol field, `docs/PROTOCOL.md`, a contract test) and the game applies that value. This closes the
+backend ask of 2026-11-13.
+
+**P1-17 (XPL-08) `Math.pow` and `Math.log2` still feed Trial fortresses and Trial rewards.** The battle rules
+allow only + − × ÷ and √. `sim/trials.ts` raises the growth with `Math.pow` (it differs from repeated
+multiplication for 318 of 401 exponents, and engines need not agree to the last bit) and floors a `log2` product
+that lands exactly on an integer at tiers 2, 4, 16, 32 and 64. Use repeated multiplication (as `temper.ts` does
+with `raise()`) and an integer-safe floor (a table, or a small epsilon), and pin the rewards at those tiers. Do it
+together with P1-06, which changes the same lines.
+
+**P1-18 (XPL-09) A top-up with `pay: 'dew'` is a free-standing Jade to Coins exchange.** `topUpTarget` prices the
+action in Coins and the action then pays Provisions, so the bought Coins stay in storage. Pass `action.pay` to the
+quote. This protects item 22.
+
+**P1-19 (XPL-10) Twelve hours of backdating is a daily free skip.** After 12 quiet hours a modified client dates
+`upgrade`, `research` and `train` 12 hours back (about 650 Jade of skips a day with five artisans). The window
+exists so real offline play can sync. Bound it by the device's previous authenticated contact, or use a shorter
+bound for commands that start timers. It is a backend decision: choose the conservative one, and record it in
+`docs/backend/REQUESTS.md` and `docs/PROTOCOL.md`.
+
+**P1-20 (XPL-12) A missed stake gives the defender a free shield and exhaustion; lost attacks feed honor.** Online,
+a raid whose stake was missed takes nothing, yet shields the defender by destruction and counts for exhaustion; an
+alternate account can shield a main for 14 to 16 hours at no cost. A 0-star attack also pays the defender honor
+with no daily cap on the gain. No loot lost means no shield and no exhaustion; cap the honor one attacker can give
+one defender in a day. Server code, with a test in the attack suite.
+
+**P1-21 (XPL-13) Type and trust holes on low-value commands.** `setProfile` stores any `under18`, so `null` turns a
+stated minor back to unknown on a device village (the server's age table still blocks a server-held one): accept
+only booleans and keep the one-way rule. `donate` accepts a fractional count; `groveBattleEnd` trusts the client's
+base and never checks its target; `bountyEnd` lets the client pick the easier fortress.
+
+**P1-22 (BNL-07) Shared replays accept an unchecked `setup.mastery` although mastery is not live.**
+`server/core/sharedReplays.ts` copies it from the request and the live engine multiplies health and damage by it.
+Drop it unless the feature is on; when on, keep only known warrior ids with values between 0 and the cap. Validate
+`setup.hero` the same way.
+
+The report's "checked and found sound" list is at its end. Do not re-hunt those.
 
 Close the phase: `npm run balance:campaign`, `npm run test:slow`, section 13 for the phase's text, the full checks,
 the closure record.
@@ -736,6 +889,24 @@ Keep the player is matched against. Measure with `next_offers.ts`: the fee is 1.
 3 to 12. Adding `defense` and `support` to `economy.provisionsPayable` gives the idle currency a use. Measure the
 regular and casual pace before deciding; skip it if either moves by more than 5%.
 
+**P2-14 (built-not-live opportunity 4) The garrison crew: defense builds do not take a Village Artisan.**
+- Why: defense competes with growth for builder time, and P2-01 cannot change that (the preamble's "what defense
+  cannot do"). The hook exists (`economy.garrisonCrew`, read in `builderStatus`): a separate crew for defenses,
+  traps, walls and counters. The lab's Rules 10 patch used 2.
+- Change: add the key to `economy.json` with its type, and one unit test for the hook (absent or 0 plays exactly as
+  today; present, a defense upgrade starts with every artisan busy). It is free and never sold: no product, no
+  offer, no Jade price. The second queue in the builder panel is P6-12.
+- Done when: with the crew on, `regular_fortress` reaches Keep 12 within 1.1 times the rusher's days (tighten
+  P2-04's bound to that), and the regular player's Keep 15 day stays inside its gate.
+- Touches: the server replays `place` and `upgrade`. Strings: about 3, in Phase 6.
+
+**P2-15 (UIS-07) The diversity carry cuts the tutorial raid.**
+- Why: at Dojo level 1 only Shinobi can be trained, so the first result screen a player ever sees says "Your squad
+  carried 85% of the loot". The rule (protected item 21) is meant to reward a choice the player does not have yet.
+- Change: in `sim/carry.ts`, the carry is full while the village can train fewer than two roles (a data value in
+  `raids.diversity`). Show the share before the raid, not only after it (P6-13).
+- Test: the tutorial army carries 100%; a one-role army at Keep 5 still carries 85%.
+
 Close the phase: campaign, slow tests, section 13, full checks, the closure record. Rewrite the "Is defense worth building?"
 section of `docs/game-theory/CAMPAIGN.md` through its generator, and correct the E26 and PS-1 statements in
 `docs/store/WORLDWIDE_AUDIT.md` by adding a dated record (never by editing old ones).
@@ -788,15 +959,25 @@ level.**
 - `buildSeconds` is outside the combat fingerprint. The collector change alters what `advance` computes, so the
   server replays it.
 
-**P3-04 (PAC-04) The first raid arrives after about twelve minutes and two idle countdowns.**
-- Why: the tutorial upgrades the Keep (240 s), waits for it, then trains (up to 400 s) and waits again. The model
-  gets five raids in the first hour.
-- Change: `buildings.json` Dojo levels 1 to 4 `trainingSpeed` 1 / 1 / 1 / 1 → 2 / 2 / 1.6 / 1.3; Keep level 2
-  `buildSeconds` 240 → 60; reorder the tutorial (`src/presentation/ui/tutorial.ts`) so the army, train and raid
-  steps come before the Keep upgrade. The save stores the tutorial's step index: remap it in the migration so a
-  player in the middle of the old order lands on the equivalent step.
-- Done when (`scripts/pacing/firsthour.mjs`): first raid inside three minutes with no Jade spent, at least seven
-  raids in the first hour, Keep 3 still inside the 40 to 80 minute window `progression.test.ts` holds.
+**P3-04 (PAC-04, UIS-02, PLY-03) The first raid arrives after two idle countdowns: about 14 minutes without Jade.**
+- Why: the tutorial upgrades the Keep (240 s), then stops at a step whose ring sits on the Jade "Finish now" button
+  until the Keep is level 2, then trains 20 Shinobi at 20 s each and stops again. Played in a browser without Jade
+  it is about 14 minutes to the first battle; the model player gets five raids in the first hour. The step before
+  it asks the player to tap a coin that needs 576 seconds to appear, and five Collect taps answer "Nothing to
+  collect yet".
+- Change:
+  1. Keep the nine steps and their order (the save stores the step index, so no migration is needed). The Keep
+     step is done when the Keep is level 2 **or is upgrading while an Artisan is free**, so the army steps run
+     while the Keep builds. Remove the Jade button from that step's targets: the tutorial never rings a Jade
+     button.
+  2. While the tutorial is running, the collect bubble shows as soon as one coin exists.
+  3. Data: `buildings.json` Dojo levels 1 to 4 `trainingSpeed` 1 / 1 / 1 / 1 → 2 / 2 / 1.6 / 1.3, and Keep level 2
+     `buildSeconds` 240 → 60. Both keys are outside the combat fingerprint.
+- Done when: `scripts/pacing/firsthour.mjs` shows the first raid inside three minutes with no Jade and at least
+  seven raids in the first hour, with Keep 3 still inside the 40 to 80 minute window `progression.test.ts` holds;
+  and a scripted run of the tutorial at 360×640 reaches the first battle in under three and a half minutes with no
+  Jade spent and no tap answered "Nothing to collect yet".
+- Strings: 0.
 
 **P3-05 (PAC-13) Keep 3 opens with a lost raid.** After four three-star raids at Keep 2, the first Keep 3 raid is
 zero stars; the casual model wins none of its two Keep 3 raids. Either raise `ranks.json` `powerSlackByKeep` for
@@ -847,6 +1028,23 @@ by the same table are hollow.**
 **P3-10 (PAC-14) The pacing documents disagree with the generated campaign.** After the phase, rewrite the "Pacing
 targets" of `docs/game-theory/PROGRESSION_MODEL.md` from the regenerated campaign: days per Keep for both players,
 the builder-day horizon, where the Trial ladder ends.
+
+**P3-11 (PLY-04) Storage is full after the first raid.**
+- Why: seen in play. Raid 1 fills storage; the tutorial's own closing chest answers "Storage is nearly full...
+  anything that does not fit is lost"; raids 2 and 3 threw away 1,833 Coins and 1,258 Provisions. The objective
+  chip pointed at the chest while Keep 3 cost exactly the 4,000 the player held.
+- Change: `nextObjective` returns an affordable Keep or storage upgrade before the chest when a storage is at 90%
+  or more; the scout screen says when the loot on offer will not fit; the tutorial's last line points at the Keep
+  first and the chest second. Consider raising Keep 1 and 2 storage in data so three first raids fit (`storage` is
+  outside the combat fingerprint; the campaign must be re-run).
+- Done when: a scripted first session of three raids loses nothing to overflow when the player follows the chip.
+- Strings: 1.
+
+**P3-12 (PLY-11) The tutorial's forced first raid silently ends the 24-hour new-player shield.**
+- Change: the raid the tutorial requires does not end the new-player shield (a rule in `battleEnd`, from a data
+  value in `raids.json`; the server replays it), and from then on the scout screen shows one line while a shield is
+  running: attacking ends it, with the time left.
+- Strings: 1.
 
 Left open on purpose, record them as such: the currency load imbalance late (ECO-11: no late Coin sink, research is
 100% Provisions) and the hollow second and third research lanes (PAC-12). Both are real, neither has a measured fix,
@@ -904,6 +1102,8 @@ model rather than hand-editing `troops.json`). The six original warriors keep th
   passes the first, ship A and change the text to describe the re-arm.
 - Either way the description's numbers change: update `battle.json`, `roster.json` and close the REQUESTS entry.
   Strings: 2 changed.
+- This decision sets the baseline every planned hero is measured against (P4-10). Make it first. If the bump is
+  not made at all, still rewrite the two English strings so they describe what the code does.
 
 **P4-03 (CMB-07) The Smoke Bomb, the signature tactic, is worth two to four points for all three charges.**
 - Change: `battle.json` `abilities.smoke_bomb.radius` 3 → 4. Measured with a scripted policy: +6.2 at Keep 10 and
@@ -977,20 +1177,54 @@ to 40% at Keeps 8 to 14 and is gated only at 0.1 stars. After P4-01, P4-04 and P
 that gate to what the run gives, with 0.9 stars as the target. If it is still under 0.9, record the number and the
 warriors responsible; do not paper over it with matchmaking.
 
-**P4-10 Built-not-live content that goes live under this bump.** `built-not-live.md` ranks every item by
-replayability gained per unit of risk and gives the exact steps for each. Apply its "ship now" list here and only
-that list. The rules are fixed:
-- An item goes live only if its entry in `docs/game-theory/PREVIEW_BALANCE.md` (regenerate with
-  `npm run balance:preview`) shows it neither broken nor a no-op, and the army-lab gates pass with it in the data.
-- Follow "Making one live" in `src/gameplay/CLAUDE.md`: move the generated definition into the live data files, set
-  `live` in the catalog, snapshot before the bump.
-- A hero, a building or a command that the server must accept needs the server side in the same pass (`checkArmy`,
-  `validateBase`, `PLAYER_COMMANDS`), with the REQUESTS entry.
-- The late Keeps are where content is missing: Keeps 9, 10, 13, 14 and 15 unlock no building type and the regular
-  player spends 20 to 28 days at each of Keeps 13 and 14. The three built heroes sit on Keeps 9, 11 and 13 and the
-  Hero Hall on Keep 7. If the report's evidence supports it, heroes are the first choice.
-- Every name and description is already translated (the catalog and `roster.json`). Anything that is not costs 49
-  translations.
+**P4-10 (BNL-03, 04, 05, 06, 09 to 13) Built-not-live content: what may go live under this bump, and what may not.**
+
+`built-not-live.md` measured every planned item on 12 to 30 bases. Its findings overturn the assumption that this
+content is ready to switch on:
+
+- **The three planned heroes are a false choice.** With that hero's own family of warriors, the live Shadow Captain
+  equals or beats every one of them in 8 of 9 cells (Sky Admiral with a sky army: +0.3 to +1.0 points over no hero
+  at all). Their abilities fire once; the Captain's re-arms. Choosing a hero can also lower his level: `heroFor`
+  caps a chosen hero at the Hall's level and leaves the automatic one uncapped.
+- **Ten of the fifteen planned counters change nothing in a raid** (effects of exactly 0.0 on 18 bases for six of
+  them). Five work: Steam Vent, Lightning Rod Tower, Whirling Blade Tower, Bronze Mirror Screen, Living Bamboo
+  Wall. A building's body matters more than its rule: one extra building near the defenses moves a raid by up to
+  20 points, so adding bodies to every generated base is a whole new balance.
+- **They are priced past the whole live defense budget**: 616 M Coins and 494 builder-days to max the sixteen,
+  against 418 M and 407 for every live defense, trap, support and wall together.
+- **The server would refuse a chosen hero**, and several translated descriptions do not match the code.
+
+So the default outcome of this item is: nothing here goes live in this pass, and the next pass inherits a gate
+instead of a guess. Do these, in order:
+
+1. **Type and test the hooks (BNL-10).** Declare the Rules 10 keys that stay in `src/gameplay/sim/types.ts`, add
+   one unit test per hook (absent plays identically; present has the effect), remove `kit.breachRadius`, and
+   correct `rules10/README.md` (a balance bundle cannot switch on keys that do not exist in shipped data).
+2. **Make the preview decide things (BNL-12).** In `tools/balance/preview.ts`: six layouts × five seeds, a paired
+   standard error, events counted for the building under test only, heroes sent first and sent last. Regenerate
+   `PREVIEW_BALANCE.md`.
+3. **Write the go-live gate as a slow test** under `tests/gameplay/planned/`: a counter may be marked live only if
+   its effect is −3 points or better against the armies it is meant to beat at two of three Keeps on 30 bases; a
+   hero only if its own family beats the Captain by 5 or more at its three Keeps and the raid mix stays within 3.
+   The gate lists today's failures the `KNOWN_BELOW` way.
+4. **Fix what is wrong whether or not anything ships**: the Hall cap trap (BNL-11: one rule for both paths); the
+   English that does not match the code (BNL-13; these are data strings in 50 languages, so fix them once, now);
+   the Lightning Rod's event flood (at most one `absorbed` event per rod per second; events never enter the result
+   hash).
+5. **Retune toward the gate** in `planned.json` and the catalog: the three hero kits (the report gives starting
+   values), the five working counters re-priced so a first wave adds no more than about a quarter to the live
+   defense budget, first levels capped at one day of building.
+6. **Only if an item passes the gate and time remains, make it live under this bump**, heroes before counters,
+   because Keeps 9, 11 and 13 are exactly where the late game has nothing new. Going live means all of: the
+   definition moved into the live data files and `live` set in the catalog ("Making one live" in
+   `src/gameplay/CLAUDE.md`); the server side (BNL-06: `checkArmy` reading the hero from the server-held village,
+   `chooseHero` in `PLAYER_COMMANDS`, a hello feature, `docs/PROTOCOL.md`, contract tests); battle callouts for
+   every new event kind (BNL-09); a painter for any new building (the generic one is not shippable); and every
+   balance artefact re-run. A lower-risk first step for counters is to let the five that work appear only in Trial
+   and Bounty fortresses (a separate list read by `trialBase` and `bountyBase`), so players meet new puzzles before
+   anyone can build them.
+
+P4-02's Rally decision sets the baseline every other hero is measured against. Make it before step 5.
 
 **P4-11 (stretch, CMB-10) Which approaches are closed is a hash of the layout, not the defender's choice.** Making
 the closed pair an explicit base setting (`BaseLayout.closed`, absent means today's hash so old records replay), a
@@ -1087,19 +1321,26 @@ changes and run the campaign once at the end of the phase.
 - A "looks collected: N of M" count where looks are shown.
 - Strings: a name per look, about 14.
 
-**P5-07 Warrior Mastery as the long-horizon track.**
-- `built-not-live.md` gives the system's exact state. It is built (`sim/mastery.ts`: experience per battle from
-  housing and stars, a level curve, a bonus that never passes +30%) and switched off, with its save field present
-  since v23 and a Codex panel made for the preview.
-- Turn it on in the narrowest form that the report shows is safe: ranks earned everywhere and shown in the Codex,
-  with the battle bonus applied **only against a Shadow Trial fortress**. That changes no raid, no defense and no
-  player-against-player result; it gives the Trial ladder something that grows (measured: the wall moves from about
-  tier 68 to about 77) and gives each of 50 warriors its own rank to earn after Keep 15.
-- It needs the server to carry mastery for a server-held village and to refuse a setup that claims more than was
-  earned (`checkBattleSetup` already does on the device). If the bonus touches battle arithmetic that a live battle
-  could reach, it belongs to Phase 4's bump: decide this before that bump is made. If the report says the server
-  side is too large, ship ranks without any bonus and record the rest as open.
-- Strings: the Codex panel's are already translated for the preview; check, and count any that are not.
+**P5-07 (BNL-02) Warrior Mastery, as ranks with no stat bonus.**
+- Why not the bonus: as tuned, mastery is not a long chase. One three-star raid with a one-type army gives +10%
+  health and damage, an evening gives +15 to +20%, and +10% is worth about 10 points of destruction at Keep 12
+  (three-star rate 8% → 25%). Matchmaking does not see it, defense has no counterpart, no gate was ever run with
+  it, and the server neither checks nor versions it. Switching the bonus on would undo Phase 4.
+- What ships: ranks. Set `mastery.maxBonus` to 0 and retune `xpBase` (starting value about 1,500, which puts a
+  rank-5 equivalent near 40 raids for a warrior that is a quarter of the army) in `progression.json`; add
+  `features: { mastery: true }` to the shipped data; drop the "preview" label; show experience gained on the result
+  screen (the return value of `awardMastery` is discarded today) and each warrior's rank in the Codex. With the
+  bonus at 0 no battle setup carries one, so no battle changes and the fingerprint does not move.
+- Fix before anyone can earn: experience is paid for any replayed Trial tier, cleared or not (tier 1 is a farm).
+  Pay it for raids and for the first clear of a tier only. Decide once whether Alliance War, Gang War, Bounty and
+  rematch battles pay (today they do not) and make the result screen agree.
+- The save field exists since v23 and the Codex panel's strings are translated; count any new ones.
+- Record as open, with what it needs: the stat bonus (a retuned curve, a cap near +15%, a place in
+  `attackerStrength` or a limit to generated bases and Trials, a mastered campaign policy with a gate, the server
+  truth of BNL-06, the curve moved inside `GameData` so it is versioned, and a rules bump because archived engines
+  ignore the field).
+- Done when: fifty warriors each have a rank that a month of play moves visibly and a year does not exhaust, and a
+  test shows no `BattleSetup` built by the game carries a mastery bonus.
 
 **P5-08 (PAC-11) Keep seals.** When every building a Keep allows is at that Keep's cap, pay a fixed Keep-scaled
 reward once and mark the Keep with a seal on the Keep sheet and the profile. Fifteen medium-horizon goals from data
@@ -1130,25 +1371,83 @@ Close the phase: campaign, slow tests, section 13, full checks, the new `DECISIO
 
 Read `ui-surface.md` and `playthrough.md` first, then `src/presentation/CLAUDE.md`. A rule in the simulator that no
 screen shows does not exist for a player. This phase is where the earlier ones become visible. It is also where
-most new strings come from: design each screen to need few (3.5).
+most new strings come from: design each screen to need few (3.5). Both reports list, per fix, how many new strings
+it needs; many need none because the right label already exists.
 
 Device targets from root `CLAUDE.md` apply to everything here: touch first, safe areas, portrait and landscape, the
-bottom bar fits 320 px, cheap Android phones on the low quality profile. Check every new surface at 320×568,
-360×640 and 844×390 in the sandbox (`?sandbox`), in English and in one right-to-left and one long-word language
-(Arabic and German), and look at the screenshots yourself.
+bottom bar fits 320 px, cheap Android phones on the low quality profile. Check every new or changed surface at
+320×568, 360×640, 390×844 and 844×390 in the sandbox (`?sandbox`), in English, in one right-to-left language and in
+one long-word language (Arabic and German), with real touch events at element centres, and look at the screenshots
+yourself. The playthrough's drivers in `scripts/playthrough/` do exactly this and refuse a tap on a covered target.
 
-**P6-01 (CMB-09) Squad orders on screen.**
-- Built and tested, with no screen: `src/gameplay/control/squadPlan.ts`, `BattleSession.orderSquad`,
-  `tests/gameplay/control/squad.test.ts`; the ask is in `docs/art/REQUESTS.md`. The orders go through the ordinary
-  deploy path, so replays and the server check are unchanged.
-- Build: before the raid or in the battle bar, choose a formation and a wave order; then one tap on an Infiltration
-  Point sends the undeployed army in that shape. The choice is remembered. Hand placement stays as it is.
-- Offer **together** and **pincer**, **tanks first** and **rush**. Do not offer "file" or "hold a reserve": on the
-  same army they measure 13 to 20 points worse (`scripts/combat/t8.ts`), and a button that is always wrong is a
-  trap. If a later rule gives a reserve a job, it can come back.
-- Done when: a full raid can be played in three taps; on ten bases at Keeps 10 and 15 the squad-order raid scores
-  within 3 points of the same deployments placed by hand; the battle record replays identically.
-- Strings: about 6.
+What the playthrough found excellent, and what stopped "one more raid", in the player's own words: the stake, the
+true near-miss line, new warriors to try and the loot count-up pulled; what stopped it was that the whole army is
+spent on every raid, storage was full after raid 1, the fight is two minutes of watching dots after half a minute of
+input, and the result screen ends in "Return home". This phase answers the last three. The first is the genre's
+core cost and stays.
+
+### First: the things a reviewer or a new player hits in the first ten minutes
+
+**P6-09 (PLY-01, 02, 06 to 10, 12, 14) Everything the playthrough saw.** Each was reproduced with a screenshot in
+`scripts/playthrough/shots/`. Fix all of them; each fix that can have a test gets one.
+- **"Skip tutorial" is one tap with no confirmation and lies over the Army button** when the bubble is docked low.
+  The investigator skipped the whole tutorial twice by accident. Ask once through the HUD's modal, move the link to
+  the bubble's top corner, and never dock the bubble over the bottom bar.
+- **The tutorial bubble covers the button it asks the player to press** (the Keep's Upgrade button sits under the
+  bubble and outside the sheet's scroll box at 360×640; a hit test at its centre returns the canvas). Find the
+  step's target first, place the bubble in the free band, scroll the target into view. Make the building sheet a
+  column with a sticky head and a sticky action row so Upgrade, Collect and Finish are always visible, and reset
+  its scroll when its content is rebuilt.
+- **The tutorial ring is drawn through an open sheet** (it rings the Mint's upgrade button while the text asks for
+  the Keep: a new player can spend 300 on the wrong upgrade), and the sheet's close button ends up under the rail's
+  fold toggle. Hide the map ring while a sheet covers its building, and keep the rail clear of an open sheet.
+- **The Build panel goes stale**: "All your Village Artisans are busy" stays on a card 52 seconds after they are
+  free, and the tap toasts the same error. Redraw the shop grid when the controller's state changes and quote again
+  inside the click handler.
+- **The browser-storage banner overlaps the first screen and hides the Keep.** Hold it until the tutorial is done
+  and show it in the top banner slot.
+- **The "computer rival" and "practice" labels are folded away by default on phones.** This is the Honesty
+  invariant: keep a short kind tag on the folded opponent line, always visible, at 320 px too.
+- **An internal id on the result screen**: "Warriors used: 1 shadow_captain". One shared unit-name lookup in the
+  interface (warriors, then heroes, then abilities), used at every site, and a test that a result with the hero
+  shows no snake_case id.
+- **Dead seconds and silent milestones**: the Dojo's sheet does not say that its next level unlocks warriors
+  (the ceremony says so 22 seconds later); empty-collect toasts fill the News log; a Keep level arrives with a
+  changed badge and nothing else (P6-08).
+- **Small things a reviewer notices**: `TkAge` is registered twice (a console warning on every boot); a canvas
+  read-back warning in `render/quality.ts`; the web Store shows eight "Not available" cards with the explanation
+  last; three English strings ("honor above 400 are halved", "More honor bring tougher opponents", "build another
+  Firework Mortar" with none built); the training strip cuts a name to "S…"; in landscape the Army panel opens
+  with no warrior row visible; edge labels are cut by the screen edge.
+
+**P6-11 (PLY-05) Battles are tiny and passive on a phone.**
+- Why: the camera stays at the entry fit (zoom 0.14) for the whole fight; the island is about 340×190 px and a
+  warrior 4 to 5 px on a 360 px screen; a fight is 100 to 160 seconds of watching after 15 to 50 seconds of input.
+- Change: once the player has deployed and no card with warriors left is selected, glide to an action frame (a box
+  around the living warriors and their targets, zoom clamped), and glide back when a card or an edge chevron is
+  touched. Show the replay's speed button in live battles once every warrior is deployed: `BattleSession.speed`
+  already scales live ticks and deployments keep their tick, so results and replays do not change (protected item
+  43). Add a test that a battle watched at 2× has the same result hash.
+- Strings: 0 to 1.
+
+### The raid loop
+
+**P6-01 (CMB-09, BNL-01, UIS-03) Squad orders on screen.**
+- Built and tested, with no screen: `src/gameplay/control/squadPlan.ts`, `BattleSession.orderSquad`, `holdSquad`,
+  `squadWaiting`, `tests/gameplay/control/squad.test.ts`; the ask is in `docs/art/REQUESTS.md`. The orders go
+  through the ordinary deploy path, so replays and the server check are unchanged.
+- Measured on 324 raids: at Keep 9 the same army scores from 29% to 100% by order and entry point (the raid bots'
+  plan: 60%); at Keep 12 from 22% to 93% (bots: 50%). The best order differs by base, so it is a real decision.
+- Build: one row above the troop cards with two chip groups, remembered on the device. With a formation armed, a
+  tap on a point chip or ring sends the undeployed army in that shape. Hand placement, the hero and Smoke stay as
+  they are.
+- Which orders to offer. Formations: together, pincer, file. Wave orders: tanks first, rush. The two reports
+  disagree about "hold a reserve": one measured it 13 points worse than sending everyone, the other found it the
+  weakest on average but not always. Offer it, with its Hold button, only if on ten bases at each of Keeps 9, 12
+  and 15 it is the best order on at least one base in five. A button that is nearly always wrong is a trap.
+- Done when: a full raid can be played in three taps; a squad-order raid's record replays identically; the new row
+  fits at 320×568 and 844×390 with the safe area.
+- Strings: about 8 (11 with the reserve).
 
 **P6-02 (CMB-02) The largest lever in a raid cannot be read, so make it learnable: the post-raid review.**
 - Why: the best entry point is worth 16 to 21 points over the mean point, and no static scouting metric predicts it
@@ -1156,57 +1455,124 @@ bottom bar fits 320 px, cheap Android phones on the low quality profile. Check e
   shows per point is a true fact and bad advice.
 - Build: on the result screen, a "what if" review that re-runs the same army and the same orders through the other
   open points with the deterministic simulator and shows each honest result (stars and destruction). Client only.
-  Compute one point at a time, on demand, off the main thread or in slices: a Keep 15 battle takes about 0.2 s on a
+  Compute one point at a time, on demand, in slices or off the main thread: a Keep 15 battle takes about 0.2 s on a
   desktop and several times that on a cheap phone.
 - Honesty: it says what it is (the same army sent through another point, simulated). It is never shown as what the
   player "should have" earned, and it never runs before the raid.
 - On the scout screen: keep the count as a count. Never label a point as recommended, safest or best unless a lab
   test shows the label is right ("the favoured point beats the mean point by 8 or more at Keeps 10 and 15"); no
   metric passes today.
-- Done when: the review's numbers equal a real battle fought with those deployments (a test); the result screen
-  stays responsive on the low profile with CPU slowed six times (`npm run perf:profile`).
+- Done when: the review's numbers equal a real battle fought with those deployments (a test), and the result
+  screen stays responsive on the low profile (`npm run perf:profile`).
 - Strings: about 4.
+
+**P6-07 (UIS-01, PLY-13) The result screen ends the loop.**
+- Today: it celebrates well and honestly, then offers "Watch replay" and "Return home". It shows no progress the
+  raid made and no next action. On a missed stake it prints "no loot came home" directly under a loot line that is
+  the league bonus, and it prints "Your squad carried 85% of the loot" on a defeat that carried none.
+- Add a short progress block from snapshots taken before and after the battle is settled: the tasks this raid
+  moved with their count, honor to the next league, the Scroll tier, the contract, a running ladder. Add context
+  buttons: after a raid "Refill in one tap" (the Army panel's command) and "Next" when an army is still standing;
+  after a cleared Trial the next tier; after a failed one "Try a different fortress". `ui-surface.md` names the
+  existing key for each; no new string is needed.
+- Fix the contradictions: no carry line when nothing was carried; the loot line is labelled as the league bonus on
+  a missed stake.
+- Keep protected item 41: every line is a fact about the raid just fought.
+
+**P6-13 (UIS-05, UIS-07) Two bets the player makes blind.**
+- A 3★ stake can be declared in one tap while the sentence that says "miss it and carry none" is inside a closed
+  drawer, and nothing shows the declared stake during the fight. On choosing a stake, show its existing help line
+  and open the drawer the first time on a device; mark the staked star in the live star row.
+- The diversity share is revealed only after the raid. Show it for the ready army in the Army panel and in the
+  scout drawer when it is under 100%.
+- Strings: 1.
+
+**P6-17 (playthrough opportunity 1) Something to play while the army trains.** When the camps are empty, the Attack
+button and the result screen offer what needs no standing army or pays without one: the daily drill (P3-07), a
+"Try" practice battle, and with the retrain countdown beside them the next Trial tier and a running Bounty or
+Gauntlet. Reuse existing labels.
+
+### The defender's game
 
 **P6-03 (defense opportunity 2) The defense report.** For each raid in the log and on the welcome-back screen:
 what was kept of what was raidable, stars denied, the reward, the entry point the raider used and the first three
-buildings that fell. All of it is in the battle record already. Feed "the side raiders break through" to
-`nextObjective` as a free suggestion. Strings: about 4.
+buildings that fell. All of it is in the battle record. Today a 0-star raid reads "took 167,676 Coins and 108,575
+Provisions (+40 honor)", which is how a held raid that lost a quarter of the collectors looks before Phase 2; after
+it, the line must show what holding saved. Feed "the side raiders break through" to `nextObjective` as a free
+suggestion. Strings: about 4.
 
 **P6-04 (defense opportunity 1) "Test my defenses".** On demand, run the simulated raider (`attackerFor`,
-`villageToBase`, `botDeployments`) against the player's own village and play the replay. No loot, no honor, no
-shield change, labelled practice, device only. This is what makes moving a tower an experiment with a result.
-Strings: about 3.
+`villageToBase`, `botDeployments`) against the player's own village and play the replay; and from a lost defense in
+the log, start a practice battle with that raider's army against the village as it is now. No loot, no honor, no
+shield change, labelled practice, device only. This makes moving a tower an experiment with a result. Strings:
+about 3.
 
-**P6-05 (RET-10) The next-objective chip dead-ends on "Next Artisan free in...".** Add kinds ahead of `builders`
-and `none`: something to claim (a task, a Scroll tier, an achievement, a seal); a running Bounty or Gauntlet with
-unpaid steps and a full army; the next Trial tier when it is at or below the Keep; the daily drill. Each opens its
-panel. The chip never suggests anything paid (protected item 35). Cases in
-`tests/gameplay/sim/return-hooks.test.ts`. Strings: about 4.
+**P6-12 (P2-14) The garrison crew in the builder panel.** A second, named queue for defenses, traps, walls and
+counters, shown where the artisans are shown, and one line when it first opens. Strings: about 3.
 
-**P6-06 (retention opportunity 7) The Trials ladder view.** The panel shows one tier. Show the next ten with their
-layout and modifier, and mark every tenth with its Jade. Strings: about 2.
+**P6-18 (built-not-live section 4) Rules a player cannot read.** No sentence anywhere says that rival clans answer
+the player's last ten raids, that each lost raid halves the next raider's take for a day, or what counters what.
+Add a short Codex page: the `counters` and `counteredBy` lists that already exist on the catalog (names are
+translated), the three temper axes, each rival clan's leaning, and those two sentences. Strings: about 4.
 
-**P6-07 The result screen gives a reason to raid again.** `ui-surface.md` lists what it shows today and what is
-missing. The target: stars, what was banked and what overflowed, the honor change, a close-call note only when
-true, progress the raid made toward today's tasks, the contract, the Scroll and the league, the review (P6-02), and
-one next step from `nextObjective`. Everything on it is a fact about the raid just fought.
+### Finding things, and feeling them
 
-**P6-08 Feedback on the moments that matter.** `ui-surface.md` lists where sound, haptics and motion exist and
-where they are missing. At minimum: three stars, a league promotion, a Keep upgrade finishing, a calendar or seal
-claim, a look earned. Use `audio/sound.ts` and `audio/haptics.ts`; respect reduced motion and the muted state; no
-new image files.
+**P6-05 (RET-10, UIS-04) The next-objective chip is cut off, does not move the camera, and dead-ends.**
+- Add kinds ahead of `builders` and `none`: something to claim (a task, a Scroll tier, an achievement, a seal); an
+  open rematch; a running Bounty or Gauntlet with unpaid steps and a full army; the next Trial tier when it is at or
+  below the Keep; the daily drill. Each opens its panel. The chip never suggests anything paid (protected item 35).
+- The "save" sentence is 76 characters in English and up to 106 in other languages on a chip that shows 20 to 40:
+  show the shortfall as cost chips with the building's name. When the chip selects a building, move the camera to
+  it.
+- Cases in `tests/gameplay/sim/return-hooks.test.ts`. Strings: reuse the rail labels; at most 4 new.
 
-**P6-09 Everything `playthrough.md` saw.** That investigator played the first run and mid-game sessions in a real
-browser and recorded every dead end, clipped or overlapping element, leaked internal id, untranslated string and
-console error, each with a screenshot. Fix all of them. Each fix that can have a test gets one (a layout assertion
-at 320 px, a string through `t()`, a missing handler).
+**P6-08 (UIS-06, BNL-08, PLY-12) Moments that have no moment.**
+- A league promotion or demotion shows nothing (no code compares the league before and after a raid). A Keep level
+  arrives like any building, and the only Keep-specific surface is a paid offer. The hero joins at Keep 7 with no
+  announcement, has no card outside the battle bar, and his Rally shows no callout (the callout names are built
+  from roster warriors only). Tempering opens at Keep 5 silently. There is no haptic anywhere in the village.
+- Generalise `ui/unlockCeremony.ts` into a milestone card (a title, icons, up to three lines, one button). Use it
+  for a league change, for each Keep level (from the existing "what this Keep unlocks" list, shown before any
+  offer), for the hero at Keep 7 and for tempering at Keep 5. Give the hero a card in the Army panel and the Codex
+  (his name and ability text are translated) and add heroes to the battle callouts.
+- Add a haptic and a count-up on the resource pills when an upgrade finishes, a claim pays or a raid's loot
+  arrives. Respect reduced motion and the muted state. No new image files.
+- Strings: 3 to 5.
 
-**P6-10 Hard-coded English.** `ui-surface.md` lists string literals that reach the DOM outside `t()`. Move each to
-the catalog. Canonical simulation and server wording is translated only at the display boundary through
+**P6-14 (UIS-08) Side modes are hard to find.** Rail buttons are icon-only and appear silently; Trials shares its
+icon with Honor; the Events badge is hard-coded to 0; nothing advertises an open rematch; the calendar is at the
+bottom of the Daily panel under the odds table; the Honor pill is a `div` with a click handler. When a rail button
+first appears, show its label beside it for a few seconds, once per device. Give Trials its own icon. Badge Events
+while a goal event has an unpaid step, and the Battle log while a rematch is open. Move the calendar above the odds
+table. Make the Honor pill a button with a label. No new strings.
+
+**P6-06 (retention opportunity 7, UIS-11) The Trials ladder view.** The panel shows one tier, and says "you can
+replay any cleared tier" while offering one. Show a ladder: cleared tiers, the next, the ten beyond with layout and
+modifier, every tenth marked with its Jade, and a stepper for replays. Strings: about 2.
+
+**P6-16 (UIS-10, UIS-13) Dead ends and keyboards.** The scout screen with no army shows a disabled button with no
+route to the Army panel; "Next" is disabled with no reason when the fee cannot be paid; 27 explanations exist only
+as hover titles, which touch never shows (a long press on a troop card shows its name and line from data); battle
+dialogs have no Escape or focus trap; there are no battle hotkeys although a Windows laptop is a target (1 to 9
+for cards, S for Smoke, Esc for "End the battle?"). No new strings.
+
+**P6-10 (UIS-12) Text that leaks past the catalog.** The pending-sync count is concatenated in English onto the
+net pill (a key for it exists); "Alliance War" is passed raw into a translated title (Spanish shows "Alliance War
+contra X"); the Codex lower-cases a translated string with `replace`; two dead plural-suffix arguments remain in
+`app.ts`. `main.ts` recognises the Settings dialog and the battle's back buttons by their translated text: use an
+id. Canonical simulation and server wording is translated only at the display boundary through
 `locales/runtime.ts`; never pass authored names or chat through a matcher.
 
-Close the phase: section 13, `npm test`, lint, build, the perf scripts, screenshots of every new surface at the three sizes in
-the closure record, and the note that nothing was checked on a physical device.
+**P6-15 (UIS-09) No test constructs the HUD.** `tests/presentation/ui` tests helpers and reads source text; nothing
+builds `Hud`, `BattleHud` or `Tutorial`. Add a DOM test environment as a development dependency (not a runtime
+one) and tests that build the three on a real `GameController` with stub dependencies: open every panel, walk the
+nine tutorial steps, render the results dialog for a raid, a pending raid, a Trial, a practice battle, a Bounty and
+a rematch, and assert the objective chip's action for every kind. Keep the Playwright drivers of
+`scripts/playthrough/` as a script that measures the bottom bar, the chip and the battle rows at the four sizes.
+Do this early in the phase: every other item here then gets a test.
+
+Close the phase: section 13, `npm test`, lint, build, the perf scripts, screenshots of every new surface at the four
+sizes in the closure record, and the note that nothing was checked on a physical device.
 
 ## 12. Phase 7: everything code can still do toward a store release
 
@@ -1275,9 +1641,11 @@ languages are complete; the listing's languages row predates them).
 `VITE_STATS_TZ: '1'` in the build steps of the three client workflows and note it in `docs/SHIPPING.md`. Still
 adults who opted in only.
 
-**P7-12 (backend ask of 2026-11-13) The server replays the device's entropy for the daily chest.** For a
-server-held village the server substitutes its own `openDailyChest.entropy`, so the next draw cannot be chosen by a
-modified client.
+**P7-12 (BNL-14) No person can play the built-not-live content on a deployed build.** The preview needs a dev build
+or a build flag the deploy workflow never sets. Prepare, behind an explicit workflow input that is off by default,
+a second web build under a preview path (sandbox save, never online) and a short tester checklist. Whether an
+unfinished-content URL may exist, and who tests, is the owner's decision: put it on the checklist and do not switch
+it on.
 
 **P7-13 The listing sells an older game.** After the earlier phases, update `docs/store/LISTING.md` with what the
 game now has, every claim tied to data or a test in its "claims checked" table (protected item 38), and regenerate
@@ -1297,7 +1665,7 @@ each in the record as "not compiled, not run on a device".
 bank and tax; the trademark search; the final bundle id and package name; the domain; every publisher fact; the
 legal reviews per market and the under-13 position; store accounts, capabilities, keys, products and forms;
 hosting, backups and staff; signing secrets; physical devices and store testing; native review of 49 languages, of
-the word lists and of the festival names; an artist and music; real-player playtests of every number this pass
+the word lists and of the festival names; whether a preview URL for unfinished content may exist and who tests it; an artist and music; real-player playtests of every number this pass
 changed. Each line says what it blocks and which command or file shows whether it is done. The preflight of P7-01
 checks the lines a machine can check.
 
@@ -1361,17 +1729,26 @@ Your final report to the owner, in plain words:
 |---|---|---|
 | `publish.md` | PUB-01, PUB-03, PUB-02 | P0-02, P0-03, P0-04 |
 | `publish.md` | PUB-04 to PUB-14 | P7-01 to P7-11 |
-| `retention.md` | RET-03, RET-04, RET-02, RET-06, RET-07, RET-05 | P1-01, P1-02, P1-03, P1-06, P1-07, P1-08 and P5-04 |
-| `retention.md` | RET-01, RET-11, RET-08, RET-09, RET-13, RET-12, RET-10, RET-14 | P5-01, P5-03, P5-05, P5-06, P5-06, P5-09, P6-05, P2-09 |
-| `economy.md` | ECO-01, ECO-02, ECO-03, ECO-04, ECO-05, ECO-06, ECO-07, ECO-08 | P2-01 and P3-01, P1-01, P1-03, P3-08, P1-04, P1-05, P2-07, P2-09 |
-| `economy.md` | ECO-09, ECO-10, ECO-11, ECO-12, ECO-13, ECO-14 | P5-11, P3-09, open, P3-03, P1-10, P2-08 and open |
+| `exploits.md` | XPL-01 to XPL-06 | P1-11 to P1-16 |
+| `exploits.md` | XPL-07, XPL-08, XPL-09, XPL-10, XPL-11, XPL-12, XPL-13 | P0-04, P1-17, P1-18, P1-19, P1-01, P1-20, P1-21 |
+| `retention.md` | RET-01 to RET-07 | P5-01, P1-03, P1-01, P1-02, P1-08 and P5-04, P1-06, P1-07 |
+| `retention.md` | RET-08 to RET-14 | P5-05, P5-06, P6-05, P5-03, P5-09, P5-06, P2-09 |
+| `economy.md` | ECO-01 to ECO-07 | P2-01 and P3-01, P1-01, P1-03, P3-08, P1-04, P1-05, P2-07 |
+| `economy.md` | ECO-08 to ECO-14 | P2-09, P5-11, P3-09, open, P3-03, P1-10, P2-08 and open |
 | `defense-raids.md` | DEF-01 to DEF-13 | P2-01, P2-01, P2-04, P2-02, P2-03, P2-05, P2-12, P2-07, P2-08, P2-09, P2-06, P2-10, P2-11 |
-| `pacing.md` | PAC-01 to PAC-14 | P3-01, P3-02, P3-03, P3-04, P1-06, P4-10, P4-09, P3-02, P3-06, P3-07, P5-08, open, P3-05, P3-10 |
-| `combat.md` | CMB-01 to CMB-12 | P4-01, P6-02, P4-06, P4-05, P4-02, P4-04, P4-03, P4-07, P6-01, P4-11, Phase 4 preamble, P4-08 |
-| `exploits.md` | XPL-* | P1-11, P0-04 |
-| `built-not-live.md` | BNL-* | P4-10, P5-07 |
-| `ui-surface.md` | UIS-* | Phase 6 |
-| `playthrough.md` | PLY-* | P6-09 |
+| `pacing.md` | PAC-01 to PAC-07 | P3-01, P3-02, P3-03, P3-04, P1-06, P4-10, P4-09 |
+| `pacing.md` | PAC-08 to PAC-14 | P3-02, P3-06, P3-07, P5-08, open, P3-05, P3-10 |
+| `combat.md` | CMB-01 to CMB-06 | P4-01, P6-02, P4-06, P4-05, P4-02, P4-04 |
+| `combat.md` | CMB-07 to CMB-12 | P4-03, P4-07, P6-01, P4-11, Phase 4 preamble and P4-10, P4-08 |
+| `built-not-live.md` | BNL-01, BNL-02, BNL-07, BNL-08, BNL-14 | P6-01, P5-07, P1-22, P6-08, P7-12 |
+| `built-not-live.md` | BNL-03 to BNL-06, BNL-09 to BNL-13 | P4-10 |
+| `ui-surface.md` | UIS-01 to UIS-07 | P6-07, P3-04, P6-01, P6-05, P6-13, P6-08, P2-15 and P6-13 |
+| `ui-surface.md` | UIS-08 to UIS-13 | P6-14, P6-15, P6-16, P6-06, P6-10, P6-16 |
+| `playthrough.md` | PLY-01, 02, 06 to 10, 12, 14 | P6-09 |
+| `playthrough.md` | PLY-03, PLY-04, PLY-05, PLY-11, PLY-13 | P3-04, P3-11, P6-11, P3-12, P6-07 |
+
+Each report also lists opportunities and lower-priority notes. Those this prompt took are named in their work
+items. The rest are recorded in the reports; add the ones you judge worth a later pass to the ledger as open ideas.
 
 ## Appendix B. Where the reports disagreed, and what this prompt decided
 
@@ -1380,14 +1757,26 @@ Your final report to the owner, in plain words:
   change the price basis and add the guard (P1-05).
 - **Trial growth past tier 60:** 0.03 in one report, about 0.02 in another, with different last achievement steps.
   Measure both; the achievement's last step follows the measurement (P1-06).
-- **What a raider carries by stars:** `[0.2, 0.5, 0.8, 1]` in the defense report, `[0.1, 0.4, 0.7, 1]` in the lab.
-  The acceptance results of P2-01 decide.
+- **What a raider carries by stars:** `[0.2, 0.5, 0.8, 1]` in the defense report, `[0.1, 0.4, 0.7, 1]` in the lab
+  and the economy report. The acceptance results of P2-01 decide.
+- **The rematch payout:** a flat share raised to 0.6 in one report, a share of what the raid took in another. The
+  second is chosen because it makes revenge recover a loss (P2-07).
 - **The league win bonus:** a share of the raid's own loot in one report, a share of the Keep's lowest loot in
   another. The Keep-scaled form is chosen because it follows the reward pattern the game already uses (P2-09).
 - **The league season reset:** one report would soften it, another calls it a sound loop. No measurement shows
   harm. It stays.
 - **The third artisan:** one report suggests putting the hut in the starting layout. This prompt changes the model
   player instead (P3-02); the starting economy stays.
+- **The tutorial:** one report would reorder its steps and remap the stored index; another keeps the nine steps and
+  makes the waiting step non-blocking, which needs no migration. The second is chosen (P3-04).
+- **Squad orders "file" and "hold a reserve":** traps in one measurement, sometimes best in another. File is
+  offered; the reserve only if it passes a measurement (P6-01).
+- **Rally:** one report would keep the re-arm and rewrite the text (no rules change); another measures two rule
+  changes that make it matter. The rule change is chosen, because a text fix leaves it worth nothing (P4-02).
+- **Warrior Mastery:** one report would switch the bonus on for Trials only; the report that measured it shows the
+  curve gives +10% after one raid and the server does not check it. Ranks only (P5-07).
+- **The planned heroes:** one report calls them the content for the empty late Keeps; the report that measured
+  them shows the live hero beats each with its own army. They ship only through the gate (P4-10).
 - **`battle.json` `scoutFeeByHall` and `generatedLootByHall`:** the defense report says editing them forces a rules
   bump. The code says otherwise (3.1).
 - **Does defense pay?** Three earlier audits said no on the campaign's 0% held. The defense report shows that
@@ -1396,17 +1785,24 @@ Your final report to the owner, in plain words:
 ## Appendix C. Traps, collected
 
 - The campaign's defense columns describe a village with level-1 defenses and no walls until P2-04 lands.
-- `supportStrike` at 1.0, Smoke at 12 seconds, "file" and "reserve" squad orders, `defenseWin.uncapped`, a lower
-  Keep 6 cost: each was measured or reasoned out and rejected. Do not rediscover them.
+- `supportStrike` at 1.0, Smoke at 12 seconds, `defenseWin.uncapped`, a lower Keep 6 cost, a trimmed Eclipse Ninja
+  damage: each was measured or reasoned out and rejected. Do not rediscover them.
+- Mastery's bonus as tuned (+10% after one raid), the three planned heroes as built (a false choice) and ten of
+  the fifteen planned counters (no effect) are not ready, however finished their code looks.
+- A new building's body moves a raid more than its rule does. Anything added to generated bases is a balance
+  change even with its effect switched off.
 - A "hold N raids" goal is dishonest until Phase 2 is in and measured.
 - A change to which base a seed generates must ride the rules bump (P4-07).
 - A field written by `createNewVillage` or a migration is a state change even when it is empty (3.2).
+- A sanitized battle setup must not break replays of old records: records carry their own setup and are replayed
+  as recorded; the whitelist applies to new battle commands (P1-11).
 - A translated sentence that says a number ("Holds 8 hours of output", "repeats every two weeks", "8 seconds",
   "30% more damage") changes in 50 languages when the number does. Make the sentence read the number where you can.
 - Every new English string makes 49 languages incomplete, and about 25 test files red, until section 13 is done
   for that phase.
 - An achievement tier needs its platform id; a new table needs its line in account deletion; a new metric needs its
   help line; a new server message needs its code in the catalog.
+- The exploit report's "checked and found sound" list, and each report's protected list, are there so nobody
+  re-hunts or "fixes" them.
 - Headless Chromium is not a phone, a model player is not a player, and a policy draft is not legal advice. Say so
   wherever you report a result.
-
