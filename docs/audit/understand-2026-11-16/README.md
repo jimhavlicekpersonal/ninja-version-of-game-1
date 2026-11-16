@@ -64,5 +64,36 @@ Each report's own first section says which script produced which table.
   fingerprint. They do not: both are in the excluded set in `tests/gameplay/battle/rules-version.test.ts` and in
   `NOT_COMBAT` in `src/backend/net/dataVersion.ts`. Editing them changes the data version and the campaign
   fingerprint, not `SIM_RULES`.
+- `pacing.md` (PAC-04) proposes Dojo training speeds of 2 / 2 / 1.6 / 1.3 for levels 1 to 4. The live table
+  continues 1.2, 1.4, so upgrading the Dojo would slow training down; an existing test and an Army panel sentence
+  also pin level 1 and 2 at speed 1. Its three-minute first raid is the tutorial's target, not what
+  `firsthour.mjs` measures (the model's first raid moves from minute 18 to 16).
+- `pacing.md` (PAC-13): raising the Keep 3 slack changes nothing for the regular model, whose opponent is already
+  at the window's floor. (PAC-09): `trialEnd` locks every tier above the next uncleared one, so "clearing a tier
+  clears the lower ones" needs a change to that lock.
+- `economy.md` (ECO-04): the top-up tool at exponent 0.75 prices a raid's loot at 830 Jade at Keep 14 and 790 at
+  Keep 15, which breaks an invariant of `topup.test.ts`; the tool also overwrites the training-skip table.
+- `combat.md` (CMB-04): Wall Climber, Grapple Raider, Crane Glider, Thousand Needle and Siege Bombardier have an
+  empty `kit`, and their cards describe their stat line truthfully. "An ability name with nothing behind it" is
+  wrong.
+- `defense-raids.md`: the type is `RaidsDef`, not `RaidsData`; `def_econ.ts` and `def_daily.ts` compute the proposed
+  rules themselves, so they double-apply once the keys are live; the fortress gates rest on a lab run with hired
+  artisans, a garrison crew of 2 and uncapped rewards; `next_offers.ts` passes no recent armies and cannot see
+  `counterShare`.
+- `retention.md`: the 15 task templates use 10 stats, not 9. `bountyEnd` and the goal progress hold one goal event
+  of kind `bounty`; a second goal event needs more than data.
+- `publish.md` (PUB-14) marks `VITE_STATS_TZ` as not needing the owner; `docs/SHIPPING.md` 3l records it as the
+  owner's switch. (PUB-10): word lists cannot live under `locales/`, which `sim/` may not import. Its tables number
+  six PUB findings differently from `structured/publish.json`.
+- `built-not-live.md` (BNL-14) would put the preview flag in `deploy.yml`; a test forbids that.
+- `built-not-live.md` section 3.4 calls five planned counters working; by the go-live gate it proposes, only two
+  pass on its own numbers.
 - Where two reports propose different values for the same number, the prompt's Appendix B says which was chosen and
   why.
+
+## How the prompt was checked
+
+Four independent reviewers checked about 900 claims of the prompt against the repository and these reports
+(sections 0 to 6; Phases 2 and 3; Phases 4 and 5; Phases 6 and 7 with the appendices) and returned 85 corrections:
+3 instructions that could not be executed as written, 24 major errors or omissions and 58 minor ones. All were
+applied. Two further reviews (invariants and sequencing; completeness and executability) could not be run.

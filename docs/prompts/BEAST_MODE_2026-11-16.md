@@ -4,6 +4,12 @@ Written 2026-11-16 against commit `9bf76af` (the tip of `main` and of `claude/gr
 The evidence behind every instruction is in [`docs/audit/understand-2026-11-16/`](../audit/understand-2026-11-16/README.md):
 ten investigator reports, their structured findings and the measurement scripts they ran.
 
+How far to trust it: four independent reviewers then checked about 900 of this prompt's claims against the code and
+the reports, and their 85 corrections are applied (several instructions taken from the reports could not have been
+executed as written; they are marked where they occur). Two further reviews, of invariants and sequencing and of
+completeness and executability, could not be run. The revalidation step of section 0.3 is therefore not a
+formality.
+
 Paste everything below the line into a new agentic coding session with full repository access. The work is ordered.
 Do the phases in order, one commit per work item, and report measurements after each phase. A phase may take a whole
 session; the progress ledger (section 3.9) lets a later session pick up where an earlier one stopped.
@@ -95,7 +101,9 @@ a better result than a shipped guess.
 
 - Never lower a gate, widen a band or add an entry to `KNOWN_BELOW` so a change passes. A gate moves only when the
   work item says the old target was wrong and gives the new one with its measurement.
-- Never skip, `.skip`, quarantine or delete a failing test. Fix the cause or revert the change.
+- Never skip, `.skip`, quarantine or delete a failing test. Fix the cause or revert the change. An existing
+  assertion changes only where a work item names the test and says it authorises the change, because the rule the
+  test pinned is the thing being changed.
 - Never edit a file under `server/rules/v*/`, an applied migration in `server/migrations/`, or a generated file by
   hand (`docs/GENERATED.md` lists them; regenerate with the named command).
 - Never hand-edit a pinned hash to match (`rules-version.test.ts`, `aura-cache.test.ts`, the campaign fingerprint).
@@ -465,7 +473,8 @@ it, model-player outcomes are not observed retention or revenue.
 ## 4. The measurement toolkit
 
 Every harness below was run on 2026-11-16. Saved outputs (`*.out`, `*.txt`) exist for some of them; produce your
-own "before" for the rest. They import the repository's real simulator. They hard-code the checkout path `/home/user/ninja-version-of-game-1`; if yours differs, replace it with
+own "before" for the rest. They import the repository's real simulator. They hard-code the checkout path
+`/home/user/ninja-version-of-game-1`; if yours differs, replace it with
 `sed` or run from a symlink. Scripts that need a scratch folder read `SCRATCH` (default `/tmp/kagemura-understand`;
 create it).
 
@@ -664,7 +673,8 @@ panel says "there is no top".**
   Keep tiers and Elite on a period that does not collide with it. Add two or three modifiers built from inputs a
   battle already takes, so no rules change is needed: a rival clan's tempers through `temperBase`, and `levelBias`.
 - Test: for tiers 1 to 120, every modifier that names walls lands on a fortress with walls; no tier carries two
-  modifiers unless the data says so on purpose.
+  modifiers unless the data says so on purpose. `tests/gameplay/sim/trials.test.ts` pins today's modifier tiers;
+  this item authorises updating those assertions.
 - Strings: one name and one line per new modifier.
 
 **P1-08 (RET-05, first half) Two of eight daily tasks complete on the first collect, and "finish 10 upgrades" is ten
@@ -723,7 +733,8 @@ sizes.**
 - Why: a forged save with 500 Jade on hand passed the import checks, and ordinary commands then left 280,500 Jade:
   150,000 from a stipend with a forged balance, 100,000 from a timer with a forged top-up share that `cancel`
   refunds, and 30,000 from 3,000 league chests paid by a `season` set 3,000 months back. 3,000,000 forged seasons
-  made one command run 9.1 seconds inside the row lock. The offline war's `settledWeek` loop has the same shape. For honest players the same loop pays a league
+  made one command run 9.1 seconds inside the row lock. The offline war's `settledWeek` loop has the same shape. For
+  honest players the same loop pays a league
   chest for every month away, played or not.
 - Change: cap the season catch-up with a data value (as the war already has `settleWeeksMax`); bound `season` and
   `settledWeek` in `validateVillage`; in the import, zero the stipend unless a credited stipend purchase covers it,
@@ -761,7 +772,8 @@ action in Coins and the action then pays Provisions, so the bought Coins stay in
 quote. This protects item 22.
 
 **P1-19 (XPL-10) Twelve hours of backdating is a daily free skip.** After 12 quiet hours a modified client dates
-`upgrade`, `research` and `train` 12 hours back (about 650 Jade of skips a day with five artisans and two research lanes). The window
+`upgrade`, `research` and `train` 12 hours back (about 650 Jade of skips a day with five artisans and two research
+lanes). The window
 exists so real offline play can sync. Bound it by the device's previous authenticated contact, or use a shorter
 bound for commands that start timers. It is a backend decision: choose the conservative one, and record it in
 `docs/backend/REQUESTS.md` and `docs/PROTOCOL.md`.
@@ -1296,7 +1308,8 @@ where the time budget allows, or gate on the mean of two adjacent Keeps. Do this
 new pins are steadier than the old.
 
 **P4-09 (PAC-07) Players who field their newest warriors lose most raids from Keep 8.** The casual explorer wins 18
-to 58% at Keeps 8 to 14 (under half at every Keep but 10) and is gated only at 0.1 stars a Keep and 0.3 on average. After P4-01, P4-04 and P4-05, re-run the campaign and raise
+to 58% at Keeps 8 to 14 (under half at every Keep but 10) and is gated only at 0.1 stars a Keep and 0.3 on average.
+After P4-01, P4-04 and P4-05, re-run the campaign and raise
 that gate to what the run gives, with 0.9 stars as the target. If it is still under 0.9, record the number and the
 warriors responsible; do not paper over it with matchmaking.
 
@@ -1528,14 +1541,21 @@ Close the phase: campaign, slow tests, section 13, full checks, the new `DECISIO
 
 Read `ui-surface.md` and `playthrough.md` first, then `src/presentation/CLAUDE.md`. A rule in the simulator that no
 screen shows does not exist for a player. This phase is where the earlier ones become visible. It is also where
-most new strings come from: design each screen to need few (3.5). Both reports list, per fix, how many new strings
-it needs; many need none because the right label already exists.
+most new strings come from: design each screen to need few (3.5). `ui-surface.md` section 4 lists the new strings
+each of its fixes needs; many need none because the right label already exists. `playthrough.md` does not count
+them, so count P6-09's yourself (a skip confirmation, the folded kind tags, the Dojo's "unlocks" row, three
+corrected English strings, each retranslated 49 times).
 
 Device targets from root `CLAUDE.md` apply to everything here: touch first, safe areas, portrait and landscape, the
 bottom bar fits 320 px, cheap Android phones on the low quality profile. Check every new or changed surface at
 320×568, 360×640, 390×844 and 844×390 in the sandbox (`?sandbox`), in English, in one right-to-left language and in
 one long-word language (Arabic and German), with real touch events at element centres, and look at the screenshots
-yourself. The playthrough's drivers in `scripts/playthrough/` do exactly this and refuse a tap on a covered target.
+yourself. The playthrough's drivers in `scripts/playthrough/` take a width and a height and refuse a tap on a
+covered target; they were run only at 360×640 and 844×390 in English, so extend them to the four sizes and the two
+languages. They, the `perf:*` scripts, `store:screenshots` and `i18n:smoke` need Playwright and Chromium, which
+`npm ci` does not install: add `playwright` as a development dependency (allowed: it is not a runtime one) and
+install Chromium. If the download is blocked where you run, record those checks as not run instead of failing the
+phase.
 
 What the playthrough found excellent, and what stopped "one more raid", in the player's own words: the stake, the
 true near-miss line, new warriors to try and the loot count-up pulled; what stopped it was that the whole army is
@@ -1600,11 +1620,13 @@ core cost and stays.
   they are.
 - Which orders to offer. Formations: together, pincer, file. Wave orders: tanks first, rush. The two reports
   disagree about "hold a reserve": one measured it 13 points worse than sending everyone, the other found it the
-  weakest on average but not always. Offer it, with its Hold button, only if on ten bases at each of Keeps 9, 12
-  and 15 it is the best order on at least one base in five. A button that is nearly always wrong is a trap.
+  weakest on average but not always. Offer the reserve order only if on ten bases at each of Keeps 9, 12 and 15 it
+  is the best order on at least one base in five. A button that is nearly always wrong is a trap.
+- Always show Hold with the waiting count while `squadWaiting` is above 0, for every order: a large squad goes in
+  over many seconds, and `holdSquad` is the only way to stop a mis-tapped order.
 - Done when: a full raid can be played in three taps; a squad-order raid's record replays identically; the new row
   fits at 320×568 and 844×390 with the safe area.
-- Strings: about 8 (11 with the reserve).
+- Strings: about 9 (11 with the reserve).
 
 **P6-02 (CMB-02) The largest lever in a raid cannot be read, so make it learnable: the post-raid review.**
 - Why: the best entry point is worth 16 to 21 points over the mean point, and no static scouting metric predicts it
@@ -1620,7 +1642,9 @@ core cost and stays.
   test shows the label is right ("the favoured point beats the mean point by 8 or more at Keeps 10 and 15"); no
   metric passes today.
 - Done when: the review's numbers equal a real battle fought with those deployments (a test), and the result
-  screen stays responsive on the low profile (`npm run perf:profile`).
+  screen stays responsive on a slowed CPU at low quality. No script measures that today (`perf:profile` profiles
+  start-up only; `perf:lowend -- --quality` runs a practice battle but never reaches a result screen): extend the
+  latter to run one review battle at CPU ×4 to ×6 and state the longest main-thread task in the record.
 - Strings: about 4.
 
 **P6-07 (UIS-01, PLY-13) The result screen ends the loop.**
@@ -1653,7 +1677,10 @@ Gauntlet. Reuse existing labels.
 
 **P6-03 (defense opportunity 2) The defense report.** For each raid in the log and on the welcome-back screen:
 what was kept of what was raidable, stars denied, the reward, the entry point the raider used and the first three
-buildings that fell. All of it is in the battle record. Today a 0-star raid reads "took 167,676 Coins and 108,575
+buildings that fell. Kept, stars, reward and loot are stored on the record; derive the entry point from its first
+deployments, and get the first buildings to fall by replaying the record when it is replayable (omit that line for
+records fought under older rules, which is every existing one after Phase 4's bump). No save field is added. Today a
+0-star raid reads "took 167,676 Coins and 108,575
 Provisions (+40 honor)", which is how a held raid that lost a quarter of the collectors looks before Phase 2; after
 it, the line must show what holding saved. Feed "the side raiders break through" to `nextObjective` as a free
 suggestion. Strings: about 4.
@@ -1664,13 +1691,18 @@ the log, start a practice battle with that raider's army against the village as 
 shield change, labelled practice, device only. This makes moving a tower an experiment with a result. Strings:
 about 3.
 
-**P6-12 (P2-14) The garrison crew in the builder panel.** A second, named queue for defenses, traps, walls and
-counters, shown where the artisans are shown, and one line when it first opens. Strings: about 3.
+**P6-12 (P2-14) The garrison crew in the builder panel.** A second, named queue for the building categories P2-14
+gives the crew (defenses and traps, and support counters if you decided so; walls take no builder), shown where the
+artisans are shown, and one line when it first opens. Strings: about 3.
 
 **P6-18 (built-not-live section 4) Rules a player cannot read.** No sentence anywhere says that rival clans answer
 the player's last ten raids, that each lost raid halves the next raider's take for a day, or what counters what.
-Add a short Codex page: the `counters` and `counteredBy` lists that already exist on the catalog (names are
-translated), the three temper axes, each rival clan's leaning, and those two sentences. Strings: about 4.
+Add a short Codex page: the `counters` and `counteredBy` lists of the catalog entries that are **live** (five
+today; the other fifteen with lists are planned buildings and must never be shown), the three temper axes, each
+rival clan's leaning, and those two sentences. The lists are design intent, not measurement: for each live building
+confirm in the army lab that the listed warriors really do worse against it before the page says so. The two
+sentences read their numbers from data as placeholders (the exhaustion window and factor, the number of recent
+raids), because P2-06 and P4-06 change them. Strings: about 4.
 
 ### Finding things, and feeling them
 
@@ -1708,8 +1740,9 @@ replay any cleared tier" while offering one. Show a ladder: cleared tiers, the n
 modifier, every tenth marked with its Jade, and a stepper for replays. Strings: about 2.
 
 **P6-16 (UIS-10, UIS-13) Dead ends and keyboards.** The scout screen with no army shows a disabled button with no
-route to the Army panel; "Next" is disabled with no reason when the fee cannot be paid; 27 explanations exist only
-as hover titles, which touch never shows (a long press on a troop card shows its name and line from data); battle
+route to the Army panel; "Next" is disabled with no reason when the fee cannot be paid; there are 27 `title`
+attributes, and on troop cards, the Smoke card and the opponent's Honor line the title is the only explanation,
+which touch never shows (a long press on a troop card shows its name and line from data; review the other 24); battle
 dialogs have no Escape or focus trap; there are no battle hotkeys although a Windows laptop is a target (1 to 9
 for cards, S for Smoke, Esc for "End the battle?"). No new strings.
 
@@ -1734,12 +1767,15 @@ sizes in the closure record, and the note that nothing was checked on a physical
 ## 12. Phase 7: everything code can still do toward a store release
 
 Read `publish.md`. Most of the cheap wins earlier audits named are already done; its section 3 lists them so you do
-not redo them. What is left:
+not redo them. The finding ids below are those of `structured/publish.json`; the tables inside `publish.md` use an
+older numbering for six of them (the plugin sync, the age-rating answers, the policy date, link previews, the word
+filter, the bundle id). What is left:
 
 **P7-01 (PUB-04) A test requires the publisher facts to be empty, and nothing stops a store build shipping with
 "not published yet" pages.**
 - Keep (protected item 36): the pages never invent a fact.
-- Change: the test accepts an empty value or a well-formed one (no `example.com`, no angle-bracket placeholder). Add
+- Change: the test accepts an empty value or a well-formed one (no `example.com`, no angle-bracket placeholder).
+  Check the parsed values, not the file's text: its comments use `example.com` on purpose. Add
   `tools/release/check-store-ready.mjs` and an npm script for it (cross-platform, no bash syntax). It prints one
   table of everything still missing for a store build: empty publisher facts, draft terms, the legacy bundle id,
   missing signing secrets and server URL, products in the shipping table, a stale policy date, unsynced native
@@ -1748,14 +1784,19 @@ not redo them. What is left:
 - Test it in `tests/backend/server/release-tools.test.ts`.
 
 **P7-02 (PUB-05) The signed Android job would upload the old game's package name, which Google Play never lets you
-change.** The id `com.toadstoolkingdoms.app` is in five places. Read the app id from one variable, consumed by
-`capacitor.config.ts` and `android/app/release.gradle` (the application id only; the Java namespace can stay). The
+change.** The id `com.toadstoolkingdoms.app` is in five places. Read the app id from one variable:
+`capacitor.config.ts` reads it; `android/app/release.gradle` exports it and `android/app/build.gradle`
+`defaultConfig.applicationId` reads that (the application id only; the Java namespace can stay; `release.gradle`
+does not set the id today); `strings.xml` (`package_name`, `custom_url_scheme`), which `cap sync` does not rewrite,
+follows it or is listed as staying; and the iOS variable `IOS_BUNDLE_ID` defaults to the same value. The
 signed jobs fail with a clear message while it is unset or still the old id, unless `ALLOW_LEGACY_APP_ID=1`. Cover
 it in `tests/backend/release-config.test.ts`. Choosing the id is the owner's decision; do not choose it.
 
 **P7-03 (PUB-06) Committed native project files do not list two plugins the game depends on.** Run
-`npm run build && npx cap sync` and commit what it regenerates. Add a test that every `@capacitor*` dependency in
-`package.json` appears in the Android and iOS plugin lists.
+`npm run build && npx cap sync` and commit what it regenerates. Add a test that every Capacitor plugin dependency
+in `package.json` (each `@capacitor/*` and `@capacitor-community/*` package except `core`, `android`, `ios` and
+`cli`, which are not plugins) appears in `android/capacitor.settings.gradle`, `android/app/capacitor.build.gradle`
+and `ios/App/CapApp-SPM/Package.swift`.
 
 **P7-04 (PUB-07) Two prepared Apple age-rating answers are wrong** (`docs/store/PRIVACY.md`: contests "None", age
 assurance "No", while the game runs leagues and events and calls both stores' age APIs). Recheck Apple's current
@@ -1765,20 +1806,26 @@ beside each answer, add the closure record for C05, and pin both answers in
 
 **P7-05 (PUB-08) No third-party licence notices ship with the game.** A small generator
 (`tools/release/licenses.mjs`) writes `public/licenses.html` from the shipped dependencies and the two fonts, with
-full licence texts in English, linked from the support page through `tools/i18n/pages.mjs` (one page string). A test
-checks every runtime dependency appears.
+full licence texts in English, linked from the support page. Page keys are positional, so put the link inside an
+existing unit of `public/support.html` (its footer line): exactly one key then changes. A new paragraph or list item
+renumbers every later key of that page in 49 languages, each with the old translation of a different sentence as
+its hint. A test checks every runtime dependency appears.
 
 **P7-06 (PUB-09) The iPhone release workflow runs on an image that may not carry the SDK Apple requires.** Move it
 to the runner the audit names and turn the SDK warning into an error below the required version. The workflow has
 never run; say so.
 
 **P7-07 (PUB-10) The chat word filter is 30 English words for a game shipped in 50 languages.**
-- Add per-language lists (for example `locales/<code>/blocklist.json`), merged into the filter in
-  `sim/social/grove.ts` and used by the server through the same shared code, starting with the ten largest launch
-  languages. Each list ships with a corpus of ordinary sentences in that language that must pass unfiltered, to
-  catch false positives.
-- Keep the lists conservative and mark every one for native review (`locales/<code>/REVIEW.json`). The word filter
-  matches word edges in every script and substrings in unspaced scripts; test both.
+- Add per-language lists inside the gameplay compartment (for example `social.json` `profanityByLanguage`, or a new
+  data file loaded by `sim/data.ts`), starting with the ten largest launch languages. They cannot live under
+  `locales/`: `sim/` may import only from `src/gameplay`, and the filter reads `data.social.profanity`, which is
+  part of the data the game and the server must load identically. The data version changes, so the server and the
+  game deploy together (a REQUESTS entry).
+- Each list ships with a corpus of ordinary sentences in that language that must pass unfiltered, to catch false
+  positives. The same filter censors player names on the server, so test names as well as chat, and both matching
+  modes (word edges in every script, substrings in unspaced scripts).
+- Keep the lists conservative and mark every one for native review, in a place that exists for every language (not
+  every `locales/<code>/` has a review file).
 - This is moderation quality, not legal compliance: the closure record says a native speaker has not reviewed them.
 
 **P7-08 (PUB-11) The privacy page's "last updated" date is older than its last change.** Set `policyUpdated`, and
@@ -1794,20 +1841,25 @@ worker's precache list.
 open-item table from `publish.md` section 4 to the audit as a dated reassessment (R05 says "English only" while 50
 languages are complete; the listing's languages row predates them).
 
-**P7-11 (PUB-14) Retention statistics by the player's local day are built and switched off in every build.** Set
-`VITE_STATS_TZ: '1'` in the build steps of the three client workflows and note it in `docs/SHIPPING.md`. Still
-adults who opted in only.
+**P7-11 (PUB-14) Retention statistics by the player's local day are built and switched off in every build.** Do
+not switch them on: `docs/SHIPPING.md` 3l and `docs/store/PRIVACY.md` record `VITE_STATS_TZ` as the owner's switch
+(protected item 37), against the report's reading. Wire it as a repository variable that defaults to off in the
+three client workflows, document it in `docs/SHIPPING.md`, and put "switch on local-day statistics" on the owner's
+checklist.
 
 **P7-12 (BNL-14) No person can play the built-not-live content on a deployed build.** The preview needs a dev build
-or a build flag the deploy workflow never sets. Prepare, behind an explicit workflow input that is off by default,
-a second web build under a preview path (sandbox save, never online) and a short tester checklist. Whether an
-unfinished-content URL may exist, and who tests, is the owner's decision: put it on the checklist and do not switch
-it on.
+or a build flag the deploy workflow never sets, and a test forbids that flag in `deploy.yml`
+(`tests/backend/verification-client.test.ts`); keep that test. Prepare a separate, manually dispatched workflow
+file whose input defaults to off (a second web build under a preview path, sandbox save, never online), a test that
+it has no push trigger, and a short tester checklist. Whether an unfinished-content URL may exist, and who tests,
+is the owner's decision: put it on the checklist and do not switch it on.
 
 **P7-13 The listing sells an older game.** After the earlier phases, update `docs/store/LISTING.md` with what the
-game now has, every claim tied to data or a test in its "claims checked" table (protected item 38), and regenerate
-the per-language store copy in the translation batch. Flag for the owner the keywords that name things the game
-does not contain.
+game now has, every claim tied to data or a test in its "claims checked" table (protected item 38). No tool
+writes the per-language store copy: `docs/store/<code>/LISTING.md` (with `PRODUCTS.json` or `LOCALE.json` where
+product text changed) are 49 hand-translated files. Re-translate them in the translation batch, with each
+translator's allowed paths extended to `docs/store/<code>/`, then run `npm run store:storekit`. Flag for the owner
+the keywords that name things the game does not contain.
 
 **P7-14 "What's new".** A short per-version entry shown once in the existing News panel, with the same text kept as
 the stores' release notes. Strings: one entry.
@@ -1822,9 +1874,14 @@ each in the record as "not compiled, not run on a device".
 bank and tax; the trademark search; the final bundle id and package name; the domain; every publisher fact; the
 legal reviews per market and the under-13 position; store accounts, capabilities, keys, products and forms;
 hosting, backups and staff; signing secrets; physical devices and store testing; native review of 49 languages, of
-the word lists and of the festival names; whether a preview URL for unfinished content may exist and who tests it; an artist and music; real-player playtests of every number this pass
-changed. Each line says what it blocks and which command or file shows whether it is done. The preflight of P7-01
-checks the lines a machine can check.
+the word lists and of the festival names; whether a preview URL for unfinished content may exist and who tests it;
+whether to switch on local-day statistics; turning off the old Toadstool Pages site; an artist and music;
+real-player playtests of every number this pass changed. Each line says what it blocks and which command or file
+shows whether it is done. The preflight of P7-01 checks the lines a machine can check.
+
+Not taken in this pass, record them as open in the ledger: an accessibility statement page (an owner decision,
+C21), a clearer message for a late raid report (R02), `keepalive` on the last send before a kill (GLOBAL-010), and
+release tags so the previous-client contract test has something to test.
 
 Close the phase with section 13, the full checks and the closure record. Do not write "ready" anywhere.
 
@@ -1834,19 +1891,23 @@ Run this procedure when a phase's English is final, before that phase's closure 
 finished in one session may share one run. The list of new and changed keys, with what each is for, comes from the
 ledger.
 
-1. `npm run i18n:extract && npm run i18n:sync`, then `npm run i18n:status`. Every language shows the same missing
-   count; a changed English string appears with its old translation as a hint.
-2. One translator sub-agent per language, each given `locales/CLAUDE.md` in full as its brief, with
-   `locales/GLOSSARY.md`, its language's line in `languages.json` and its `TERMS.md`. A translator edits only
-   `locales/<code>/`, fills `text` only, never changes a key or `en`, and runs `npm run i18n:check -- <code>` until
-   it is clean. Run a few at a time; they do not need the test suite.
+1. `npm run i18n:extract && npm run i18n:sync` (and first `node tools/i18n/pages.mjs extract` if any English page
+   changed), then `npm run i18n:status`. Every language shows the same missing count; a changed English string
+   appears with its old translation as a hint.
+2. One translator sub-agent per language, each given `locales/CLAUDE.md` as its brief, with `locales/GLOSSARY.md`,
+   its language's line in `languages.json` and its `TERMS.md`. Override two steps of that brief, in writing, for
+   every translator: they do not create or switch branches and do not commit (49 agents share one working tree;
+   you commit `locales/<code>/` on the working branch), and they skip `npm test` (you run
+   `npm test -- tests/locales` once in step 4). A translator edits only `locales/<code>/` (and `docs/store/<code>/` when the
+   listing changed), fills `text` only, never changes a key or `en`, and runs `npm run i18n:check -- <code>` until
+   it is clean. Run a few at a time.
 3. Tell each translator what the new text is for. Give them the screen, the feature and the placeholders' meaning
    for every new key (a table from your ledger). A translator who sees only "Kept {kept} of {total}" will guess.
 4. When all are back: `npm run i18n:check`, `npm test -- tests/locales`, `npm run i18n:status` must say every
-   language is complete. Run `npm run store:storekit` if any store text changed, and regenerate the per-language
-   store copy if the listing changed.
-5. Have a second agent per script family (Latin, Cyrillic, Arabic-script, Indic, CJK, Thai) read a sample of twenty
-   new strings against the English for meaning, placeholders and the glossary's terms. Fix what it finds.
+   language is complete. Run `npm run store:storekit` if any store text changed.
+5. Have a second agent per script (one reviewer per `script` value in `languages.json`, with the Indic scripts
+   grouped: Latin, Cyrillic, Greek, Arabic, Hebrew, Indic, Ethiopic, the three CJK languages, Thai) read a sample of
+   twenty new strings against the English for meaning, placeholders and the glossary's terms. Fix what it finds.
 6. The record says what this is: machine translation checked for structure, not reviewed by native speakers.
 
 ## 14. Finishing
@@ -1855,7 +1916,7 @@ Before you report:
 
 1. Every check, from a clean install: `npm ci`, `npm test`, `npm run test:slow`, `npm run lint`, `npm run build`,
    `npm run typecheck:server`, `npm run server:build`; the Postgres and Redis suites if you could run them; the perf
-   scripts.
+   scripts if Playwright and Chromium could be installed (Phase 6). Whatever could not be run is listed as not run.
 2. Every generated document is regenerated by its command and committed: the status file, the campaign, the army
    balance, the roster and progression documents, the preview balance, the StoreKit file, the language packs'
    availability.
@@ -1891,18 +1952,21 @@ Your final report to the owner, in plain words:
 | `retention.md` | RET-01 to RET-07 | P5-01, P1-03, P1-01, P1-02, P1-08 and P5-04, P1-06, P1-07 |
 | `retention.md` | RET-08 to RET-14 | P5-05, P5-06, P6-05, P5-03, P5-09, P5-06, P2-09 |
 | `economy.md` | ECO-01 to ECO-07 | P2-01 and P3-01, P1-01, P1-03, P3-08, P1-04, P1-05, P2-07 |
-| `economy.md` | ECO-08 to ECO-14 | P2-09, P5-11, P3-09, open, P3-03, P1-10, P2-08 and open |
+| `economy.md` | ECO-08 to ECO-14 | P2-09, P5-11, P3-09, P2-13 (optional) and open, P3-03, P1-10, P3-11 and P3-08 in part with the rest open |
 | `defense-raids.md` | DEF-01 to DEF-13 | P2-01, P2-01, P2-04, P2-02, P2-03, P2-05, P2-12, P2-07, P2-08, P2-09, P2-06, P2-10, P2-11 |
-| `pacing.md` | PAC-01 to PAC-07 | P3-01, P3-02, P3-03, P3-04, P1-06, P4-10, P4-09 |
+| `pacing.md` | PAC-01 to PAC-07 | P3-01, P3-02, P3-03, P3-04, P1-06, P4-10 step 6 if a hero passes the gate and otherwise open, P4-09 |
 | `pacing.md` | PAC-08 to PAC-14 | P3-02, P3-06, P3-07, P5-08, open, P3-05, P3-10 |
 | `combat.md` | CMB-01 to CMB-06 | P4-01, P6-02, P4-06, P4-05, P4-02, P4-04 |
 | `combat.md` | CMB-07 to CMB-12 | P4-03, P4-07, P6-01, P4-11, Phase 4 preamble and P4-10, P4-08 |
-| `built-not-live.md` | BNL-01, BNL-02, BNL-07, BNL-08, BNL-14 | P6-01, P5-07, P1-22, P6-08, P7-12 |
+| `built-not-live.md` | BNL-01, BNL-02, BNL-07, BNL-08, BNL-14 | P6-01, P5-07, P1-22, P6-08 and P4-02, P7-12 |
 | `built-not-live.md` | BNL-03 to BNL-06, BNL-09 to BNL-13 | P4-10 |
 | `ui-surface.md` | UIS-01 to UIS-07 | P6-07, P3-04, P6-01, P6-05, P6-13, P6-08, P2-15 and P6-13 |
 | `ui-surface.md` | UIS-08 to UIS-13 | P6-14, P6-15, P6-16, P6-06, P6-10, P6-16 |
 | `playthrough.md` | PLY-01, 02, 06 to 10, 12, 14 | P6-09 |
 | `playthrough.md` | PLY-03, PLY-04, PLY-05, PLY-11, PLY-13 | P3-04, P3-11, P6-11, P3-12, P6-07 |
+
+The PUB ids are those of `structured/publish.json`; the tables inside `publish.md` number six of them differently
+(Phase 7's preamble).
 
 Each report also lists opportunities and lower-priority notes. Those this prompt took are named in their work
 items. The rest are recorded in the reports; add the ones you judge worth a later pass to the ledger as open ideas.
@@ -1918,8 +1982,9 @@ items. The rest are recorded in the reports; add the ones you judge worth a late
   and the economy report. The acceptance results of P2-01 decide.
 - **The rematch payout:** a flat share raised to 0.6 in one report, a share of what the raid took in another. The
   second is chosen because it makes revenge recover a loss (P2-07).
-- **The league win bonus:** a share of the raid's own loot in one report, a share of the Keep's lowest loot in
-  another. The Keep-scaled form is chosen because it follows the reward pattern the game already uses (P2-09).
+- **The league win bonus:** a share of the raid's own loot in two reports (economy, retention), a share of the
+  Keep's lowest loot in the defense report. The second is chosen against the majority, because it is the pattern
+  the held-raid, rematch and Trial rewards already use and it cannot be inflated by picking rich targets (P2-09).
 - **The league season reset:** one report would soften it, another calls it a sound loop. No measurement shows
   harm. It stays.
 - **The third artisan:** one report suggests putting the hut in the starting layout. This prompt changes the model
@@ -1943,13 +2008,19 @@ items. The rest are recorded in the reports; add the ones you judge worth a late
 
 - The campaign's defense columns describe a village with level-1 defenses and no walls until P2-04 lands.
 - `supportStrike` at 1.0, Smoke at 12 seconds, `defenseWin.uncapped`, a lower Keep 6 cost, a trimmed Eclipse Ninja
-  damage: each was measured or reasoned out and rejected. Do not rediscover them.
+  damage, early Dojo speeds of 2 / 2 / 1.6 / 1.3, a top-up exponent of 0.75 without a monotonic rule, a higher Keep 3
+  slack for the regular player: each was measured or reasoned out and rejected or found wanting. Do not rediscover
+  them.
+- Three harnesses mislead once their change is live: `def_econ.ts` and `def_daily.ts` double-apply the carry
+  (P2-01), and `next_offers.ts` cannot see `counterShare` (P4-06). `firsthour.mjs` plays the model, not the tutorial
+  (P3-04).
 - Mastery's bonus as tuned (+10% after one raid), the three planned heroes as built (a false choice) and ten of
   the fifteen planned counters (no effect) are not ready, however finished their code looks.
 - A new building's body moves a raid more than its rule does. Anything added to generated bases is a balance
   change even with its effect switched off.
 - A "hold N raids" goal is dishonest until Phase 2 is in and measured.
-- A change to which base a seed generates must ride the rules bump (P4-07).
+- A change to which base a seed generates rides the rules bump, so that builds on the old rules keep getting bases
+  from the archived matchmaking (P4-07). Tickets and records carry their own base; no replay depends on it.
 - A field written by `createNewVillage` or a migration is a state change even when it is empty (3.2).
 - A sanitized battle setup must not break replays of old records: records carry their own setup and are replayed
   as recorded; the whitelist applies to new battle commands (P1-11).
