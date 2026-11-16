@@ -89,6 +89,13 @@ export function baseProfile(base: Pick<BaseLayout, 'buildings'>, data: GameData)
   return { reach: out.reach / n, blast: out.blast / n, watch: out.watch / n };
 }
 
+/** x to a whole power by repeated multiplication (battles use only + − × ÷ and √, so no Math.pow). */
+function raise(x: number, n: number): number {
+  let r = 1;
+  for (let i = 0; i < Math.round(n); i++) r *= x;
+  return r;
+}
+
 /** Re-shape one sim building by its own temper (mutates). Untempered or inactive buildings are left alone. */
 export function applyTemper(b: SimBuilding, t: Temper | undefined, data: GameData): void {
   const def = temperDef(data)?.types[b.type];
@@ -115,7 +122,7 @@ export function applyTemper(b: SimBuilding, t: Temper | undefined, data: GameDat
   for (const a of TEMPER_AXES) {
     const ad = def[a] as { versus?: { cls: string; bonus: number } } | undefined;
     if (!ad?.versus || f[a] <= 0) continue;
-    versus[ad.versus.cls] = (versus[ad.versus.cls] ?? 0) + ad.versus.bonus * Math.pow(f[a], gamma);
+    versus[ad.versus.cls] = (versus[ad.versus.cls] ?? 0) + ad.versus.bonus * raise(f[a], gamma);
   }
   if (Object.keys(versus).length) (b as SimBuilding & { versus?: Record<string, number> }).versus = versus;
   b.combat = {
@@ -133,7 +140,7 @@ export function applyBaseWide(buildings: SimBuilding[], profile: TemperProfile, 
   const def = temperDef(data);
   if (!def) return;
   for (const a of TEMPER_AXES) {
-    const w = Math.pow(profile[a], def.convexity ?? 1); // rules 8 (lab): base-wide effects are convex too
+    const w = raise(profile[a], def.convexity ?? 1); // rules 8 (lab): base-wide effects are convex too
     const byType = def.baseWide[a];
     if (!byType || w <= 0) continue;
     for (const b of buildings) {
@@ -198,7 +205,7 @@ export function troopCuts(profile: TemperProfile, data: GameData): TroopCuts {
   if (!def) return out;
   for (const a of TEMPER_AXES) {
     const c = def[a];
-    const w = Math.pow(profile[a], temperDef(data)?.convexity ?? 1);
+    const w = raise(profile[a], temperDef(data)?.convexity ?? 1);
     if (!c || w <= 0) continue;
     out.heal += (c.heal ?? 0) * w;
     out.aura += (c.aura ?? 0) * w;
