@@ -758,21 +758,22 @@ the closure record.
 
 ## 7. Phase 2: make defense a real decision
 
-No battle result changes in this phase. Everything is in `raids.json`, `ranks.json` and hooks that already exist
-behind data values live data does not set. Read `defense-raids.md` in full first; its section 1 corrects a belief
-three audits repeated.
+No battle result changes in this phase. Everything is in `raids.json`, `ranks.json`, `economy.json` and hooks that
+already exist behind data values live data does not set. Read `defense-raids.md` in full first; its section 1
+corrects a belief three audits repeated.
 
 **What is actually true.** The campaign's "0% held at every Keep" is the model player's village, not the game: the
 model leaves every defense at level 1 and places no walls. A built base holds the raider it is sent 75 to 100% of
 the time. The real defects are these: a held raid protects nothing (loot leaves with every destroyed building
 whatever the stars), a hold pays 5 to 11% of what it still lost, a strong base gets no shield and so is raided more
-often, the raider's strength is a point mass that jumps a Keep when honor rises, the raiders bring one ground army
-so anti-air never matters, and with a server no bot raid ever happens.
+often, the raider's strength is a point mass that climbs when honor rises, the raiders bring one ground army so
+anti-air never matters, and with a server no bot raid ever happens.
 
-**What defense cannot do, so do not try.** It cannot buy Keep pace: the whole raid tax costs 11 to 13% of pace and a
-defense to caps costs 1.4 to 3.9 times the next Keep's price. The old target "skipping defense costs 10% of the pace
-to Keep 12" is unreachable by loot protection. Defense pays in wealth kept, in rewards and in visible results. P2-04
-restates the gate that way.
+**What defense cannot do, so do not try.** It cannot buy Keep pace: the whole raid tax costs 11 to 13% of pace, and
+a defense costs 1.4 to 2.0 times the next Keep's price to reach two levels under its caps and 3.3 to 3.9 times to
+reach them (Keeps 12 and 14). The old target "skipping defense costs 10% of the pace to Keep 12" is unreachable by
+loot protection. Defense pays in wealth kept, in rewards and in visible results. P2-04 restates the gate that way,
+and P2-14 removes the builder-time cost.
 
 **P2-01 (DEF-01, DEF-02, ECO-01) Stars decide what a raider carries home, and every star denied pays.**
 - Change:
@@ -782,27 +783,36 @@ restates the gate that way.
     storage-capped and report what did not fit; do not use the `uncapped` hook.
   - Fix the bug the hook carries: `raidVillage` computes `v = v0 * carry` and the storage branch does not round, so
     resources become fractional. Floor it, and add a test that no resource is ever fractional after a raid.
-  - Add the three keys to the `RaidsData` type and remove the `as` casts that read them.
+  - Add `carryByStars` and `defenseWin.perStar` to `RaidsDef` in `src/gameplay/sim/types.ts` (and `raiderMatch` in
+    P2-02), and remove the `as` casts in `defense.ts` and `matchmaking.ts` that read them.
 - Measure with `def_econ.ts` and `def_daily.ts` at Keeps 5, 9, 12 and 15, at least 24 raids a cell, for the four
-  build qualities (level 1 without walls, caps − 2, caps − 1, caps).
-- Done when all hold:
+  build qualities (level 1 without walls, caps − 2, caps − 1, caps). **Read this before you trust them:** both
+  harnesses compute their "proposed" columns by their own arithmetic on today's `raidVillage` result; they do not
+  read the live keys. Record their proposed columns before you touch `raids.json`. Once the keys are live, the
+  "today" column is the new rule and the "proposed" column applies the carry twice: read "today", or give the
+  harness a flag that reads losses and rewards from the record (`result.loot`, `banked`). Their proposed reward is
+  also never storage-capped.
+- Done when all hold, judged on the storage-capped reward the game really pays:
   1. Net result per raid improves at every step of build quality at every measured Keep.
   2. For a one-visit player, loss per day never rises with build quality (today a maxed Keep 15 base loses 29% more
      per day than a caps − 2 base).
-  3. A base at caps is about neutral against the typical raider (within ±10% of one raid's reward).
+  3. A base at caps is about neutral against the typical raider (within ±10% of one full hold's reward). With the
+     starting values the uncapped harness gave +38%, +28%, +15% and +5% of a hold's reward at Keeps 5, 9, 12 and 15.
   4. The undefended village loses what it loses today, within noise: losses still hurt.
   5. A maxed base's rewards per day stay under 20% of the regular player's daily raid loot at that Keep, so defense
-     is not a farm.
+     is not a farm (the uncapped harness gave about 25% at Keep 15 with four visits a day).
   6. Nobody is worse off than today in any cell.
+  If 3 or 5 still miss on the capped reward, lower `shareOfRaidLoot` and record the value. Do not widen the bands.
 - Scope: bot raids on device villages and the server's simulated raids (P2-12). For raids by real players keep
   conservation: the defender loses what the attacker carries. Add only the per-star reward there
   (`server/core/pvp.ts` pays honor only today).
 - Strings: 1 or 2 for the defense log line ("kept X of Y"), built in Phase 6.
 
 **P2-02 (DEF-04) Raiders come from the defender's Keep, not from honor.**
-- Why: measured. At the campaign's honor the raider is the same one every time (Keep − 1 at the low end); above
-  about 350 × (Keep − 1) honor it jumps to Keep + 1. Holding raids raises honor, so holding summons a stronger
-  raider.
+- Why: measured. At the campaign's honor the raider is the same one every time (Keep − 1 at the low end). With more
+  honor it climbs: the defender's own Keep from about 350 × (Keep − 1) honor and Keep + 1 from about 350 × Keep
+  (Keep 12 at 4,300 honor meets a Keep 13 raider 91% of the time). Holding raids raises honor, so holding summons a
+  stronger raider.
 - Change: `raids.raiderMatch: { lo: -1, hi: 0 }` (the hook is in `matchmaking.ts` `attackerFor`).
 - Done when: `raider_dist.ts` shows a spread across the band at every honor, and no honor value moves the raider
   above the defender's Keep.
@@ -818,27 +828,36 @@ restates the gate that way.
   12 and 15.
 
 **P2-04 (DEF-03) Teach the campaign to see defense, and replace the known-failing gate.**
-- Change: add a `regular_fortress` policy to `CAMPAIGNS` (the lab's `fortress` policy already exists in
-  `tools/balance/playerModel.ts`), and give model villages a real layout through a data clone with
-  `raids.labAutoLayout` and `labWalls`, passed by the campaign tool only. Live data never sets those flags; add a
-  test that `defaultData.raids` has neither.
+- Change: add `{ id: 'regular_fortress', opts: { raidsPerSession: 2, policy: 'fortress', fortressGap: 2 } }` to
+  `CAMPAIGNS` (the `fortress` policy exists in `tools/balance/playerModel.ts`; its default gap is 1, the strictest).
+  Give that campaign's village a real layout through a data clone with `raids.labAutoLayout` and `labWalls`, passed
+  by the campaign tool to the new campaign only. Live data never sets those flags: add a test that
+  `defaultData.raids` has neither.
 - Replace the `KNOWN FAILING (PS-1, open)` assertion in `campaign-gates.test.ts` with gates that say what defense is
-  for: the fortress holds at least 40% of raids at Keeps 9 to 15; its stolen-to-looted ratio is at most 0.6 times
-  the rusher's; it reaches Keep 12 within 1.25 times the rusher's days. Use the values the run gives you if they
-  differ, and record why.
+  for. Three hypotheses to start from: the fortress holds at least 40% of raids at Keeps 9 to 15; its
+  stolen-to-looted ratio is at most 0.6 times the rusher's; it reaches Keep 12 within 1.25 times the rusher's days.
+  Know where they come from: the only campaign evidence is the lab's run with hired artisans, a garrison crew of 2,
+  the lab's carry values and uncapped rewards, and even that run met only some of them (stolen share 0.76 times the
+  rusher's for the gap-3 fortress; Keep 12 at 1.21 and 1.30 times for gaps 3 and 1). Set each gate from your first
+  full run with at least two days or five points of margin, say so in the record, and expect the pace gate to hold
+  only after P2-14.
 - Do not change the behaviour of an existing campaign policy. Add policies. The history of every gate depends on the
   old ones staying comparable.
 
-**P2-05 (DEF-06) A long absence must not empty the treasury.**
-- Why: measured. Thirty days away loses 94 to 97% of what was stored, and the welcome-back screen lists 24 raids.
-- Change: `raids.maxRaidsPerCatchUp` 24 → 3. Measure with `away.ts`.
-- Done when: 7 days away loses at most a quarter of what was stored and 30 days at most 30%, at Keeps 9 and 12.
-
-**P2-06 (DEF-11) Exhaustion reaches the once-a-day player.** `raids.exhaustion.windowHours` 24 → 36. Check the
-regular player's Keep 15 day stays inside its gate.
+**P2-05 and P2-06 (DEF-06, DEF-11) A long absence must not empty the treasury, and exhaustion must reach the
+once-a-day player.**
+- Why: measured. Thirty days away with storages 30% full loses 94 to 97% of what was stored, and the welcome-back
+  screen lists 24 raids. Exhaustion (each lost raid in 24 hours halves the next raider's take) rarely catches raids
+  a day apart.
+- Change: `raids.maxRaidsPerCatchUp` 24 → 3 and `raids.exhaustion.windowHours` 24 → 36. Measure them together with
+  `away.ts` (level-1 defenses; storages 30% full and full). With the cap alone Keep 9 still loses 37% of what was
+  stored; with both, 24.9% at Keep 9 and 15.9% at Keep 12. With a cap of 3 a week and a month away lose the same.
+- Done when: the loss from storage is at most 30% of what was stored for any absence, at Keeps 9 and 12, at both
+  fill levels. If Keep 9 is over, lower the cap to 2. The regular player's Keep 15 day stays inside its gate.
 
 **P2-07 (DEF-08, ECO-07) Settle the score loses resources even at three stars.**
-- Why: measured. Three stars pay 437 k at Keep 12 against 1.67 M banked by an average raid and a 267 k army.
+- Why: measured. Three stars pay 437 k at Keep 12 against a 607 k army and 1.67 M banked by an average raid (Keep
+  10: 192 k against a 267 k army).
 - Change: `raids.rematch.recoverShare` (starting value 0.75): the reward is the larger of today's and
   `recoverShare × stars ÷ 3 ×` what that raid took (`record.result.loot`). `rematchReward` and `rematchEnd`.
 - Done when: at 2.5 stars the rematch is worth about a normal raid and at three stars a little more, at Keeps 5, 10
@@ -846,15 +865,20 @@ regular player's Keep 15 day stays inside its gate.
 - Touches: the server replays `rematchEnd`. Strings: 0 to 1.
 
 **P2-08 (DEF-09) Declared stakes are a button nobody should press.**
-- Why: break-even hit rates are 91% (two stars) and 80% (three); the campaign's rates are 50 to 64% and 4 to 17%.
+- Why: break-even hit rates are 91% (two stars) and 80% (three). The regular campaign's rates at Keeps 10 to 15 are
+  50 to 64% and 4 to 17% (Keeps 5 and 9 are 85 to 90% for two stars).
 - Change: `raids.stakes.byStars` to `{ "2": 1.3, "3": 1.75 }` (break-even 77% and 57%).
-- Done when: for the bot plan declaring is still a loss on average (it is a skill bet, not free loot), and for a
-  player who hits two stars four times in five it is a gain. State both numbers in the record.
+- Done when: over the whole regular campaign, raid-weighted, declaring two stars with the bot plan is still a loss
+  (it is a skill bet, not free loot), and for a player who hits two stars four times in five it is a gain. List the
+  Keeps where the bot plan gains (expected: 5 and 9, and the casual model at 13 to 15) and state both numbers in the
+  record.
 
 **P2-09 (DEF-10, ECO-08, RET-14) The league win bonus fades from 30% of a raid at Keep 5 to 1.4% at Keep 15.**
-- Change: express `winBonus` as a share of the Keep's lowest generated raid loot per league (starting values 2% in
-  Cedar rising to 15% in Kage, for three stars, scaled by stars ÷ 3), in `ranks.json` and `leagueWinBonus`. This
-  follows the Keep-scaled reward pattern (protected item 25); do not tie it to the raid's own loot.
+- Change: a new key per league, for example `winBonusShare`: a share of the Keep's lowest generated raid loot
+  (`battle.generatedLootByHall[keep − 1].min`), for three stars, scaled by stars ÷ 3. Starting values 2% in Cedar
+  rising to 15% in Kage. This is the pattern `defenseWin`, `rematch` and `trialReward` already use; it is not
+  `rewardScaleByHall`. Do not change the meaning of the existing `winBonus`, and do not tie the bonus to the raid's
+  own loot. `leagueWinBonus` needs the Keep: update its callers and `matchmaking.test.ts`.
 - Leave the season reset as it is.
 - Done when: the bonus is between 5% and 20% of an average raid's banked loot at every Keep from 5 to 15 at the
   model's league. Show it on the Honor panel (an existing number, no new sentence if possible).
@@ -864,13 +888,19 @@ regular player's Keep 15 day stays inside its gate.
   opponent.
 - Change: `ranks.matchmaking.lossStreakSlack`: 0.25 of slack per consecutive lost raid, cap 1.0, reset by a win,
   counting only raids that deployed at least 80% of the army's housing so it cannot be farmed with one-warrior
-  losses. In `opponentFor`.
+  losses. Put it in a shared helper that `opponentFor` uses. `opponentFor` is the device path only: the server's
+  generated fallback in `server/core/pvp.ts` has its own floor. Decide whether it gets the same slack and note it in
+  `docs/backend/REQUESTS.md`.
 - Done when: the sandbagger gate still holds and a deliberate-loss strategy (lose four, then raid) measures worse in
   loot per hour than playing straight.
 
-**P2-11 (DEF-13) Next is priced by the player's Keep while the offers are a Keep lower.** In `scoutFee`, price by the
-Keep the player is matched against. Measure with `next_offers.ts`: the fee is 1.5 to 2.5% of the mean offer at Keeps
-5, 9, 12 and 15.
+**P2-11 (DEF-13) Next is priced by the player's Keep while the offers are a Keep lower.**
+- Change: in `scoutFee`, price by the Keep the player is matched against. Say how that Keep is derived before the
+  next base is known (from `attackerStrength` minus the slack, as matchmaking does).
+- An existing test pins the fee at 2 to 5% of the average generated loot at the player's own Keep
+  (`tests/gameplay/sim/matchmaking.test.ts`); priced a Keep lower it is 1.1 to 2.2% of that and fails. This item
+  authorises restating that test against the Keep the fee is priced by, and adds the `next_offers.ts` measure as a
+  second check: the fee is 1.5 to 2.5% of the mean offer at Keeps 5, 9, 12 and 15.
 
 **P2-12 (DEF-07) With a server, a village is never raided unless a real player attacks it.**
 - Why: `src/main.ts` sets `botRaids: !serverUrl`. At launch population that means no raids at all: defenses,
@@ -885,31 +915,41 @@ Keep the player is matched against. Measure with `next_offers.ts`: the fee is 1.
 - If this is too large to finish safely, write the full design in `docs/backend/REQUESTS.md` and leave it open. Say
   so in the closure record in words an owner cannot miss: online, defense does nothing until this ships.
 
-**P2-13 (optional, CU-1) Towers payable in Provisions.** Coins bind 1.1 to 2.7 times harder than Provisions at Keeps
-3 to 12. Adding `defense` and `support` to `economy.provisionsPayable` gives the idle currency a use. Measure the
-regular and casual pace before deciding; skip it if either moves by more than 5%.
+**P2-13 (optional, ECO-11, CU-1) Towers payable in Provisions.** Coins bind 1.1 to 2.7 times harder than Provisions
+at Keeps 3 to 12. Adding `defense` and `support` to `economy.provisionsPayable` gives the idle currency a use.
+Measure the regular and casual pace before deciding; skip it if either moves by more than 5%.
 
 **P2-14 (built-not-live opportunity 4) The garrison crew: defense builds do not take a Village Artisan.**
 - Why: defense competes with growth for builder time, and P2-01 cannot change that (the preamble's "what defense
-  cannot do"). The hook exists (`economy.garrisonCrew`, read in `builderStatus`): a separate crew for defenses,
-  traps, walls and counters. The lab's Rules 10 patch used 2.
-- Change: add the key to `economy.json` with its type, and one unit test for the hook (absent or 0 plays exactly as
-  today; present, a defense upgrade starts with every artisan busy). It is free and never sold: no product, no
-  offer, no Jade price. The second queue in the builder panel is P6-12.
-- Done when: with the crew on, `regular_fortress` reaches Keep 12 within 1.1 times the rusher's days (tighten
-  P2-04's bound to that), and the regular player's Keep 15 day stays inside its gate.
+  cannot do"). The hook exists (`economy.garrisonCrew`, read in `builderStatus`). The lab's Rules 10 patch used 2.
+- What the hook covers today: the `defense` and `trap` categories only. Two of the five live counters are category
+  `support` and stay on the artisans (decide whether they join the crew and change the hook if so). Walls take no
+  builder at all. Three callers ignore the crew and must not: the top-up check refuses a Jade top-up for a defense
+  while the artisans are busy (pass the building type), the next-objective chip does not see the crew, and the
+  `all_builders_busy` offer trigger can fire after a crew build.
+- Change: add the key to `economy.json` with its type, and unit tests for the hook: absent or 0 plays exactly as
+  today; with it, a defense upgrade starts with every artisan busy; a `support` building follows the decision; a
+  top-up for a crew build is offered; the offer trigger does not fire for a crew build. It is free and never sold:
+  no product, no offer, no Jade price. The second queue in the builder panel is P6-12.
+- Done when: with the crew on, `regular_fortress` reaches Keep 12 within 1.25 times the rusher's days (the lab's
+  crew-2 runs gave 1.21 and 1.30 times; without the crew the fortress is much slower). Record the ratio with and
+  without the crew. The regular player's Keep 15 day stays inside its gate.
 - Touches: the server replays `place` and `upgrade`. Strings: about 3, in Phase 6.
 
 **P2-15 (UIS-07) The diversity carry cuts the tutorial raid.**
 - Why: at Dojo level 1 only Shinobi can be trained, so the first result screen a player ever sees says "Your squad
-  carried 85% of the loot". The rule (protected item 21) is meant to reward a choice the player does not have yet.
-- Change: in `sim/carry.ts`, the carry is full while the village can train fewer than two roles (a data value in
-  `raids.diversity`). Show the share before the raid, not only after it (P6-13).
+  carried 85% of the loot". The rule is meant to reward a choice the player does not have yet.
+- Change: the carry is full while the village can train fewer than two roles (a data value in `raids.diversity`).
+  Give `raidCarry` and `diversityShare` in `sim/carry.ts` the village (or the count of trainable roles), and use the
+  one function in `battleEnd`, `settleOnlineAttack` and the result screen: today `battleHud.ts` recomputes the share
+  from the army, so it would still print 85% after the fix; it should read the record's `carry`. Update
+  `round2-rules.test.ts`, whose new village expects the cut. Show the share before the raid, not only after it
+  (P6-13).
 - Test: the tutorial army carries 100%; a one-role army at Keep 5 still carries 85%.
 
-Close the phase: campaign, slow tests, section 13, full checks, the closure record. Rewrite the "Is defense worth building?"
-section of `docs/game-theory/CAMPAIGN.md` through its generator, and correct the E26 and PS-1 statements in
-`docs/store/WORLDWIDE_AUDIT.md` by adding a dated record (never by editing old ones).
+Close the phase: campaign, slow tests, section 13, full checks, the closure record. Rewrite the "Is defense worth
+building?" section of `docs/game-theory/CAMPAIGN.md` through its generator, and correct the E26 and PS-1 statements
+in `docs/store/WORLDWIDE_AUDIT.md` by adding a dated record (never by editing old ones).
 
 ## 8. Phase 3: pacing, the first hour, and prices that stay sane
 
@@ -927,9 +967,9 @@ The casual curve is broken by three numbers. Read `pacing.md` first.
 - Follow-ons the keys force: `economy.json` `collectBubbleMinFraction` 0.02 → 0.007 (keeps the first collect bubble
   near ten minutes); the two building descriptions that say "Holds 8 hours of output" (data text, so
   `i18n:extract` and 49 translations of two strings; better, make the sentence read the number); the test that pins
-  shield hours.
-- Do not lower the Keep 6 cost. `curves.test.ts` requires the early cost multiplier never to shrink, and it only
-  moves the wall to Keep 6 to 7.
+  shield hours (`tests/gameplay/sim/raids.test.ts`).
+- Do not lower the Keep 6 cost. `tests/gameplay/balance/curves.test.ts` requires the early cost multiplier never to
+  shrink, and it only moves the wall to Keep 6 to 7.
 - Measured result to reproduce (single seed, ±2 days): casual Keep 5 to 6 in 13 days (was 26), casual Keep 15 on day
   207 (was 246); regular Keep 15 unchanged at day 113, largest speed-up 11% at Keep 8.
 - Done when: the casual stretch from Keep 5 to 6 is 10 to 16 days, no casual stretch through Keep 10 exceeds 21
@@ -939,10 +979,10 @@ The casual curve is broken by three numbers. Read `pacing.md` first.
 **P3-02 (PAC-02, PAC-08) Gate the casual pace, and model the player the game actually allows.**
 - Add to `campaign-gates.test.ts`: casual reaches Keep 6 by day 25, and no casual stretch between Keeps is longer
   than 21 days through Keep 10.
-- Add campaign policies (do not alter existing ones): one that hires the third artisan with the starting Jade, one
-  that queues the second army (`economy.json` `queuedArmies` allows it; the model's `train()` stops at camp
-  capacity). Report them in `CAMPAIGN.md`. They describe a believable player; the gated baseline stays the
-  conservative one.
+- Add campaign policies (do not alter existing ones): one that hires the third artisan with the starting Jade
+  (`hireBuilders`), one that queues the second army (`economy.json` `queuedArmies` allows it; the model's `train()`
+  stops at camp capacity). Report them in `CAMPAIGN.md`. They describe a believable player; the gated baseline stays
+  the conservative one.
 
 **P3-03 (PAC-03, ECO-12) Three quarters of all builder time is Mints, Farms and storages at a flat seven days a
 level.**
@@ -953,6 +993,9 @@ level.**
   or four days from the level where they reach it. Let a collector keep producing at its old level while it
   upgrades (`sim/village.ts`, where `accrueFrom` is set to the upgrade's end), or failing that print the lost output
   in the upgrade quote.
+- `tests/gameplay/sim/data.test.ts` exempts a level from its "about 2.2 times longer each level" check only when it
+  is exactly seven days; with a lower cap every capped level after the first fails it. This item authorises changing
+  that exemption to "a level at its building's cap", with the cap as a named data value, in the same commit.
 - Measured: a three-day cap brings the total to 1,089 builder-days and the regular Keep 15 to day 98, which is under
   the gate; a four-day cap gives 1,267. Choose the cap that keeps the regular Keep 15 at 100 days or more. The gate
   is the owner's stated target and does not move.
@@ -962,44 +1005,67 @@ level.**
 **P3-04 (PAC-04, UIS-02, PLY-03) The first raid arrives after two idle countdowns: about 14 minutes without Jade.**
 - Why: the tutorial upgrades the Keep (240 s), then stops at a step whose ring sits on the Jade "Finish now" button
   until the Keep is level 2, then trains 20 Shinobi at 20 s each and stops again. Played in a browser without Jade
-  it is about 14 minutes to the first battle; the model player gets five raids in the first hour. The step before
-  it asks the player to tap a coin that needs 576 seconds to appear, and five Collect taps answer "Nothing to
-  collect yet".
+  it is about 14 minutes to the first battle; the model player gets five raids in the first hour, the first at
+  minute 18. The step before asks the player to tap a coin that needs 576 seconds to appear, and five Collect taps
+  answer "Nothing to collect yet".
 - Change:
-  1. Keep the nine steps and their order (the save stores the step index, so no migration is needed). The Keep
-     step is done when the Keep is level 2 **or is upgrading while an Artisan is free**, so the army steps run
-     while the Keep builds. Remove the Jade button from that step's targets: the tutorial never rings a Jade
-     button.
+  1. Keep the nine steps and their order (the save stores the step index, so no migration is needed). Step
+     `finishKeep` (the fourth) is done when the Keep is level 2 **or is upgrading while an Artisan is free**, so
+     the army steps run while the Keep builds. Remove the Jade button and its confirm from that step's targets. The
+     later step `finishTrain` also rings a Jade "Finish" button: either remove that target too or leave it and say
+     so; `src/presentation/CLAUDE.md` documents that selector and must be updated with whichever you choose.
   2. While the tutorial is running, the collect bubble shows as soon as one coin exists.
-  3. Data: `buildings.json` Dojo levels 1 to 4 `trainingSpeed` 1 / 1 / 1 / 1 → 2 / 2 / 1.6 / 1.3, and Keep level 2
-     `buildSeconds` 240 → 60. Both keys are outside the combat fingerprint.
-- Done when: `scripts/pacing/firsthour.mjs` shows the first raid inside three minutes with no Jade and at least
-  seven raids in the first hour, with Keep 3 still inside the 40 to 80 minute window `progression.test.ts` holds;
-  and a scripted run of the tutorial at 360×640 reaches the first battle in under three and a half minutes with no
-  Jade spent and no tap answered "Nothing to collect yet".
-- Strings: 0.
+  3. Data: Keep level 2 `buildSeconds` 240 → 60 (outside the combat fingerprint).
+  4. Make the first armies train faster. The pacing report's proposal (Dojo levels 1 to 4 `trainingSpeed` 2 / 2 /
+     1.6 / 1.3) **cannot ship as written**: the live table is 1, 1, 1, 1, 1.2, 1.4, 1.6, 2, ..., so it would make
+     upgrading the Dojo slow training down; `tests/gameplay/sim/audit-pacing.test.ts` pins a level 2 Dojo at speed
+     1; and the Army panel prints the speed as a multiple "of a level 1 Dojo" whenever it is above 1. Reach the same
+     result another way: shorter `trainSeconds` for the tier-1 warriors (also outside the combat fingerprint; check
+     `progression-model.test.ts` first, which pins training times to the model), or a Dojo table that never falls
+     with level and a panel sentence that divides by the level-1 speed. If the level 1 or 2 speed changes, that test
+     and that sentence change in the same commit, and the string is counted.
+- Done when: `scripts/pacing/firsthour.mjs` shows at least seven raids in the first hour with Keep 3 still between
+  40 and 80 minutes (`progression.test.ts` holds that window; the report's own variant gave seven raids and Keep 3
+  at minute 44, four minutes above the floor); and a scripted run of the tutorial at 360×640, training the army the
+  tutorial suggests, reaches the first battle in under four minutes with no Jade spent and no tap answered "Nothing
+  to collect yet". The model harness cannot show the tutorial's time: it plays sessions two minutes apart.
 
-**P3-05 (PAC-13) Keep 3 opens with a lost raid.** After four three-star raids at Keep 2, the first Keep 3 raid is
-zero stars; the casual model wins none of its two Keep 3 raids. Either raise `ranks.json` `powerSlackByKeep` for
-Keep 3 (1 → 1.25) or add `firstRaidsSlack` for the first two raids after any Keep upgrade in `opponentFor`. Done
-when the regular Keep 3 average is 1.2 stars or more, the casual Keep 3 average is at least 1, and the three-star
-farming gate still holds.
+**P3-05 (PAC-13) Keep 3 opens with a lost raid.**
+- Why: after four three-star raids at Keep 2, the regular model's first Keep 3 raid is zero stars; the casual model
+  wins none of its two Keep 3 raids.
+- Raising `ranks.json` `powerSlackByKeep` for Keep 3 does nothing for the regular player: its strength minus the
+  slack is already below the hard floor of the opponent window (`matchmaking.ts`, the clamp to own Keep minus the
+  halls below), so it already meets the weakest base the window allows. Measured at 1.25 and at 2.0: no change.
+  Slack helps only the casual model, whose strength (2.91) sits above the floor.
+- Change: re-measure after P3-04 first (its faster armies alone gave 1, 1, 2, 2 stars on the first Keep 3 raids).
+  If the first raid after a Keep upgrade is still a loss, use a lever that acts below the window: a softer generated
+  base for the first two raids after a Keep upgrade (a `levelBias` cut, or one more Keep below, from data in
+  `ranks.json`), in a shared helper, with the same note about the server's fallback as P2-10.
+- Done when, by model: the regular Keep 3 average is 1.2 stars or more and its first Keep 3 raid wins a star; the
+  casual Keep 3 average is at least 1; the three-star farming gate still holds.
 
-**P3-06 (PAC-09) A late starter clears dozens of trivial Trial tiers at a loss.**
+**P3-06 (PAC-09, playthrough opportunity 4) A late starter clears dozens of trivial Trial tiers at a loss.**
 - Why: a tier pays by its own Keep. A Keep 10 player starting the ladder has 36 easy tiers, each costing a full army
-  for 0.5 to 60 k.
-- Change: `trials.json` `catchUpKeepsBelow` (2): clearing tier `t` also clears every lower tier whose Keep is at
-  least that far below the player's, paying their rewards once. In `trialEnd`. "Paid once per tier" stays true.
+  for 0.5 to 60 k. In play, a Keep 5 village's first tier paid 500 of each resource against 200,000 in storage.
+- The mechanism has to be stated, because `trialEnd` refuses any tier above the next uncleared one: a player may
+  attempt the first tier of the Keep that is `catchUpKeepsBelow` (a new key in `trials.json`, starting value 2)
+  below their own, even when lower tiers are uncleared. Clearing it sets the best tier to it and pays every skipped
+  tier's reward once. Change the lock in `trialEnd` and the helpers and panel that assume the next tier is the best
+  plus one (`nextTrialTier`, the variant and alternate helpers, the Trials panel). "Tier 2 is locked until tier 1
+  is cleared" stays true for a Keep 1 village, and "paid once per tier" stays true for everyone.
 - Touches: the server replays `trialEnd`. Strings: 1 (the result line listing what was cleared).
 
 **P3-07 (PAC-10) After two raids a session has nothing left that pays.**
 - Why: army refill is 50 to 104 minutes from Keep 5; every battle mode spends the same warriors; practice pays
   nothing.
-- Change: a **daily drill**. One practice battle a day against the player's next Trial fortress with
-  `practiceArmy` (full camps at current research, nothing spent, so it works with empty camps), paying a small
-  fixed Keep-scaled reward once per local day. It needs a command the server can replay and re-simulate
-  (`drillEnd`, in `PLAYER_COMMANDS` and `BATTLE_COMMANDS`, built on the `trialEnd` path) and a stat for the day's
-  task. The reward is about a fifth of the daily chest. It is labelled practice.
+- Change: a **daily drill**. One practice battle a day against the player's next Trial fortress, with nothing
+  spent, paying a small fixed Keep-scaled reward once per local day (about a fifth of the daily chest), labelled
+  practice. It needs a command the server can replay and re-simulate: `drillEnd`, in `PLAYER_COMMANDS` and
+  `BATTLE_COMMANDS`, and a stat for the day's task.
+- `drillEnd` rebuilds its army itself, as `trialEnd` rebuilds the base: a full-camp army of the village's own mix at
+  its researched levels (a new helper; `practiceArmy` is the "Try this warrior" helper and needs a troop). It
+  ignores the army and levels the client sent, does not check them against the camps, and does not spend warriors.
+  The setup goes through the sanitizer of P1-11.
 - Done when: a returning player with no warriors always has one action that pays within two minutes, and the drill
   cannot be claimed without a battle the server re-ran.
 - Touches: save (a stat), commands, server, UI. Strings: about 4.
@@ -1008,14 +1074,21 @@ farming gate still holds.
 by the same table are hollow.**
 - Why: one hour of income costs 15 Jade at Keep 1 and 550 at Keep 15; finishing a Keep 15 army costs 461 Jade for
   one extra raid; the Keep Celebration's supplies are 0.34 hours of production at Keep 15.
-- Change: regenerate `topUpScaleByHall` with `tools/balance/topup.mjs` at exponent 0.75 instead of 0.5, and decouple
-  `trainingSkipScaleByHall` so skip-and-raid stays a few times cheaper than a top-up for the same loot (1 at Keeps 1
-  to 5 rising to 3 to 5 at Keep 15). The table is in `scripts/economy/econ3.cjs`.
-- Keep (protected item 22): the top-up's shape. Keep the invariants `tests/gameplay/economy/topup.test.ts` and
+- Change: regenerate `topUpScaleByHall` (in `src/gameplay/data/store.json`) with `tools/balance/topup.mjs` at
+  exponent 0.75 instead of 0.5. **The tool as written cannot do this correctly**: at 0.75 it prices a raid's loot at
+  830 Jade at Keep 14 and 790 at Keep 15, and `tests/gameplay/economy/topup.test.ts` requires that price never to
+  fall with the Keep. Add a second rule to the tool beside its "a rush must cost more" rule: lower a Keep's scale
+  until its raid price is at least the previous Keep's. The tool also overwrites `trainingSkipScaleByHall` with the
+  top-up scale on every run: give that table its own formula (the one in `scripts/economy/econ3.cjs`: raid price ÷
+  (4.5 × the two-hour training skip), at least 1, kept at 1 through Keep 5 and never falling with the Keep).
+- Keep (protected item 22): the top-up's shape. Keep every invariant `topup.test.ts` and
   `docs/game-theory/TOP_UP.md` state; update the document through its numbers.
-- Done when: an hour of income costs 70 to 210 Jade from Keep 5 to 15; every offer's supplies are worth at least an
-  hour of production at every Keep it can appear at; a full Keep 1 to 15 rush by Jade costs at least 25,000 Jade
-  (it must stay a bad idea).
+- Done when: an hour of income costs 70 to 210 Jade from Keep 5 to 15; the Keep Celebration's supplies are worth at
+  least an hour of production at every Keep from 5 to 15; a full Keep 1 to 15 rush by Jade costs at least 25,000
+  Jade (it must stay a bad idea). Report the Starter Pack and War Supplies in hours of production and in armies: if
+  either is still hollow (the Starter Pack is 17 to 22 minutes of production today, and this change does not raise
+  it), change its contents in `offers.json`, not the scale.
+- Then finish the second half of P1-05.
 
 **P3-09 (ECO-10, E06) Paying to rush the Keep makes the game worse for the buyer and nothing says so.**
 - Why: reproduced. A Keep 15 village with level-1 research meets only Keep 14 bases and is raided by Keep 14 armies.
@@ -1041,14 +1114,17 @@ the builder-day horizon, where the Trial ladder ends.
 - Strings: 1.
 
 **P3-12 (PLY-11) The tutorial's forced first raid silently ends the 24-hour new-player shield.**
-- Change: the raid the tutorial requires does not end the new-player shield (a rule in `battleEnd`, from a data
-  value in `raids.json`; the server replays it), and from then on the scout screen shows one line while a shield is
-  running: attacking ends it, with the time left.
+- Change: a village's first attack does not end its new-player shield. Define the exemption on state the simulator
+  has (no earlier attack record), from a data value in `raids.json`: the server cannot see tutorial progress, which
+  is device-only. `battleEnd` is not a player command; the server applies it as its own result and also ends the
+  attacker's shield in its own code on the player row (`server/core/pvp.ts`). Put the rule in one shared helper and
+  use it in both branches of `battleEnd` and in that server path, with a server test, so the rule exists once.
+  From then on the scout screen shows one line while a shield is running: attacking ends it, with the time left.
 - Strings: 1.
 
 Left open on purpose, record them as such: the currency load imbalance late (ECO-11: no late Coin sink, research is
-100% Provisions) and the hollow second and third research lanes (PAC-12). Both are real, neither has a measured fix,
-and a guess here would move every Keep.
+100% Provisions; P2-13 is the only lever tried), the hollow second and third research lanes (PAC-12), and Keep 11
+adding no army housing (PAC-06). All are real, none has a measured fix, and a guess here would move every Keep.
 
 Close the phase: campaign, slow tests, section 13, full checks, the closure record.
 
