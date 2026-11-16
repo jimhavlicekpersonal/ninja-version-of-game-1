@@ -35,6 +35,7 @@ import os as _o
 FRESH = _o.environ.get('FRESH')
 bases = [dict({'id':f'{l}|{t}','layout':l,'temper':T[t]}, **({'levelBias':LB[l]} if l in LB else {}), **({'seedOffset':ti} if FRESH else {})) for l in layouts for ti, t in enumerate(T)]
 if os.path.exists('extra_armies.json') and not os.environ.get('NOEXTRA'): armies = armies + json.load(open('extra_armies.json'))
+if os.environ.get('EXTRA'): armies = armies + json.load(open(os.environ['EXTRA']))
 import os as _os
 cfg = {'keeps':keeps,'seeds':seeds,'seedBase':int(_os.environ.get('SEEDBASE','200' if _os.environ.get('FRESH') else '0')),'plans':plans,'armies':patch.get('armies',armies),'bases':patch.get('bases',bases),
        'patch':patch.get('patch',{}),'troopPatch':patch.get('troopPatch',{}),'classes':patch.get('classes','size'),'formation':patch.get('formation'),'buildingPatch':patch.get('buildingPatch',{}),'troopPatchByKeep':patch.get('troopPatchByKeep')}
