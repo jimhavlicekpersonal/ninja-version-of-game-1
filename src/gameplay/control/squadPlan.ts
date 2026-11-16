@@ -32,7 +32,7 @@ export interface SquadStep {
 /** How long the reserve waits, in ticks (30 seconds at 10 ticks a second). */
 export const RESERVE_DELAY_TICKS = 300;
 /** The share of the army's housing that goes in before the reserve is held back. */
-export const RESERVE_AFTER_SHARE = 0.65;
+const RESERVE_AFTER_SHARE = 0.65;
 
 /** The steps that carry out `order` with the warriors still undeployed. Empty when the raid has no Infiltration Points. */
 export function squadPlan(sim: BattleSim, order: SquadOrder): SquadStep[] {
