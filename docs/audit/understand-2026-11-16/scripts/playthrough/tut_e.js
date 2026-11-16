@@ -1,0 +1,17 @@
+const W = 1000;
+const bub = () => page.evaluate(() => { const b = document.querySelector('.tut-bubble'); return b && !b.hidden ? b.innerText.replace(/\n/g, ' ').slice(0, 130) : '(bubble hidden)'; });
+const step = async (label = '') => log(elapsed(), 'taps', s.taps, label, '|', await bub());
+const closeSheet = async () => { if (!(await page.$('#hud .sheet:not([hidden])'))) return; if (!(await ft('.sheet .icon-btn', W))) { await page.touchscreen.tap(150, 125); s.taps++; await sleep(W); } };
+await ft('.shop-card[data-type="acorn_cannon"]', W);
+await ft('.round-btn.ok', W);
+await step('3 buildings placed');
+await sleep(2000);
+await shot('r13-step6-sheet-open');
+await closeSheet();
+await shot('r14-step6');
+await ft('.round-btn[data-id="army"]', W);
+await shot('r15-army-panel');
+await step();
+await dump(40, '.modal-backdrop:last-child');
+await audit('.modal-backdrop:last-child');
+await text('.modal-backdrop:last-child', 1500);

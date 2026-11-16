@@ -1,0 +1,19 @@
+n=18 bases per cell, 226.5 s
+iron_matriarch   K9   raid mix           none  81.6  captain  87.1  hero  81.3  hero-captain -5.7  hero-none -0.3  captain-none +5.4
+iron_matriarch   K9   guardian family    none  42.7  captain  52.9  hero  53.2  hero-captain +0.3  hero-none +10.4  captain-none +10.2
+iron_matriarch   K12  raid mix           none  67.6  captain  78.4  hero  74.6  hero-captain -3.8  hero-none +7.0  captain-none +10.8
+iron_matriarch   K12  guardian family    none  47.9  captain  51.7  hero  48.5  hero-captain -3.2  hero-none +0.6  captain-none +3.8
+iron_matriarch   K15  raid mix           none  81.4  captain  86.4  hero  83.7  hero-captain -2.7  hero-none +2.3  captain-none +5.0
+iron_matriarch   K15  guardian family    none  48.9  captain  55.1  hero  52.9  hero-captain -2.1  hero-none +4.1  captain-none +6.2
+sky_admiral      K11  raid mix           none  78.1  captain  77.2  hero  74.8  hero-captain -2.4  hero-none -3.3  captain-none -0.9
+sky_admiral      K11  sky family         none  18.2  captain  28.3  hero  18.6  hero-captain -9.7  hero-none +0.3  captain-none +10.1
+sky_admiral      K13  raid mix           none  74.3  captain  78.6  hero  75.7  hero-captain -2.9  hero-none +1.4  captain-none +4.3
+sky_admiral      K13  sky family         none  17.5  captain  24.4  hero  18.5  hero-captain -5.9  hero-none +1.0  captain-none +6.9
+sky_admiral      K15  raid mix           none  81.4  captain  86.4  hero  83.7  hero-captain -2.8  hero-none +2.2  captain-none +5.0
+sky_admiral      K15  sky family         none  40.9  captain  43.9  hero  41.8  hero-captain -2.1  hero-none +0.9  captain-none +3.0
+grand_sensei     K13  raid mix           none  74.3  captain  78.6  hero  81.0  hero-captain +2.4  hero-none +6.7  captain-none +4.3
+grand_sensei     K13  mystic family      none  13.1  captain  18.1  hero  13.7  hero-captain -4.4  hero-none +0.7  captain-none +5.1
+grand_sensei     K14  raid mix           none  76.6  captain  75.2  hero  78.6  hero-captain +3.4  hero-none +2.0  captain-none -1.4
+grand_sensei     K14  mystic family      none  32.7  captain  33.0  hero  26.3  hero-captain -6.7  hero-none -6.3  captain-none +0.3
+grand_sensei     K15  raid mix           none  81.4  captain  86.4  hero  86.4  hero-captain -0.1  hero-none +4.9  captain-none +5.0
+grand_sensei     K15  mystic family      none  34.7  captain  38.8  hero  33.7  hero-captain -5.1  hero-none -1.0  captain-none +4.1

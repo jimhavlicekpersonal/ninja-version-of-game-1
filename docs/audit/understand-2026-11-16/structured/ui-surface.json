@@ -1,0 +1,326 @@
+{
+ "problems": [
+  {
+   "id": "UIS-01",
+   "title": "The result screen ends the loop: no next action and no progress shown",
+   "severity": "high",
+   "verified": "read-in-code",
+   "evidence": "src/presentation/ui/battleHud.ts:627-677 shows stars, destruction, loot count-up, Honor delta, stake outcome, diversity share, bonuses, close calls and overflow. Its only buttons are 'Watch replay' and 'Return home' (:665-676). Nothing compares the league before and after, and no task, Season Scroll, Bounty or next-Trial progress appears. src/app.ts:353-362: a cleared Trial returns a note only, so the next tier costs Home, rail Trials, 'Scout tier N+1'. Refilling the same army costs Home, Army, Army tab, Train (armyUi.ts:418-420).",
+   "whyItMatters": "The moment after a win is when a player decides to play another round. Today it sends them back to the village, three to four taps from the next raid, and hides the progress the raid just made.",
+   "proposedFix": "In App.open (src/app.ts) snapshot currentTasks, leagueFor/nextLeague and unlockedTier before onFinished and pass the differences to BattleHud.showResults as a short progress block: task text from data with n/target, ui.more_honor_to_reach_3b60f7cad1, the league name from data when it changed. Add context buttons: after a raid 'Refill in one tap' (dispatch trainArmy with lastAttackArmy, label ui.refill_in_one_tap_25afd91239) and, when battleArmy is still non-empty, battle.next calling app.scout(false); after a cleared Trial ui.scout_tier_8fde370df8 for tier + 1; after a failed Trial with canTryAlternate ui.try_a_different_fortress_d0b3ff0e49. No new strings are needed.",
+   "fixCost": "M",
+   "touches": [
+    "UI",
+    "DOCS"
+   ],
+   "needsOwner": false
+  },
+  {
+   "id": "UIS-02",
+   "title": "The tutorial stops for four minutes at step 4 with its ring on the Jade button",
+   "severity": "high",
+   "verified": "measured",
+   "evidence": "src/presentation/ui/tutorial.ts:63-73: step finishKeep is done only at Keep level 2, and its ring targets `.sheet[data-type=Keep] .btn.gold` (Jade 'Finish now'), then the confirm's primary button. buildings.json: Keep 2 takes 240 s; store.json skipCurve prices that at about 2 Jade; the village starts with 500 Jade. economy.json startingLayout has two Artisans and hall.json level 1 allows Dojo, Courtyard and Kunai Tower, so step 5 could run during the wait. Step 2 (tutorial.ts:47-54) says to wait for a floating coin: VillageScene.ts:351 shows it at max(1, 200/h x 8 h x 0.02) = 32 Coins, 576 s after the Mint is built, while the sheet's Collect works after 18 s. Guided and without Jade, the first raid comes after about 7 minutes (sequence inferred from the step list; no browser run).",
+   "whyItMatters": "The first raid is the hook, and the first session decides whether a player returns. A guided player either waits four minutes or learns to spend Jade before the game has asked their age.",
+   "proposedFix": "Keep the nine steps and their order (saves store the index). Step 4: done when the Keep is level 2, or is upgrading while an Artisan is free (builderStatus), so the army step runs while the Keep builds; show tutorial.finishKeep.wait as step 5's `extra` line while the Keep is still upgrading; remove `.btn.gold` and `.modal .btn.primary` from step 4's targets. VillageScene.ts:351: while tutorial.done is false use minCollectAmount as the bubble threshold. Step 7 stays (20 s per Shinobi). No new strings. Update the tutorial paragraph in src/presentation/CLAUDE.md.",
+   "fixCost": "S",
+   "touches": [
+    "UI",
+    "DOCS"
+   ],
+   "needsOwner": false
+  },
+  {
+   "id": "UIS-03",
+   "title": "Squad orders (formation and wave order) have no screen",
+   "severity": "high",
+   "verified": "read-in-code",
+   "evidence": "src/gameplay/control/battleSession.ts:105-121 has orderSquad, holdSquad and squadWaiting. `grep -rn \"orderSquad\\|holdSquad\\|squadWaiting\" src/presentation src/app.ts src/main.ts` returns 0 lines. docs/art/REQUESTS.md (2026-11-15) asks for the pickers and reports formation worth about 7 and wave order about 6 points of destruction on 80 lab raids at Keep 12; that figure is the document's and was not re-measured here.",
+   "whyItMatters": "It is tested mastery depth that no player can reach except by hand-placing every warrior, and it is the cheapest way to add a second decision to every raid.",
+   "proposedFix": "battleHud.ts, live mode: one row above the troop cards with two chip groups, Formation (together, pincer, file) and Wave order (tanks, rush, reserve), remembered in localStorage. With a formation armed, a tap on a point chip or ring calls session.orderSquad({ point, formation, order }); a 'Hold (N)' button shows while squadWaiting > 0. Hand placement, the hero and Smoke stay as they are. About 11 new strings in locales/en/ui.json. safeArea must include the new row; measure at 320x568 and 844x390. Orders are recorded as ordinary deployments, so replays and the server check are unchanged.",
+   "fixCost": "L",
+   "touches": [
+    "UI",
+    "I18N",
+    "DOCS"
+   ],
+   "needsOwner": false
+  },
+  {
+   "id": "UIS-04",
+   "title": "The objective chip is cut off on phones, does not move the camera, and dead-ends",
+   "severity": "medium",
+   "verified": "measured",
+   "evidence": "objective.save is 76 characters in English and 35 to 106 across the 50 languages, median 84 (measured, objective-lengths.cjs). The chip is one line with an ellipsis (styles.css:828-830, 1040-1055), about 20 to 40 characters at 320 to 390 px (inferred from CSS, no browser); the GUI batch record lists that truncation as intended. hud.ts:1328,1331: upgrade and save emit only `select`, and VillageScene.ts:167-173 pans only on `camera:focus`. hud.ts:1337-1338,1348: `builders` is a disabled chip. sim/objective.ts:20-28 has no kind for claimable tasks, Scroll tiers or achievements, the next Trial, an open rematch, a Bounty or War attacks, though updateBadges (hud.ts:571-602) already computes most of them.",
+   "whyItMatters": "It is the one line meant to tell a returning player what to do. In every language its most common waiting-state text loses the half that names the action, and with all Artisans busy it says only to wait.",
+   "proposedFix": "hud.ts renderObjective: emit `camera:focus` with `select`. For `save`, show the shortfall as cost chips plus the building name instead of the sentence, or let the chip wrap to two lines under 400 px. When the kind is `builders` or `none`, fall back in the HUD to the first of: a claimable Pass or Goals item (open that panel), rematchable() (open the log), a raid when battleArmy is non-empty, the next Trial tier (openTrials), each labelled with the existing rail.* text and a count. No sim change, no new strings.",
+   "fixCost": "M",
+   "touches": [
+    "UI"
+   ],
+   "needsOwner": false
+  },
+  {
+   "id": "UIS-05",
+   "title": "A stake can be declared without its downside on screen",
+   "severity": "medium",
+   "verified": "read-in-code",
+   "evidence": "battleHud.ts:386 puts the stake row outside the drawer; :391-408: a chip tap calls setStake and redraws, with no confirm or toast. The only explanation, stake.help ('miss it and carry none'), is inside `more` (:367), hidden while scoutOpen is false (:107, :374). raids.json stakes: 2 stars x1.1, 3 stars x1.25, a miss carries nothing. After Attack the row is removed and the live HUD shows no stake.",
+   "whyItMatters": "It is an opt-in bet of the whole raid's loot. The project's honesty rule asks that a consequence like that be visible when the choice is made.",
+   "proposedFix": "battleHud.ts stakeRow: on choosing a stake call this.toast(t('stake.help')) and open the drawer the first time on a device. In live mode mark the staked star in `.b-stars` (a ring on star N) and add stake.option to the panel's aria-label. No new strings.",
+   "fixCost": "S",
+   "touches": [
+    "UI"
+   ],
+   "needsOwner": false
+  },
+  {
+   "id": "UIS-06",
+   "title": "League promotion, Keep level, hero, tempering and Trials unlock have no moment; no haptics in the village",
+   "severity": "medium",
+   "verified": "read-in-code",
+   "evidence": "League: leagueFor is called only in openLeague (hud.ts:1978); nothing compares leagues after a raid. Keep level: VillageScene.ts:153-163 treats it like any building (float text, confetti, levelUp sound), and the only Keep-specific UI is the paid Keep Celebration offer (controller.ts:473, offers.json keep_pack). Hero at Keep 7: checkUnlocks scans gd.troops only (hud.ts:497) and hallUnlocks lists buildings only (sim/preview.ts:12-27). Tempering at Keep 5 shows only on a tower's sheet (hud.ts:1498,1621). Trials: a rail icon appears (hud.ts:536). Calendar, achievement and Scroll claims are a toast (dailyUi.ts:74, economyUi.ts:554,582). There is no haptic call in VillageScene.ts or hud.ts; resource pills change instantly (hud.ts:472) and the `collected` bus event has no listener (VillageScene.ts:718).",
+   "whyItMatters": "These are the milestones a player works days for. Battle and the daily chest have excellent feedback; the village's biggest moments pass with a toast, and a Keep level's first dialog can be a sale.",
+   "proposedFix": "Generalise ui/unlockCeremony.ts into a milestone card (title, icons, up to three lines, one button). Use it for a league change detected in App.open after finishBattle (league name and chest from ranks data), for a Keep level (from the `finished` list; reuse the unlockText lines of hallUnlocks(level - 1) plus hero and tempering lines) shown before any offer, and for the hero at Keep 7. Add haptic('success') when an upgrade finishes and on claims, and countUp on the resource pills when a raid or claim adds to them. Three to five new strings.",
+   "fixCost": "M",
+   "touches": [
+    "UI",
+    "I18N"
+   ],
+   "needsOwner": false
+  },
+  {
+   "id": "UIS-07",
+   "title": "The diversity carry is revealed only after the raid, first on the tutorial raid",
+   "severity": "medium",
+   "verified": "read-in-code",
+   "evidence": "battleHud.ts:689-690 shows carry.diversity ('Your squad carried {pct} of the loot') only on the result screen. raids.json diversity: minShare 0.85, fullAt 0.6; sim/carry.ts:27-48 has no Keep gate. Neither armyUi.ts nor the scout drawer calls diversityShare. The tutorial raid is all Shinobi (troops.json: the second warrior needs Dojo 2), so diversity is 0 and the first result screen a player sees reads 85 %.",
+   "whyItMatters": "The squad is chosen at training time, so a rule the player learns only after it has cost them reads as a penalty, not a decision.",
+   "proposedFix": "Show the share before it costs anything: one line in armyUi.ts drawStrip from armyDiversity/diversityShare of the ready army when it is under 100 %, and the same line in the scout drawer (battleHud.ts renderScout). One new string. Whether the rule should apply while only one role can be trained is a GAME THEORY question for docs/game-theory/REQUESTS.md.",
+   "fixCost": "S",
+   "touches": [
+    "UI",
+    "I18N"
+   ],
+   "needsOwner": false
+  },
+  {
+   "id": "UIS-08",
+   "title": "Side modes are hard to find: unlabeled rail icons, a shared icon, missing badges, a buried calendar",
+   "severity": "medium",
+   "verified": "read-in-code",
+   "evidence": "hud.ts:353-360: a rail button is an icon, a badge and an optional pill; its name is only in aria-label and title, which touch never shows. Trials uses icons.leaf (:374), the Honor pill's icon (:283). hud.ts:594: set('Events', 0) even while goalEventView has unpaid Bounty steps. No badge exists for Trials, or for the Battle log button (:321) when rematchable() is non-empty; the welcome-back button reads 'See defense replays' (:2074-2081). dailyUi.ts:188 appends the 28-day calendar after the odds table. The Honor pill, the way to leagues and leaderboards, is a div role=button with no label, tabindex or chevron (:283-284).",
+   "whyItMatters": "Trials, Bounty Hunt, settle-the-score and the calendar are the variety the game already has; a player who never finds them plays a narrower game.",
+   "proposedFix": "hud.ts updateRail: when a rail button first becomes visible, show its rail.* label beside it for a few seconds, once per device. Give Trials its own icon in ui/icons.ts. Events badge 1 while a goal event runs with an unpaid step and no attempt this occurrence. A badge on the log button equal to rematchable().length, and the welcome-back button labelled ui.settle_the_score_819ad8b9c9 when one is open. Move calendarSection above the odds table in dailyUi.ts. Make the Honor pill a button with an aria-label. No new strings.",
+   "fixCost": "S",
+   "touches": [
+    "UI"
+   ],
+   "needsOwner": false
+  },
+  {
+   "id": "UIS-09",
+   "title": "No behavioural tests or browser tooling for the HUD",
+   "severity": "medium",
+   "verified": "read-in-code",
+   "evidence": "`grep -rn \"new Hud(\\|new BattleHud(\\|new Tutorial(\" tests` returns nothing; the 7 files in tests/presentation/ui test pure helpers and read source text. package.json devDependencies hold no jsdom, happy-dom or playwright. tools/store/screenshots.mjs:37, tools/perf/lowend.mjs:14 and tools/i18n/smoke.mjs:13 require 'playwright', which is not installed here, so no layout claim in this report was rendered and none in the fix pass can be checked by `npm test`.",
+   "whyItMatters": "A large fix pass will change hud.ts (2,298 lines), battleHud.ts and tutorial.ts with nothing to catch a broken panel, tutorial step or result screen before a store build.",
+   "proposedFix": "Add happy-dom (or jsdom) as a devDependency and tests with `// @vitest-environment happy-dom` that build Hud, BattleHud and Tutorial on a real GameController with stub deps: open every panel, walk the nine tutorial steps, render the results dialog for raid, pending raid, Trial, practice, bounty and rematch, and assert the objective chip's action per kind. Add playwright as an optional devDependency with one script that measures the bottom bar, the objective chip and the battle rows at 320x568, 360x640, 390x844 and 844x390. Real-device checks stay an owner step.",
+   "fixCost": "M",
+   "touches": [
+    "UI",
+    "DOCS"
+   ],
+   "needsOwner": false
+  },
+  {
+   "id": "UIS-10",
+   "title": "Scout dead ends, and explanations that exist only as hover titles",
+   "severity": "low",
+   "verified": "read-in-code",
+   "evidence": "battleHud.ts:456-465: with no army the Attack button is disabled and reads 'Train warriors first', with no way to the Army panel except Home. :452: 'Next' is disabled without a reason when the fee cannot be paid. :498,523: a troop card's name and description, and the Smoke card's, exist only as `title`; :152 the same for the opponent's Honor line. There are 27 `title:` attributes across hud.ts (12), battleHud.ts (5), armyUi.ts (8) and economyUi.ts (2), and no long press in the battle HUD.",
+   "whyItMatters": "On a phone, the main target, a player cannot read what any of the 50 warrior cards does while choosing one.",
+   "proposedFix": "Add BattleHudDeps.onTrain (app.home() then hud.openTraining()) and make the no-army button call it. Toast the missing fee when 'Next' is tapped. On a long press of a troop card show `name: description` from data in the battle toast line. No new strings.",
+   "fixCost": "S",
+   "touches": [
+    "UI"
+   ],
+   "needsOwner": false
+  },
+  {
+   "id": "UIS-11",
+   "title": "The Trials panel offers one replay tier while saying 'any'",
+   "severity": "low",
+   "verified": "read-in-code",
+   "evidence": "hud.ts:2170 says 'You can replay any cleared tier for practice'; :2174 offers only 'Replay tier {best}'. deps.onTrial(tier) (app.ts:154) accepts any tier.",
+   "whyItMatters": "Cleared tiers are authored practice content the player is told about and cannot reach.",
+   "proposedFix": "hud.ts openTrials: a minus/plus stepper beside the replay button over tiers 1 to best, reusing ui.replay_tier_ba6a185124 and showing that tier's trialInfo. No new strings.",
+   "fixCost": "S",
+   "touches": [
+    "UI"
+   ],
+   "needsOwner": false
+  },
+  {
+   "id": "UIS-12",
+   "title": "Remaining text-layer leaks",
+   "severity": "low",
+   "verified": "measured",
+   "evidence": "Measured with locales/runtime.ts and the compiled Spanish pack: 53 of 57 English-source strings the UI builds translate; the other four are '+1', '+5' and 'Honor' (the same word in Spanish). Left over: hud.ts:701 concatenates ' · N to send' onto the net pill (sync.pending exists); battleHud.ts:134 passes 'Alliance War' raw into ui.vs_2d68ca8191 (Spanish output 'Alliance War contra X'); codexUi.ts:61 runs .replace('Needs ', 'needs ') on a translated string; app.ts:317,346 still pass 's' suffixes that the ICU strings ignore; messages.json has 'More honor bring tougher opponents'.",
+   "whyItMatters": "Small, but each is English showing in 49 languages or a grammar slip in the source language.",
+   "proposedFix": "hud.ts:701 use t('sync.pending', { n }); battleHud.ts:134 wrap the title in i18nLabel; codexUi.ts:61 drop the replace; delete the dead 's' arguments in app.ts; fix the typo in the English source and run i18n:sync (one re-keyed string to retranslate).",
+   "fixCost": "S",
+   "touches": [
+    "UI",
+    "I18N"
+   ],
+   "needsOwner": false
+  },
+  {
+   "id": "UIS-13",
+   "title": "No Escape, focus trap or hotkeys in battle on a keyboard",
+   "severity": "low",
+   "verified": "read-in-code",
+   "evidence": "There is no keydown handler in render/BattleScene.ts or ui/battleHud.ts. BattleHud.modal (battleHud.ts:743-759) has no Escape, focus move or Tab trap, unlike Hud.modal (hud.ts:2180-2257). The device targets name a Windows 11 laptop with Esc and Enter.",
+   "whyItMatters": "The laptop target plays battles with the mouse only, and the 'End the battle?' dialog cannot be dismissed from the keyboard.",
+   "proposedFix": "battleHud.ts: share Hud.modal's key handling for its dialogs; keys 1-9 pick troop cards, S picks Smoke, Esc opens 'End the battle?'. No strings.",
+   "fixCost": "S",
+   "touches": [
+    "UI"
+   ],
+   "needsOwner": false
+  }
+ ],
+ "geniusElements": [
+  {
+   "title": "The honest result screen",
+   "where": "src/presentation/ui/battleHud.ts:627-692, ui/feedback.ts (celebrate, countUp), sim/battle/closecall.ts",
+   "whyKeep": "It shows what was really banked and the explicit overflow, says 'confirming with the server' instead of guessing, shows close-call notes only when the finished simulation makes them true, and the count-up always ends on the real number. Stars slam one by one with sound and haptic, and reduced motion gets the end state at once. Add to it; do not change what it already says."
+  },
+  {
+   "title": "The scout drawer and Infiltration Point presentation",
+   "where": "battleHud.ts:345-437 (renderScout, pointChips), ui/chevronLayout.ts, render/BattleScene.ts fitEntry, snapToPoint and held-finger deploy, render/cameraFrame.ts",
+   "whyKeep": "One chip per point with the defenses covering its path, tap to highlight the path, tips already filtered to the army brought, edge chevrons that merge and never overlap, a camera fit measured against the HUD's free area, and near-miss taps snapping into the ring. It makes the entry point a readable decision on a 320 px phone."
+  },
+  {
+   "title": "Battle motion and feedback that only read the simulation",
+   "where": "render/motion.ts, render/battleMarks.ts, render/calloutLayout.ts, BattleScene.ts:996-1003 and 1113-1127",
+   "whyKeep": "Walk and attack poses, damage stages, turning barrels, smoke area and time left, jam and immunity rings, merged callouts, Keep-collapse slow motion and star slams are all pure functions of the battle state and never write back, so replays and the server's re-simulation stay exact while the fight reads clearly."
+  },
+  {
+   "title": "The source-text translation layer",
+   "where": "locales/runtime.ts (sourceText, messageRef, labelText, legacy-patterns.json), ui/i18n.ts (displayData proxy, listText, fmtPercent, pointLabel, generatedName)",
+   "whyKeep": "English produced by the simulation, saves and server is matched back to keyed messages at display time, so 50 languages work without changing canonical data or saves. Measured: 53 of 57 probed English strings translate in Spanish and the rest are identical words. The proxy localizes data on read and never mutates it."
+  },
+  {
+   "title": "The Army panel's redraw discipline",
+   "where": "src/presentation/ui/armyUi.ts:73-247 and 312-377, sim/armyView.ts",
+   "whyKeep": "A status strip of constant height, each part rebuilt only when its signature changes, nothing rebuilt under a finger, filters outside the rebuilt area, and the Jade top-up button on its own full-width row so a stray tap on +1 or Fill never lands on a purchase. Fill or Next, one-tap refill and 'Try' practice are all one screen."
+  },
+  {
+   "title": "Progressive disclosure with honest labels",
+   "where": "hud.ts:517-549 (updateRail), app.ts:102-128 and 179-232 (labels on every generated opponent), dailyUi.ts:149-161 (odds before opening), economyUi.ts:229-240",
+   "whyKeep": "A new clan sees two rail buttons and the rest arrive as the player reaches them. Every generated opponent says what it is (computer rival outpost, simulated raider, practice, generated bounty fortress). Chest odds are on screen before opening, the reveal is the same for every outcome, and Jade confirms outside the Store never show a real price."
+  },
+  {
+   "title": "Dialog, lazy-panel and toast plumbing",
+   "where": "hud.ts:2180-2297 (modal, closeTop, confirm), ui/lazyPanel.ts, ui/toastTime.ts, ui/feedback.ts removeWithExit, render/quality.ts",
+   "whyKeep": "Dialogs are named by their title, trap Tab, close only the top one on Escape and return focus; Android Back closes the top layer; a failed lazy load is forgotten and retried and a stale chunk offers the update; toast time scales with length; the quality profile downgrades itself on slow frames. This is the kind of work store reviewers and cheap phones punish when it is missing."
+  },
+  {
+   "title": "The first-raid coach line",
+   "where": "battleHud.ts:708-741",
+   "whyKeep": "One instruction at a time chosen from live battle state (tap a ring, that ring is full, they are under fire so pick Smoke, now tap on your warriors, what smoke does), sharing the single toast line and pulsing the control it means. It teaches Infiltration Points and Smoke in play without a modal or a scripted battle."
+  }
+ ],
+ "opportunities": [
+  {
+   "title": "Defense drill: test your own village",
+   "description": "Attack your own layout with your own army as a practice battle (nothing spent or won), and run a simulated raid against a copy of the village to watch as a replay. Both labelled as practice.",
+   "where": "src/app.ts (a practiceOwn and a drill method beside practice()), sim/defense.ts:43 villageToBase and raidVillage on structuredClone(state); buttons on the Keep sheet (hud.ts renderSheet) and in the Battle log",
+   "cost": "M",
+   "touches": [
+    "UI",
+    "I18N"
+   ],
+   "expectedEffect": "Layout and tempering get an immediate feedback loop; today the only way to see whether a base works is to wait to be raided. Base design becomes something to iterate on. Two to three new strings."
+  },
+  {
+   "title": "Speed button in live battles",
+   "description": "Show the replay's 1x/2x/4x button in live mode once every warrior is deployed. BattleSession.speed already scales live ticks and deployments keep their tick, so results and replays are unchanged.",
+   "where": "battleHud.ts:467-475 (renderBottom), control/battleSession.ts:75",
+   "cost": "S",
+   "touches": [
+    "UI"
+   ],
+   "expectedEffect": "Removes up to three minutes of watching per raid once the decisions are made, so more raids fit in a session. Reuses ui.speed_48c409f269; no new strings. Pin with one tactics replay test."
+  },
+  {
+   "title": "Try before you unlock",
+   "description": "A 'Try' button on locked warriors in the Codex that starts the existing practice battle with that warrior in the squad.",
+   "where": "ui/codexUi.ts rows, practiceArmy (sim/village.ts:1509), App.practice (app.ts:206)",
+   "cost": "S",
+   "touches": [
+    "UI"
+   ],
+   "expectedEffect": "Each of the 50 warriors becomes a reason to reach the next Keep or Dojo level, shown honestly as practice. Reuses ui.try_85d6c0718c; no new strings."
+  },
+  {
+   "title": "The hero in the village",
+   "description": "A hero card in the Army panel (level from the Keep, Rally text from data, next level at Keep N) and the warrior ceremony extended to the hero at Keep 7.",
+   "where": "ui/armyUi.ts armyPane, hud.ts checkUnlocks (:493-515), sim/heroes.ts heroAtKeep, battle.json heroes",
+   "cost": "S",
+   "touches": [
+    "UI"
+   ],
+   "expectedEffect": "The game's one live hero stops being a silent battle card and becomes a Keep 7 goal the player sees coming. Name and description already exist in every language."
+  },
+  {
+   "title": "Trials as a ladder",
+   "description": "Replace the single-tier dialog with a scrolling ladder: cleared tiers, the next tier, the tiers beyond with layout names, modifiers and rewards, and a replay stepper.",
+   "where": "hud.ts openTrials (:2147-2178), sim/trials.ts trialInfo and trialReward",
+   "cost": "M",
+   "touches": [
+    "UI"
+   ],
+   "expectedEffect": "The authored tiers read as a journey with visible rewards ahead instead of one row. Mostly existing strings (tier, layout, modifier and reward texts)."
+  },
+  {
+   "title": "Clan record card",
+   "description": "A profile card with lifetime numbers from state.stats (raids, stars, loot carried, defenses held), best Trial tier, league and a pinned best replay, shareable through the existing replay share.",
+   "where": "new ui/recordUi.ts opened from the Honor panel (hud.ts openLeague), sim/achievements.ts achievementValue, ui/growthUi.ts",
+   "cost": "M",
+   "touches": [
+    "UI",
+    "I18N"
+   ],
+   "expectedEffect": "An honest place to see and show mastery, which gives long-term players something to improve besides the Keep. About six new strings."
+  },
+  {
+   "title": "'What stopped you' line after a lost raid",
+   "description": "On a 0 or 1 star result, one line naming the defense type that felled the most warriors, with the matching scout tip.",
+   "where": "battleHud.ts showResults; a read-only tally from the battle's events. If events lack the source of a kill, GAME THEORY adds a feedback-only event like `ability` and `counter`, which stay out of the result hash (not verified here)",
+   "cost": "M",
+   "touches": [
+    "UI",
+    "I18N"
+   ],
+   "expectedEffect": "Turns a defeat into a next attempt with a plan, which is the honest form of 'one more try'. Two new strings."
+  },
+  {
+   "title": "Revenge on a real raider",
+   "description": "One ticketed counter-attack per real defense within a window, mirroring settle-the-score, with the same labels and limits.",
+   "where": "server/core/pvp.ts and docs/PROTOCOL.md (a ticket for a named opponent), sim/rematch.ts, hud.ts openLog",
+   "cost": "XL",
+   "touches": [
+    "SERVER",
+    "PROTOCOL",
+    "UI",
+    "I18N"
+   ],
+   "expectedEffect": "Gives online defense losses a response, the strongest social return hook in the genre. Needs backend design and contract tests; listed so it is sized, not as part of the first pass."
+  }
+ ],
+ "reportPath": "docs/audit/understand-2026-11-16/scripts/ui-surface.md",
+ "summary": "The surface is strong where it was polished: battles read clearly, the result screen is honest and satisfying, the scout drawer makes the entry point a real decision, and the text layer translates almost everything (53 of 57 probed strings in Spanish; the rest are identical words). No modal traps were found. The weak part is the seams between screens: the result dialog offers only \"Watch replay\" and \"Return home\", shows no league, task or Trial progress, and puts three to four taps between a win and the next raid. The tutorial blocks for 240 s at step 4 with its ring on the Jade \"Finish now\" button, and step 2 waits for a coin bubble that needs 576 s, so a guided player reaches the first raid after about 7 minutes. Squad orders are built and tested but have no screen, the hero has no village presence, and league promotion, Keep levels and tempering pass without a moment. The objective chip is cut to roughly 20 to 40 characters on phones while its most common waiting text runs 35 to 106 across the 50 languages, it does not pan the camera, and it dead-ends on \"Next Artisan free\". No browser was available (Playwright is not installed) and no test constructs the HUD, so every layout statement here is inferred from CSS and needs a rendered check. I would do three things first, all without new strings: give the result screen a progress block and next-action buttons (UIS-01), make tutorial step 4 non-blocking and take the ring off the Jade button (UIS-02), and fix the objective chip together with the stake explanation (UIS-04, UIS-05). Squad orders (UIS-03) is the largest gain in mastery depth but costs about 11 strings in 49 languages, so it belongs in the same pass only if translation is budgeted."
+}

@@ -1,0 +1,353 @@
+{
+ "problems": [
+  {
+   "id": "PLY-01",
+   "title": "The tutorial bubble covers the button it asks the player to press",
+   "severity": "high",
+   "verified": "reproduced",
+   "evidence": "360x640, step 3 (Keep): Keep sheet content is 457 px in a 384 px scroll box (styles.css:232-237 `.sheet { max-height: 60vh; overflow: auto }`); 'Upgrade to Lv 2' is at y 531..597, the sheet ends at 538, the bubble docked low (`.tut-bubble.low`, styles.css:552, z-index 40) is at 501..628. Hit test at the button centre returns the canvas. After a full swipe only 43 px of the button show and the price stays hidden. Step 6: ring on '+1' is 29..110 x 507..564, bubble 483..628. Landscape 844x390: bubble 202..642 x 251..378 covers the sheet's whole action row. Placement code: src/presentation/ui/tutorial.ts:243-251 (low whenever a sheet or dialog is open). Shots: docs/audit/understand-2026-11-16/scripts/playthrough/shots/f10-keep-sheet.jpg, f11-keep-sheet-scrolled.jpg, r15-army-panel.jpg, ls-04-placed-sheet.jpg (same folder).",
+   "proposedFix": "In tutorial.ts `place()`: find the step's target rect first, then put the bubble in the free band that does not overlap it (above an open sheet, compact form), and scroll the target into view inside `.sheet` / the modal body. In styles.css make `.sheet` a column with a sticky head and a sticky action row so Upgrade / Collect / Finish are always visible. Re-measure at 320x568, 360x640, 390x844, 844x390.",
+   "fixCost": "M",
+   "touches": [
+    "UI"
+   ],
+   "needsOwner": false,
+   "whyItMatters": "Step 3 of 9 on the most common phone size has no visible Upgrade button; a new player stalls two minutes in."
+  },
+  {
+   "id": "PLY-02",
+   "title": "Build panel goes stale: 'All your Village Artisans are busy' stays after they are free",
+   "severity": "high",
+   "verified": "reproduced",
+   "evidence": "Tutorial step 5 at 1 s per tap: Dojo (10 s) and Courtyard (22 s) occupy both artisans, the Kunai Tower card is disabled and carries the tutorial ring. 52 s later (93.7 s to 146.5 s) the top bar shows 2/2 free, the card is still disabled and a tap toasts the same error; switching tabs fixes it. Code: src/presentation/ui/hud.ts:1759-1797 `openShop` redraws only on a tab or pay-chip click; `shopGrid` (hud.ts:1847-1900) captures `q = placeQuote(...)` in the card's onclick closure. Shots: .../play/shots/r12-artisans-busy.jpg, r12b-still-busy.jpg, r12c-tap-disabled.jpg.",
+   "proposedFix": "Redraw the shop grid when the controller state changes (signature: free artisans, resources, counts per type, Keep level), and re-quote inside the click handler instead of using the captured quote. While artisans are busy show the time until one is free on the card.",
+   "fixCost": "S",
+   "touches": [
+    "UI"
+   ],
+   "needsOwner": false,
+   "whyItMatters": "A player moving at normal speed hits a glowing card that does nothing during the tutorial; it also happens any time the panel is left open."
+  },
+  {
+   "id": "PLY-03",
+   "title": "First session is gated by timers: about 14 minutes to the first raid without Jade, then one raid per 7 minutes",
+   "severity": "high",
+   "verified": "measured",
+   "evidence": "Human-paced run: Keep 2 needs 4 min or 2 Jade (step 4), 20 Shinobi need 6 min 36 s or 4 Jade (step 7); the ring sits on the gold Finish button both times. With 6 Jade: 'Attack!' at 4:37 and 46 taps (about 3:15 without the PLY-02 stall), first win at 6:48 and 65 taps. Every raid spends the whole army even on a 3-star win (Army 0/20 after raid 1), so raid 2 started at 11:37 after 3 more Jade. Keep 5 (generated village): one 3-minute raid, then 59 min 26 s or 'Finish 25'. Shots: .../play/shots/f12-keep-upgrading.jpg, r16-training.jpg, r17-finish-training-confirm.jpg, k5-army-queued.jpg.",
+   "proposedFix": "Data only, for the first session: Keep 1 to 2 build time 4 min to about 30 s and Shinobi training at Dojo 1 from 20 s to about 5 s (src/gameplay/data buildings/troops json), or have step 6 train 8 Shinobi and the Sensei gift the rest. Keep the 'wait or Jade' lesson for the Keep 3 upgrade (10 min), where the player has something else to do. Coordinate the wider retrain pacing with the pacing investigator.",
+   "fixCost": "M",
+   "touches": [
+    "DATA_ONLY",
+    "BALANCE_GATES",
+    "DOCS"
+   ],
+   "needsOwner": false,
+   "whyItMatters": "The core activity is first reached after two paywalled waits; a reviewer and a new player both meet 'pay or wait' before 'play'."
+  },
+  {
+   "id": "PLY-04",
+   "title": "Storage is full after the first raid: the tutorial's own chest warns of loss and raids 2 and 3 throw loot away",
+   "severity": "high",
+   "verified": "reproduced",
+   "evidence": "Keep 2 caps both storages at 4,000. Raid 1 banked 2,140 / 2,130 (3,391 / 3,630). The final tutorial step opens the daily chest, which answers 'Storage is nearly full ... anything that does not fit is lost'. Raid 2: 'Did not fit in your storage: 1,833'. Raid 3: 'Did not fit in your storage: 1,258'. Nothing on the scouting screen warns. The objective chip says 'Your daily rewards are ready' at 4,000/4K because src/gameplay/sim/objective.ts:83 returns the chest first. Shots: .../play/shots/r37-chest-open-0.4s.jpg, r60-raid2-result.jpg, r70-raid3-result.jpg, r61-home-after-raid2.jpg.",
+   "proposedFix": "objective.ts: when a storage is at 90% or more and an affordable upgrade exists, return that upgrade before the chest. battleHud scouting: a chip 'Coin storage full: loot will not fit' when banked loot cannot fit. Tutorial end text: point at the Keep upgrade first, chest second. Optionally raise Keep 1-2 storage in data so three first raids fit.",
+   "fixCost": "M",
+   "touches": [
+    "UI",
+    "I18N",
+    "DATA_ONLY",
+    "BALANCE_GATES"
+   ],
+   "needsOwner": false,
+   "whyItMatters": "The first three rewards of the game are each partly lost or blocked, right when the player should feel rich."
+  },
+  {
+   "id": "PLY-05",
+   "title": "Battles are tiny and passive on a phone: fixed zoom 0.14 for the whole fight",
+   "severity": "high",
+   "verified": "measured",
+   "evidence": "`window.tk` battle camera zoom read 0.14 at tick 29, 330, 509 and 692 in Keep 5 and Keep 10 raids and in landscape. At 360x640 the island is about 340x190 px, Shinobi 4-5 px; sky, sea and HUD take more than half the screen. Input phase 15-50 s (hold streams 10 warriors in 1.5 s), then 100-160 s of watching: battle lengths 132, 154, 119, 183, 162 s. No follow camera and no speed control; only 'End battle'. Shots: .../play/shots/r27-D-full.jpg, k5-raid-mid.jpg, k10-raid-deployed.jpg, ls-21-battle.jpg.",
+   "proposedFix": "BattleScene: once the player lifts the finger after a deployment and no card with warriors left is selected, glide to an action frame (box around live warriors and their targets, zoom clamped about 0.3-0.6); selecting a card or touching an edge chevron glides back to the entry fit. Add a 1x/2x toggle for the watching phase (render-side tick pacing only; the sim and replays stay tick-exact). Read-only on battle state, as render/motion.ts already is.",
+   "fixCost": "L",
+   "touches": [
+    "UI",
+    "I18N"
+   ],
+   "needsOwner": false,
+   "whyItMatters": "The raid is the product; at this size the art, abilities and callouts that exist cannot be seen, and two minutes of dots kills the wish for another raid."
+  },
+  {
+   "id": "PLY-06",
+   "title": "'Skip tutorial' is one tap with no confirm and lies over the Army button when the bubble is docked low",
+   "severity": "high",
+   "verified": "reproduced",
+   "evidence": "src/presentation/ui/tutorial.ts:177-178: `skip.addEventListener('click', () => this.go(STEPS.length))`. In step 6 ('Open the Army panel') with a building sheet open the skip link is at 71,573 89x44, over Battle log and Army (70..178 x 578..628). A tap on the Army button's position ended the tutorial twice in my runs; the age dialog then says 'You finished the training.' Shots: .../play/shots/f24-tower-placed.jpg, f25-army-panel.jpg, f26-after-skip.jpg.",
+   "proposedFix": "Ask once ('Skip the training? You can replay it from Settings') through Hud.modal; move the skip link to the bubble's top corner; never dock the bubble over the bottom bar (see PLY-01).",
+   "fixCost": "S",
+   "touches": [
+    "UI",
+    "I18N"
+   ],
+   "needsOwner": false,
+   "whyItMatters": "An accidental skip removes the first-raid coaching for good unless the player finds Settings."
+  },
+  {
+   "id": "PLY-07",
+   "title": "The 'computer rival' / 'practice' label is folded away by default on phones",
+   "severity": "medium",
+   "verified": "reproduced",
+   "evidence": "src/presentation/ui/battleHud.ts:182-190 `cardOpenByDefault()` returns `innerWidth > 400 && innerHeight > 480`, so at 360x640, 390x844 and 844x390 the scouting header shows only 'Iron Tide · Silent Harbor Lv 1 ▸'. 'Iron Tide outpost (computer rival, offline)' and 'Practice battle · nothing is spent or won' appear after a tap. Shots: .../play/shots/r20-attack-tapped.jpg (folded), r22-scout-open.jpg (open), r52-try.jpg, r53-try-header.jpg.",
+   "proposedFix": "Keep a short tag on the folded line (reuse the existing kind text shortened: 'Computer rival', 'Practice', 'Shadow Trial'), always visible. Check 320 px width.",
+   "fixCost": "S",
+   "touches": [
+    "UI",
+    "I18N"
+   ],
+   "needsOwner": false,
+   "whyItMatters": "The project's Honesty invariant says generated opponents are always labelled; on nearly every phone the label needs a tap."
+  },
+  {
+   "id": "PLY-08",
+   "title": "Internal id on the result screen: 'Warriors used: 1 shadow_captain'",
+   "severity": "medium",
+   "verified": "reproduced",
+   "evidence": "Keep 10 raid result: 'Warriors used: 1 shadow_captain, 105 Moonblade Master, 75 Chain-Sickle Reaper, ...'. src/presentation/ui/battleHud.ts:640 uses `localizedData(...).troops[t]?.name ?? t`; the hero is not in `troops`. The same fallback is at armyUi.ts:65 and hud.ts:2054. Shot: .../play/shots/k10-raid-result.jpg.",
+   "proposedFix": "One shared `unitName(id)` in the UI that looks in troops, then heroes, then abilities; use it at the three sites; add a presentation test that a result with the hero in `used` shows no snake_case id.",
+   "fixCost": "S",
+   "touches": [
+    "UI"
+   ],
+   "needsOwner": false,
+   "whyItMatters": "Every raid from the Keep level that gives the hero shows a raw id, in all 50 languages."
+  },
+  {
+   "id": "PLY-09",
+   "title": "The browser-storage banner overlaps the first screen and hides the Keep",
+   "severity": "medium",
+   "verified": "reproduced",
+   "evidence": "Normal URL, fresh storage. 360x640: banner at 24..284 x 430..535 sits on the Keep that step 3 tells the player to tap; the ring surrounds the banner. 844x390: the Sensei bubble lies on the banner, 'I am ready' (490,193) directly above 'Keep it safe' (467,232). Raised in src/main.ts:760-775 during boot. Shots: .../play/shots/f08-find-keep.jpg, f09-banner-dismissed.jpg, ls-01-first.jpg.",
+   "proposedFix": "main.ts: hold `tk-banner-persist` until `tutorial.done` (the village has nothing to lose in the first minutes), and show it in the top banner slot, not mid-screen.",
+   "fixCost": "S",
+   "touches": [
+    "UI"
+   ],
+   "needsOwner": false,
+   "whyItMatters": "Two overlapping boxes on the first frame is what a store reviewer screenshots."
+  },
+  {
+   "id": "PLY-10",
+   "title": "Tutorial ring is drawn through an open building sheet; the sheet's close X ends up under the rail toggle",
+   "severity": "medium",
+   "verified": "reproduced",
+   "evidence": "tutorial.ts:233-235 `if (!r && onMap && !modalOpen)` checks only `.modal-backdrop`, not `#hud .sheet`. Step 3 with the Mint sheet open: the Keep's map ring covers the Mint's 'Upgrade to Lv 2' while the text says 'tap the castle, then Upgrade'. After Keep 2 the sheet keeps its scroll offset, the X is at 294,131 and the rail fold toggle (306,152 36x36) receives the tap. Shots: .../play/shots/f05-mint-placed.jpg, f07-collect0.jpg, f12-keep-upgrading.jpg, r11-after-keep-sheet-close.jpg.",
+   "proposedFix": "Hide the map ring while an open sheet covers the building (or ring the sheet's close button when the step's building is another one). Sticky sheet head (with PLY-01), reset the sheet's scrollTop when its content is rebuilt, and hide or lower the side rail while a sheet is open.",
+   "fixCost": "S",
+   "touches": [
+    "UI"
+   ],
+   "needsOwner": false,
+   "whyItMatters": "The ring invites spending on the wrong upgrade and the close button is not reachable."
+  },
+  {
+   "id": "PLY-11",
+   "title": "The tutorial's forced first raid silently ends the 24-hour new-player shield",
+   "severity": "medium",
+   "verified": "reproduced",
+   "evidence": "Shield chip '23h 56m' before the raid, absent after (shots .../play/shots/r19-step8-raid.jpg vs r35-home-after-raid-3.5s.jpg). src/gameplay/sim/village.ts:1822-1823 'Attacking ends your shield'; `newPlayerShieldHours: 24` in src/gameplay/data/raids.json:2. No string in locales/en/ui.json or messages.json tells the player that attacking ends a shield.",
+   "proposedFix": "UI-only first: say it in the tutorial's last bubble and add a one-line note on the scouting screen while a shield is running ('Attacking ends your shield (Xh left)'). A rule change that keeps the shield through the tutorial raid would touch the server-replayed economy and needs the backend owner.",
+   "fixCost": "S",
+   "touches": [
+    "UI",
+    "I18N"
+   ],
+   "needsOwner": false,
+   "whyItMatters": "A day-one player comes back to a raided village five minutes of play after being promised 24 hours of protection."
+  },
+  {
+   "id": "PLY-12",
+   "title": "Dead seconds and silent milestones in the first minutes",
+   "severity": "medium",
+   "verified": "reproduced",
+   "evidence": "Mint finishes at 10 s, first coin 18 s later (200/hour; collector starts `stored: 0`, village.ts:314 and 2103): five Collect taps answered 'Nothing to collect yet.' Keep 2: the sheet badge changes to 'Level 2', nothing else. Dojo sheet shows 'Level 2: 440 HP +60' and not that it unlocks Kunai Adept and Saboteur. News 'Messages this session' stores five 'Nothing to collect yet.' Shots: .../play/shots/r10-collect-zero.jpg, r01-keep2-1.2s.jpg, r46-dojo-sheet.jpg, e1-news.jpg.",
+   "proposedFix": "Tutorial step 2: finish on the Mint being built and show the first coin bubble as soon as 1 coin exists, with a countdown in the bubble (UI only). Keep level-up: a card reusing ui/unlockCeremony.ts fed by the existing 'What Keep Lv N unlocks' list. Dojo sheet next-level row: 'Unlocks: <warrior names>' from `troopUnlock`. Keep empty-collect toasts out of the News log.",
+   "fixCost": "M",
+   "touches": [
+    "UI",
+    "I18N"
+   ],
+   "needsOwner": false,
+   "whyItMatters": "The first minute should be the tightest; the biggest early milestone passes without a moment."
+  },
+  {
+   "id": "PLY-13",
+   "title": "Result screen ends in 'Return home' and shows contradictory lines",
+   "severity": "medium",
+   "verified": "reproduced",
+   "evidence": "Buttons are only 'Watch replay' and 'Return home' (battleHud.ts:667-672). Defeat with 'Loot: None' still prints 'Your squad carried 85% of the loot.' Stake miss prints 'no loot came home' directly under 'Loot: 13,333 / 13,333' (the league bonus). Perfect raid shows '100%' twice. No league, Season Scroll, event or goal progress. Shots: .../play/shots/r33-result-3s.jpg, k10-raid-result.jpg, ls-23-ended-result.jpg.",
+   "proposedFix": "Add 'Train this army again' (the Army panel's 'Refill: Last raid' command) beside Return home. Add up to three progress rows from existing sims: honor to the next league, Season Scroll tasks this raid moved, event ladder. Hide the carry note when nothing was carried; label the loot line 'League bonus' on a stake miss.",
+   "fixCost": "M",
+   "touches": [
+    "UI",
+    "I18N"
+   ],
+   "needsOwner": false,
+   "whyItMatters": "The moment of highest attention offers no next step and no visible progress."
+  },
+  {
+   "id": "PLY-14",
+   "title": "Small polish a reviewer would notice",
+   "severity": "low",
+   "verified": "reproduced",
+   "evidence": "Console warning on every boot, dev and production: 'Capacitor plugin \"TkAge\" already registered' (src/backend/platform/auth.ts:53 and ageRegulatory.ts:35 both call registerPlugin('TkAge')); Canvas2D readback warning at render/quality.ts:160. Web Store panel: eight cards all 'Not available', explanation last (e1-store.jpg). Copy: 'honor above 400 are halved', 'More honor bring tougher opponents' (k5p-honor.jpg); 'build another Firework Mortar' with 0 built (r03-army-panel.jpg). Training strip name cut to 'S…' (r16-training.jpg). Landscape Army panel shows no warrior row on open (lsp-army.jpg). Edge labels 'E · 15' / 'B · 15' cut by the screen edge (r24-battle-2.7s.jpg). All under .../play/shots/.",
+   "proposedFix": "Register TkAge once and share it; pass `willReadFrequently` in quality.ts. Web store: one explanatory card first, packs collapsed. Fix the three English strings and sync the worksheets. Give the training-strip name `min-width` or drop the per-unit timer at 360 px. Landscape Army: let the header scroll with the list under 480 px height. Inset edge labels by the safe area.",
+   "fixCost": "M",
+   "touches": [
+    "UI",
+    "I18N"
+   ],
+   "needsOwner": false,
+   "whyItMatters": "None blocks play; together they separate 'finished' from 'nearly finished'."
+  }
+ ],
+ "geniusElements": [
+  {
+   "title": "Honest, teaching result screen",
+   "where": "src/presentation/ui/battleHud.ts:640-665 (result body), shots r70-raid3-result.jpg, r60-raid2-result.jpg",
+   "whyKeep": "It shows banked loot, the exact amount that did not fit, the stake outcome, the squad carry percentage with the reason ('Squads of more roles carry more'), and a near-miss line only when true ('Only 2 buildings stood between you and 3 stars'). Each line teaches a mechanic at the moment it mattered. Add to it; do not replace it."
+  },
+  {
+   "title": "Daily chest with exact odds and a streak that never resets",
+   "where": "Daily panel (src/presentation/ui/dailyUi.ts, sim/daily.ts), shot r36-after-finish.jpg",
+   "whyKeep": "Every chest outcome is listed with its chance and amount, sized to Keep and streak day; a missed day costs one step and one free skip a week covers it; the 28-day calendar is 'never random and never sold'. A return hook that survives any store review."
+  },
+  {
+   "title": "'Try' practice battles",
+   "where": "Army panel Train tab, 'Try' on every warrior row; shots r52-try.jpg, r53-try-header.jpg",
+   "whyKeep": "A free battle with 20 of any warrior against a generated base, labelled 'Practice battle · nothing is spent or won'. It is the one thing to play while timers run and a risk-free way to learn 50 classes."
+  },
+  {
+   "title": "Infiltration Points, squad space and the stake",
+   "where": "Scouting and battle HUD (battleHud.ts, BattleScene.fitEntry); shots r22-scout-open.jpg, k10-raid-scout.jpg",
+   "whyKeep": "Each entry point holds a fixed space, the scout drawer counts the defenses covering each path, and the player may declare 2 or 3 stars for x1.1 or x1.25 loot and lose it all on a miss. That is a real decision before every raid. Hold-to-stream deployment (10 warriors in 1.5 s) keeps it quick."
+  },
+  {
+   "title": "Warrior unlock ceremony and the 50-class Codex",
+   "where": "src/presentation/ui/unlockCeremony.ts, hud.ts:491-516, codexUi.ts; shots r48-dojo-done.jpg, k10-codex.jpg",
+   "whyKeep": "'New warriors unlocked!' with badges and Train / Later waits for a calm moment; the Codex names the next class and exactly what it needs ('Clan Keep 11 + Training Dojo 10'). Long-term collection goal with no gacha."
+  },
+  {
+   "title": "Welcome-back report with defense replays",
+   "where": "Return modal after time away; shot k10-after-8h-b.jpg",
+   "whyKeep": "One screen says how long, what the collectors made, who raided ('(simulated raider)' in the name), stars, percent, what was taken and the honor change, with 'See defense replays'. Honest and gives a reason to fix the base."
+  },
+  {
+   "title": "Army panel shortcuts",
+   "where": "src/presentation/ui/armyUi.ts; shots r51-train-tab-3-warriors.jpg, k5-army-tab.jpg",
+   "whyKeep": "Suggested army, 'Refill in one tap: Last raid', Fill N, +5, Save this army, constant-height status strip. Retraining a 180-space army is one tap."
+  },
+  {
+   "title": "Art, HUD finish and technical cleanliness",
+   "where": "Village and panels at 360x640 and 844x390; shots k5-village.jpg, k10-village.jpg, k5p-*.jpg, lsp-*.jpg",
+   "whyKeep": "The painted isometric village reads at 360 px; my overflow audit found no clipped or off-screen text and no raw keys in 30+ panel views (one id leak, PLY-08); zero console errors or failed requests in about 40 minutes; production boot 1.4-4.0 s in headless Chromium; every generated opponent carries a label once unfolded."
+  }
+ ],
+ "opportunities": [
+  {
+   "title": "Something to play while the army trains",
+   "description": "When the army is empty, the Attack button and the result screen offer the three things that already exist and need few or no warriors: the next Shadow Trial tier, the running Bounty fortress, and a 'Try' practice battle, with the retrain countdown beside them.",
+   "where": "hud.ts bottom bar and objective chip, battleHud result modal, app.ts trial / bounty / practice entry points",
+   "cost": "M",
+   "touches": [
+    "UI",
+    "I18N"
+   ],
+   "expectedEffect": "Sessions continue past the first raid without paying Jade; Trials and Bounty get found."
+  },
+  {
+   "title": "Sensei's path: ten guided objectives after the tutorial",
+   "description": "Extend the next-objective chip into a short visible ladder for the first two sessions: upgrade the Dojo, train a Saboteur, jam a tower, clear an obstacle, join the Training Alliance, clear Trial 1, try a 2-star stake, reach Keep 3, attack the Bounty, open chest day 2. Fixed small rewards, shown before they are earned.",
+   "where": "src/gameplay/sim/objective.ts, Goals panel, hud objective chip",
+   "cost": "M",
+   "touches": [
+    "UI",
+    "I18N",
+    "DATA_ONLY",
+    "SAVE_VERSION"
+   ],
+   "expectedEffect": "Replaces 'Your daily rewards are ready' as the only guidance; walks a new player through every system the rail reveals at Keep 2."
+  },
+  {
+   "title": "Keep level-up moment",
+   "description": "A card for each Keep level reusing the unlock ceremony: new buildings, new caps and the next goal, taken from the existing 'What Keep Lv N unlocks' list, with 'Build now'.",
+   "where": "ui/unlockCeremony.ts, hud.ts Keep sheet unlock list",
+   "cost": "S",
+   "touches": [
+    "UI",
+    "I18N"
+   ],
+   "expectedEffect": "Fifteen milestones become fifteen celebrations and each one points at something new to do."
+  },
+  {
+   "title": "Shadow Trials catch-up",
+   "description": "A Keep 5 village starts at tier 1 (Keep 1 difficulty, 500 / 500 reward against 200,000 stored). Offer 'Start at the tier for your Keep' that pays the skipped first-clear rewards at once, or auto-clear tiers far below the Keep.",
+   "where": "sim trial rules and the Trials panel; shot k5-trials.jpg",
+   "cost": "M",
+   "touches": [
+    "UI",
+    "I18N",
+    "PLAYER_COMMANDS",
+    "SERVER",
+    "DATA_ONLY"
+   ],
+   "expectedEffect": "The endless mode becomes a challenge on the first visit instead of a chore."
+  },
+  {
+   "title": "Result-screen progress strip",
+   "description": "Three thin bars under the loot: honor to the next league (the Honor panel already computes '969 more honor to reach Obsidian League'), Season Scroll tasks this raid advanced, event ladder. All numbers already exist.",
+   "where": "battleHud.ts result modal, rating / pass / event sims",
+   "cost": "M",
+   "touches": [
+    "UI",
+    "I18N"
+   ],
+   "expectedEffect": "Every raid visibly moves three long goals; honest reason for one more."
+  },
+  {
+   "title": "First-use coach line per warrior",
+   "description": "The first time a class is brought to a raid, the existing one-line battle coach shows its Codex ability line ('Sabotage: jams the nearest working defense for 6 seconds') when its card is selected.",
+   "where": "BattleHudDeps.coach in app.ts, Codex text in gameplay data",
+   "cost": "S",
+   "touches": [
+    "UI"
+   ],
+   "expectedEffect": "Fifty classes get taught in play, not in a list; mastery depth becomes discoverable."
+  },
+  {
+   "title": "Rival of the day",
+   "description": "The five rival clans already have leaders and bios in the scout drawer ('Old Gorō builds thick walls and dares you to break them'). Give one a signature fortress each day with a best-score ladder, built on the Bounty fortress system and labelled generated.",
+   "where": "Events panel, bounty code path, rival bios in gameplay data",
+   "cost": "L",
+   "touches": [
+    "UI",
+    "I18N",
+    "DATA_ONLY",
+    "PLAYER_COMMANDS",
+    "SERVER"
+   ],
+   "expectedEffect": "A daily reason to play a battle, with character, that is not a collect button."
+  },
+  {
+   "title": "Battle speed toggle",
+   "description": "1x / 2x during the watching phase, off while a card with warriors is selected. Render-side pacing of the same ticks, so results and replays do not change.",
+   "where": "BattleScene tick pacing, battle HUD",
+   "cost": "M",
+   "touches": [
+    "UI",
+    "I18N"
+   ],
+   "expectedEffect": "Cuts the 100-160 s passive tail of each raid roughly in half for players who want the next one."
+  }
+ ],
+ "reportPath": "docs/audit/understand-2026-11-16/scripts/playthroughthrough.md",
+ "summary": "The game boots and runs cleanly: production boot 1.4-4.0 s in headless Chromium, WebGL fine, zero console errors or failed requests in about 40 minutes across first run, Keep 5, Keep 10 and landscape (two harmless warnings per boot). Art, panels and the honest result, chest and welcome-back screens are release quality, and 30+ panel views had no clipped text and one leaked id ('shadow_captain' on the result screen). The first ten minutes are the weak part: at 360x640 the tutorial bubble covers the Keep's Upgrade button and the Army '+1' it points at, the Build panel stays on 'All your Village Artisans are busy' after they are free, and 'Skip tutorial' is a no-confirm link lying over the Army button (I skipped by accident twice). First raid came at 4:37 and first win at 6:48 with 6 Jade spent, about 14 minutes without Jade; every raid spends the whole army, so the next is 7 minutes away at Keep 2 and an hour away at Keep 5. Storage is full after raid 1: the tutorial's own chest warns of loss and raids 2 and 3 discarded 1,833 coins and 1,258 provisions. Battles stay at zoom 0.14, so 139-214 warriors fight in a 340x190 px diamond for 100-160 passive seconds. I felt some pull from the stake and the near-miss line, but timers, full storage and 'Return home' stopped it. Mid-game villages were generated, not grown, and software GL frame rates are not device results. First three changes: (1) fix the tutorial overlay and the stale Build panel (PLY-01, 02, 06, 09, 10); (2) shorten the two first-session timers and stop the first-session storage overflow (PLY-03, 04); (3) add an action camera with a 2x toggle and a result screen that leads to the next thing to play (PLY-05, 13)."
+}

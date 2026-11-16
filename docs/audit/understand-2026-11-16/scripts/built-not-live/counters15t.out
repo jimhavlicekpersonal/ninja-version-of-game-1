@@ -1,0 +1,16 @@
+whirling_blade_tower   K15 n=18 base 38.3 body 33.4 with 32.9 | body-only delta -4.8 +- 2.6 | effect delta -0.5 +- 0.3 | events/fight {}
+rain_barrel_tower      K15 n=18 base 37.3 body 36.8 with 36.8 | body-only delta -0.5 +- 2.5 | effect delta 0.0 +- 0.0 | events/fight {"grounded":3.8,"doused":4.3}
+listening_jars         K15 n=18 base 36.9 body 39.8 with 39.8 | body-only delta 2.9 +- 2.4 | effect delta 0.0 +- 0.0 | events/fight {"repair":0.8,"surfaced":2.4}
+living_bamboo_wall     K15 n=18 base 32.9 body 33.3 with 31.8 | body-only delta 0.4 +- 1.4 | effect delta -1.5 +- 0.8 | events/fight {}
+straw_scarecrow        K15 n=18 base 34.2 body 31.8 with 31.2 | body-only delta -2.4 +- 2.5 | effect delta -0.6 +- 0.7 | events/fight {"grounded":4.6}
+mirror_screen          K15 n=18 base 51.9 body 54.8 with 52.4 | body-only delta 2.9 +- 3.5 | effect delta -2.4 +- 0.7 | events/fight {"reflect":72.2}
+sand_bucket_post       K15 n=18 base 34.8 body 36.5 with 36.5 | body-only delta 1.7 +- 2.6 | effect delta 0.0 +- 0.0 | events/fight {"grounded":3.7,"defused":0.2}
+discipline_banner      K15 n=18 base 43.3 body 41.8 with 41.7 | body-only delta -1.5 +- 3.8 | effect delta -0.1 +- 0.1 | events/fight {}
+spotter_perch          K15 n=18 base 44.7 body 41.6 with 41.9 | body-only delta -3.1 +- 2.7 | effect delta 0.4 +- 0.4 | events/fight {}
+steam_vent             K15 n=18 base 52.8 body 49.9 with 47.7 | body-only delta -2.9 +- 2.9 | effect delta -2.2 +- 0.9 | events/fight {"lit":0.2}
+sleep_dart_tower       K15 n=18 base 44.1 body 39.2 with 39.2 | body-only delta -4.9 +- 2.7 | effect delta 0.0 +- 0.0 | events/fight {"sleep":9.2}
+rolling_log_chute      K15 n=18 base 46.7 body 47.4 with 45.4 | body-only delta 0.7 +- 4.5 | effect delta -2.0 +- 1.4 | events/fight {}
+moonlit_gravel         K15 n=18 base 35.3 body 34.6 with 34.6 | body-only delta -0.8 +- 2.3 | effect delta 0.0 +- 0.0 | events/fight {"stunned":1.2}
+ink_seal_post          K15 n=18 base 31.8 body 32.4 with 32.4 | body-only delta 0.6 +- 3.1 | effect delta 0.0 +- 0.0 | events/fight {"grounded":5.9,"sealed":3.8}
+lightning_rod_pagoda   K15 n=18 base 39.8 body 37.7 with 36.2 | body-only delta -2.1 +- 4.6 | effect delta -1.5 +- 0.5 | events/fight {"absorbed":604.7,"grounded":5.8,"discharge":1.1}
+seconds 126.1
