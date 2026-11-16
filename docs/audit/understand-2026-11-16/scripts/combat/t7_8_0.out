@@ -1,0 +1,15 @@
+Keep 8 baseline bot mix: 65.6%  (10 battles per cell: 5 layouts x 2 sides, bot plan, hero)
+hedgehog_roller      Shinobi              K1 L8 n=60  with20%=67.2  kitOff=  -   kitValue=  - 
+beetle_brute         Armored Guardian     K2 L8 n=12  with20%=57.1  kitOff=  -   kitValue=  - 
+mole_digger          Tunnel Runner        K4 L8 n=30  with20%=63.3  kitOff=  -   kitValue=  - 
+twin_fang_dancer     Twin-Fang Dancer     K4 L6 n=60  with20%=67.9  kitOff=66.1  kitValue=1.8
+shuriken_storm       Shuriken Storm       K4 L6 n=60  with20%=72.8  kitOff=72.8  kitValue=0.0
+iron_monk            Iron Monk            K4 L6 n=12  with20%=62.6  kitOff=61.5  kitValue=1.1
+trap_breaker         Trap Breaker         K4 L6 n=30  with20%=58.9  kitOff=58.3  kitValue=0.6
+wall_climber         Wall Climber         K5 L6 n=30  with20%=55.3  kitOff=55.3  kitValue=0.0
+crane_glider         Crane Glider         K5 L6 n=15  with20%=60.0  kitOff=60.0  kitValue=0.0
+herbalist            Herbalist            K2 L8 n=20  with20%=54.4  kitOff=62.3  kitValue=-7.9
+mist_weaver          Mist Weaver          K8 L4 n=20  with20%=51.2  kitOff=61.4  kitValue=-10.2
+fire_monk            Fire Monk            K6 L6 n=20  with20%=59.5  kitOff=61.2  kitValue=-1.7
+hawk_tamer           Hawk Tamer           K6 L6 n=20  with20%=67.9  kitOff=58.6  kitValue=9.3
+mirage_twin          Mirage Twin          K6 L6 n=30  with20%=71.3  kitOff=69.3  kitValue=2.0

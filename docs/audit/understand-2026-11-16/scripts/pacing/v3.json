@@ -1,0 +1,10 @@
+[
+ {"name":"baseline","patch":{}},
+ {"name":"V1 cap24","patch":{"economy.collectorHoursCap":24}},
+ {"name":"V2 cap24 + shields 16/20/24","patch":{"economy.collectorHoursCap":24,"raids.shieldTiers.0.hours":16,"raids.shieldTiers.1.hours":20,"raids.shieldTiers.2.hours":24}},
+ {"name":"V2b shields 16/20/24 only","patch":{"raids.shieldTiers.0.hours":16,"raids.shieldTiers.1.hours":20,"raids.shieldTiers.2.hours":24}},
+ {"name":"V3 cap24 + shields + uncollected .25","patch":{"economy.collectorHoursCap":24,"economy.raidableUncollectedFraction":0.25,"raids.shieldTiers.0.hours":16,"raids.shieldTiers.1.hours":20,"raids.shieldTiers.2.hours":24}},
+ {"name":"V4 cap24 + lootcaps x0.6 K5-K8","patch":{"economy.collectorHoursCap":24,"raids.storageLootCapByHall.4":36000,"raids.storageLootCapByHall.5":78000,"raids.storageLootCapByHall.6":96000,"raids.storageLootCapByHall.7":132000}},
+ {"name":"V5 cap24 + shields + lootcaps","patch":{"economy.collectorHoursCap":24,"raids.shieldTiers.0.hours":16,"raids.shieldTiers.1.hours":20,"raids.shieldTiers.2.hours":24,"raids.storageLootCapByHall.4":36000,"raids.storageLootCapByHall.5":78000,"raids.storageLootCapByHall.6":96000,"raids.storageLootCapByHall.7":132000}},
+ {"name":"V6 cap16 + shields","patch":{"economy.collectorHoursCap":16,"raids.shieldTiers.0.hours":16,"raids.shieldTiers.1.hours":20,"raids.shieldTiers.2.hours":24}}
+]

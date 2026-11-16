@@ -1,0 +1,5 @@
+[
+ {"name":"baseline + hireBuilders","patch":{}},
+ {"name":"cap24 + hireBuilders","patch":{"economy.collectorHoursCap":24}},
+ {"name":"cap24 + shields + hireBuilders","patch":{"economy.collectorHoursCap":24,"raids.shieldTiers.0.hours":16,"raids.shieldTiers.1.hours":20,"raids.shieldTiers.2.hours":24}}
+]

@@ -1,0 +1,8 @@
+[
+ {"name":"cap16","patch":{"economy.collectorHoursCap":16}},
+ {"name":"cap24 + K6 400k","patch":{"economy.collectorHoursCap":24,"buildings.elder_toadstool.levels.5.cost.acorns":400000}},
+ {"name":"cap16 + K6 400k","patch":{"economy.collectorHoursCap":16,"buildings.elder_toadstool.levels.5.cost.acorns":400000}},
+ {"name":"cap24 + uncollected 0.25","patch":{"economy.collectorHoursCap":24,"economy.raidableUncollectedFraction":0.25}},
+ {"name":"cap24 + K5 lootcap 40k","patch":{"economy.collectorHoursCap":24,"raids.storageLootCapByHall.4":40000}},
+ {"name":"cap24 + uncollected 0.25 + K6 400k","patch":{"economy.collectorHoursCap":24,"economy.raidableUncollectedFraction":0.25,"buildings.elder_toadstool.levels.5.cost.acorns":400000}}
+]

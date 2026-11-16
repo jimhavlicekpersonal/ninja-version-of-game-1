@@ -1,0 +1,3 @@
+[
+ {"name":"P + economy-building timers capped at 3 days (full campaign)","capEcon":259200,"patch":{"economy.collectorHoursCap":24,"economy.raidableUncollectedFraction":0.25,"raids.shieldTiers.0.hours":16,"raids.shieldTiers.1.hours":20,"raids.shieldTiers.2.hours":24}}
+]

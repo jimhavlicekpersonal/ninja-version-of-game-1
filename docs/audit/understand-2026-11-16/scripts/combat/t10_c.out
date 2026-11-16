@@ -1,0 +1,7 @@
+cells: mean destruction % over layouts random,kunai_ring,mortar_core x 2 seeds (the army-lab gate cells), no hero, game bot plan
+wall4          K8: mixed 74.2 | melee 37.8 | artillery 71.3 | support 24.0 | air 38.8 | shadow 65.3 | siege 26.3 | support_light 58.8 | breach 54.8
+wall4          K15: mixed 73.3 | melee 44.3 | artillery 67.3 | support 37.8 | air 49.0 | shadow 70.7 | siege 33.5 | support_light 47.3 | breach 50.0
+siegeDef       K8: mixed 74.5 | melee 37.8 | artillery 71.3 | support 22.0 | air 39.3 | shadow 65.3 | siege NaN | support_light 59.2 | breach NaN
+siegeDef       K15: mixed 78.7 | melee 39.8 | artillery 63.2 | support 39.7 | air 48.0 | shadow 59.3 | siege 31.0 | support_light 49.3 | breach 44.2
+siegeSpeed     K8: mixed 74.5 | melee 37.8 | artillery 71.3 | support 22.0 | air 39.3 | shadow 65.3 | siege 47.3 | support_light 59.2 | breach 68.2
+siegeSpeed     K15: mixed 78.7 | melee 44.3 | artillery 67.3 | support 37.8 | air 49.0 | shadow 70.7 | siege 38.8 | support_light 47.3 | breach 51.2

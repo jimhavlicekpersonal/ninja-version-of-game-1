@@ -1,0 +1,394 @@
+{
+ "problems": [
+  {
+   "id": "PAC-01",
+   "title": "Casual Keep 5 to 6 takes 26 days: bot raids take back 105% of what the collectors produce",
+   "severity": "critical",
+   "verified": "reproduced",
+   "evidence": "Instrumented casual model (scratch casualwall.mjs, reproduces CAMPAIGN.md exactly: Keep 5 day 12.7, Keep 6 day 38.7). Days 14-38, Coins+Provisions: collected 2.24M (89.6k/day), raid loot 556k (18 raids), chest 775k, stolen 2.34M in 27 raids (93.7k/day) = 105% of collector output, 65% of all income; net ~39k/day against a 500k Keep plus ~700k Provisions of prerequisites. Coins stall at 256k-321k on days 27-35. Causes: economy.json:72 collectorHoursCap 8 (one visit banks 8 of 24 h; four sessions bank 22 of 24); economy.json:73-74 20% of stored up to raids.json:143 cap 60,000 at Keep 5 plus 50% of uncollected (defense.ts:63-70); raids.json:47 12%/hour slot then 12-16 h shield (raids.json:32-43) and attacking ends the shield (village.ts:1823), so ~1.1 raids a day. Measured what-ifs (single seed, about +-2 days): cap 24 alone 15.0 days; uncollected 0.25 alone 26.0; shields 16/20/24 alone 21.0; Keep 6 cost 400k alone 15.0 but breaks curves.test.ts:45-55 (early cost multiplier may not shrink) and moves the wall to Keep 6->7.",
+   "proposedFix": "Three data keys (measured as a full campaign): economy.json collectorHoursCap 8->24; economy.json raidableUncollectedFraction 0.5->0.25; raids.json shieldTiers hours 12/14/16->16/20/24. Result: casual Keep 5->6 26.0->13.0 days, Keep 6 on day 21.7 (was 38.7), Keep 15 day 207 (was 246); regular Keep 15 unchanged at day 113, largest speed-up Keep 8 (23.0->20.4, 11%), Keeps 9-15 within 3%. Follow-ons: economy.json:82 collectBubbleMinFraction 0.02->0.007 (keeps the first collect bubble at ~10 min, VillageScene.ts:351); buildings.json:191 and :417 descriptions say 'Holds 8 hours of output' (2 data strings x 49 languages); tests/gameplay/sim/raids.test.ts:86-88 pins 12/14/16; rerun npm run balance:campaign. Do not change the Keep 6 cost.",
+   "fixCost": "M",
+   "touches": [
+    "DATA_ONLY",
+    "BALANCE_GATES",
+    "I18N",
+    "SERVER",
+    "DOCS"
+   ],
+   "needsOwner": false,
+   "whyItMatters": "The player who plays least sees no Keep upgrade from day 13 to day 39, exactly across the D30 measurement, and loses more than they produce."
+  },
+  {
+   "id": "PAC-02",
+   "title": "One-visit players get two upgrades a day while timers are minutes; the campaigns never hire the third artisan",
+   "severity": "high",
+   "verified": "reproduced",
+   "evidence": "Keep 5: longest single upgrade 3.7 h, everything newly allowed is 2.8 builder-days (scratch maxout.cjs), yet each artisan starts one job per visit, so the casual model's artisans idle ~23 h a day ('bld free 2/2' every day in the log). It arrives at Keep 5 with Mints 4/3/3/3 and is at 8/8/8/8/8 on day 38 (cap 10). No CAMPAIGNS entry sets hireBuilders (tools/balance/campaign.ts:30-36) although economy.json:13 gives 500 Jade and builderHutCosts[0] is 250. Measured with hireBuilders: regular Keep 15 day 91.2 (campaign says 113); casual on baseline data Keep 5->6 16.0 days, but Keep 6->7 24.7 and 7->8 36.0; casual with collector cap 24 plus hiring: 11.0 / 11.7 / 11.0 days for Keeps 5->6, 6->7, 7->8.",
+   "proposedFix": "1) tools/balance/campaign.ts: add hireBuilders: true to the regular and casual specs (or add two specs) so the gates describe a player who spends the starting Jade; reset the 100-140 day gate in campaign-gates.test.ts:70-74 to the new measurement. 2) Game: put the third Artisan's Hut in economy.json startingLayout and lower startingResources.moonstones 500->250 (same value to the player, removes a trap for players who never find the hut), or add it as the tutorial's last step. 3) Longer term: multi-level upgrade (see opportunities).",
+   "fixCost": "M",
+   "touches": [
+    "DATA_ONLY",
+    "BALANCE_GATES",
+    "UI",
+    "DOCS"
+   ],
+   "needsOwner": false,
+   "whyItMatters": "Early pacing for a daily player is bound by the number of taps per visit, not by cost or time, and the published pacing numbers describe a two-artisan player nobody will be."
+  },
+  {
+   "id": "PAC-03",
+   "title": "73% of all builder time is Mints, Farms and storages at a flat 7 days a level",
+   "severity": "high",
+   "verified": "measured",
+   "evidence": "Scratch maxout.cjs over hall.json and buildings.json: builder-days newly allowed per Keep: K5 2.8, K7 13.7, K8 78, K9 111, K10 223, K12 256, K14 395, K15 312; total 1,771 (354 days with 5 artisans). By type: Coin Mint 459, Terraced Farm 459, Treasury 188, Storehouse 188 = 1,294 (73%); all defenses, traps and counters together ~400. Every level 15+ is 604,800 s (10 s x 2.2^(L-1) capped); only collectors (24 levels) and storages (22) have many. A collector produces nothing while upgrading (village.ts:2166 accrueFrom: endsAt): Mint 14->15 costs 530,461 Provisions and forfeits 7x24x9,481 = 1.59M Coins, real payback ~620 h against the 155 h in the table. Regular model spends 20.6 and 27.8 days at Keeps 13 and 14.",
+   "proposedFix": "buildings.json: cap buildSeconds of acorn_orchard, dewdrop_well, acorn_silo, dew_cistern at 259,200 s (3 days; levels 14+). Total builder-days 1,771->1,089 (4-day cap: 1,267). Measured on top of PAC-01: regular Keep 14 85.2->81.6, Keep 15 113->98; casual Keep 15 207->197. The 100-day lower gate (campaign-gates.test.ts:71) must move to ~95, or use the 4-day cap. Separately let a collector keep producing at its old level during an upgrade (village.ts:2166, and the same at :2103/:2212) or print the lost output in the upgrade quote.",
+   "fixCost": "M",
+   "touches": [
+    "DATA_ONLY",
+    "BALANCE_GATES",
+    "PLAYER_COMMANDS",
+    "SERVER",
+    "DOCS"
+   ],
+   "needsOwner": false,
+   "whyItMatters": "The long tail is spent watching the least interesting buildings; not upgrading late collectors is the rational play, and the only lever left is Jade for time."
+  },
+  {
+   "id": "PAC-04",
+   "title": "First raid arrives after about 12 minutes and two idle waits; five raids in the first hour",
+   "severity": "high",
+   "verified": "measured",
+   "evidence": "src/presentation/ui/tutorial.ts:46-117: step 3 upgrades the Keep (buildings.json Keep 2 buildSeconds 240), step 4 finishKeep waits for it ('ready in {time}: come back then, or tap Finish now to use a little Jade', locales/en/ui.json:14) before the army steps; step 7 finishTrain waits until the queue is empty (20 Shinobi x 20 s = 400 s for a filled first camp). Without Jade: ~11-12 minutes to the first battle. Model player (scratch firsthour.mjs, a session every 2 minutes): Keep 2 at 4 min, first raid at minute 18, 2 raids in 30 minutes, 5 in 60, Keep 3 at 58 min and the first Keep 3 raid is a 0-star loss. Army refill: Keep 1 7 min, Keep 2 14, Keep 3 30.",
+   "proposedFix": "Data: buildings.json burrow_barracks levels 1-4 trainingSpeed 1/1/1/1 -> 2/2/1.6/1.3 (measured: 7 raids in the first hour, Keep 3 at 46 min, inside the tested 40-80 window of progression.test.ts:17-18); elder_toadstool level 2 buildSeconds 240->60. UI: move the tutorial's army/train/raid steps ahead of the Keep upgrade (the save stores the step index, tutorial.ts:15,42-43, so remap it in a migration) so the first battle comes before the first wait. Target: first raid inside 3 minutes with no Jade.",
+   "fixCost": "M",
+   "touches": [
+    "DATA_ONLY",
+    "UI",
+    "SAVE_VERSION",
+    "BALANCE_GATES",
+    "I18N"
+   ],
+   "needsOwner": false,
+   "whyItMatters": "The core loop is the raid, and a new player meets a countdown and a Jade prompt twice before the first one."
+  },
+  {
+   "id": "PAC-05",
+   "title": "The endless Shadow Trials end near tier 68, and the last Trial Walker step (100 tiers) cannot be reached",
+   "severity": "high",
+   "verified": "measured",
+   "evidence": "Scratch trialcap.mjs: fully researched Keep 15 raid mix (360 housing, Shadow Captain level 9), bot plan, best of the 5 fortresses a player can switch between: 3 stars through tier 59; tier 60 (Ironclad and Elite stack) 1 star; tiers 61-65 and 67 two stars; from tier 68 zero or one star (one outlier at 72). With the +30% mastery ceiling: two stars through 69, wall ~77. trials.json:4 powerGrowthPerTier 0.06; nothing grows after the Keep 15 caps because features.mastery is off (planned.json:3). achievements.json:227 trial_walker tiers end at [100,100]; docs/game-theory/ROSTER.md:293 (generated): tier 100 = x13 defense HP and damage. A human plan will do better than the bot plan, so read the wall as roughly tier 68-75.",
+   "proposedFix": "achievements.json trial_walker tiers [[5,20],[25,40],[60,75],[100,100]] -> [[5,20],[25,40],[50,75],[65,100]]. trials.json: powerGrowthPerTier 0.06->0.03 (doubles the reachable tail) and stop the two modifiers stacking on tier 60 (move elite to 'every': 10 offset, or lower elite power 1.2->1.1). Long term, give the ladder something that grows: mastery (see opportunities).",
+   "fixCost": "S",
+   "touches": [
+    "DATA_ONLY",
+    "BALANCE_GATES",
+    "DOCS"
+   ],
+   "needsOwner": false,
+   "whyItMatters": "The one system sold as the endless end game stops a week after Keep 15, and an achievement paying 100 Jade is impossible."
+  },
+  {
+   "id": "PAC-06",
+   "title": "Keeps 9, 10, 13, 14 and 15 unlock no building type, Keep 11 adds no army housing",
+   "severity": "medium",
+   "verified": "measured",
+   "evidence": "Scratch keeptable.cjs over hall.json: new building types by Keep: 2 Shuriken Tower + Alliance Lodge; 3 Mortar, Spike Pit, Caltrops; 4 Sky Bow; 5 Lantern Line; 6 Repair Crane + Brazier; 7 none (2nd research lane, Shadow Captain); 8 Ballista; 9 none; 10 none; 11 none (3rd lane, +1 Sky Bow, +1 Ballista; housing 300->300); 12 Longbow Yagura; 13, 14, 15 none. The regular model spends 20.6 and 27.8 days at Keeps 13 and 14, the casual 26-34 days at each Keep from 11 on. Built-not-live content sits on these Keeps: roster.json heroes Iron Matriarch (Keep 9), Sky Admiral (11), Grand Sensei (13); planned.json counters at Keeps 9 (3), 10 (1), 12 (2), 13 (1).",
+   "proposedFix": "Make the Hero Hall and the three heroes live (planned.json -> battle.json heroes, buildings.json, hall.json, features.heroChoice; steps in src/gameplay/CLAUDE.md 'Making one live'): one new hero at Keeps 9, 11 and 13. Cheap data part now: hall.json give Keep 11 a camp level (army_camp maxLevel 11->12 at Keep 11 and shift 12-15 by one, or leave housing and add +25 Stone Walls at Keeps 9, 11, 13, 15).",
+   "fixCost": "L",
+   "touches": [
+    "SIM_RULES",
+    "SERVER",
+    "PROTOCOL",
+    "BALANCE_GATES",
+    "UI",
+    "I18N",
+    "DATA_ONLY"
+   ],
+   "needsOwner": false,
+   "whyItMatters": "The longest stretches of the game are the ones with nothing new but higher level caps."
+  },
+  {
+   "id": "PAC-07",
+   "title": "Players who field their newest warriors lose most raids from Keep 8",
+   "severity": "medium",
+   "verified": "read-in-code",
+   "evidence": "docs/game-theory/CAMPAIGN.md:124-144 (generated, current fingerprint): casual explorer (newest warrior of each family) wins 40% at Keep 8, 29% at Keep 9, 19% at Keep 13, 18% at Keep 14 (0.26-0.68 stars), Keep 13 takes 99 days (248.4->347.4), never reaches Keep 15 in 406 days; the same cadence with the suggested mix wins 71-100%. campaign-gates.test.ts:55-62 only holds it at >=0.1 stars ('E25 still open').",
+   "proposedFix": "Balance-area fix (specialist budgets or army-lab floors), not a pacing number. From the pacing side: add the explorer to the lower-bound gate at >=0.9 stars once fixed, and until then make the Army panel's 'Suggested army' the default Fill for a player whose last 5 raids averaged under 1 star (src/gameplay/sim/suggest.ts already builds it).",
+   "fixCost": "L",
+   "touches": [
+    "SIM_RULES",
+    "BALANCE_GATES",
+    "UI",
+    "I18N"
+   ],
+   "needsOwner": false,
+   "whyItMatters": "Trying the new unlock is the most natural thing a player does at a new Keep, and the difficulty curve punishes it hardest."
+  },
+  {
+   "id": "PAC-08",
+   "title": "No gate holds casual pace, and the casual model under-plays what the game allows",
+   "severity": "medium",
+   "verified": "read-in-code",
+   "evidence": "tests/gameplay/balance/campaign-gates.test.ts:70-74: the only casual pace check is that reached[15] is defined inside 400 days; a 26-day Keep stretch passes. tools/balance/playerModel.ts:273 stops training at camp capacity although economy.json:77 queuedArmies 1 lets a second trained army wait (army.ts:80), so the model raids once per visit (regular: exactly 4.0 raids a day at every Keep 5-14, CAMPAIGN.md); no campaign hires artisans (PAC-02). tests/gameplay/balance/progression.test.ts and PROGRESSION_MODEL.md:60 gate only the regular player's Keep 6.",
+   "proposedFix": "campaign-gates.test.ts: add 'casual: Keep 6 by day 25, no stretch between Keeps longer than 21 days through Keep 10' (true with PAC-01: 13.0, 17.7, 12.0, 14.0, 13.0 days). playerModel.ts train(): after the camps are full, queue the same mix up to trainingQueueLimit. Rerun npm run balance:campaign.",
+   "fixCost": "S",
+   "touches": [
+    "BALANCE_GATES",
+    "DOCS"
+   ],
+   "needsOwner": false,
+   "whyItMatters": "The wall survived two audits because nothing fails when it is there."
+  },
+  {
+   "id": "PAC-09",
+   "title": "Trial rewards follow the tier's Keep, so a late starter clears dozens of tiers at a loss",
+   "severity": "medium",
+   "verified": "measured",
+   "evidence": "sim/trials.ts:92-101 pays 25% of the tier's Keep's minimum raid loot (trials.json:7); computed: tier 8 1,137 each, tier 20 12,531, tier 40 245,724, tier 60 3.82M. Every attempt spends the army (village.ts:1932); a Keep 10 raid-mix army costs 267k Provisions and a Keep 10 raid banks ~686k (CAMPAIGN.md). A Keep 10 player starting the ladder has 36 trivially easy tiers each paying 0.5-60k. The engaged casual model earned 28k from Trials in 45 days (0.4% of income) and was near tier 8 at Keep 5.",
+   "proposedFix": "Smallest: a one-time catch-up in trialEnd: clearing tier t also clears every lower tier whose Keep is at least 2 below the player's, paying their rewards (trials.json new key catchUpKeepsBelow: 2; village.ts trialEnd). Or stop spending warriors on tiers whose Keep is below the player's Keep. Either keeps 'paid once per tier'.",
+   "fixCost": "M",
+   "touches": [
+    "PLAYER_COMMANDS",
+    "SERVER",
+    "UI",
+    "I18N",
+    "BALANCE_GATES"
+   ],
+   "needsOwner": false,
+   "whyItMatters": "The ladder is the only always-available goal ladder, and for most players its next 20 steps are worth less than the army they cost."
+  },
+  {
+   "id": "PAC-10",
+   "title": "After two raids a session has nothing left that pays",
+   "severity": "medium",
+   "verified": "measured",
+   "evidence": "Army refill at a maxed Dojo for the raid mix (scratch table over troops.json and buildings.json): Keep 5 50 min, Keep 6 66, Keep 7 96, Keeps 8-15 74-104 min. Every battle mode spends the same warriors: raids, Trials (village.ts:1932), bounty (:1969), rematch (:1994). From Keep 8 artisans are busy for days and research lanes for hours. Practice battles are free and pay nothing (PROGRESSION_MODEL.md:54). A player who returns inside the refill window has only collecting.",
+   "proposedFix": "Give the free practice battle a small honest purpose: one 'Dojo drill' a day (practice battle against the next Trial fortress with the standing army, nothing spent) that pays a fixed Keep-scaled reward once per local day through the existing daily-task machinery (pass.json dailyTasks stat 'practiceDone'). Data plus one stat.",
+   "fixCost": "M",
+   "touches": [
+    "DATA_ONLY",
+    "SAVE_VERSION",
+    "PLAYER_COMMANDS",
+    "UI",
+    "I18N"
+   ],
+   "needsOwner": false,
+   "whyItMatters": "Returning early is the behaviour to reward; today it meets an empty screen."
+  },
+  {
+   "id": "PAC-11",
+   "title": "The Keep is never a goal: cost and timer are small against what it unlocks, and rushing is free",
+   "severity": "medium",
+   "verified": "measured",
+   "evidence": "Keep timers 2..15 sum to 35.7 days (buildings.json elder_toadstool) against 1,771 builder-days of content. Keep 9 costs 2.59M Coins; maxing Keep 8 costs 19.7M and 78 builder-days. The upgrade needs only Coins and an artisan. campaign-gates.test.ts:101-108 is a KNOWN FAILING marker: the rusher reaches Keep 12 on day 51.2, the defender 51.4 (1.00x, target 1.1x). Regular model: Keep 10 on day 33.",
+   "proposedFix": "No forced prerequisite (matchmaking by research strength already prices rushing). Add a pull instead: a fixed, Keep-scaled 'Keep complete' reward when every building at a Keep is at its cap (see opportunities), so finishing a Keep is a visible goal with 15 steps.",
+   "fixCost": "M",
+   "touches": [
+    "SAVE_VERSION",
+    "PLAYER_COMMANDS",
+    "SERVER",
+    "UI",
+    "I18N"
+   ],
+   "needsOwner": false,
+   "whyItMatters": "A ladder climbed in a month with a hollow base behind it stops meaning anything, and defense buys no progress."
+  },
+  {
+   "id": "PAC-12",
+   "title": "The second and third research lanes are hollow unlocks for the army a player uses",
+   "severity": "low",
+   "verified": "measured",
+   "evidence": "Scratch research.cjs over troops.json: bringing the four raid-mix warriors to their cap takes 0.22 lane-days at Keep 7 (2 lanes), 0.21 at Keep 8, 1.42 at Keep 11 (3 lanes), 3.59 at Keep 13; cost 367k Provisions at Keep 7, 48.3M at Keep 13, 170.7M at Keep 15. Research is Provisions-bound at every Keep; lanes matter only for the 804 lane-day whole roster.",
+   "proposedFix": "Leave the curve. Either present lanes as what they are (collection speed) or make Keep 7 and 11 unlock something felt: a research discount for the second and third lane running at once (hall.json new key) is cheap. Lowest priority.",
+   "fixCost": "S",
+   "touches": [
+    "DATA_ONLY",
+    "BALANCE_GATES"
+   ],
+   "needsOwner": false,
+   "whyItMatters": "Two of the fifteen Keeps advertise an unlock that changes nothing for most players."
+  },
+  {
+   "id": "PAC-13",
+   "title": "Keep 3 still opens with a loss in the first-day window",
+   "severity": "low",
+   "verified": "measured",
+   "evidence": "Scratch firsthour.mjs: after four 3-star raids at Keep 2 the model's first Keep 3 raid (minute 58) is 0 stars. CAMPAIGN.md casual: Keep 3, 2 raids, 0% won; regular Keep 3 1.50 stars, 0% three-star, 54% destruction. hall.json troopLevelCap is 2 at both Keep 2 and Keep 3 (progression.json troopLevelCapByKeep [1,2,2,3,...]) while Keep 3 bases add the Mortar, traps and Kunai level 4. ranks.json powerSlackByKeep[2] is already 1.",
+   "proposedFix": "ranks.json matchmaking: make a player's first two raids after a Keep upgrade meet a base one full Keep below (new key firstRaidsSlack, matchmaking.ts opponentFor), or raise powerSlackByKeep[2] 1->1.25. Check with progression.test.ts (Keep 3 stars >= 1.2).",
+   "fixCost": "S",
+   "touches": [
+    "DATA_ONLY",
+    "BALANCE_GATES",
+    "SERVER"
+   ],
+   "needsOwner": false,
+   "whyItMatters": "The first battle after the first real upgrade is a defeat."
+  },
+  {
+   "id": "PAC-14",
+   "title": "Pacing docs disagree with the generated campaign",
+   "severity": "low",
+   "verified": "read-in-code",
+   "evidence": "docs/game-theory/PROGRESSION_MODEL.md:60 says the model reaches Keep 6 in 'about 10.4' days; CAMPAIGN.md:11 says 9.4. PROGRESSION_MODEL.md:9 describes the casual Keep 5->6 problem as solved by the x5 cost ('took a casual player about 30 days') while CAMPAIGN.md:57 still shows 26 days. PROGRESSION_MODEL.md:22 and :55 give the roster horizon; neither states the 1,771 builder-day building horizon.",
+   "proposedFix": "After the pacing changes, rewrite PROGRESSION_MODEL.md 'Pacing targets' from the regenerated campaign: casual and regular days per Keep, the builder-day horizon, where the Trial ladder ends.",
+   "fixCost": "S",
+   "touches": [
+    "DOCS"
+   ],
+   "needsOwner": false,
+   "whyItMatters": "The next session will trust a 'fixed' claim that the generated numbers contradict."
+  }
+ ],
+ "geniusElements": [
+  {
+   "title": "One power budget for every warrior, with the live data pinned to it",
+   "where": "src/gameplay/data/progression.json, src/gameplay/sim/progression.ts, tests/gameplay/balance/progression-model.test.ts",
+   "whyKeep": "Power = sqrt(HP x DPS), x1.4 per tier, x1.16 per level, while training cost grows x1.3 and research x1.55: each level is worth less per Coin, so the curve has a long tail without runaway numbers. A new tier starts no stronger than the old one at its cap, so every Keep's 2-5 new warriors are choices, not obsoletion."
+  },
+  {
+   "title": "Matchmaking by earned research strength with per-Keep slack",
+   "where": "src/gameplay/sim/matchmaking.ts (attackerStrength, opponentFor), ranks.json powerSlackByKeep",
+   "whyKeep": "Difficulty follows what the army can actually do, not the Keep number, so a rushed Keep neither cheats nor wrecks the curve. The sandbagger campaign proves holding research back does not pay (reaches Keeps 12 and 15 no sooner)."
+  },
+  {
+   "title": "The campaign model with a fingerprint gate",
+   "where": "tools/balance/campaign.ts (campaignFingerprint), tools/balance/playerModel.ts, tests/gameplay/balance/campaign-gates.test.ts",
+   "whyKeep": "Pacing claims come from real timers, real battles and real offline raids through applyCommand, and a hash of the played data, rules and model makes any balance change that skips the rerun fail. It let this investigation reproduce the wall to the decimal and test fixes in seconds."
+  },
+  {
+   "title": "The next-army queue",
+   "where": "src/gameplay/sim/army.ts (finishTraining, trainingQueueLimit, fillCount), economy.json queuedArmies",
+   "whyKeep": "A second army trains while the camps are full and walks in as space frees, so a returning player has two raids ready. Fill never pays for two armies in one tap. It is the honest answer to refill waits; do not shorten it into a timer skip."
+  },
+  {
+   "title": "Army refill held under two hours at every Keep by the Dojo",
+   "where": "buildings.json burrow_barracks trainingSpeed (1 to 4.5), progression.json training.tierTimeMult 1.35, progression-model.test.ts",
+   "whyKeep": "Measured 50-104 minutes from Keep 5 to 15 while housing triples and tiers quintuple. The session rhythm stays the same for 100+ days."
+  },
+  {
+   "title": "Deterministic Trial fortresses",
+   "where": "src/gameplay/sim/trials.ts, src/gameplay/data/trials.json",
+   "whyKeep": "Each tier is the median-strength of five generated fortresses with a per-layout power factor, an alternate fortress after a failure, and a reward paid once that grows with log2 of the tier. It cannot be farmed, cannot be forged, and one unlucky roll cannot wall a player. Only the tail past tier 60 needs work."
+  },
+  {
+   "title": "Raid times fixed to clock slots by the village seed, with exhaustion and a gentle first three raids",
+   "where": "src/gameplay/sim/defense.ts (raidTimes, exhaustionFactor, attackerFor), raids.json",
+   "whyKeep": "Splitting an absence cannot dodge raids, a second loss inside 24 h takes half, and a new village's first raids bring half an army. The schedule is honest and reproducible; change its numbers (PAC-01), not its shape."
+  },
+  {
+   "title": "Keep-scaled fixed rewards and the one-thing-next chip",
+   "where": "economy.json rewardScaleByHall, src/gameplay/sim/economy.ts scaleReward, src/gameplay/sim/objective.ts",
+   "whyKeep": "Chests, calendar, league, pass and war rewards stay worth a raid or two at every Keep without anything random being sold, and the objective chip always names one free action (the Keep first when affordable), never an offer."
+  }
+ ],
+ "opportunities": [
+  {
+   "title": "Warrior Mastery as the long-horizon track, starting in Shadow Trials",
+   "description": "The system is built (EXP per battle = housing x (1 + 2 x stars), level M needs 50 x (1.35^M - 1)/0.35, bonus 0.30 x (1 - 0.92^M), never past +30%). Turn it on with the bonus applied only when the base is a Trial fortress: no raid or PvP balance change, the ladder gains about 9 reachable tiers (measured wall 68 -> 77), and each of 50 warriors gets its own endless level with a visible rank in the Codex. This is the cheapest carrier for a prestige-like goal.",
+   "where": "src/gameplay/sim/mastery.ts, village.ts battleLoadout, planned.json features, sim/serverEconomy.ts (Economy must carry mastery for server-held villages), codexUi.ts",
+   "cost": "L",
+   "touches": [
+    "SERVER",
+    "PROTOCOL",
+    "PLAYER_COMMANDS",
+    "UI",
+    "I18N",
+    "BALANCE_GATES"
+   ],
+   "expectedEffect": "A goal that never ends but never creeps past +30%, and a reason to keep fielding and mastering different warriors after Keep 15."
+  },
+  {
+   "title": "Hero Hall and three heroes live at Keeps 9, 11 and 13",
+   "description": "Iron Matriarch, Sky Admiral and Grand Sensei with their abilities, the Hero Hall and the choice command are implemented and tested behind withPreview. Their unlock Keeps are exactly the Keeps with no new building.",
+   "where": "src/gameplay/data/planned.json, sim/plannedContent.ts, sim/heroes.ts, sim/battle/heroAbilities.ts",
+   "cost": "XL",
+   "touches": [
+    "SIM_RULES",
+    "SERVER",
+    "PROTOCOL",
+    "BALANCE_GATES",
+    "UI",
+    "I18N"
+   ],
+   "expectedEffect": "Each empty late Keep gains a headline unlock and a real choice (which hero), in the stretch where the regular player spends 20-28 days per Keep."
+  },
+  {
+   "title": "Keep complete seals",
+   "description": "When every building at a Keep is at that Keep's cap, pay a fixed Keep-scaled reward once and mark the Keep with a seal on the Keep sheet and profile. Fifteen visible medium-horizon goals from data that already exists (hall.json limits).",
+   "where": "src/gameplay/sim/village.ts (new claim command), achievements-style state, hud Keep sheet",
+   "cost": "M",
+   "touches": [
+    "SAVE_VERSION",
+    "PLAYER_COMMANDS",
+    "SERVER",
+    "UI",
+    "I18N"
+   ],
+   "expectedEffect": "A pull against hollow Keep rushing without forcing anything, and a reason for the 1,771 builder-days to feel like progress."
+  },
+  {
+   "title": "Upgrade several levels in one job",
+   "description": "'Upgrade to level N' on one building: summed cost, summed time, one artisan. At Keeps 1-7, where timers are minutes, a daily player turns eight visits into one tap; regular players save taps and gain nothing in resources.",
+   "where": "src/gameplay/sim/village.ts upgrade command (toLevel), building sheet in hud.ts",
+   "cost": "M",
+   "touches": [
+    "PLAYER_COMMANDS",
+    "SERVER",
+    "PROTOCOL",
+    "UI",
+    "I18N"
+   ],
+   "expectedEffect": "Removes the two-upgrades-a-day bind (PAC-02) for one-visit players without a builder queue or any speed-up."
+  },
+  {
+   "title": "Progress toward the next Keep on the objective chip",
+   "description": "objective.ts already returns a 'save' objective with the shortfall; add a Keep-specific one with percent saved and marks at 25/50/75%. No rewards needed.",
+   "where": "src/gameplay/sim/objective.ts, src/presentation/ui/hud.ts objective chip",
+   "cost": "S",
+   "touches": [
+    "UI",
+    "I18N"
+   ],
+   "expectedEffect": "The save-up stretches (500k at Keep 5, 1.23M at Keep 6) show daily movement instead of a static number."
+  },
+  {
+   "title": "A second goal event from the Bounty Hunt machinery",
+   "description": "events.json has one goal event in its 14-day cycle (72 h). Add a 'Shadow Gauntlet' occurrence in the other week using the same bounty ladder with a different power and reward ladder; fixed rewards, paid once per occurrence.",
+   "where": "src/gameplay/data/events.json schedule, sim/goalEvents.ts",
+   "cost": "S",
+   "touches": [
+    "DATA_ONLY",
+    "I18N",
+    "BALANCE_GATES"
+   ],
+   "expectedEffect": "A battle goal every week instead of every other week, from existing code."
+  },
+  {
+   "title": "A daily Dojo drill",
+   "description": "One practice battle a day against the next Trial fortress with the standing army, nothing spent, paying a small fixed Keep-scaled reward once per local day (a daily task).",
+   "where": "src/gameplay/data/pass.json dailyTasks, sim/pass.ts, village.ts practice path",
+   "cost": "M",
+   "touches": [
+    "DATA_ONLY",
+    "SAVE_VERSION",
+    "PLAYER_COMMANDS",
+    "UI",
+    "I18N"
+   ],
+   "expectedEffect": "A returning player always has one meaningful two-minute action even with the army away, and it teaches the next Trial."
+  },
+  {
+   "title": "Casual pace gates",
+   "description": "Lock the fix in the test that already reads campaign.json: casual Keep 6 by day 25 and no Keep stretch above 21 days through Keep 10; add a campaign where the model hires artisans and queues the next army.",
+   "where": "tests/gameplay/balance/campaign-gates.test.ts, tools/balance/campaign.ts, tools/balance/playerModel.ts",
+   "cost": "S",
+   "touches": [
+    "BALANCE_GATES",
+    "DOCS"
+   ],
+   "expectedEffect": "The wall cannot come back unnoticed, and published pacing describes a believable player."
+  }
+ ],
+ "reportPath": "docs/audit/understand-2026-11-16/scripts/pacing.md",
+ "summary": "The regular curve is healthy and should mostly be left alone; the casual curve is broken by three specific numbers. I reproduced the committed casual campaign exactly with an instrumented model player: at Keep 5, bot raids take 2.34M of the 2.24M the collectors produce over 25 days, because a once-a-day player banks 8 of 24 hours, loses 20% of stored (up to 60k) plus half of what is uncollected about 1.1 times a day, and Coins stall near 300k below the 500k Keep. All what-ifs are single-seed in-memory runs (about ±2 days of noise), nothing in the repo was changed.\n\nFirst change: three data keys (`collectorHoursCap` 8→24, `raidableUncollectedFraction` 0.5→0.25, shield hours 12/14/16→16/20/24). Measured as a full campaign, casual Keep 5→6 drops from 26 to 13 days and casual Keep 15 from day 246 to 207; the regular player's Keep 15 stays at day 113, with at most 11% speed-up at Keep 8. It needs two building descriptions retranslated (\"Holds 8 hours of output\") and one shield test updated. Lowering the Keep 6 cost is the wrong lever: it breaks a tested cost-curve rule and only moves the wall to Keep 6→7.\n\nSecond change: the first session. A tutorial follower who spends no Jade waits about 12 minutes and through two countdowns before the first raid, and the model gets 5 raids in the first hour; faster early Dojo training (7 raids, Keep 3 at 46 minutes, inside the tested window) and raiding before the Keep upgrade fix that.\n\nThird change: the late game. 73% of all 1,771 builder-days are Mints, Farms and storages at a flat 7 days a level; capping those at 3 days brings the total to 1,089 and the regular Keep 15 to day 98, which needs the 100-day gate moved.\n\nOther findings: the \"endless\" Shadow Trials end near tier 68 for a fully maxed army under the bot plan, and the 100-tier achievement is unreachable. Keeps 9, 10, 13, 14 and 15 unlock no building type, and the built-not-live heroes sit on Keeps 9, 11 and 13. The campaigns model a player who never hires the third artisan and never queues a second army, and no gate holds casual pace. There is no prestige system; Warrior Mastery, already built and switched off, is the cheapest carrier for one."
+}

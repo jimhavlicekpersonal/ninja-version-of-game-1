@@ -1,0 +1,16 @@
+Keep 15 bias 0.5: mean point 78.7%, best point 99.7%
+   live_intel     corr 0.26  point it picks scores 85.4% (gain over mean 6.7)
+   landing_dps    corr 0.21  point it picks scores 80.1% (gain over mean 1.4)
+   nearest_def    corr 0.21  point it picks scores 89.0% (gain over mean 10.3)
+   free_bldgs     corr 0.20  point it picks scores 81.3% (gain over mean 2.6)
+   bldgs_8        corr -0.00  point it picks scores 77.2% (gain over mean -1.5)
+   keep_dist      corr -0.01  point it picks scores 78.8% (gain over mean 0.1)
+   walls_on_walk  corr 0.00  point it picks scores 78.7% (gain over mean 0.0)
+Keep 15 bias 1: mean point 55.2%, best point 69.9%
+   live_intel     corr -0.20  point it picks scores 51.9% (gain over mean -3.3)
+   landing_dps    corr 0.31  point it picks scores 59.1% (gain over mean 3.9)
+   nearest_def    corr 0.20  point it picks scores 61.0% (gain over mean 5.8)
+   free_bldgs     corr 0.17  point it picks scores 55.5% (gain over mean 0.3)
+   bldgs_8        corr -0.08  point it picks scores 54.5% (gain over mean -0.7)
+   keep_dist      corr -0.13  point it picks scores 54.6% (gain over mean -0.6)
+   walls_on_walk  corr 0.00  point it picks scores 55.2% (gain over mean 0.0)

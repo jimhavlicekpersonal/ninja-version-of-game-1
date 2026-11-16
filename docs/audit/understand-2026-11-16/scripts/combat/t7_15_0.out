@@ -1,0 +1,14 @@
+Keep 15 baseline bot mix: 79.8%  (10 battles per cell: 5 layouts x 2 sides, bot plan, hero)
+hedgehog_roller      Shinobi              K1 L20 n=77  with20%=62.1  kitOff=  -   kitValue=  - 
+mole_digger          Tunnel Runner        K4 L20 n=38  with20%=66.7  kitOff=  -   kitValue=  - 
+moonblade_master     Moonblade Master     K10 L14 n=77  with20%=73.4  kitOff=71.3  kitValue=2.1
+chain_sickle_reaper  Chain-Sickle Reaper  K10 L14 n=77  with20%=88.0  kitOff=78.1  kitValue=9.9
+mountain_shield      Mountain Shield      K10 L14 n=15  with20%=83.8  kitOff=76.9  kitValue=6.9
+fuse_master          Fuse Master          K10 L14 n=38  with20%=72.8  kitOff=73.2  kitValue=-0.4
+mole_king            Burrow Ambusher      K11 L14 n=38  with20%=68.2  kitOff=67.5  kitValue=0.7
+thunder_kite         Thunder Kite         K11 L14 n=19  with20%=68.9  kitOff=64.5  kitValue=4.4
+mist_weaver          Mist Weaver          K8 L16 n=25  with20%=61.4  kitOff=78.6  kitValue=-17.2
+fire_monk            Fire Monk            K6 L18 n=25  with20%=64.4  kitOff=67.6  kitValue=-3.2
+hound_handler        Hound Handler        K3 L20 n=25  with20%=68.6  kitOff=68.3  kitValue=0.3
+tiger_lord           Tiger Lord           K15 L12 n=25  with20%=69.2  kitOff=68.2  kitValue=1.0
+void_walker          Void Walker          K12 L14 n=38  with20%=72.5  kitOff=72.3  kitValue=0.2

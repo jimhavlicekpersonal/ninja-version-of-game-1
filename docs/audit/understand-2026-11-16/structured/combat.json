@@ -1,0 +1,347 @@
+{
+ "problems": [
+  {
+   "id": "CMB-01",
+   "title": "Support warriors never attack, so all five support kits are worth less than nothing",
+   "severity": "high",
+   "verified": "reproduced",
+   "evidence": "src/gameplay/sim/battle/warriors.ts:231-247: a support warrior that has reached its ally returns true (the `radius / 2` branch), and battle.ts:459 then returns before any attack, so it never strikes while a non-support ally lives. Measured (bot mix at 80% housing + 20% of the warrior, 10 battles, kit on vs kit removed): Keep 15 Herbalist -9.9, Drum Monk -15.2, Mist Weaver -17.2, Spirit Caller -14.8, Sage of Clouds -14.0; Keep 8 Herbalist -7.9, Drum Monk -6.3, Mist Weaver -10.2. Support-heavy scores 34/15/32/35 at Keeps 7/8/12/15 in docs/game-theory/ARMY_BALANCE.md; tests/gameplay/balance/army-lab.test.ts:140 still lists support@7 and support@8 in KNOWN_BELOW (27.2 and 22.0, reproduced exactly).",
+   "proposedFix": "In warriors.ts `beforeWarriorAction`, when the support is in position let it strike the nearest non-wall building within its own range, at a data-set share of its damage (new `battle.json` `warriorRules.supportStrike`, about 0.5). Measured on a scratch copy at 0.5: support 38.3 / 34.7 / 44.3 at Keeps 7 / 8 / 15 (both known gaps clear the 30% floor), Keep 10 57.2. At full damage it overshoots (Keep 10 support 49.5 to 91.2, Keep 6 three stars 67%), so do not ship 1.0. Watch support_light at Keeps 6 and 10 (92.7 and 91.3 with the fix; 86 and 92 live in my cells). Remove the two cleared entries from KNOWN_BELOW; re-pin aura-cache.test.ts and the rules fingerprint.",
+   "fixCost": "M",
+   "touches": [
+    "SIM_RULES",
+    "BALANCE_GATES",
+    "DOCS"
+   ],
+   "needsOwner": false,
+   "whyItMatters": "A whole role (5 of 50 warriors) is a trap: adding healers or drummers lowers the result. Fixing it opens a real second army style."
+  },
+  {
+   "id": "CMB-02",
+   "title": "The entry point is the largest in-raid lever and scouting cannot predict it",
+   "severity": "high",
+   "verified": "measured",
+   "evidence": "Same army, same base, six sides: best minus worst 30.6 points (Keep 6), 45.5 (Keep 10), 33.5 (Keep 15). With the stock raid mix the best point scores 98.4% at Keep 10 and 99.7% at Keep 15 against bias-0.5 bases (game's bot plan: 81.8% and 80.0%; worst plan 35%). The scout's `pointIntel` (src/gameplay/sim/battle/scout.ts:134-151) favours the best point 5%, 15%, 30% and 7% of the time over four Keep/bias cells (chance 17%); its correlation with destruction is -0.25/-0.26 at bias 0.5 and +0.16/+0.20 (wrong sign) on maxed bases. Six other static metrics I tried all stay under |0.31| and none is consistent.",
+   "proposedFix": "Two parts. (1) Stop presenting the defence count as advice it does not give: either drop the per-point number or replace it only with a metric that passes a new lab test ('the favoured point beats the mean point by 8+ at Keeps 10 and 15'); no static metric I tested passes. (2) Make the lever learnable after the fact: a post-raid review that re-runs the same army through the other points with the deterministic simulator and shows the honest results (client only, about 0.2 s a battle at Keep 15 on this machine). Files: scout.ts, src/presentation battle result screen, locales/en/ui.json.",
+   "fixCost": "L",
+   "touches": [
+    "UI",
+    "I18N",
+    "DOCS"
+   ],
+   "needsOwner": false,
+   "whyItMatters": "A star's worth of outcome currently feels like luck. Turned into something a player can learn, it is the game's main mastery loop."
+  },
+  {
+   "id": "CMB-03",
+   "title": "Single-warrior armies and one fixed mix beat almost every base; tempering gives thin counterplay",
+   "severity": "high",
+   "verified": "measured",
+   "evidence": "Keep 15 panel (5 layouts x 3 sides, mean side / best side, plain / Reach / Blast / Watch): 180 Eclipse Ninja 90/100, 95/100, 56/70, 90/100; 90 Dragon Kite Crew 89/100, 96/100, 96/100, 41/63; the audit's searched mix 89, 85, 89, 85 (never more than 11 behind the best answer). Keep 12: the searched mix is best on every profile (90, 94, 96, 78; next best 80, 88, 82, 69). The raid bots' mix moves at most 5 points across profiles at Keeps 8, 12, 15. Eclipse damage x0.65 still gives 82% and 47% three stars on plain bases, so its strength is stealth plus 194 HP per housing, not damage. Dragon Kite damage x0.85 gives 73% (43% three stars), x0.75 gives 57%.",
+   "proposedFix": "(a) `battle.json` `temper.offers.counterShare` 0.5 to about 0.75 so pressing Next past the answering profile stops being cheap. (b) Dragon Kite Crew `dpsScale` 0.85 in roster.json with the matching live damage in troops.json. (c) Eclipse Ninja: trim HP, not damage (or let a defence see a hidden warrior inside the Smoke floor of 2 tiles); needs one measuring pass. (d) Add upper gates to army-lab.test.ts: no single-warrior army above 85% on untempered Keep 15 bases, and a listed known gap for 'one army best on all four profiles at Keep 12'.",
+   "fixCost": "L",
+   "touches": [
+    "SIM_RULES",
+    "BALANCE_GATES",
+    "DOCS"
+   ],
+   "needsOwner": false,
+   "whyItMatters": "Once found, the same army is right for every raid, which is the opposite of replayable. The rival clans' adaptive tempers already contain the answer; they just fire too rarely and too softly."
+  },
+  {
+   "id": "CMB-04",
+   "title": "Newer tiers are worse than older ones, a dozen kits measure zero, and five warriors have no kit behind their ability name",
+   "severity": "high",
+   "verified": "measured",
+   "evidence": "Keep 15, bot mix + 20% housing of X (mix alone 79.8%): Thousand Needle (tier 5) 73.4, below Kunai Adept 77.1, Shuriken Storm 78.1, Blowgun Hunter 78.8, Chain-Sickle Reaper 88.0; Volcano Cannoneer (tier 5) 64.5 below Ram Crew (tier 1) 68.7; Sage of Clouds (tier 5) 66.5 below Herbalist 69.2; Crane Glider 57.5, Wall Climber 61.2, Shinobi 62.1. Kit on vs off: Shuriken Storm exactly 0.0 at Keeps 8 and 15 (its 1.5-tile radius is measured from the target's centre, warriors.ts:368), Ram Crew 0.0/-0.5, Fuse Master -0.4, Burrow Ambusher +0.7, Wall Phantom +0.8, Void Walker +0.2, Bomb Carrier -0.1, Blowgun Hunter +0.3, Hound Handler +0.3, Tiger Lord +1.0. Thousand Needle, Siege Bombardier, Grapple Raider, Crane Glider and Wall Climber have an `ability` id and no `kit` in src/gameplay/data/troops.json (lines 3375, 9201, 5635, 6269, 5370). Big kits, for contrast: Storm Sovereign +21.0, Ghost Engineer +11.5, Reaper +9.9.",
+   "proposedFix": "Under the same rules bump: Shuriken Storm `kit.radius` 2.5 (measured +2 to +2.5 for ranged armies at Keep 8); lift Thousand Needle's 0.6 `dpsScale` (roster.json) toward 0.8 or give it a real kit; give the tier-5 siege and mystic a second effect or stats so each tier beats the one below in its slot. Add two lab gates, with today's failures listed the KNOWN_BELOW way: every kit worth +2 at its unlock Keep or Keep 15, and tier N+1 not below tier N in the same slot at Keep 15. Where a warrior stays a plain unit, make the card say so.",
+   "fixCost": "L",
+   "touches": [
+    "SIM_RULES",
+    "BALANCE_GATES",
+    "I18N",
+    "DOCS"
+   ],
+   "needsOwner": false,
+   "whyItMatters": "Players pay 3x research for a new tier that is weaker than what they had, and cards promise effects that do nothing. Both are honesty problems as well as balance ones."
+  },
+  {
+   "id": "CMB-05",
+   "title": "The Shadow Captain's Rally changes nothing measurable, and its text contradicts the code",
+   "severity": "medium",
+   "verified": "measured",
+   "evidence": "Raid mix + hero, 20 battles a cell, Rally 30% vs 0%: 74.2 vs 74.9 (Keep 7), 80.2 vs 81.2 (Keep 10), 76.0 vs 71.9 (Keep 15). Only 20-27% of living warriors stand inside the 4-tile aura. Hero vs no hero: +3.8, -0.8, +2.0. Text says 'once per battle' (src/gameplay/data/battle.json:143, locales/en/data.json:23); the code re-arms it on every new target (battle.ts:473, warriors.ts:304), so it is active 67-77% of the hero's life. Already logged as a design question in docs/game-theory/REQUESTS.md:7.",
+   "proposedFix": "Data only: `battle.json` `heroes.shadow_captain.kit.radius` to cover the squad (measured whole-field at 30%: 80.5 / 85.3 / 81.5, that is +4 to +10 over no Rally). Then make text and rule agree: either describe the re-arm ('whenever he turns to a new target'), or set `kit.oncePerBattle` with a 15 s, 50% whole-field burst (82.8 / 85.0 / 77.8), which also makes where and when the hero is dropped a decision. Update battle.json, roster.json and the locale strings.",
+   "fixCost": "S",
+   "touches": [
+    "SIM_RULES",
+    "I18N",
+    "BALANCE_GATES",
+    "DOCS"
+   ],
+   "needsOwner": false,
+   "whyItMatters": "The only live hero has an ability the player cannot feel, described in words that are not what happens."
+  },
+  {
+   "id": "CMB-06",
+   "title": "The siege family is too slow to matter and sits under the floor at Keep 8",
+   "severity": "medium",
+   "verified": "reproduced",
+   "evidence": "Siege army 41/26/30/32 at Keeps 7/8/12/15 (ARMY_BALANCE.md); `siege@8` is in KNOWN_BELOW at 25.5 (reproduced). All four wall and breach warriors move at speed 0.12 against 0.17-0.22 for the rest (troops.json: ram_crew 8390, fire_monk 8685, bomb_carrier 8958, volcano_cannoneer 9412). Their wall multipliers never apply because walls are walked around (Ram Crew kit value 0.0). Scratch-copy tests: speed 0.17 lifts siege at Keep 8 to 47.3 and breach to 68.2, but siege at Keep 4 goes 66.0 to 90.3 with 67% three stars; speed 0.15 gives 29.5 at Keep 8; four-times wall health alone gives 26.3; making them prefer defences is worse.",
+   "proposedFix": "Raise Fire Monk, Bomb Carrier and Volcano Cannoneer to 0.17 and tune Ram Crew separately (0.15 or a level-dependent answer) so Keep 8 clears 30% without Keep 4 passing the 60% three-star gate; re-run the Keep 4 and 6 home-ground gates on all six layouts, which I did not. Remove `siege@8` from KNOWN_BELOW when it clears.",
+   "fixCost": "M",
+   "touches": [
+    "SIM_RULES",
+    "BALANCE_GATES",
+    "DOCS"
+   ],
+   "needsOwner": false,
+   "whyItMatters": "Six warriors across five tiers have no army they belong in."
+  },
+  {
+   "id": "CMB-07",
+   "title": "Smoke Bomb, the signature tactic, is worth two to four points for all three charges",
+   "severity": "medium",
+   "verified": "measured",
+   "evidence": "Scripted competent policy (cloud on the densest group being shot at), 20 battles a cell: +2.4 (Keep 6), +1.9 (Keep 10), +3.2 (Keep 15); 150 Night Blades, whose kit doubles damage inside smoke, +1.5. Against that, the entry point is worth 30-45. Numbers: battle.json `abilities.smoke_bomb` radius 3, 80 ticks, rangeFactor 0.4, floor 2 tiles.",
+   "proposedFix": "`abilities.smoke_bomb.radius` 3 to 4: measured +6.2 (Keep 10) and +7.8 (Keep 15) with the same policy, and no player-visible number changes (the description names the 8 seconds, not the radius). Radius 4 with 12 s gives +9.2 / +8.4 but needs the description changed in 50 languages. Re-run tests/gameplay/battle/tactics.test.ts.",
+   "fixCost": "S",
+   "touches": [
+    "SIM_RULES",
+    "BALANCE_GATES",
+    "DOCS"
+   ],
+   "needsOwner": false,
+   "whyItMatters": "It is the one thing a player does with their hands during a raid; today doing it well barely shows."
+  },
+  {
+   "id": "CMB-08",
+   "title": "Ordinary raids never use the five base layouts, and the layouts differ by 25 to 44 points",
+   "severity": "medium",
+   "verified": "measured",
+   "evidence": "`opponentForRank` calls `generateOpponent(seed, st.hall, data, { levelBias })` with no `layout` (src/gameplay/sim/matchmaking.ts:188); only Shadow Trials (trials.ts:42) and the Bounty Hunt (goalEvents.ts:66) pass one. Raid mix by layout, 6 battles a cell: Keep 8 walled_keep 44.3% (0.17 stars), twin_gates 47.2, open_court 88.2 (2.67 stars); Keep 12 59.0 to 83.8; Keep 15 60.2 to 93.0. Open Courtyard is easiest at every Keep; trials.json `layoutPower` only offsets it by 1.08.",
+   "proposedFix": "Give each rival clan one or two home layouts chosen from the seed in `opponentForRank` (the layouts and their scouting tips already exist), and add a per-layout level-bias offset table (data) so the easiest-to-hardest gap is about 15 points or less; retune `layoutPower` in trials.json with the same measurement. Leave rematch.ts as it is. Re-run the campaign and matched-raid gates; the server's generated fallback uses the same function, so deploy it first.",
+   "fixCost": "M",
+   "touches": [
+    "BALANCE_GATES",
+    "SERVER",
+    "DOCS"
+   ],
+   "needsOwner": false,
+   "whyItMatters": "Every raid base today comes from one generator. Five distinct fortress styles are built, tipped and translated, and players only meet them in Trials."
+  },
+  {
+   "id": "CMB-09",
+   "title": "Wave timing is an anti-decision, and squad orders have no screen",
+   "severity": "medium",
+   "verified": "measured",
+   "evidence": "All points x 9 squad orders, raid mix: three adjacent points with tanks first 82% (Keep 10) and 79% (Keep 15); holding a third back for 30 s 68% and 66%; one point only 62% and 67%; rush within 3 of tanks first. So 'everything at once through three adjacent points' is always right. `squadPlan` and `BattleSession.orderSquad` exist in src/gameplay/control and are referenced nowhere in src/presentation; the ask is in docs/art/REQUESTS.md:20.",
+   "proposedFix": "Build the squad-order control in the battle HUD (formation: together or pincer; order: tanks first or rush). Do not offer 'reserve' or 'file' until a rule gives them a job (for example a reserve that arrives where the first wave opened a path); today they are traps worth minus 13 to minus 20.",
+   "fixCost": "M",
+   "touches": [
+    "UI",
+    "I18N",
+    "DOCS"
+   ],
+   "needsOwner": false,
+   "whyItMatters": "Placing 250+ warriors by tapping is the least fun way to make the one formation choice that matters."
+  },
+  {
+   "id": "CMB-10",
+   "title": "Which approaches are closed is a hash of the layout, not a defender's choice",
+   "severity": "medium",
+   "verified": "read-in-code",
+   "evidence": "src/gameplay/sim/battle/infiltration.ts:82: `const drop = layoutHash(setup.base) % anchors.length`, where the hash runs over every building's type and tile. The 2026-11-08 audit (DZ-2) measured that moving one decor tile changes the closed pair and the attacker's mean destruction by 4 to 19 points; the code is unchanged, I did not re-measure it. The defender gets no feedback and no control.",
+   "proposedFix": "Make the closed pair an explicit base setting (`BaseLayout.closed`, absent = today's hash so old records replay), a village command to set it, the scout report showing it, and a base-editor control. This is the one change that would make base design a real decision against the entry-point lever.",
+   "fixCost": "L",
+   "touches": [
+    "SIM_RULES",
+    "SAVE_VERSION",
+    "PLAYER_COMMANDS",
+    "PROTOCOL",
+    "SERVER",
+    "UI",
+    "I18N"
+   ],
+   "needsOwner": false,
+   "whyItMatters": "Defenders cannot shape the single biggest factor in how their base is attacked, and a player who reads the client can."
+  },
+  {
+   "id": "CMB-11",
+   "title": "Rules 10 is not ready to switch on and would break pinned tests",
+   "severity": "medium",
+   "verified": "read-in-code",
+   "evidence": "docs/game-theory/rules10/SESSION_2026-11-15.md: Keeps 6, 7, 8, 10, 11, 13, 14 have had no tuning loop, Keep 9 is not converged, and its own table fails (best-to-worst standard army 19/19/17 against a pass mark of 12; siege against Walled Keep -13/+11/-3; healers with guardians 50). The patch (rules10_data_patch.json) multiplies individual warriors by 0.51 to 2.71 on top of a global 0.8, which contradicts the power-budget model that progression-model.test.ts pins the live roster to. The `versus` hook reads a `cls` field (battle.ts:717-723) that troops.json and `TroopDef` do not have. Its own notes say the breach radius does nothing.",
+   "proposedFix": "Do not switch it on in this pass. Keep the hooks (they are inert: three documented live cells reproduce to the decimal). Take its lessons as small changes instead (CMB-01, CMB-06), drop `kit.breachRadius` when next touching warriors.ts, and record in docs/game-theory/rules10/README.md what a switch-on still needs: `cls` on 50 warriors, seven untuned Keeps, the failing rows, a rules snapshot and bump, 50-language text.",
+   "fixCost": "S",
+   "touches": [
+    "DOCS"
+   ],
+   "needsOwner": false,
+   "whyItMatters": "It reads like a finished alternative ruleset. It is a multi-day project with open failures, and shipping it half-tuned would be worse than today's rules."
+  },
+  {
+   "id": "CMB-12",
+   "title": "Balance gates rest on six-battle cells that swing by 10 to 15 points",
+   "severity": "low",
+   "verified": "measured",
+   "evidence": "The outcome gates in tests/gameplay/balance/army-lab.test.ts use 3 layouts x 2 seeds per cell. A targeting change that should be neutral (saboteurs not chasing a new target) moved single cells from 65.5 to 50.0 and from 59.2 to 73.3 in opposite directions. Battles turn on one-shot breakpoints; the lab built `battle.damageSpread` (battle.ts:712) to blur exactly that.",
+   "proposedFix": "Raise the gate cells to 4 seeds where the time budget allows (a Keep 15 battle takes about 0.2 s here), or gate on the mean of two adjacent Keeps; consider a small `damageSpread` (0.1) in the same rules bump and measure whether cell variance falls.",
+   "fixCost": "S",
+   "touches": [
+    "BALANCE_GATES",
+    "SIM_RULES"
+   ],
+   "needsOwner": false,
+   "whyItMatters": "Tuning to noisy cells produces fixes that pass once and fail on the next unrelated change."
+  }
+ ],
+ "geniusElements": [
+  {
+   "title": "Deterministic fixed-step battle simulator with versioned rules",
+   "where": "src/gameplay/sim/battle/battle.ts (SIM_RULES, stateHash, runBattle), server/rules/v3-v6",
+   "whyKeep": "Seed plus deployments replay exactly with only + - x / and sqrt at 10 ticks a second, the server re-simulates every battle, and old rules are archived so old replays stay honest. Everything else (replays, anti-cheat, squad orders, a post-raid review) rides on it for free."
+  },
+  {
+   "title": "Infiltration Points with cover of one third of the army",
+   "where": "src/gameplay/sim/battle/infiltration.ts (coverFor, canDeploy), battle.json `infiltration`",
+   "whyKeep": "One short rule forces three squads from different points and produces the largest real decision in a raid (30 to 45 points between sides). The rule itself is right; only its readability (CMB-02) and the hash (CMB-10) need work."
+  },
+  {
+   "title": "Tempering shown at scouting, with rival clans that answer the player's last ten raids",
+   "where": "src/gameplay/sim/battle/temper.ts, battle.json `temper.offers` and `temper.rivals`, matchmaking.ts `opponentForRank`",
+   "whyKeep": "An honest, visible counter system: the answers measure as designed (Dragon Kites 89 to 41 under Watch, Eclipse 90 to 56 under Blast), and the opponent adapts to what the player actually does. Tune its frequency, do not replace it."
+  },
+  {
+   "title": "Non-stacking effects and budget-splitting companions",
+   "where": "src/gameplay/sim/battle/warriors.ts (auraStrength, effect, addCompanion, jam immunity)",
+   "whyKeep": "Identical auras, poison and burning never stack, pets split their owner's stats, and jams share a recovery immunity. That closes the usual degenerate stacking armies by construction rather than by number tuning."
+  },
+  {
+   "title": "Abilities as deployments",
+   "where": "battle.ts `isAbility`, `useAbility`; control/squadPlan.ts",
+   "whyKeep": "Smoke Bomb is a deployment whose troop is an ability id, and squad orders expand into ordinary deployments on their ticks. Replays, the server check and recordings needed no new path."
+  },
+  {
+   "title": "The built-not-live hook pattern",
+   "where": "battle.ts (`previewKinds`, `battle.crowding`, `wallHp`, `damageSpread`), sim/plannedContent.ts `withPreview`",
+   "whyKeep": "New rules sit behind data values live data does not set, so live battles run the same arithmetic. Verified: a scratch copy with no flag reproduced three documented gate cells to the decimal. It lets new content be measured before any rules bump."
+  },
+  {
+   "title": "Army lab with outcome gates and a listed-not-hidden gap list",
+   "where": "tools/balance/armyLab.ts, tests/gameplay/balance/army-lab.test.ts (KNOWN_BELOW, withoutCounterEffects)",
+   "whyKeep": "Gates check real battles, known failures are named and fail the test when fixed, and counter effects are measured on identical bases with only the effect switched off. It is the reason this review could reproduce the project's own numbers."
+  },
+  {
+   "title": "The honest hero",
+   "where": "battle.json `heroes`, sim/heroes.ts, village.ts:1793 (`rejected: 'no_warriors'`)",
+   "whyKeep": "Free, no housing, level set by the Keep, never sold, and a battle that sends no warriors is rejected, which closed the hero-alone loot exploit. The frame is right; only the Rally's size and text need fixing."
+  }
+ ],
+ "opportunities": [
+  {
+   "title": "Post-raid review: what the other entry points would have done",
+   "description": "After a raid, re-run the same army through the other Infiltration Points with the deterministic simulator and show the honest results ('from C: 2 stars, 81%'). It turns the biggest, currently unreadable lever into something a player learns raid by raid. Client only, computed in idle time.",
+   "where": "new sim helper beside src/gameplay/sim/battle/scout.ts, battle result screen in src/presentation/ui, locales/en/ui.json",
+   "cost": "M",
+   "touches": [
+    "UI",
+    "I18N"
+   ],
+   "expectedEffect": "A mastery loop with a visible ceiling: best point is worth about +16 to +21 points over the average point at Keeps 10 and 15."
+  },
+  {
+   "title": "Squad-order control in the battle HUD",
+   "description": "Surface the squad orders already on main (formation and wave order through one chosen point) so a raid is a few deliberate choices instead of hundreds of taps. Offer together/pincer and tanks/rush only.",
+   "where": "src/gameplay/control/squadPlan.ts and BattleSession.orderSquad (built), src/presentation/ui battle HUD, docs/art/REQUESTS.md:20",
+   "cost": "M",
+   "touches": [
+    "UI",
+    "I18N"
+   ],
+   "expectedEffect": "Faster, clearer raids on phones; formation is worth 10 to 20 points, so the choice is felt."
+  },
+  {
+   "title": "Rival clans with home fortress styles",
+   "description": "Use the five existing layout archetypes in ordinary raids, one or two per rival clan, with a per-layout level-bias offset so none is a free farm.",
+   "where": "src/gameplay/sim/matchmaking.ts:188, basegen.ts LAYOUTS, a new offset table in data",
+   "cost": "M",
+   "touches": [
+    "BALANCE_GATES",
+    "SERVER",
+    "DOCS"
+   ],
+   "expectedEffect": "Five recognisably different bases per rival profile instead of one generator; the scouting tips for each already exist and are translated."
+  },
+  {
+   "title": "Daily fortress on a fixed seed with a loaner army",
+   "description": "One generated fortress a day, the same for everyone, fought with a fixed practice army for no stakes; personal best by destruction then time. Nothing is sold and nothing is lost.",
+   "where": "reuses `practiceArmy`, `bountyBase` (sim/goalEvents.ts) and the Trials generator; a small save field for the best result",
+   "cost": "L",
+   "touches": [
+    "SAVE_VERSION",
+    "UI",
+    "I18N"
+   ],
+   "expectedEffect": "An honest daily reason to return that rewards skill only, and a place to try warriors a player has not researched."
+  },
+  {
+   "title": "More Shadow Trial modifiers from hooks that already exist",
+   "description": "trials.json has two modifiers (double wall health every 5th tier, +20% garrison every 10th). Add tiers whose fortress is tempered to one axis (reuses `temperBase`) and more values of the two existing kinds, so the ladder asks for different armies.",
+   "where": "src/gameplay/data/trials.json `modifiers`, src/gameplay/sim/trials.ts",
+   "cost": "S",
+   "touches": [
+    "DATA_ONLY",
+    "I18N",
+    "BALANCE_GATES"
+   ],
+   "expectedEffect": "The endless ladder stops being the same fight with bigger numbers."
+  },
+  {
+   "title": "Release two or three of the fifteen built counters as answers to the dominant lines",
+   "description": "After a `npm run balance:preview` tuning pass, make live the counters that answer massed stealth, massed flyers and the thrower-plus-shield line. Their names and descriptions are already translated.",
+   "where": "src/gameplay/data/planned.json, sim/battle/previewCounters.ts, docs/game-theory/PREVIEW_BALANCE.md",
+   "cost": "L",
+   "touches": [
+    "SIM_RULES",
+    "BALANCE_GATES",
+    "SERVER",
+    "UI",
+    "DOCS"
+   ],
+   "expectedEffect": "Real rock-paper-scissors for defenders and new things to scout for; some need tuning first (the Whirling Blade Tower takes 14 points off the raid mix at Keeps 10 and 15)."
+  },
+  {
+   "title": "Hero Hall and the three built heroes",
+   "description": "Hero choice is built behind `features.heroChoice`. It is not ready: the preview report shows the Sky Admiral 7.5 points worse than the Shadow Captain for its own family and the Iron Matriarch 9.0 worse at Keep 9. Tune, then release one hero at a time.",
+   "where": "src/gameplay/data/planned.json, sim/heroes.ts, sim/battle/heroAbilities.ts",
+   "cost": "XL",
+   "touches": [
+    "SIM_RULES",
+    "PLAYER_COMMANDS",
+    "PROTOCOL",
+    "SERVER",
+    "UI",
+    "I18N",
+    "BALANCE_GATES"
+   ],
+   "expectedEffect": "A long-term choice that changes how an army is built, once each hero is worth picking for the family it leads."
+  },
+  {
+   "title": "Warrior Mastery as a breadth goal, not a power source",
+   "description": "Mastery is built behind `features.mastery` with a stat bonus of up to 30%, which would undo the balance gates and matchmaking. Released with a small cap (about 5%) or as rank and cosmetics only, it rewards fielding many warrior types.",
+   "where": "src/gameplay/sim/mastery.ts, progression.json `mastery.maxBonus`",
+   "cost": "L",
+   "touches": [
+    "SIM_RULES",
+    "SERVER",
+    "UI",
+    "I18N",
+    "BALANCE_GATES"
+   ],
+   "expectedEffect": "A per-warrior collection goal that pushes against one-army play instead of deepening it."
+  }
+ ],
+ "reportPath": "docs/audit/understand-2026-11-16/scripts/combat.md",
+ "summary": "Combat is technically excellent and strategically thin: the simulator, Infiltration Points and Tempering are sound, but a raid is decided by two things only, the army and the entry point. The entry point is worth 30 to 45 points and the scout's intel picks the best one no better than chance; smoke is worth 2 to 4 points, the hero's Rally nothing measurable, and holding a wave back always loses. On the army side, 180 Eclipse Ninjas or 90 Dragon Kites three-star most Keep 15 bases, one fixed mix is best against every temper profile at Keep 12, and support, siege and several tier-5 warriors are traps. The clearest single defect is that support warriors never attack: all five are worth 6 to 17 points more with their kit removed. Rules 10 is not ready (seven Keeps untuned, its own tests failing, and it contradicts the pinned power model), so I would not switch it on. First change: one SIM_RULES bump carrying the measured small fixes, namely a half-damage support strike (clears both known support gaps), a whole-squad Rally with corrected text, Smoke radius 4, faster siege and a working Shuriken Storm kit. Second: make the entry point learnable with a post-raid review and the already-built squad orders on screen. Third: add variety and close the farms by using the five layouts in ordinary raids with per-layout difficulty offsets, raising the rivals' counter share, trimming Dragon Kites and adding upper gates for single-warrior armies. All numbers come from 6 to 20 battles a cell with scripted plans, so differences under about 4 points are noise and no person has played any of it."
+}

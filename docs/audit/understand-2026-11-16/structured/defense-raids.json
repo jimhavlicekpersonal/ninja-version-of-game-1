@@ -1,0 +1,344 @@
+{
+ "problems": [
+  {
+   "id": "DEF-01",
+   "title": "Stars do not protect loot: a held raid still loses a third of everything raidable and is paid 5-11% of that back",
+   "severity": "critical",
+   "verified": "measured",
+   "evidence": "Loot leaves with every destroyed building whatever the stars (src/gameplay/sim/defense.ts:210-230); the held reward is 5% of the Keep's lowest raid loot (raids.json defenseWin, defense.ts:270-285). Measured with the real raidVillage on villages built to a chosen quality, typical raider, storages full (scratch def_hold.ts, def_econ.ts, 16-24 raids per cell). Keep 5/9/12/15: an undefended 3-star loss is 166k / 950k / 3.83M / 22.5M (campaign averages 45k / 611k / 2.49M / 9.29M); a HELD raid still loses 47-67k / 408-440k / 1.3-1.7M / 10.5-12.0M and pays 3.5k / 39.5k / 146k / 960k. Net per raid at Keep 12: level-1 defenses -3.83M, caps-2 -1.77M, caps-1 -1.46M, caps -1.51M. So caps-2 to caps (62.6M Coins at Keep 12, 214M at Keep 15) buys nothing.",
+   "whyItMatters": "This is the real reason defense feels worthless: the first levels halve the loss, everything after is flat, and 'held' is not a win the player can see or feel.",
+   "proposedFix": "Switch on two hooks that already exist behind unset data: raids.json carryByStars [0.2,0.5,0.8,1] (defense.ts:208-209) and defenseWin {shareOfRaidLoot:0.15, perStar:true} (defense.ts:244-245), keep it storage-capped. Add both to RaidsData (src/gameplay/sim/types.ts:886-892) and drop the casts. Fix the hook's rounding bug first: defense.ts:215 `v = v0 * carry` is not floored in the storage branch (:225-227), so resources go fractional. Show 'kept X of Y' in the battle log and welcome-back (hud.ts:2026-2036, 2062-2064). Same battles under these rules, net per raid at Keep 12: -3.82M / -1.10M / -184k / +64k; Keep 15: -22.5M / -8.39M / -1.25M / +152k. Nobody is worse off than today. Offline only; no SIM_RULES (raids.json is outside the combat fingerprint, tests/gameplay/battle/rules-version.test.ts:33).",
+   "fixCost": "M",
+   "touches": [
+    "BALANCE_GATES",
+    "UI",
+    "I18N",
+    "DOCS"
+   ],
+   "needsOwner": false
+  },
+  {
+   "id": "DEF-02",
+   "title": "For a one-visit player a stronger base is raided more often and loses more per day",
+   "severity": "high",
+   "verified": "measured",
+   "evidence": "A shield needs 30% destruction (raids.json shieldTiers); a held raid at 26-30% gives none, and exhaustion counts only lost raids (defense.ts:89). Through the real slot and shield rules, one visit a day, no attack, village refilled at each visit (scratch def_daily.ts, 2 villages x 20-25 days). Keep 15: raids per day 1.02 / 1.13 / 1.35 / 1.70 and loss per day 21.9M / 13.2M / 14.3M / 17.0M for level 1 / caps-2 / caps-1 / caps: the maxed base loses 29% more than caps-2. Keep 12: 3.72M / 1.86M / 1.96M / 2.08M. Keep 9: 0.90M / 0.63M / 0.46M / 0.55M.",
+   "whyItMatters": "Upgrading defenses past caps-2 makes a casual player's day worse. That is a perverse incentive, not just a weak one.",
+   "proposedFix": "Comes with DEF-01: with carry-by-stars and the per-star reward the order is right (Keep 15 one visit: 6.05M / 4.16M / 3.40M lost per day, rewards 2.3M / 3.6M / 4.9M). Add a small gate test from the def_daily harness: loss per day never rises with defense quality at Keeps 9, 12, 15. No extra shield rule needed once a held raid is about neutral.",
+   "fixCost": "S",
+   "touches": [
+    "BALANCE_GATES"
+   ],
+   "needsOwner": false
+  },
+  {
+   "id": "DEF-03",
+   "title": "The gated campaign cannot see defense, and the PS-1 pace target is unreachable by any loot rule",
+   "severity": "high",
+   "verified": "reproduced",
+   "evidence": "Ran the gated 'defender' policy to day 38 (scratch model_village.ts): at Keep 10 it has Kunai Towers at average level 1.5 of cap 11, every other defensive building at level 1, 0 of 125 walls, last 20 raids all three stars. It ranks defenses behind storage, camps and collectors (tools/balance/playerModel.ts:222-228) and places with findFreeSpot near (20,20). So CAMPAIGN.md:146-165 compares two undefended villages and campaign-gates.test.ts:101-109 compares a rusher with a non-defender. Separately (scratch pace_noraids.ts): the regular policy reproduces campaign.json to the day with raids on (Keep 9/10/11 on day 28.4/33.4/42.2) and with chancePerSlot 0 reaches them on 24.7/29.6/37.0. The whole raid tax is 11-13% of pace. Defenses cost 1.4x (to caps-2, 16.5M) to 3.3x (to caps, 37.6M) the next Keep's 11.45M Coins at Keep 12.",
+   "whyItMatters": "'0% held for every policy' measures the model player, and the known-failing gate asks for something no defense rule can deliver, so a fix pass would chase the wrong number.",
+   "proposedFix": "Add a `regular_fortress` campaign (policy 'fortress', fortressGap 2: already in playerModel.ts:58-60, 184-192, 226) and give model villages a real layout through a data clone with raids.labAutoLayout + labWalls (defense.ts:184-196). Replace the known-failing assertion with: fortress holds >= 40% at Keeps 9-15; fortress stolen / looted <= 0.6 x the rusher's; fortress reaches Keep 12 within 1.25 x the rusher's days. Nearest existing evidence: tools/balance/lab/results/csum_cp_p5.json (fortress Keep 12 on day 59.2 against 48.8, stolen share 45% against 59%). Update the E26 and PS-1 rows in docs/store/WORLDWIDE_AUDIT.md.",
+   "fixCost": "M",
+   "touches": [
+    "BALANCE_GATES",
+    "DOCS"
+   ],
+   "needsOwner": false
+  },
+  {
+   "id": "DEF-04",
+   "title": "Bot raid strength is a point mass at the weakest raider, then jumps to a Keep above with honor",
+   "severity": "high",
+   "verified": "measured",
+   "evidence": "400 draws of attackerFor per row (scratch raider_dist.ts): at the campaign's honor for both the regular and the casual player, at Keeps 5, 9, 12 and 15, the raider is Keep-1 at the low end 100% of the time, because matchStrength's mirror clamp is own Keep-2 (matchmaking.ts:53) and honor/350 sits below it (Keep 12: 9.2 against 10). Above about 350 x (Keep-1) it jumps: Keep 12 at 4,300 honor meets a Keep 13 raider 91% of the time. A held raid pays +34 to +40 honor (ranks.ts:38-41), so holding raids summons stronger raiders.",
+   "whyItMatters": "Outcomes are binary by build quality (level 1: always three stars; caps-1: 80% held), there is no variety, and a good defender is put on a treadmill the game never shows.",
+   "proposedFix": "raids.json raiderMatch {lo:-1, hi:0} (hook at matchmaking.ts:274-279): raiders come from the defender's Keep (Keep-1, low to high), not from honor. Add it to RaidsData. Measured with it plus DEF-01 (scratch econ_uniform_raider.out): Keep 12 star spread for caps-2 is 29/21/42/8% (0/1/2/3 stars), caps-1 75/17/8/0%, caps 96/4/0/0%.",
+   "fixCost": "S",
+   "touches": [
+    "BALANCE_GATES"
+   ],
+   "needsOwner": false
+  },
+  {
+   "id": "DEF-05",
+   "title": "Bot raiders bring one ground army per Keep, so anti-air, anti-stealth and two temper axes never matter on defense",
+   "severity": "high",
+   "verified": "read-in-code",
+   "evidence": "raids.json botArmyMix: no flyer at Keeps 7-15 (Kite Raider is 8-10% at Keeps 3-6 only); from Keep 7 it uses four of ten roster roles (blade, thrower, guardian, saboteur; never shadow, mystic, siege or beast). botArmy (matchmaking.ts:240-262) is the only source for attackerFor. The balance audit measured Sky Bows and Ballistas at 0.0 points against this mix (docs/audit/BALANCE_AUDIT_2026-11-08.md DM-1).",
+   "whyItMatters": "Which defenses to build has one answer offline, so 'arranging defenses' is not a decision and Tempering has nothing to answer on the defender's side.",
+   "proposedFix": "Add raids.json raiderMixes: two or three alternates per Keep band (today's line, an air raid, a shadow/siege raid), picked by the raid's seed in attackerFor; leave botArmy() and its ~20 other callers (suggest.ts, tests, tools) alone. Check each alternate with the army lab so none is a free hold or a free wipe. No SIM_RULES: the simulator is untouched, only which army raids.",
+   "fixCost": "M",
+   "touches": [
+    "BALANCE_GATES"
+   ],
+   "needsOwner": false
+  },
+  {
+   "id": "DEF-06",
+   "title": "A long absence empties the treasury: 24 raids per catch-up",
+   "severity": "high",
+   "verified": "measured",
+   "evidence": "raids.json maxRaidsPerCatchUp 24 (defense.ts:329). One catch-up, level-1 defenses (scratch away.ts): 7 days away from a 30%-full storage loses 40% (Keep 12) to 62% (Keep 9) of what was stored; 30 days loses 94-97% (41-67% from full storages), 24 raids listed on the welcome-back screen; Keep 12 total 54.9-68.6M.",
+   "whyItMatters": "A returning player's first screen is 24 raids and an empty storehouse. That is the opposite of the project's own return-hook rule (a missed day never wipes progress) and it lands on exactly the players a relaunch wants back.",
+   "proposedFix": "raids.json maxRaidsPerCatchUp 24 -> 3. The campaign players visit daily (at most 2 raids per catch-up), so campaign results stay the same; only the fingerprint changes.",
+   "fixCost": "S",
+   "touches": [
+    "DATA_ONLY",
+    "BALANCE_GATES"
+   ],
+   "needsOwner": false
+  },
+  {
+   "id": "DEF-07",
+   "title": "A build with a server never runs bot raids, so at low population the whole defense game is switched off",
+   "severity": "high",
+   "verified": "read-in-code",
+   "evidence": "src/main.ts:280 `botRaids: !serverUrl`; offline.ts:42 skips simulateOfflineRaids. Nothing in server/core runs raidVillage or pays defenseWin (grep). Online, a held raid pays honor only (server/core/pvp.ts:689-690) and a real raider cannot be answered (rematch.ts:31 requires `simulated`). Measured consequence of no raids: the regular model player is 11-13% faster to Keeps 9-11 than the gated campaign (scratch pace_noraids.ts).",
+   "whyItMatters": "At launch population nobody raids an online village: defenses, shields, exhaustion, the defense log and Settle the score never appear, and the gated pacing no longer describes the shipped game.",
+   "proposedFix": "Server: when a village had no real raid in the last N hours, send a labelled simulated raider at the bot slot rate (same attackerFor/botDeployments, re-simulated, applied through applyDefense with `simulated: true` and `raider` so rematch works), and pay the held reward there. Document in docs/PROTOCOL.md with a contract test. Population and hosting are the owner's.",
+   "fixCost": "L",
+   "touches": [
+    "SERVER",
+    "PROTOCOL",
+    "BALANCE_GATES",
+    "DOCS"
+   ],
+   "needsOwner": false
+  },
+  {
+   "id": "DEF-08",
+   "title": "Settle the score costs a full army for 12-26% of a normal raid and no honor",
+   "severity": "medium",
+   "verified": "measured",
+   "evidence": "rematch.ts:43-46 pays shareOfRaidLoot 0.15 x stars/3 of the Keep's lowest raid loot per resource: Keep 12 three stars = 437k total, 194k at the campaign's 1.33 stars, against 1.67M banked by an average raid (campaign.json regular, Keep 12). rematchEnd spends the army (village.ts:1994) and moves no honor. The audit found negative value at every Keep (LD-3). The raider's base is Keep-1 at the low end, easier than the player's normal opponents.",
+   "whyItMatters": "Revenge is the natural reason to come back after being raided, and today the right play is never to press it.",
+   "proposedFix": "raids.json rematch.recoverShare 0.75: reward = max(today's, recoverShare x stars/3 x what that raid took, from the defense record's result.loot), in rematchReward (rematch.ts) and rematchEnd (village.ts:1985-2007); storage-capped as now. About a normal raid at 2.5 stars, more at 3, and it is the casual player's recovery path. The server replays rematchEnd with the same code, so deploy it first. The button's tooltip text changes.",
+   "fixCost": "S",
+   "touches": [
+    "PLAYER_COMMANDS",
+    "I18N",
+    "UI",
+    "BALANCE_GATES"
+   ],
+   "needsOwner": false
+  },
+  {
+   "id": "DEF-09",
+   "title": "Declared stakes are a dominated button",
+   "severity": "medium",
+   "verified": "measured",
+   "evidence": "raids.json stakes.byStars {2:1.1, 3:1.25}, a miss carries nothing (carry.ts:66-69): break-even hit rates 91% and 80%. From campaign.json (regular; P(>=2 stars) = stars - won - threeStar): 0.50-0.64 at Keeps 10-15, P(3 stars) 0.04-0.17. Always declaring 2 stars multiplies loot by 0.55-0.71, 3 stars by 0.05-0.21; only Keeps 5 and 9 reach 0.94-1.00. (Ignores that higher-star raids carry more loot, which lowers the true break-even a little.)",
+   "whyItMatters": "The one risk decision the attacker has is 'never press it', so it adds a button and no choice.",
+   "proposedFix": "raids.json stakes.byStars {\"2\":1.3,\"3\":1.75} (break-even 77% and 57%). The UI reads the multipliers from data (battleHud.ts:407, 684-687). The model player never declares, so campaign results stay the same. The server uses the same data file: deploy it first.",
+   "fixCost": "S",
+   "touches": [
+    "DATA_ONLY",
+    "BALANCE_GATES"
+   ],
+   "needsOwner": false
+  },
+  {
+   "id": "DEF-10",
+   "title": "Honor is a play-time counter and league pay fades to nothing",
+   "severity": "medium",
+   "verified": "measured",
+   "evidence": "Honor needed before it lifts the opponent above the research floor: 3,913 at Keep 12 and 4,725 at Keep 15 (floor = strength - powerSlackAt, x 350) against the regular player's 3,217 and 4,308 in campaign.json. leagueWinBonus (village.ts:1773-1782) is not scaled by Keep: 30.6% of an average raid at Keep 5 (Iron 5k+5k on 32.7k), 3.6% at Keep 12, 1.4% at Keep 15. The season reset halves everything above 400 (ranks.ts:82); the regular Keep 15 player averages 4,308, under Shadow (4,400) and Kage (5,200).",
+   "whyItMatters": "Leagues are the visible ladder. Today they track sessions per month, not skill, and the top two are out of a regular player's reach.",
+   "proposedFix": "ranks.json: express winBonus as a share of the Keep's lowest raid loot (about 2% Cedar to 15% Kage per three stars) and compute it in leagueWinBonus; show the scaled amount in the Honor panel (hud.ts:1990). Reset to floor + 75% of the excess in rollSeasons. Loot changes, so re-run the campaign and check the 100-140-day Keep 15 gate.",
+   "fixCost": "M",
+   "touches": [
+    "BALANCE_GATES",
+    "UI",
+    "PLAYER_COMMANDS"
+   ],
+   "needsOwner": false
+  },
+  {
+   "id": "DEF-11",
+   "title": "Casual players lose more to raids than they loot, and exhaustion misses them",
+   "severity": "medium",
+   "verified": "measured",
+   "evidence": "CAMPAIGN.md:59 and :128: casual 156%, casual explorer 266% of loot taken (regular 63%). Mechanism read in code: the daily attack ends the shield (village.ts:1823), the 12% per hour slot (raids.json chancePerSlot) finds the village within a day, every raid is three stars against level-1 defenses, and exhaustion's 24-hour window (raids.json exhaustion) rarely catches raids spaced a day apart. One visit a day measures 0.97-1.02 raids a day (def_daily.ts).",
+   "whyItMatters": "The owner's constraint is that casual players are not miserable; one full raid a day with nothing they can do about it is the misery.",
+   "proposedFix": "raids.json exhaustion.windowHours 24 -> 36, together with DEF-06 (absence cap) and DEF-08 (revenge recovers loot). It also lowers the regular player's losses, so re-run the campaign and check the Keep 15 pace gate and the 'regular stolen < 80% of loot' gate (campaign-gates.test.ts:70-74, 87-90).",
+   "fixCost": "S",
+   "touches": [
+    "DATA_ONLY",
+    "BALANCE_GATES"
+   ],
+   "needsOwner": false
+  },
+  {
+   "id": "DEF-12",
+   "title": "A struggling player's honor falls but their opponents never get easier",
+   "severity": "medium",
+   "verified": "read-in-code",
+   "evidence": "Casual explorer in CAMPAIGN.md:143-144: 19% and 18% wins, 0.26 and 0.27 stars over 118 raids at Keeps 13-14, honor 1,154 -> 685, opponents still Keep 12.1-13.0. opponentFor never goes below attackerStrength minus the Keep's slack (matchmaking.ts:169-172), so falling honor cannot help. The gate only stops it getting worse (campaign-gates.test.ts:55-62).",
+   "whyItMatters": "Losing four raids in five for weeks is where a player who likes the new warriors quits; the anti-sandbagging floor is what traps them.",
+   "proposedFix": "ranks.json matchmaking.lossStreakSlack 0.25 per consecutive lost raid (cap 1.0, reset by a win), added to the slack in opponentFor; count only raids that deployed at least 80% of the army's housing so it cannot be farmed with one-warrior losses. Re-run the campaign; the sandbagger gate must still hold.",
+   "fixCost": "S",
+   "touches": [
+    "BALANCE_GATES"
+   ],
+   "needsOwner": false
+  },
+  {
+   "id": "DEF-13",
+   "title": "Next is a fair choice at Keeps 9 and 12 and a poor one at Keeps 5 and 15",
+   "severity": "low",
+   "verified": "measured",
+   "evidence": "400 offers per Keep at the campaign's honor and strength (scratch next_offers.ts): Keep 9 and 12 fee 1.6% of the mean offer, best accept-or-reroll policy +9%, Iron Tide 28% richer than Moon Veil. Keep 5: fee 4.8%, best policy +1.8%. Keep 15: fee 3.3%, +5.8%. Cause: scoutFee follows the player's Keep (village.ts:1681-1684) while the offers are a Keep lower with the 0.8 loot penalty.",
+   "whyItMatters": "Small, but it is the one opponent choice the attacker has.",
+   "proposedFix": "In scoutFee, price by the Keep the player is matched against (or scale by the loot penalty). Do NOT edit battle.scoutFeeByHall or battle.generatedLootByHall: both sit inside the combat fingerprint (rules-version.test.ts:33), so a change there forces a SIM_RULES bump.",
+   "fixCost": "S",
+   "touches": [
+    "BALANCE_GATES"
+   ],
+   "needsOwner": false
+  }
+ ],
+ "geniusElements": [
+  {
+   "title": "The raid clock",
+   "where": "src/gameplay/sim/defense.ts:305-337 (raidTimes, simulateOfflineRaids)",
+   "whyKeep": "Slots are fixed on the real clock and whether a slot holds a raid comes from the village seed, so the same save always meets the same raiders, reloading rerolls nothing, and splitting an absence into short ones dodges nothing. It needs no server and every raid replays exactly."
+  },
+  {
+   "title": "The research-strength matchmaking floor",
+   "where": "src/gameplay/sim/matchmaking.ts:126-172 (attackerStrength, researchKeep, powerSlackAt), ranks.json powerSlackByKeep",
+   "whyKeep": "Strength is the Keep the fielded army's research matches, weighted by housing, with new-tier warriors read on the same scale. It closed queue dilution and sandbagging; the gated sandbagger reaches Keep 12 on day 55 against 51.2. Per-Keep slack is tuned to measured dips."
+  },
+  {
+   "title": "Staked honor",
+   "where": "src/gameplay/sim/ranks.ts:22-35, ranks.json defenseHonorLossShare 0 and attackWin.perTrophyBelow",
+   "whyKeep": "Being raided costs no honor and a win against lower honor pays less, down to nothing. It fixed the measured honor inversion (the best raiders ended at 0 honor because they were farmed) and is kind to casual players."
+  },
+  {
+   "title": "Exhausted stores and exposure targeting",
+   "where": "src/gameplay/sim/defense.ts:84-101, server/core/pvp.ts:352-353 and 386-397",
+   "whyKeep": "Each lost raid in the last day halves the next raider's take, and online a recently raided village is offered last. It protects the farmed player without inventing new shields, and it is the same rule offline and online."
+  },
+  {
+   "title": "Rival clans that answer the player",
+   "where": "src/gameplay/sim/matchmaking.ts:182-220, src/gameplay/sim/rivals.ts, battle.json temper.rivals and temper.offers",
+   "whyKeep": "Three named, always-labelled computer clans with their own tempers, loot and toughness, and half the time an outpost tempered against the family the player used in the last ten raids. It turned Next from a non-decision into one: measured best reroll policy +9% against a 1.6% fee at Keeps 9 and 12."
+  },
+  {
+   "title": "The rematch structure",
+   "where": "src/gameplay/sim/rematch.ts, defense.ts:258 (record.raider)",
+   "whyKeep": "The raider's own base is rebuilt from the seed, Keep and bias stored on the defense record: once per raid, 72 hours, no honor, labelled simulated. The structure is the right revenge hook; only its payout is wrong (DEF-08)."
+  },
+  {
+   "title": "Loot provenance and bounded loss",
+   "where": "src/gameplay/sim/defense.ts:43-78 and 210-230, village.ts:1737-1770 (applyDefenseLosses)",
+   "whyKeep": "Loot leaves the building that held it (collector or storage), 20% of storage under a per-Keep cap and 50% of collectors, and a refund debt is never deepened by a raid. The worst case is predictable and where storages stand already matters."
+  },
+  {
+   "title": "Result-stale gates",
+   "where": "tools/balance/campaign.ts:123-152, tests/gameplay/balance/campaign-gates.test.ts:28-32 and 101-109",
+   "whyKeep": "The campaign file carries a fingerprint of the data and code it was played with and the test fails when it is stale; the open problem is held as an explicit known-failing assertion that flips when fixed. Keep this discipline while changing the numbers."
+  }
+ ],
+ "opportunities": [
+  {
+   "title": "Defense drill: test my own base",
+   "description": "A 'Test my defenses' button runs the simulated raider against the player's own village on demand and plays the replay. No loot, no honor, no shield change, labelled as a drill. It makes arranging a base a loop the player can iterate on in one session.",
+   "where": "Reuses attackerFor (matchmaking.ts:270), villageToBase and botDeployments (defense.ts:43, 108), the replay viewer and the practice label; new entry on the Keep sheet in src/presentation/ui/hud.ts",
+   "cost": "M",
+   "touches": [
+    "UI",
+    "I18N"
+   ],
+   "expectedEffect": "Gives defense the instant feedback attack already has; the strongest honest reason to tinker and come back after an upgrade finishes."
+  },
+  {
+   "title": "Defense report on welcome-back and in the log",
+   "description": "Per raid: kept X of Y, stars denied, reward, the entry point the raider used and the first buildings that fell; feed the weakest side to the next-objective chip.",
+   "where": "hud.ts:2026-2036 and 2062-2064 (log and welcome-back), sim/objective.ts nextObjective; data comes from the defense record already stored",
+   "cost": "M",
+   "touches": [
+    "UI",
+    "I18N"
+   ],
+   "expectedEffect": "Turns 'you were raided' from a loss notice into a result with a next step; makes the DEF-01 payoff visible."
+  },
+  {
+   "title": "Raider clans with their own armies and an honest forecast",
+   "description": "Bot raids come from the three rival clans, each with its own army (ground line, air, shadow and siege), and the Events panel says which clan is raiding this week on the existing fixed 14-day schedule.",
+   "where": "Builds on DEF-05: raids.json raiderMixes, attackerFor, sim/events.ts schedule, names.json rivalClans",
+   "cost": "L",
+   "touches": [
+    "BALANCE_GATES",
+    "UI",
+    "I18N"
+   ],
+   "expectedEffect": "The defender gets a real weekly decision (which towers, which temper) and the raid loop gets variety without anything random or hidden."
+  },
+  {
+   "title": "Hold tasks and achievements",
+   "description": "A weekly task 'deny 3 stars to raiders', an achievement ladder on raids held, and Season Scroll points for stars denied.",
+   "where": "stats.defensesWon and defensesFaced already exist (defense.ts:238-241); task and pass data in src/gameplay/data, sim/pass.ts",
+   "cost": "M",
+   "touches": [
+    "DATA_ONLY",
+    "I18N",
+    "BALANCE_GATES"
+   ],
+   "expectedEffect": "Defense feeds the same goal systems as attack, so a builder-type player has their own weekly track."
+  },
+  {
+   "title": "Escort bonus",
+   "description": "Own raid loot +0 to +15% by a defense index (tower strength against a generated base of the Keep), shown on the result screen. This is the Living Fortress 'Watch' framed as a bonus on today's numbers, never a cut.",
+   "where": "bankRaidLoot (village.ts:1846-1862), defenseStrength in sim/trials.ts, design in docs/game-theory/DESIGN_LIVING_FORTRESS_2026-11-08.md section 4.3",
+   "cost": "L",
+   "touches": [
+    "PLAYER_COMMANDS",
+    "SERVER",
+    "BALANCE_GATES",
+    "UI",
+    "I18N"
+   ],
+   "expectedEffect": "The one lever that lets defense buy Keep pace (the audit's prototype moved the fastest line from 'no defense' to 'some defense'); needs the Keep 15 pace gate re-tuned."
+  },
+  {
+   "title": "Towers payable in Provisions",
+   "description": "Add 'defense' and 'support' to economy.provisionsPayable so towers can be bought with either currency, as walls and traps already can.",
+   "where": "economy.json provisionsPayable, village.ts:474-477 and the refusal sentence at :502 and :537",
+   "cost": "S",
+   "touches": [
+    "DATA_ONLY",
+    "I18N",
+    "BALANCE_GATES"
+   ],
+   "expectedEffect": "Defense stops competing with the Keep for Coins at Keeps 3-12, where Coins bind 1.1-2.7x and Provisions sit idle (audit CU-1); the player chooses which currency to spend."
+  },
+  {
+   "title": "Season defense summary",
+   "description": "On the league chest screen: raids held, stars denied and loot kept this season, next to the chest.",
+   "where": "sim/ranks.ts rollSeasons and SeasonReward, a per-season baseline of the defense stats, the season dialog in hud.ts",
+   "cost": "M",
+   "touches": [
+    "SAVE_VERSION",
+    "UI",
+    "I18N"
+   ],
+   "expectedEffect": "A monthly pride moment for the base, honest because it only reports what happened."
+  },
+  {
+   "title": "Real-player revenge online",
+   "description": "One attack on the player who raided you, within 72 hours, at normal rules and normal shields.",
+   "where": "server/core/pvp.ts (a revenge ticket that names the defender), docs/PROTOCOL.md, the log row in hud.ts",
+   "cost": "L",
+   "touches": [
+    "SERVER",
+    "PROTOCOL",
+    "UI",
+    "I18N"
+   ],
+   "expectedEffect": "The strongest social return hook in the genre, once there is a population to raid."
+  }
+ ],
+ "reportPath": "docs/audit/understand-2026-11-16/scripts/defense-raids.md",
+ "summary": "Defense is not worthless, but the game pays it badly and the campaign cannot see it. The \"0% held for every policy\" is the model player's village: I ran the gated \"defender\" to Keep 10 and it has every defense at level 1 and no walls. A village built to within one level of its caps holds 75-90% of the raids it is actually sent at Keeps 5-15, and a maxed one 88-100%. The real flaw is that a held raid still loses about a third of everything raidable (1.3-1.7M at Keep 12, 10.5-12M at Keep 15) and is paid 5-11% of that back, so everything past caps-2 buys nothing; a one-visit player with a maxed Keep 15 base is even raided more often and loses 29% more per day than at caps-2. Removing all raids only speeds the regular player by 11-13%, so the PS-1 target of a 10% pace cost for skipping defense is not reachable by any loot rule and should become an economic gate. First change: switch on the three hooks that already exist behind unset data (raiders carry loot by stars, a per-star held reward at 0.15, raiders drawn from the defender's Keep instead of honor), after fixing the hook's unrounded storage loss; on the same battles every defense level then moves the result and nobody is worse off than today. Second: cap raids per absence at 3 instead of 24 (a month away now takes 94-97% of a part-full storage) and let Settle the score win back what the raider took, which is the casual player's relief and the honest revenge loop. Third: add a real fortress policy with a layout to the gated campaign and restate the gate. After that, declared stakes need better multipliers (declaring is a loss at every Keep from 6), league win bonuses need Keep scaling, and a build with a server runs no bot raids at all, which switches the whole defense game off at launch population. None of these touch battle results; all change the campaign fingerprint. I did not re-run a full campaign, so the proposed values are measured per raid and per day, not through a whole playthrough."
+}

@@ -1,0 +1,9 @@
+[
+ {"name":"baseline","patch":{}},
+ {"name":"collectorHoursCap 12","patch":{"economy.collectorHoursCap":12}},
+ {"name":"collectorHoursCap 24","patch":{"economy.collectorHoursCap":24}},
+ {"name":"uncollected fraction 0.25","patch":{"economy.raidableUncollectedFraction":0.25}},
+ {"name":"K5 storage loot cap 60k->40k","patch":{"raids.storageLootCapByHall.4":40000}},
+ {"name":"Keep6 cost 500k->400k","patch":{"buildings.elder_toadstool.levels.5.cost.acorns":400000}},
+ {"name":"Keep6 cost 500k->350k","patch":{"buildings.elder_toadstool.levels.5.cost.acorns":350000}}
+]
