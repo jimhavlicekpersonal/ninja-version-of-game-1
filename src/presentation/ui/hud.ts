@@ -2024,8 +2024,9 @@ export class Hud {
         : null;
       // Attacks show what reached storage; old records stored that in result.loot.
       const loot = r.kind === 'attack' ? r.banked ?? r.result.loot : r.result.loot;
-      // A held defense pays a small reward (`banked` on the defense record).
-      const held = r.kind === 'defense' && r.banked && Object.values(r.banked).some((v) => (v ?? 0) > 0) ? h('span', { class: 'chip good held' }, i18nText("ui.held_f2e1e705b1"), costChips(r.banked)) : null;
+      // A defense pays a reward for every star it denied (`banked` on the defense record). Only a raid that won
+      // no star is called held: a raid that took a star and still paid shows the plain "Reward" label.
+      const held = r.kind === 'defense' && r.banked && Object.values(r.banked).some((v) => (v ?? 0) > 0) ? h('span', { class: 'chip good held' }, r.result.stars === 0 ? i18nText("ui.held_f2e1e705b1") : i18nLabel('Reward: '), costChips(r.banked)) : null;
       const settle = answerable.has(r.id)
         ? h('button', { class: 'btn danger', type: 'button', title: i18nText("ui.attack_s_own_base_a_simulated_raider_n_0be62cf5a4", { arg1: r.opponentName }), onclick: () => { this.closeAllModals(); this.deps.onRematch?.(r.id); } }, i18nText("ui.settle_the_score_819ad8b9c9"))
         : null;

@@ -899,8 +899,17 @@ export interface RaidsDef {
   storageLootCapByHall: number[];
   /** The first `count` bot raids a village faces bring `housingShare` of a full army, `levelsBelowCap` levels under the research cap. */
   newPlayerRaids?: { count: number; housingShare: number; levelsBelowCap: number };
-  /** A bot raid held to 0 stars pays this share of the Keep's lowest raid loot. */
-  defenseWin?: { shareOfRaidLoot: number };
+  /**
+   * A bot raid held to 0 stars pays this share of the Keep's lowest raid loot (storage-capped). With `perStar`
+   * (defense audit 2026-11-16, DEF-01) every star denied pays a third of it, so a raid held to one star pays
+   * two thirds and a three-star raid nothing.
+   */
+  defenseWin?: { shareOfRaidLoot: number; perStar?: boolean };
+  /**
+   * The share of what a bot raider broke open that it carries home, by the stars it won (index 0 to 3; DEF-01).
+   * Absent: it carries everything, whatever the stars.
+   */
+  carryByStars?: number[];
   /** Settle-the-score rematches against a bot raider's base (sim/rematch.ts). */
   rematch?: { windowHours: number; shareOfRaidLoot: number };
   /**
