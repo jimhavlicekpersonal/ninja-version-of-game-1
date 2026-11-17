@@ -3,7 +3,7 @@ import { simulateOfflineRaids } from './defense';
 import type { SeasonReward } from './ranks';
 import { producedResource, collectorAmount } from './resources';
 import type { GameData, ResourceKind, VillageState } from './types';
-import { advance, type FinishedUpgrade } from './village';
+import { advance, type FinishedUpgrade, type SimEvent } from './village';
 
 export interface OfflineSummary {
   awayMs: number;
@@ -16,6 +16,8 @@ export interface OfflineSummary {
   raids: BattleRecord[];
   /** Monthly league chests that were awarded. */
   seasons: SeasonReward[];
+  /** Season Scroll tiers paid because their season ended unclaimed while the player was away (`reward` events). */
+  scroll: SimEvent[];
 }
 
 function waiting(state: VillageState, at: number, data: GameData): Partial<Record<ResourceKind, number>> {
@@ -39,8 +41,8 @@ export function computeOfflineProgress(state: VillageState, now: number, data: G
   // Finished timers before raids happen are recorded by comparing levels.
   const levelsBefore = new Map(state.buildings.map((b) => [b.id, b.level]));
   // With the online server, real players raid you instead of bots.
-  const raided = opts.botRaids === false ? { state: { ...structuredClone(state), raidCheckAt: now }, raids: [] } : simulateOfflineRaids(state, now, data);
-  const { state: next } = advance(raided.state, now, data);
+  const raided = opts.botRaids === false ? { state: { ...structuredClone(state), raidCheckAt: now }, raids: [], rewards: [] as SimEvent[] } : simulateOfflineRaids(state, now, data);
+  const { state: next, rewards } = advance(raided.state, now, data);
   const finished: FinishedUpgrade[] = [];
   for (const b of next.buildings) {
     const was = levelsBefore.get(b.id);
@@ -61,5 +63,5 @@ export function computeOfflineProgress(state: VillageState, now: number, data: G
   // Seasons are settled (chest paid, trophies softened) inside advance(), at their real end time.
   const seasons = (next.seasonLog ?? []).filter((sr) => sr.season >= state.season);
   next.lastSeenAt = now;
-  return { state: next, summary: { awayMs, finished, trained, collectorGains, raids: raided.raids.map((r) => r.record), seasons } };
+  return { state: next, summary: { awayMs, finished, trained, collectorGains, raids: raided.raids.map((r) => r.record), seasons, scroll: [...raided.rewards, ...rewards] } };
 }

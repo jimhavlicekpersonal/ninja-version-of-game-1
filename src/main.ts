@@ -1,7 +1,7 @@
 import { termsGate, provideJadeValueSwitch } from './presentation/ui/complianceUi';
 import { checkSignificantUpdate, significantUpdateBuild } from './backend/platform/ageRegulatory';
 import { t as i18nText } from './presentation/ui/i18n';
-import { listText as i18nList, fmtNumber, initLanguage, labelText as i18nLabel, t } from './presentation/ui/i18n';
+import { displayData, listText as i18nList, fmtNumber, initLanguage, labelText as i18nLabel, t } from './presentation/ui/i18n';
 import Phaser from 'phaser';
 import './presentation/ui/styles.css';
 import { Analytics, IdbEventStore, MemoryEventStore, type EventStore } from './backend/analytics/events';
@@ -797,6 +797,11 @@ function wireSound(controller: GameController, hud: Hud): void {
     if ((e.target as Element | null)?.closest?.("button, [role=\"button\"]")) sound.play('tap');
   }, { capture: true });
   controller.onEvents((events) => {
+    // A Season Scroll season that ended paid the tiers left unclaimed (`pass_end:`): say so once, in labels the
+    // game already has in every language.
+    if (events.some((e) => e.kind === 'reward' && e.source.startsWith('pass_end:'))) {
+      hud.toast([displayData(controller.data).pass.name, i18nText("ui.rewards_59afe47d9d"), i18nText("ui.claimed_ddcd277929")].join(' · '), 'success');
+    }
     for (const e of events) {
       if (e.kind === 'raid_settled') {
         // The server's answer to an online attack.

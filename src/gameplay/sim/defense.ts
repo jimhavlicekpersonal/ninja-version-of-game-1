@@ -14,7 +14,7 @@ import { defenseHonorLoss, lossTrophies, winTrophies } from './ranks';
 import { capacity, collectorAmount } from './resources';
 import { createRng, int, mixSeed, next, pick, type Rng } from './rng';
 import type { Cost, GameData, ResourceKind, VillageState } from './types';
-import { advance, hallLevel } from './village';
+import { advance, hallLevel, type SimEvent } from './village';
 
 /** Hours of shield a raid with this destruction gives (0 below the first tier). */
 export function shieldHoursFor(destruction: number, data: GameData): number {
@@ -320,18 +320,22 @@ export function raidTimes(seed: number, from: number, to: number, data: GameData
  * Bot raids during the time the player was away (after a short grace period),
  * skipping any that fall inside a shield. Returns the village advanced to `now`.
  */
-export function simulateOfflineRaids(state: VillageState, now: number, data: GameData): { state: VillageState; raids: RaidOutcome[] } {
+export function simulateOfflineRaids(state: VillageState, now: number, data: GameData): { state: VillageState; raids: RaidOutcome[]; rewards: SimEvent[] } {
   const r = data.raids;
   const start = Math.max(state.raidCheckAt, state.lastSeenAt + r.graceMinutes * 60_000);
   let s = structuredClone(state);
   const raids: RaidOutcome[] = [];
+  // What the passing of time paid on the way to each raid (Season Scroll tiers settled at their season's end).
+  const rewards: SimEvent[] = [];
   for (const t of raidTimes(state.seed, start, now, data)) {
     if (raids.length >= r.maxRaidsPerCatchUp) break;
     if (s.shieldUntil > t) continue;
-    s = advance(s, t, data).state;
+    const moved = advance(s, t, data);
+    s = moved.state;
+    rewards.push(...moved.rewards);
     const rng = createRng(mixSeed(state.seed ^ 0x2a1d, Math.floor(t / 1000)));
     raids.push(raidVillage(s, t, rng, data));
   }
   s.raidCheckAt = Math.max(state.raidCheckAt, now);
-  return { state: s, raids };
+  return { state: s, raids, rewards };
 }

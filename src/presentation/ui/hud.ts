@@ -2069,6 +2069,19 @@ export class Hud {
     for (const sr of s.seasons) {
       list.append(h('li', {}, i18nText("ui.the_season_ended_your_chest_b601d5ff95", { arg1: localizedData(this.c.data).ranks.leagues.find((l) => l.id === sr.league)?.name ?? sr.league }), costChips(sr.chest), sr.overflow ? h('span', { class: 'muted small' }, i18nText("ui.did_not_fit_in_storage_2fd00242ff"), costChips(sr.overflow), ')') : null));
     }
+    // Season Scroll tiers the season's end paid while away (never lost to the calendar): what reached storage,
+    // and what did not fit. Built from labels the game already has in every language.
+    if (s.scroll.length) {
+      const paid: Cost = {};
+      const lost: Cost = {};
+      for (const e of s.scroll) {
+        if (e.kind !== 'reward') continue;
+        for (const [k, v] of Object.entries(e.grants) as [ResourceKind, number][]) paid[k] = (paid[k] ?? 0) + v;
+        for (const [k, v] of Object.entries(e.overflow ?? {}) as [ResourceKind, number][]) lost[k] = (lost[k] ?? 0) + v;
+      }
+      const anyLost = Object.values(lost).some((v) => (v ?? 0) > 0);
+      list.append(h('li', {}, h('b', {}, localizedData(this.c.data).pass.name), ' · ', i18nText("ui.rewards_59afe47d9d"), ' · ', i18nText("ui.claimed_ddcd277929"), ' ', costChips(paid), anyLost ? h('span', { class: 'muted small' }, i18nText("ui.did_not_fit_in_storage_2fd00242ff"), costChips(lost), ')') : null));
+    }
     if (!list.childElementCount) list.append(h('li', {}, i18nText("ui.all_quiet_in_the_village_330fd36258")));
     body.append(list);
     if (s.raids.length) {

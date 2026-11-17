@@ -333,9 +333,11 @@ export function createNewVillage(now: number, data: GameData): VillageState {
  * the player only comes back at 09:00, and one that finished before midnight
  * counts toward the old day.
  */
-export function advance(state: VillageState, now: number, data: GameData): { state: VillageState; finished: FinishedUpgrade[] } {
+export function advance(state: VillageState, now: number, data: GameData): { state: VillageState; finished: FinishedUpgrade[]; rewards: SimEvent[] } {
   const next = structuredClone(state);
   const finished: FinishedUpgrade[] = [];
+  // Rewards the passing of time itself paid (today: Season Scroll tiers settled when their season ended).
+  const rewards: SimEvent[] = [];
   const timeline: { at: number; seq: number; run: () => void }[] = [];
   const cleared = new Set<string>();
   let seq = 0;
@@ -370,16 +372,18 @@ export function advance(state: VillageState, now: number, data: GameData): { sta
   timeline.sort((a, b) => a.at - b.at || a.seq - b.seq);
   for (const e of timeline) {
     settleSeasons(next, e.at, data);
+    rewards.push(...settlePassSeason(next, e.at, data));
     rollPeriods(next, e.at, data);
     e.run();
   }
   if (cleared.size) next.buildings = next.buildings.filter((b) => !cleared.has(b.id));
   finished.sort((a, b) => a.at - b.at);
   settleSeasons(next, now, data);
+  rewards.push(...settlePassSeason(next, now, data));
   rollPeriods(next, now, data);
   advanceGrove(next, now, data);
   settleRaids(next, now, hallLevel(next, data), data);
-  return { state: next, finished };
+  return { state: next, finished, rewards };
 }
 
 /** How many settled league seasons the village remembers (for the welcome-back summary and the Ranks screen). */
@@ -557,11 +561,15 @@ export function upgradeQuote(state: VillageState, id: string, data: GameData, no
  * mutates the input. Timers that ended before `now` are finished first.
  */
 export function applyCommand(state: VillageState, cmd: Command, now: number, data: GameData): CommandResult {
-  const s = advance(state, now, data).state;
+  const settled = advance(state, now, data);
+  const s = settled.state;
   const moonBefore = s.resources.moonstones;
   const r = runCommand(s, cmd, now, data);
   if (!r.ok) return r;
   afterCommand(r.state, r.events, cmd, moonBefore, now, data);
+  // What the passing of time paid on the way (Season Scroll tiers at their season's end) is reported with the
+  // command that first crossed it, so it is never credited in silence.
+  if (settled.rewards.length) r.events.unshift(...settled.rewards);
   return r;
 }
 
@@ -1335,7 +1343,12 @@ function claimTier(s: VillageState, tier: number, track: 'free' | 'premium', dat
   if (track === 'premium' && !s.pass.premium) return fail('LOCKED', 'Premium rewards need the premium Season Scroll.');
   const list = track === 'free' ? s.pass.claimedFree : s.pass.claimedPremium;
   if (list.includes(tier)) return fail('ALREADY_CLAIMED', 'Already claimed.');
-  list.push(tier);
+  return { ok: true, state: s, events: [payTier(s, tier, track, data)] };
+}
+
+/** Mark one unlocked Season Scroll tier claimed and pay it (the caller has checked it may be claimed). Mutates. */
+function payTier(s: VillageState, tier: number, track: 'free' | 'premium', data: GameData, source: 'pass' | 'pass_end' = 'pass'): SimEvent {
+  (track === 'free' ? s.pass.claimedFree : s.pass.claimedPremium).push(tier);
   const reward = passTierReward(s, tier, track, data)!;
   const newSkin = reward.skin && !s.cosmetics.owned.includes(reward.skin) ? reward.skin : null;
   const { granted, overflow } = grantReward(s, reward, data);
@@ -1348,7 +1361,32 @@ function claimTier(s: VillageState, tier: number, track: 'free' | 'premium', dat
       if (newSkin) kept.skins.push(newSkin);
     }
   }
-  return { ok: true, state: s, events: [{ kind: 'reward', source: `pass:${track}:${tier}`, grants: granted, ...(hasAny(overflow) ? { overflow } : {}) }] };
+  return { kind: 'reward', source: `${source}:${track}:${tier}`, grants: granted, ...(hasAny(overflow) ? { overflow } : {}) };
+}
+
+/** Season Scroll tiers the village has unlocked and not claimed (premium ones only with the premium Scroll), lowest first. */
+export function unclaimedPassTiers(state: VillageState, data: GameData): { tier: number; track: 'free' | 'premium' }[] {
+  const out: { tier: number; track: 'free' | 'premium' }[] = [];
+  const unlocked = unlockedTier(state, data);
+  for (const def of data.pass.tiers) {
+    if (def.tier > unlocked) continue;
+    if (!state.pass.claimedFree.includes(def.tier)) out.push({ tier: def.tier, track: 'free' });
+    if (state.pass.premium && !state.pass.claimedPremium.includes(def.tier)) out.push({ tier: def.tier, track: 'premium' });
+  }
+  return out.sort((a, b) => a.tier - b.tier || (a.track === 'free' ? -1 : 1));
+}
+
+/**
+ * A Season Scroll season that has ended pays every tier the player had unlocked and not claimed, before the
+ * Scroll starts over (retention audit RET-03, exploit audit XPL-11: the roll used to discard them, paid premium
+ * tiers included, with no warning). Exactly what the claim button would have given: same Keep scale, premium
+ * rewards recorded on the purchase for refunds, what does not fit reported as overflow. Mutates; returns the
+ * reward events (one per tier), none when the season has not ended.
+ */
+function settlePassSeason(s: VillageState, at: number, data: GameData): SimEvent[] {
+  if (passSeason(at, data) <= s.pass.season) return [];
+  // `pass_end:` marks a tier the season's end paid, so the game can tell the player (a claim by hand is `pass:`).
+  return unclaimedPassTiers(s, data).map(({ tier, track }) => payTier(s, tier, track, data, 'pass_end'));
 }
 
 function claimAchievement(s: VillageState, id: string, data: GameData): CommandResult {

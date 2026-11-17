@@ -465,10 +465,12 @@ export class GameController {
     this.checkPrepOffer(now);
     if (!trainingDone && !researchDone && !groveDue && !periodDue && !seasonDue && !s.buildings.some((b) => b.upgrade && b.upgrade.endsAt <= now)) return [];
     const logged = this.state.seasonLog.length ? this.state.seasonLog[this.state.seasonLog.length - 1].season : -1;
-    const { state, finished } = advance(this.state, now, data);
+    const { state, finished, rewards } = advance(this.state, now, data);
     this.state = state;
     this.emit(finished);
     void this.save();
+    // Season Scroll tiers settled because their season ended while the game was open: shown like a claim.
+    if (rewards.length) for (const fn of this.eventListeners) fn(rewards);
     // Report section 5 step 6: a Keep level reached may bring the Keep Celebration offer (rules in offers.json).
     if (finished.some((f) => data.buildings[f.type]?.category === 'hall')) this.triggerOffer('keep_reached');
     // A league season that ended while the game was open: show its chest like any other reward.
