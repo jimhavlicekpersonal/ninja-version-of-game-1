@@ -112,6 +112,22 @@ describe('Shadow Trial rewards', () => {
     expect(r2.ok && r2.state.trials.best).toBe(1);
   });
 
+  it('rejects client supplied relay damage on a trial', () => {
+    const { clock, state } = ready();
+    const base = trialBase(1, data);
+    const r = applyCommand(state, {
+      type: 'trialEnd',
+      tier: 1,
+      record: {
+        at: clock.now(),
+        opponentName: 'forged',
+        setup: { seed: 7, base, army: {}, startDamage: Object.fromEntries(base.buildings.map((b) => [b.id, 1e12])) },
+        deployments: [],
+      },
+    }, clock.now(), data);
+    expect(r).toMatchObject({ ok: false, code: 'INVALID_BATTLE' });
+  });
+
   it('ignores a forged base: the tier rebuilds its own fortress', () => {
     const { clock, state } = ready();
     const fake: BaseLayout = { name: 'Paper fort', hallLevel: 1, buildings: [{ id: 'h', type: 'elder_toadstool', level: 1, x: 2, y: 2 }] };

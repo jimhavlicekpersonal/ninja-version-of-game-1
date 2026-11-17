@@ -12,6 +12,7 @@
  * of the request that made them, and every resource change goes in the ledger.
  */
 import { capBaseLoot, layoutReset } from './baseRules';
+import { randomBytes } from 'node:crypto';
 import { contentHash } from '../contentHash';
 import { villageToBase } from '../../src/gameplay/sim/defense';
 import { deserialize, serialize, type SaveFile } from '../../src/gameplay/sim/save';
@@ -209,7 +210,9 @@ export async function applyCommands(ctx: ServerContext, me: Player, body: Partia
         }
         decided.set(c.seq, error);
       }
-      steps.push({ seq: c.seq, clientAt: Number(c.t), command: error ? (c.command as Command) : await realTicketsOnly(repo, c.command as Command), error });
+      let command = error ? c.command as Command : await realTicketsOnly(repo, c.command as Command);
+      if (!error && command.type === 'openDailyChest') command = { ...command, entropy: randomBytes(4).readUInt32LE(0) };
+      steps.push({ seq: c.seq, clientAt: Number(c.t), command, error });
     }
     const job: VillageReplayJob = { file: row.file, at: row.at, now, earliest: now - MAX_BACKDATE_MS, skewMs: CLOCK_SKEW_MS, steps };
     return { job, battles: steps.some((s) => !s.error && BATTLE_COMMANDS.has(s.command.type)) };

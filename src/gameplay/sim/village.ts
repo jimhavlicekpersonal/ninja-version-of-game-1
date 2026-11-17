@@ -1926,6 +1926,9 @@ function trialEnd(s: VillageState, tier: number, rec: Omit<BattleRecord, 'result
   if (!Number.isInteger(tier) || tier < 1) return fail('INVALID_BATTLE', 'Unknown Shadow Trial.');
   if (tier > nextTrialTier(s.trials.best)) return fail('LOCKED', `Clear Shadow Trial ${s.trials.best + 1} first.`, { tier: s.trials.best + 1 });
   const setup: BattleSetup = { ...rec.setup, base: trialBase(tier, data, trialVariant(s.trials, tier)) };
+  // Relay damage is server-issued for Gang War tickets only. Trials must always
+  // begin from the intact generated fortress.
+  if (setup.startDamage && Object.keys(setup.startDamage).length) return fail('INVALID_BATTLE', 'Trial fortress damage is not allowed.');
   const bad = checkBattleSetup(s, setup, data);
   if (bad) return fail('INVALID_BATTLE', bad);
   const { result } = runBattle(setup, rec.deployments, data, rec.endTick);
