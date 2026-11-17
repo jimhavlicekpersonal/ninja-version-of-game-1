@@ -15,6 +15,11 @@ suite on a changed tree, Postgres or the Node build the server image pins, and t
 are the ones its reviewers found, not a complete list. The revalidation step of section 0.3 is therefore not a
 formality.
 
+Update 2026-11-17: the owner asked for five findings to be fixed before this prompt was handed over. Parts of
+P1-01, P1-11, P1-12, P1-13 and P2-01 are therefore already in the code. The ledger
+[`docs/audit/understand-2026-11-16/PROGRESS.md`](../audit/understand-2026-11-16/PROGRESS.md) says exactly what was
+done and what is left of each, and sections 3.9 and P2-01 below point to it.
+
 Paste everything below the line into a new agentic coding session with full repository access. The work is ordered.
 Do the phases in order, one commit per work item, and report measurements after each phase. A phase may take a whole
 session; the progress ledger (section 3.9) lets a later session pick up where an earlier one stopped.
@@ -530,7 +535,10 @@ daily player on 2026-11-16, `economy.md` 1) and keep the added amount small and 
 
 ### 3.9 The progress ledger
 
-Create `docs/audit/understand-2026-11-16/PROGRESS.md` in your first commit and keep it current. One row per work
+`docs/audit/understand-2026-11-16/PROGRESS.md` already exists: a session on 2026-11-17 did parts of P1-01, P1-11,
+P1-12, P1-13 and P2-01 (the three exploits a server-held village could mint with, the Season Scroll rollover, and
+loot protection for simulated raids). Read it before anything else, revalidate each of its rows against the code as
+section 0.3 says, and do only what its "left" column lists for those items. Keep it current. One row per work
 item id from this prompt: status (`todo`, `doing`, `done`, `reverted`, `skipped: no longer true`,
 `open: needs owner`), the commit, the before and after numbers, the new or changed locale keys, and anything the
 next session must know. A session that runs out of context writes its state there before stopping. A session that
@@ -970,7 +978,10 @@ and P2-14 removes the builder-time cost.
   - `raids.carryByStars`: the share of what it broke open that a bot raider carries, by stars won. Starting value
     `[0.2, 0.5, 0.8, 1]` (the lab used `[0.1, 0.4, 0.7, 1]`).
   - `raids.defenseWin`: `shareOfRaidLoot` 0.15 with `perStar: true`, so each star denied pays a third. Keep it
-    storage-capped and report what did not fit; do not use the `uncapped` hook.
+    storage-capped and report what did not fit; do not use the `uncapped` hook. (Shipped on 2026-11-17 at 0.12,
+    with the carry table, the flooring and the types of this list: at 0.15 result 5 missed at Keep 15. The
+    measurements are in the ledger; what is left of this item is the gate test, results 1 and 2 re-measured
+    against the raider of P2-02, and the real-player limits.)
   - Fix the bug the hook carries: `raidVillage` computes `v = v0 * carry` and the storage branch does not round, so
     resources become fractional (a scratch run with the keys live left fractional resources in 19 of 24 Keep 5
     villages). Floor it, and add a test that no resource is ever fractional after a raid.
