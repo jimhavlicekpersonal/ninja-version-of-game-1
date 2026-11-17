@@ -134,4 +134,49 @@ describe('worldwide audit GLOBAL-002: import provenance', () => {
     expect(importProblem(s, T2, data)).toBeNull();
     expect(freeJadeAllowance(15)).toBeGreaterThan(2617 * 3); // the regular model player's Keep 15 balance, with room
   });
+
+  describe('exploit audit 2026-11-16 (XPL-03): liabilities the import never looked at', () => {
+    it('holds back the Jade of a stipend no checked purchase covers, and pays none of it', () => {
+      const s = played();
+      s.stipend = { left: 1, lastDay: -1, jade: 150_000 };
+      const r = checkProvenance(s, T2, data, []);
+      expect(r.state.stipend.left).toBe(0);
+      expect(r.state.stipend.jade).toBe(0);
+      expect(r.held?.jade).toBe(150_000);
+      expect(importProblem(r.state, T2, data)).toBeNull();
+    });
+
+    it('keeps a stipend this server credited, up to what that purchase added', () => {
+      const s = played();
+      s.purchases = [{ id: 'apple:tx-stipend', productId: data.store.stipend!.id, at: T2 - HOUR, usd: data.store.stipend!.usd, stipend: { payments: 30, jade: 360 } }];
+      s.stipend = { left: 30, lastDay: -1, jade: 360 };
+      const credited = [{ store: 'apple', transactionId: 'tx-stipend', status: 'credited' }] as never;
+      const kept = checkProvenance(s, T2, data, credited);
+      expect(kept.state.stipend).toMatchObject({ left: 30, jade: 360 });
+      expect(kept.held).toBeNull();
+      // The same purchase with a forged balance: only what the purchase added moves.
+      s.stipend = { left: 30, lastDay: -1, jade: 90_000 };
+      const forged = checkProvenance(s, T2, data, credited);
+      expect(forged.state.stipend).toMatchObject({ left: 30, jade: 360 });
+      expect(forged.held?.jade).toBe(90_000 - 360);
+    });
+
+    it('drops a timer\'s top-up record, so a cancel after the move refunds no Jade', () => {
+      const s = played();
+      const keep = s.buildings.find((b) => data.buildings[b.type].category === 'hall')!;
+      keep.upgrade = { startedAt: T2 - 1000, endsAt: T2 + HOUR, toLevel: keep.level + 1, cost: { acorns: 100 }, topUp: { cost: { acorns: 100 }, jade: 200_000 } } as never;
+      s.training = [{ troop: 'hedgehog_roller', startedAt: T2 - 1000, endsAt: T2 + 20_000, cost: { dew: 20 }, topUp: { cost: { dew: 20 }, jade: 200_000 } }] as never;
+      const out = checkProvenance(s, T2, data, []).state;
+      expect(out.buildings.find((b) => b.id === keep.id)!.upgrade!.topUp).toBeUndefined();
+      expect(out.training[0].topUp).toBeUndefined();
+      expect(out.training[0].cost).toEqual({ dew: 20 });
+    });
+
+    it('counts league seasons the device is behind on as settled', async () => {
+      const { seasonOf } = await import('../../../src/gameplay/sim/ranks');
+      const s = played();
+      s.season = seasonOf(T2) - 3000;
+      expect(checkProvenance(s, T2, data, []).state.season).toBe(seasonOf(T2));
+    });
+  });
 });

@@ -15,6 +15,8 @@
   },
   "matchTrophyRange": 80,
   "seasonResetFloor": 400,
+  "$commentSettle": "Exploit audit 2026-11-16 (XPL-03): a village that was away is paid for at most the last settleSeasonsMax league seasons (the season log keeps six); older ones close unpaid, so an absence or a forged season number never sizes the catch-up.",
+  "settleSeasonsMax": 6,
   "leagues": [
     {
       "id": "sprout",

@@ -48,6 +48,8 @@
   "graceMinutes": 2,
   "maxRaidsPerCatchUp": 24,
   "maxDefenseLog": 10,
+  "$commentResume": "Exploit audit 2026-11-16 (XPL-02): an interrupted Bounty Hunt attack or rematch still counts as begun when its record says for battleResumeHours after it would have ended; an older record is refused (the record's time is the game's to send).",
+  "battleResumeHours": 72,
   "botArmyMix": [
     {
       "hedgehog_roller": 0.7,

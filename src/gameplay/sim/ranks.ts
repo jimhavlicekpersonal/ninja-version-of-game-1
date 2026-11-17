@@ -75,6 +75,15 @@ export function rollSeasons(state: VillageState, now: number, data: GameData): S
   const out: SeasonReward[] = [];
   const current = seasonOf(now);
   const hall = Math.max(1, state.buildings.find((b) => data.buildings[b.type]?.category === 'hall')?.level ?? 1);
+  // Exploit audit 2026-11-16 (XPL-03): at most `settleSeasonsMax` seasons pay a chest. Older ones are closed
+  // unpaid; their softening still applies (it reaches the floor within a few dozen halvings), so the length of
+  // an absence, or a forged season number, never sizes this loop or the payout.
+  const max = data.ranks.settleSeasonsMax;
+  if (max !== undefined && current - state.season > max) {
+    const floor = data.ranks.seasonResetFloor;
+    for (let i = Math.min(64, current - state.season - max); i > 0 && state.trophies > floor; i--) state.trophies = floor + Math.floor((state.trophies - floor) / 2);
+    state.season = current - max;
+  }
   while (state.season < current) {
     const league = leagueFor(state.trophies, data);
     const before = state.trophies;

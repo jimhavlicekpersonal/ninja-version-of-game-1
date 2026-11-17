@@ -824,6 +824,11 @@ export interface RanksDef {
   attackLoss: { base: number; perTrophyDiff: number; min: number; max: number };
   matchTrophyRange: number;
   seasonResetFloor: number;
+  /**
+   * League seasons a village that was away is paid for at most (exploit audit 2026-11-16, XPL-03): older ones are
+   * closed unpaid, so neither a long absence nor a forged season number sizes the catch-up. Absent: no cap.
+   */
+  settleSeasonsMax?: number;
   leagues: LeagueDef[];
   /**
    * Generated opponents and bot raiders are picked by trophies. Strength is
@@ -882,6 +887,12 @@ export interface RaidsDef {
   /** Safety cap on raids simulated in one catch-up. */
   maxRaidsPerCatchUp: number;
   maxDefenseLog: number;
+  /**
+   * How long an interrupted battle may wait to be settled and still count as begun when its record says (exploit
+   * audit 2026-11-16, XPL-02): a Bounty Hunt attack or a rematch whose record is older than a battle's length plus
+   * this is refused, so a record's own time cannot reach back to a past event. Absent: no lower bound.
+   */
+  battleResumeHours?: number;
   /** Bot army make-up by attacker hall level: share of housing per troop. */
   botArmyMix: Record<string, number>[];
   /** Most of each resource raiders can take from storages, by the defender's hall level. */

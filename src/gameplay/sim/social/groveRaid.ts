@@ -166,8 +166,9 @@ export function settleRaids(state: VillageState, now: number, hall: number, data
   const paid: { week: number; outcome: 'win' | 'draw' | 'loss'; reward: Cost }[] = [];
   if (!g.joined) return paid;
   const def = data.social.groveRaid;
-  let lastEnded = g.settledWeek;
-  while (raidWindow(lastEnded + 1, data).end <= now) lastEnded++;
+  // The last war that has ended, worked out directly (exploit audit XPL-03: counting up from the stored week let a
+  // forged week number size the loop).
+  const lastEnded = Math.max(g.settledWeek, Math.floor((now - def.epoch - def.durationHours * HOUR) / WEEK));
   g.settledWeek = Math.max(g.settledWeek, lastEnded - def.settleWeeksMax);
   for (let week = g.settledWeek + 1; raidWindow(week, data).end <= now; week++) {
     const { end } = raidWindow(week, data);

@@ -4,8 +4,8 @@ import { hallLevel } from './keep';
 import { canTryAlternate, nextTrialTier, trialBase, trialReward, trialVariant } from './trials';
 import { armyHousing, armyReadyAt, armyValue, takeFromArmy, barracksLevel, finishTraining, housingCapacity, queueEndsAt, queueFits, queueHousing, retimeQueue, trainingQueueLimit, trainSecondsFor } from './army';
 import { runBattle, SIM_RULES, SIM_RULES_COMPATIBLE } from './battle/battle';
-import type { BattleRecord, BattleResult, BattleSetup, Deployment } from './battle/types';
-import { MS_PER_SECOND } from './clock';
+import type { BaseLayout, BattleRecord, BattleResult, BattleSetup, Deployment } from './battle/types';
+import { MS_PER_HOUR, MS_PER_SECOND } from './clock';
 import { buildingDef, levelDef, maxDefinedLevel, troopLevel } from './data';
 import { mixSeed } from './rng';
 import { leagueFor, lossTrophies, rollSeasons, seasonOf, winTrophies, type SeasonReward } from './ranks';
@@ -16,7 +16,7 @@ import { achievementViews } from './achievements';
 import { scaleReward, skipCost, topUpCost, trainingSkipCost } from './economy';
 import { canPurchase, productGrantsFor, productInfo } from './monetization';
 import { addStipend, claimStipend, emptyStipend } from './stipend';
-import { activeGoalEvent, bountyBase, ladderReward, recordBountyResult } from './goalEvents';
+import { activeGoalEvent, bountyBase, goalEventByKey, ladderReward, recordBountyResult } from './goalEvents';
 import { rematchBase, rematchReward, rematchStatus } from './rematch';
 import { scatterObstacles } from './obstacles';
 import { offerCanStillShow, triggerOffer } from './offers';
@@ -1723,6 +1723,49 @@ function checkBattleSetup(s: VillageState, setup: BattleSetup, data: GameData): 
 }
 
 /**
+ * Exploit audit 2026-11-16 (XPL-01): what a battle against a base the simulator rebuilds (a Shadow Trial, the
+ * Bounty fortress, a settle-the-score rematch) may take from the setup the game sent. Only the seed and the
+ * attacker's own loadout are kept, and each part is checked: the army, levels and donated warriors by
+ * `checkBattleSetup`, the hero against the hero this village brings (never a higher level), mastery by
+ * `masteryMatches`. `startDamage` (relay strikes: a building whose loss reaches its HP starts destroyed) is
+ * never a player's to send: it cleared forty Trial tiers with no army. The Infiltration Points rule is always
+ * on. Returns the setup to fight, or why it was refused.
+ */
+function trustedSetup(s: VillageState, sent: BattleSetup | undefined, base: BaseLayout, data: GameData): BattleSetup | string {
+  if (!sent || typeof sent !== 'object' || !sent.army || typeof sent.army !== 'object' || !Number.isFinite(sent.seed)) return 'Unknown warriors in battle.';
+  const hero = sent.hero;
+  if (hero) {
+    const own = heroFor(s, data);
+    if (!own || hero.id !== own.id || !Number.isInteger(hero.level) || hero.level < 1 || hero.level > own.level) return 'Unknown warriors in battle.';
+  }
+  const setup: BattleSetup = {
+    seed: sent.seed,
+    base,
+    army: sent.army,
+    infiltration: true,
+    ...(sent.levels ? { levels: sent.levels } : {}),
+    ...(sent.reinforcements ? { reinforcements: sent.reinforcements } : {}),
+    ...(hero ? { hero: { id: hero.id, level: hero.level } } : {}),
+    ...(sent.mastery ? { mastery: sent.mastery } : {}),
+  };
+  return checkBattleSetup(s, setup, data) ?? setup;
+}
+
+/**
+ * When a battle began (exploit audit XPL-02): the record's own time, never in the future, and never further back
+ * than a battle lasts plus the time an interrupted one may wait to be settled (`raids.battleResumeHours`). The
+ * record's time is the game's to send, so without the lower bound any past Bounty Hunt could be attacked today.
+ * Null when the record is older than that.
+ */
+function battleBegan(now: number, at: number | undefined, data: GameData): number | null {
+  const began = Math.min(now, at ?? now);
+  if (!Number.isFinite(began)) return null;
+  const hours = data.raids.battleResumeHours;
+  if (hours === undefined) return began;
+  return began >= now - data.battle.durationSeconds * MS_PER_SECOND - hours * MS_PER_HOUR ? began : null;
+}
+
+/**
  * Take a real raid's losses where they came from, the same way offline raids
  * do: loot a destroyed collector gave comes out of that collector, the rest out
  * of storage. Which buildings fell is re-simulated from the record (the server
@@ -1925,13 +1968,13 @@ function logWarAttack(s: VillageState, rec: Omit<BattleRecord, 'result' | 'id' |
 function trialEnd(s: VillageState, tier: number, rec: Omit<BattleRecord, 'result' | 'id' | 'kind'>, now: number, data: GameData): CommandResult {
   if (!Number.isInteger(tier) || tier < 1) return fail('INVALID_BATTLE', 'Unknown Shadow Trial.');
   if (tier > nextTrialTier(s.trials.best)) return fail('LOCKED', `Clear Shadow Trial ${s.trials.best + 1} first.`, { tier: s.trials.best + 1 });
-  const setup: BattleSetup = { ...rec.setup, base: trialBase(tier, data, trialVariant(s.trials, tier)) };
-  const bad = checkBattleSetup(s, setup, data);
-  if (bad) return fail('INVALID_BATTLE', bad);
+  const setup = trustedSetup(s, rec.setup, trialBase(tier, data, trialVariant(s.trials, tier)), data);
+  if (typeof setup === 'string') return fail('INVALID_BATTLE', setup);
   const { result } = runBattle(setup, rec.deployments, data, rec.endTick);
   spendTroops(s, result.used, setup);
   awardMastery(s, result, setup, data);
-  const cleared = result.stars >= data.trials.starsToClear;
+  // As in a raid (DZ-3), the free hero alone wins nothing: a clear needs warriors in the fight.
+  const cleared = result.stars >= data.trials.starsToClear && foughtWithWarriors(result, setup);
   const firstClear = cleared && tier === nextTrialTier(s.trials.best);
   let reward: Cost = {};
   let overflow: Cost = {};
@@ -1955,19 +1998,23 @@ function trialEnd(s: VillageState, tier: number, rec: Omit<BattleRecord, 'result
  * ladder step the result newly reaches pays once (Keep-scaled, storage-capped).
  */
 function bountyEnd(s: VillageState, key: string, rec: Omit<BattleRecord, 'result' | 'id' | 'kind'>, now: number, data: GameData): CommandResult {
-  const at = Math.min(now, rec.at ?? now);
-  const ev = activeGoalEvent(at, data);
-  if (!ev || ev.key !== key || ev.goal.kind !== 'bounty') return fail('NOT_AVAILABLE', 'The Bounty Hunt is not running.');
+  const at = battleBegan(now, rec.at, data);
+  const ev = at === null ? null : activeGoalEvent(at, data);
+  if (at === null || !ev || ev.key !== key || ev.goal.kind !== 'bounty') return fail('NOT_AVAILABLE', 'The Bounty Hunt is not running.');
+  // Never back to an earlier hunt than the one this village last fought in: its progress was replaced when the
+  // newer one began, so going back would start that ladder afresh (exploit audit XPL-02).
+  const last = s.goalEvent && s.goalEvent.key !== key ? goalEventByKey(s.goalEvent.key, at, data) : null;
+  if (last && ev.start < last.start) return fail('NOT_AVAILABLE', 'The Bounty Hunt is not running.');
   const keep = hallLevel(s, data);
   // The Keep the attack began with: the current one, or one below if a Keep upgrade finished mid-battle.
-  const asked = rec.setup.base?.hallLevel;
+  const asked = rec.setup?.base?.hallLevel;
   const baseKeep = asked === keep - 1 ? asked : keep;
-  const setup: BattleSetup = { ...rec.setup, base: bountyBase(s.seed, key, baseKeep, ev.goal, data) };
-  const bad = checkBattleSetup(s, setup, data);
-  if (bad) return fail('INVALID_BATTLE', bad);
+  const setup = trustedSetup(s, rec.setup, bountyBase(s.seed, key, baseKeep, ev.goal, data), data);
+  if (typeof setup === 'string') return fail('INVALID_BATTLE', setup);
   const { result } = runBattle(setup, rec.deployments, data, rec.endTick);
   spendTroops(s, result.used, setup);
-  const steps = recordBountyResult(s, key, ev.goal, result.stars, result.destruction);
+  // The free hero alone reaches no mark on the ladder (as in a raid, DZ-3).
+  const steps = foughtWithWarriors(result, setup) ? recordBountyResult(s, key, ev.goal, result.stars, result.destruction) : [];
   let wanted: Cost = {};
   for (const i of steps) wanted = sumCost(wanted, ladderReward(ev.goal.ladder[i], baseKeep, data));
   const { granted: reward, overflow } = grantResources(s, wanted, data);
@@ -1983,17 +2030,18 @@ function bountyEnd(s: VillageState, key: string, rec: Omit<BattleRecord, 'result
  * loot from buildings; a win pays the small fixed rematch reward.
  */
 function rematchEnd(s: VillageState, defenseId: string, rec: Omit<BattleRecord, 'result' | 'id' | 'kind'>, now: number, data: GameData): CommandResult {
-  const at = Math.min(now, rec.at ?? now);
+  const at = battleBegan(now, rec.at, data);
+  if (at === null) return fail('NOT_AVAILABLE', 'Too long ago: the raider has moved on.');
   const status = rematchStatus(s, defenseId, at, data);
   if (!status.ok) return fail('NOT_AVAILABLE', status.message);
   const base = rematchBase(status.record, data)!;
-  const setup: BattleSetup = { ...rec.setup, base };
-  const bad = checkBattleSetup(s, setup, data);
-  if (bad) return fail('INVALID_BATTLE', bad);
+  const setup = trustedSetup(s, rec.setup, base, data);
+  if (typeof setup === 'string') return fail('INVALID_BATTLE', setup);
   const { result } = runBattle(setup, rec.deployments, data, rec.endTick);
   spendTroops(s, result.used, setup);
   status.record.rematch = `r${s.nextSeed}`;
-  const won = result.stars >= 1;
+  // The free hero alone settles nothing (as in a raid, DZ-3).
+  const won = result.stars >= 1 && foughtWithWarriors(result, setup);
   let reward: Cost = {};
   let overflow: Cost = {};
   if (won) {

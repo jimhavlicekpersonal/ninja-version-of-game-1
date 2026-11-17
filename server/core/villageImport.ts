@@ -33,6 +33,7 @@ import { bindPlayer } from '../../src/gameplay/sim/net';
 import { hallLevel } from '../../src/gameplay/sim/village';
 import { productInfo } from '../../src/gameplay/sim/monetization';
 import { passSeason, unlockedTier } from '../../src/gameplay/sim/pass';
+import { seasonOf } from '../../src/gameplay/sim/ranks';
 import { achievementValue } from '../../src/gameplay/sim/achievements';
 import type { VillageResponse } from '../../src/backend/net/protocol';
 import type { ImportHold, Player, PurchaseRow, VillageRow } from '../repo';
@@ -77,8 +78,26 @@ export function checkProvenance(s: VillageState, now: number, data: GameData, cr
   // What each purchase really delivered (offers may convert to Jade; the record keeps it), else the catalog.
   const paidJade = confirmed.reduce((sum, p) => sum + ((p.grants ?? productInfo(data, p.productId)?.grants)?.moonstones ?? 0), 0);
   const allowed = freeJadeAllowance(hallLevel(state, data)) + paidJade;
-  const jade = Math.max(0, Math.round(state.resources.moonstones - allowed));
+  let jade = Math.max(0, Math.round(state.resources.moonstones - allowed));
   state.resources.moonstones -= jade;
+  // Exploit audit 2026-11-16 (XPL-03): the Jade a Clan Stipend still owes is paid value too, and nothing looked at
+  // it (a forged stipend of one payment paid 150,000 Jade on the first claim). Only what this server's credited
+  // stipend purchases added may move; the rest is held back like other unconfirmed Jade, never thrown away.
+  const paidStipend = confirmed.reduce((sum, p) => ({ payments: sum.payments + (p.stipend?.payments ?? 0), jade: sum.jade + (p.stipend?.jade ?? 0) }), { payments: 0, jade: 0 });
+  const owed = Math.max(0, Math.round(Number.isFinite(state.stipend.jade) ? state.stipend.jade : 0));
+  const stipendJade = Math.min(owed, paidStipend.jade);
+  jade += owed - stipendJade;
+  const left = stipendJade > 0 ? Math.max(1, Math.min(Number.isInteger(state.stipend.left) ? state.stipend.left : 0, paidStipend.payments)) : 0;
+  state.stipend = { ...state.stipend, left, jade: stipendJade };
+  // A timer's record of the Jade a top-up put into it is a claim on Jade as well (a cancel refunds it): a forged
+  // one returned 100,000. The record does not move; such a cancel refunds as resources, as timers from before
+  // those records do.
+  for (const b of state.buildings) if (b.upgrade?.topUp) delete b.upgrade.topUp;
+  for (const q of state.training) if (q.topUp) delete q.topUp;
+  for (const r of state.research.active) if (r.topUp) delete r.topUp;
+  // League seasons the device says it is behind on are not proof either: they count as settled, so an old or
+  // forged season number pays no chests here.
+  if (state.season < seasonOf(now)) state.season = seasonOf(now);
   const season = passSeason(now, data);
   const paidPass = confirmed.some((p) => productInfo(data, p.productId)?.kind === 'pass' && passSeason(p.at, data) === season);
   const premium = state.pass.premium && !paidPass;
