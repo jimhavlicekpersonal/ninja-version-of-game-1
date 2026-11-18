@@ -47,7 +47,7 @@ describe('aura lookups by kind (quality 28)', () => {
         }
       });
     }
-    expect(SIM_RULES).toBe(7);
-    expect(fnv64(parts.join('|'))).toBe('017e7540026ee6ec');
+    expect(SIM_RULES).toBe(8);
+    expect(fnv64(parts.join('|'))).toBe('faf1ab21b2af426f'); // re-pinned for SIM_RULES 8 (2026-11-18)
   }, 120_000);
 });

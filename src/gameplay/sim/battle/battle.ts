@@ -44,15 +44,22 @@ import { heroShield } from './heroAbilities';
  * (`temper.troopCuts`: healing, auras, the Mountain Shield's splash cover, revives). Rules 6 battles
  * against a Watch base play differently, so 6 is archived in server/rules/v6 and is not compatible;
  * untempered battles still play exactly as under 5 and 4.
+ *
+ * 8 (2026-11-16 replayability pass, Phase 4; docs/prompts/BEAST_MODE_2026-11-16.md): support warriors in position
+ * strike (`warriorRules.supportStrike`), Drum Monk and Herbalist auras cut, the Shadow Captain's Rally once per battle
+ * across the field, faster siege warriors, Thousand Needle / Siege Bombardier / Volcano Cannoneer / Dragon Kite Crew /
+ * Thunder Kite damage and Eclipse Ninja health through the model, Shuriken Storm's fan radius, `counterShare` 0.75,
+ * rival clans' home layouts in raids, `kit.breachRadius` removed. Live warriors behave differently in every battle,
+ * so no older rules stay compatible; rules 7 is archived in server/rules/v7.
  */
-export const SIM_RULES = 7;
+export const SIM_RULES = 8;
 
 /**
  * Older rules this code plays out identically (their battles never use the
  * newer setup fields). Their replays stay watchable, and the server checks
  * their battles with this code. Empty it on the next change to combat itself.
  */
-export const SIM_RULES_COMPATIBLE: readonly number[] = [5, 4];
+export const SIM_RULES_COMPATIBLE: readonly number[] = [];
 
 /** Whether a record can be replayed faithfully with the current rules. */
 export function replayable(record: Pick<BattleRecord, 'rules'>): boolean {

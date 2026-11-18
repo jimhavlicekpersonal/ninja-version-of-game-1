@@ -39,19 +39,20 @@ function row(keep: number, lag: number, battles: number): string[] {
   return out;
 }
 
+// Re-pinned for SIM_RULES 8 (2026-11-18): Phase 4's combat changes and P4-07's raid layouts.
 const PINNED: string[] = [
-  'K8 lag0 #0: base 6f5f245e Keep 8 deps 424e3f6d 1* 62% t644 84375405',
-  'K8 lag0 #1: base 7d17a2cf Keep 8 deps 77b21de7 2* 71% t886 d11e452d',
-  'K8 lag0 #2: base 3f8b2401 Keep 8 deps 5a93113b 1* 67% t850 59f3ca18',
-  'K8 lag2 #0: base fa099ae2 Keep 7 deps 24bc1f98 3* 100% t878 e2cda61f',
-  'K8 lag2 #1: base 56cc2214 Keep 7 deps 77b21de7 2* 83% t730 45391a3f',
-  'K8 lag2 #2: base 01aa0a57 Keep 7 deps 798fbbfd 2* 82% t732 41aacc53',
-  'K15 lag0 #0: base 6a8a4dfb Keep 15 deps 2bc68668 1* 56% t1654 bcb27d1c',
-  'K15 lag0 #1: base e9ec400e Keep 15 deps 80ce8626 3* 100% t1656 a006c332',
-  'K15 lag0 #2: base bf56858f Keep 15 deps 96cb11d4 2* 95% t1800 76e209ab',
-  'K15 lag2 #0: base ed4943f3 Keep 14 deps 2bc68668 1* 78% t1800 91f769ef',
-  'K15 lag2 #1: base 76646757 Keep 14 deps 80ce8626 3* 100% t968 9543c014',
-  'K15 lag2 #2: base 0958f3d4 Keep 14 deps 96cb11d4 1* 53% t1800 9461e48d',
+  'K8 lag0 #0: base d0358f56 Keep 8 deps 9018cbfb 3* 100% t623 266752cb',
+  'K8 lag0 #1: base d0d8ee62 Keep 8 deps 22c24102 1* 65% t1059 65616630',
+  'K8 lag0 #2: base 6f3ea2e5 Keep 8 deps 2ec9874c 3* 100% t1140 d8a9b12e',
+  'K8 lag2 #0: base 083557ac Keep 7 deps 8894ed06 3* 100% t681 6e93f037',
+  'K8 lag2 #1: base 881784bf Keep 7 deps 22c24102 1* 70% t719 0c30883b',
+  'K8 lag2 #2: base dd410f6e Keep 7 deps 798fbbfd 2* 53% t1442 e6bf2cef',
+  'K15 lag0 #0: base a454ff00 Keep 15 deps a902890c 2* 63% t1800 2efd10b2',
+  'K15 lag0 #1: base 42256ef7 Keep 15 deps 80ce8626 1* 60% t1800 1278cae0',
+  'K15 lag0 #2: base f6f1397d Keep 15 deps 96cb11d4 2* 65% t1285 beb8bb08',
+  'K15 lag2 #0: base 5e68117f Keep 14 deps a902890c 3* 100% t1681 c365c4a8',
+  'K15 lag2 #1: base 6e52bb45 Keep 14 deps 80ce8626 2* 72% t1740 5757676a',
+  'K15 lag2 #2: base a08de6a0 Keep 14 deps 96cb11d4 2* 65% t1040 dd49075c',
 ];
 
 describe('matchmaking, generated bases and the bot plan replay exactly (PUB-02)', () => {
