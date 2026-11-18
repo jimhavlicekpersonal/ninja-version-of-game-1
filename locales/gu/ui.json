@@ -83,6 +83,7 @@
   "objective.upgrade": { "en": "Upgrade {building} to Lv {level}", "text": "{building} ને સ્તર {level} સુધી અપગ્રેડ કરો" },
   "objective.save": { "en": "{need} more for {building} Lv {level}: collect or raid", "text": "{building} સ્તર {level} માટે હજુ {need} જોઈએ: એકત્ર કરો અથવા ધાડ પાડો" },
   "objective.builders": { "en": "Next Artisan free in {time}", "text": "આગલો કારીગર {time}માં મુક્ત" },
+  "objective.claim": { "en": "Ready to claim in {where}", "text": "" },
   "objective.aria": { "en": "Next: {text}", "text": "આગળ: {text}" },
   "toast.raided": { "en": "{n, plural, one {# player raided your village} other {# players raided your village}}. See the battle log.", "text": "{n, plural, one {# ખેલાડીએ તમારા ગામ પર ધાડ પાડી} other {# ખેલાડીઓએ તમારા ગામ પર ધાડ પાડી}}. યુદ્ધ નોંધ જુઓ." },
   "unlocks.chip": { "en": "{n, plural, one {# unlock} other {# unlocks}}", "text": "{n, plural, one {# અનલૉક} other {# અનલૉક}}" },

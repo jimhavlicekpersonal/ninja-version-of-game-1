@@ -83,6 +83,7 @@
   "objective.upgrade": { "en": "Upgrade {building} to Lv {level}", "text": "{building} کو لیول {level} تک اپ گریڈ کریں" },
   "objective.save": { "en": "{need} more for {building} Lv {level}: collect or raid", "text": "{building} لیول {level} کے لیے مزید {need} درکار: جمع کریں یا دھاوا بولیں" },
   "objective.builders": { "en": "Next Artisan free in {time}", "text": "اگلا کاریگر {time} میں فارغ" },
+  "objective.claim": { "en": "Ready to claim in {where}", "text": "" },
   "objective.aria": { "en": "Next: {text}", "text": "اگلا: {text}" },
   "toast.raided": { "en": "{n, plural, one {# player raided your village} other {# players raided your village}}. See the battle log.", "text": "{n, plural, one {# کھلاڑی نے آپ کے گاؤں پر دھاوا بولا} other {# کھلاڑیوں نے آپ کے گاؤں پر دھاوا بولا}}۔ جنگی ریکارڈ دیکھیں۔" },
   "unlocks.chip": { "en": "{n, plural, one {# unlock} other {# unlocks}}", "text": "{n, plural, one {# نئی چیز کھلی} other {# نئی چیزیں کھلیں}}" },

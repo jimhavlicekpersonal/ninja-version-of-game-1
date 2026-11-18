@@ -83,6 +83,7 @@
   "objective.upgrade": { "en": "Upgrade {building} to Lv {level}", "text": "{building}: покращити до рів. {level}" },
   "objective.save": { "en": "{need} more for {building} Lv {level}: collect or raid", "text": "Ще {need} для «{building}» рів. {level}: збирай або нападай" },
   "objective.builders": { "en": "Next Artisan free in {time}", "text": "Наступний майстер звільниться через {time}" },
+  "objective.claim": { "en": "Ready to claim in {where}", "text": "" },
   "objective.aria": { "en": "Next: {text}", "text": "Далі: {text}" },
   "toast.raided": { "en": "{n, plural, one {# player raided your village} other {# players raided your village}}. See the battle log.", "text": "{n, plural, one {На твоє село напав # гравець} few {На твоє село напали # гравці} many {На твоє село напали # гравців} other {На твоє село напали # гравця}}. Дивись журнал боїв." },
   "unlocks.chip": { "en": "{n, plural, one {# unlock} other {# unlocks}}", "text": "{n, plural, one {# відкриття} few {# відкриття} many {# відкриттів} other {# відкриття}}" },

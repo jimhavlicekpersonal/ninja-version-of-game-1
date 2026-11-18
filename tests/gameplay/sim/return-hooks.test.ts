@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest';
 import { calendarView, localDayIndex, LOCAL_TIME_CHANGE_DAYS } from '../../../src/gameplay/sim/calendar';
 import { defaultData as data } from '../../../src/gameplay/sim/data';
 import { armyBehindKeep, nextObjective } from '../../../src/gameplay/sim/objective';
+import { achievementViews } from '../../../src/gameplay/sim/achievements';
 import { capacity } from '../../../src/gameplay/sim/resources';
 import { migrate, serialize } from '../../../src/gameplay/sim/save';
 import { PLAYER_COMMANDS } from '../../../src/gameplay/sim/serverEconomy';
@@ -119,5 +120,53 @@ describe('growth 7: the next objective', () => {
     expect(armyBehindKeep({ ...s, army: { hedgehog_roller: 20 } }, data)).toBe(false);
     const o = nextObjective(rushed, T, data);
     if (o.kind === 'upgrade') expect(data.buildings[o.type].category).not.toBe('hall');
+  });
+});
+
+describe('P6-05 (RET-10, UIS-04): the objective chip reaches what is already earned or free', () => {
+  const base = () => {
+    let s = createNewVillage(T, data);
+    s = run(s, { type: 'openDailyChest' }, T);
+    s = run(s, { type: 'claimCalendar' }, T);
+    // Storage under 90%, so P3-11's "make room first" does not come first.
+    s.resources = { ...s.resources, acorns: 100, dew: 100 };
+    return s;
+  };
+
+  it('a finished task or an unlocked Scroll tier comes right after the chest, before any upgrade', () => {
+    const s = base();
+    s.pass.points = data.pass.pointsPerTier;
+    expect(nextObjective(s, T, data)).toEqual({ kind: 'claim', what: 'pass' });
+  });
+
+  it('a claimable achievement, then the Keep seal', () => {
+    const s = base();
+    const def = data.achievements[0];
+    s.achievements = {};
+    (s.stats as unknown as Record<string, number>)[def.stat as string] = def.tiers[0][0];
+    const view = achievementViews(s, 1, data).find((a) => a.def.id === def.id)!;
+    expect(view.claimable).toBe(true);
+    expect(nextObjective(s, T, data)).toEqual({ kind: 'claim', what: 'achievement' });
+  });
+
+  it('with a full army, an open rematch or a goal event step comes before a plain raid; never anything paid', () => {
+    const s = base();
+    const at = s.buildings[0];
+    s.buildings.push({ id: 'camp-x', type: 'army_camp', level: 1, x: at.x + 8, y: at.y + 8, upgrade: null, collector: null } as never);
+    s.army = { hedgehog_roller: 100 };
+    const o = nextObjective(s, T, data);
+    expect(['raid', 'rematch', 'goalEvent']).toContain(o.kind);
+    expect(JSON.stringify(o)).not.toMatch(/moonstones|jade|store|offer/i);
+  });
+
+  it('with nothing to build, the next Trial tier at or below the Keep comes before waiting for builders', () => {
+    const s = base();
+    const at = s.buildings[0];
+    s.buildings.push({ id: 'camp-y', type: 'army_camp', level: 1, x: at.x + 8, y: at.y + 8, upgrade: null, collector: null } as never);
+    s.resources = { ...s.resources, acorns: 0, dew: 0 };
+    for (const b of s.buildings) b.upgrade = { startedAt: T, endsAt: T + HOUR, toLevel: b.level + 1 } as never;
+    const o = nextObjective(s, T, data);
+    expect(['trial', 'drill']).toContain(o.kind);
+    if (o.kind === 'trial') expect(o.tier).toBeGreaterThanOrEqual(1);
   });
 });

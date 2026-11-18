@@ -83,6 +83,7 @@
   "objective.upgrade": { "en": "Upgrade {building} to Lv {level}", "text": "আপগ্রেড করুন: {building}, লেভেল {level}" },
   "objective.save": { "en": "{need} more for {building} Lv {level}: collect or raid", "text": "{building} লেভেল {level}: আরও {need} দরকার, সংগ্রহ করুন বা হানা দিন" },
   "objective.builders": { "en": "Next Artisan free in {time}", "text": "পরের কারিগর খালি হবে {time} পরে" },
+  "objective.claim": { "en": "Ready to claim in {where}", "text": "" },
   "objective.aria": { "en": "Next: {text}", "text": "পরবর্তী: {text}" },
   "toast.raided": { "en": "{n, plural, one {# player raided your village} other {# players raided your village}}. See the battle log.", "text": "{n, plural, one {# জন খেলোয়াড় আপনার গ্রামে হানা দিয়েছে} other {# জন খেলোয়াড় আপনার গ্রামে হানা দিয়েছে}}। যুদ্ধের খাতা দেখুন।" },
   "unlocks.chip": { "en": "{n, plural, one {# unlock} other {# unlocks}}", "text": "{n, plural, one {#টি নতুন জিনিস খুলেছে} other {#টি নতুন জিনিস খুলেছে}}" },

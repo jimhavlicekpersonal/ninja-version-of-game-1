@@ -83,6 +83,7 @@
   "objective.upgrade": { "en": "Upgrade {building} to Lv {level}", "text": "將{building}升到 {level} 級" },
   "objective.save": { "en": "{need} more for {building} Lv {level}: collect or raid", "text": "{building} {level} 級還需 {need}：收集或突襲" },
   "objective.builders": { "en": "Next Artisan free in {time}", "text": "下一位工匠空閒：{time}" },
+  "objective.claim": { "en": "Ready to claim in {where}", "text": "" },
   "objective.aria": { "en": "Next: {text}", "text": "下一步：{text}" },
   "toast.raided": { "en": "{n, plural, one {# player raided your village} other {# players raided your village}}. See the battle log.", "text": "{n, plural, other {# 位玩家突襲了你的村莊}}。請查看戰鬥紀錄。" },
   "unlocks.chip": { "en": "{n, plural, one {# unlock} other {# unlocks}}", "text": "{n, plural, other {# 項解鎖}}" },

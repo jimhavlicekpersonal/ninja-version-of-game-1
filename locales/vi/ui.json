@@ -83,6 +83,7 @@
   "objective.upgrade": { "en": "Upgrade {building} to Lv {level}", "text": "Nâng {building} lên cấp {level}" },
   "objective.save": { "en": "{need} more for {building} Lv {level}: collect or raid", "text": "Còn thiếu {need} cho {building} cấp {level}: hãy thu thập hoặc đột kích" },
   "objective.builders": { "en": "Next Artisan free in {time}", "text": "Thợ tiếp theo rảnh sau {time}" },
+  "objective.claim": { "en": "Ready to claim in {where}", "text": "" },
   "objective.aria": { "en": "Next: {text}", "text": "Tiếp theo: {text}" },
   "toast.raided": { "en": "{n, plural, one {# player raided your village} other {# players raided your village}}. See the battle log.", "text": "{n, plural, other {# người chơi đã đột kích làng của bạn}}. Xem nhật ký chiến đấu." },
   "unlocks.chip": { "en": "{n, plural, one {# unlock} other {# unlocks}}", "text": "{n, plural, other {# mục mở khóa}}" },

@@ -83,6 +83,7 @@
   "objective.upgrade": { "en": "Upgrade {building} to Lv {level}", "text": "Inganta {building} zuwa mataki {level}" },
   "objective.save": { "en": "{need} more for {building} Lv {level}: collect or raid", "text": "Ana buƙatar ƙarin {need} don {building} mataki {level}: ku karɓa ko ku kai hari" },
   "objective.builders": { "en": "Next Artisan free in {time}", "text": "Magini na gaba zai sami sarari cikin {time}" },
+  "objective.claim": { "en": "Ready to claim in {where}", "text": "" },
   "objective.aria": { "en": "Next: {text}", "text": "Na gaba: {text}" },
   "toast.raided": { "en": "{n, plural, one {# player raided your village} other {# players raided your village}}. See the battle log.", "text": "{n, plural, one {An kai wa ƙauyenku hari daga ɗan wasa #} other {An kai wa ƙauyenku hari daga ƴan wasa #}}. Ku duba tarihin yaƙi." },
   "unlocks.chip": { "en": "{n, plural, one {# unlock} other {# unlocks}}", "text": "{n, plural, one {buɗewa #} other {buɗewa #}}" },

@@ -83,6 +83,7 @@
   "objective.upgrade": { "en": "Upgrade {building} to Lv {level}", "text": "Mejora {building} al niv. {level}" },
   "objective.save": { "en": "{need} more for {building} Lv {level}: collect or raid", "text": "Faltan {need} para {building} niv. {level}: recoge o saquea" },
   "objective.builders": { "en": "Next Artisan free in {time}", "text": "Próximo Artesano libre en {time}" },
+  "objective.claim": { "en": "Ready to claim in {where}", "text": "" },
   "objective.aria": { "en": "Next: {text}", "text": "Siguiente: {text}" },
   "toast.raided": { "en": "{n, plural, one {# player raided your village} other {# players raided your village}}. See the battle log.", "text": "{n, plural, one {# jugador saqueó tu aldea} other {# jugadores saquearon tu aldea}}. Mira el registro de batallas." },
   "unlocks.chip": { "en": "{n, plural, one {# unlock} other {# unlocks}}", "text": "{n, plural, one {# desbloqueo} other {# desbloqueos}}" },

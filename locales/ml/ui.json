@@ -83,6 +83,7 @@
   "objective.upgrade": { "en": "Upgrade {building} to Lv {level}", "text": "{building} Lv {level} ആയി അപ്ഗ്രേഡ് ചെയ്യുക" },
   "objective.save": { "en": "{need} more for {building} Lv {level}: collect or raid", "text": "{building} Lv {level}: ഇനി {need} കൂടി വേണം, ശേഖരിക്കുക അല്ലെങ്കിൽ റെയ്ഡ് ചെയ്യുക" },
   "objective.builders": { "en": "Next Artisan free in {time}", "text": "അടുത്ത ശില്പി {time} കഴിഞ്ഞ് സ്വതന്ത്രം" },
+  "objective.claim": { "en": "Ready to claim in {where}", "text": "" },
   "objective.aria": { "en": "Next: {text}", "text": "അടുത്തത്: {text}" },
   "toast.raided": { "en": "{n, plural, one {# player raided your village} other {# players raided your village}}. See the battle log.", "text": "{n, plural, one {ഒരാൾ നിങ്ങളുടെ ഗ്രാമം റെയ്ഡ് ചെയ്തു} other {# പേർ നിങ്ങളുടെ ഗ്രാമം റെയ്ഡ് ചെയ്തു}}. യുദ്ധരേഖ കാണുക." },
   "unlocks.chip": { "en": "{n, plural, one {# unlock} other {# unlocks}}", "text": "{n, plural, one {# പുതിയത്} other {# പുതിയവ}}" },

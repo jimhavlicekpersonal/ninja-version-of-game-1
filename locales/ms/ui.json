@@ -83,6 +83,7 @@
   "objective.upgrade": { "en": "Upgrade {building} to Lv {level}", "text": "Naik taraf {building} ke Tahap {level}" },
   "objective.save": { "en": "{need} more for {building} Lv {level}: collect or raid", "text": "Perlu {need} lagi untuk {building} Tahap {level}: kutip atau serbu" },
   "objective.builders": { "en": "Next Artisan free in {time}", "text": "Tukang seterusnya bebas dalam {time}" },
+  "objective.claim": { "en": "Ready to claim in {where}", "text": "" },
   "objective.aria": { "en": "Next: {text}", "text": "Seterusnya: {text}" },
   "toast.raided": { "en": "{n, plural, one {# player raided your village} other {# players raided your village}}. See the battle log.", "text": "{n, plural, other {# pemain menyerbu kampung kamu}}. Lihat log pertempuran." },
   "unlocks.chip": { "en": "{n, plural, one {# unlock} other {# unlocks}}", "text": "{n, plural, other {# buka kunci}}" },

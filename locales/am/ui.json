@@ -83,6 +83,7 @@
   "objective.upgrade": { "en": "Upgrade {building} to Lv {level}", "text": "ወደ ደረጃ {level} ያሻሽሉ፦ {building}" },
   "objective.save": { "en": "{need} more for {building} Lv {level}: collect or raid", "text": "{building} ደረጃ {level}፦ ተጨማሪ {need} ያስፈልጋል፤ ይሰብስቡ ወይም ይውረሩ" },
   "objective.builders": { "en": "Next Artisan free in {time}", "text": "ቀጣዩ ባለሙያ ነፃ እስኪሆን፦ {time}" },
+  "objective.claim": { "en": "Ready to claim in {where}", "text": "" },
   "objective.aria": { "en": "Next: {text}", "text": "ቀጣይ፦ {text}" },
   "toast.raided": { "en": "{n, plural, one {# player raided your village} other {# players raided your village}}. See the battle log.", "text": "{n, plural, one {# ተጫዋች መንደርዎን ወረሩ} other {# ተጫዋቾች መንደርዎን ወረሩ}}። የውጊያ መዝገቡን ይመልከቱ።" },
   "unlocks.chip": { "en": "{n, plural, one {# unlock} other {# unlocks}}", "text": "{n, plural, one {# የተከፈተ} other {# የተከፈቱ}}" },

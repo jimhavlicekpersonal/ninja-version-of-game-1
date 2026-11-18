@@ -83,6 +83,7 @@
   "objective.upgrade": { "en": "Upgrade {building} to Lv {level}", "text": "Fejlesztés: {building}, szint: {level}" },
   "objective.save": { "en": "{need} more for {building} Lv {level}: collect or raid", "text": "Még {need} kell ehhez: {building} (szint: {level}). Gyűjts vagy portyázz" },
   "objective.builders": { "en": "Next Artisan free in {time}", "text": "Következő szabad Mester: {time}" },
+  "objective.claim": { "en": "Ready to claim in {where}", "text": "" },
   "objective.aria": { "en": "Next: {text}", "text": "Következő: {text}" },
   "toast.raided": { "en": "{n, plural, one {# player raided your village} other {# players raided your village}}. See the battle log.", "text": "{n, plural, one {# játékos portyázott a faludban} other {# játékos portyázott a faludban}}. Nézd meg a csatanaplót." },
   "unlocks.chip": { "en": "{n, plural, one {# unlock} other {# unlocks}}", "text": "{n, plural, one {# feloldás} other {# feloldás}}" },

@@ -83,6 +83,7 @@
   "objective.upgrade": { "en": "Upgrade {building} to Lv {level}", "text": "อัปเกรด {building} เป็น Lv {level}" },
   "objective.save": { "en": "{need} more for {building} Lv {level}: collect or raid", "text": "ต้องการอีก {need} สำหรับ {building} Lv {level}: เก็บหรือบุก" },
   "objective.builders": { "en": "Next Artisan free in {time}", "text": "ช่างฝีมือคนถัดไปว่างในอีก {time}" },
+  "objective.claim": { "en": "Ready to claim in {where}", "text": "" },
   "objective.aria": { "en": "Next: {text}", "text": "ถัดไป: {text}" },
   "toast.raided": { "en": "{n, plural, one {# player raided your village} other {# players raided your village}}. See the battle log.", "text": "{n, plural, other {มีผู้เล่น # คนบุกหมู่บ้านของคุณ}} ดูบันทึกการรบ" },
   "unlocks.chip": { "en": "{n, plural, one {# unlock} other {# unlocks}}", "text": "{n, plural, other {ปลดล็อก # รายการ}}" },

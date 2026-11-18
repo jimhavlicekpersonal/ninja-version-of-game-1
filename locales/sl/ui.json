@@ -83,6 +83,7 @@
   "objective.upgrade": { "en": "Upgrade {building} to Lv {level}", "text": "{building}: izboljšaj na raven {level}" },
   "objective.save": { "en": "{need} more for {building} Lv {level}: collect or raid", "text": "{building}, raven {level}: manjka še {need}. Pobiraj ali napadaj" },
   "objective.builders": { "en": "Next Artisan free in {time}", "text": "Naslednji mojster bo prost čez {time}" },
+  "objective.claim": { "en": "Ready to claim in {where}", "text": "" },
   "objective.aria": { "en": "Next: {text}", "text": "Naslednje: {text}" },
   "toast.raided": { "en": "{n, plural, one {# player raided your village} other {# players raided your village}}. See the battle log.", "text": "{n, plural, one {Vpad v tvojo vas: # igralec} two {Vpad v tvojo vas: # igralca} few {Vpad v tvojo vas: # igralci} other {Vpad v tvojo vas: # igralcev}}. Poglej dnevnik bitk." },
   "unlocks.chip": { "en": "{n, plural, one {# unlock} other {# unlocks}}", "text": "{n, plural, one {# novost} two {# novosti} few {# novosti} other {# novosti}}" },

@@ -83,6 +83,7 @@
   "objective.upgrade": { "en": "Upgrade {building} to Lv {level}", "text": "Îmbunătățire: {building} la Nv. {level}" },
   "objective.save": { "en": "{need} more for {building} Lv {level}: collect or raid", "text": "Încă {need} pentru {building} Nv. {level}: colectează sau atacă" },
   "objective.builders": { "en": "Next Artisan free in {time}", "text": "Următorul Meșteșugar liber în {time}" },
+  "objective.claim": { "en": "Ready to claim in {where}", "text": "" },
   "objective.aria": { "en": "Next: {text}", "text": "Următorul: {text}" },
   "toast.raided": { "en": "{n, plural, one {# player raided your village} other {# players raided your village}}. See the battle log.", "text": "{n, plural, one {# jucător ți-a atacat satul} few {# jucători ți-au atacat satul} other {# de jucători ți-au atacat satul}}. Vezi jurnalul de luptă." },
   "unlocks.chip": { "en": "{n, plural, one {# unlock} other {# unlocks}}", "text": "{n, plural, one {# deblocare} few {# deblocări} other {# de deblocări}}" },

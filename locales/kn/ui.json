@@ -83,6 +83,7 @@
   "objective.upgrade": { "en": "Upgrade {building} to Lv {level}", "text": "ಅಪ್‌ಗ್ರೇಡ್: {building}, ಮಟ್ಟ {level} ವರೆಗೆ" },
   "objective.save": { "en": "{need} more for {building} Lv {level}: collect or raid", "text": "{building} ಮಟ್ಟ {level} ಗಾಗಿ ಇನ್ನೂ {need} ಬೇಕು: ಸಂಗ್ರಹಿಸಿ ಅಥವಾ ದಾಳಿ ಮಾಡಿ" },
   "objective.builders": { "en": "Next Artisan free in {time}", "text": "ಮುಂದಿನ ಕುಶಲಕರ್ಮಿ {time} ನಂತರ ಬಿಡುವು" },
+  "objective.claim": { "en": "Ready to claim in {where}", "text": "" },
   "objective.aria": { "en": "Next: {text}", "text": "ಮುಂದಿನದು: {text}" },
   "toast.raided": { "en": "{n, plural, one {# player raided your village} other {# players raided your village}}. See the battle log.", "text": "{n, plural, one {# ಆಟಗಾರರು ನಿಮ್ಮ ಗ್ರಾಮದ ಮೇಲೆ ದಾಳಿ ಮಾಡಿದ್ದಾರೆ} other {# ಆಟಗಾರರು ನಿಮ್ಮ ಗ್ರಾಮದ ಮೇಲೆ ದಾಳಿ ಮಾಡಿದ್ದಾರೆ}}. ಯುದ್ಧ ದಾಖಲೆ ನೋಡಿ." },
   "unlocks.chip": { "en": "{n, plural, one {# unlock} other {# unlocks}}", "text": "{n, plural, one {# ಹೊಸ ಅನ್‌ಲಾಕ್} other {# ಹೊಸ ಅನ್‌ಲಾಕ್‌ಗಳು}}" },

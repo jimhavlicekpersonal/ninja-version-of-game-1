@@ -83,6 +83,7 @@
   "objective.upgrade": { "en": "Upgrade {building} to Lv {level}", "text": "Vylepšit: {building} na úr. {level}" },
   "objective.save": { "en": "{need} more for {building} Lv {level}: collect or raid", "text": "Chybí {need} (budova {building}, úr. {level}): vybírej nebo přepadávej" },
   "objective.builders": { "en": "Next Artisan free in {time}", "text": "Další řemeslník volný za {time}" },
+  "objective.claim": { "en": "Ready to claim in {where}", "text": "" },
   "objective.aria": { "en": "Next: {text}", "text": "Další: {text}" },
   "toast.raided": { "en": "{n, plural, one {# player raided your village} other {# players raided your village}}. See the battle log.", "text": "{n, plural, one {Tvoji vesnici přepadl # hráč} few {Tvoji vesnici přepadli # hráči} many {Tvoji vesnici přepadlo # hráče} other {Tvoji vesnici přepadlo # hráčů}}. Podívej se do záznamu bitev." },
   "unlocks.chip": { "en": "{n, plural, one {# unlock} other {# unlocks}}", "text": "{n, plural, one {# odemčení} few {# odemčení} many {# odemčení} other {# odemčení}}" },

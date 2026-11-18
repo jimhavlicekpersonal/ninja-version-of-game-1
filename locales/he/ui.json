@@ -83,6 +83,7 @@
   "objective.upgrade": { "en": "Upgrade {building} to Lv {level}", "text": "שדרוג {building} לרמה {level}" },
   "objective.save": { "en": "{need} more for {building} Lv {level}: collect or raid", "text": "חסרים עוד {need} עבור {building} רמה {level}: אספו או פשטו" },
   "objective.builders": { "en": "Next Artisan free in {time}", "text": "האומן הבא יתפנה בעוד {time}" },
+  "objective.claim": { "en": "Ready to claim in {where}", "text": "" },
   "objective.aria": { "en": "Next: {text}", "text": "הבא בתור: {text}" },
   "toast.raided": { "en": "{n, plural, one {# player raided your village} other {# players raided your village}}. See the battle log.", "text": "{n, plural, one {שחקן אחד פשט על הכפר שלך} two {# שחקנים פשטו על הכפר שלך} other {# שחקנים פשטו על הכפר שלך}}. ראו את יומן הקרבות." },
   "unlocks.chip": { "en": "{n, plural, one {# unlock} other {# unlocks}}", "text": "{n, plural, one {פתיחה אחת} two {# פתיחות} other {# פתיחות}}" },

@@ -83,6 +83,7 @@
   "objective.upgrade": { "en": "Upgrade {building} to Lv {level}", "text": "Päivitä {building} tasolle {level}" },
   "objective.save": { "en": "{need} more for {building} Lv {level}: collect or raid", "text": "Tarvitaan vielä {need}: {building} tasolle {level}. Kerää tai ryöstä" },
   "objective.builders": { "en": "Next Artisan free in {time}", "text": "Seuraava Käsityöläinen vapautuu {time} kuluttua" },
+  "objective.claim": { "en": "Ready to claim in {where}", "text": "" },
   "objective.aria": { "en": "Next: {text}", "text": "Seuraavaksi: {text}" },
   "toast.raided": { "en": "{n, plural, one {# player raided your village} other {# players raided your village}}. See the battle log.", "text": "{n, plural, one {# pelaaja ryösti kyläsi} other {# pelaajaa ryösti kyläsi}}. Katso taisteluloki." },
   "unlocks.chip": { "en": "{n, plural, one {# unlock} other {# unlocks}}", "text": "{n, plural, one {# avaus} other {# avausta}}" },

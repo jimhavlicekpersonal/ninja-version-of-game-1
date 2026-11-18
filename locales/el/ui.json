@@ -83,6 +83,7 @@
   "objective.upgrade": { "en": "Upgrade {building} to Lv {level}", "text": "Αναβάθμισε: {building} σε Επ. {level}" },
   "objective.save": { "en": "{need} more for {building} Lv {level}: collect or raid", "text": "Λείπουν {need} για {building} Επ. {level}: συλλογή ή επιδρομή" },
   "objective.builders": { "en": "Next Artisan free in {time}", "text": "Επόμενος ελεύθερος Τεχνίτης σε {time}" },
+  "objective.claim": { "en": "Ready to claim in {where}", "text": "" },
   "objective.aria": { "en": "Next: {text}", "text": "Επόμενο: {text}" },
   "toast.raided": { "en": "{n, plural, one {# player raided your village} other {# players raided your village}}. See the battle log.", "text": "{n, plural, one {# παίκτης έκανε επιδρομή στο χωριό σου} other {# παίκτες έκαναν επιδρομή στο χωριό σου}}. Δες το ημερολόγιο μαχών." },
   "unlocks.chip": { "en": "{n, plural, one {# unlock} other {# unlocks}}", "text": "{n, plural, one {# ξεκλείδωμα} other {# ξεκλειδώματα}}" },

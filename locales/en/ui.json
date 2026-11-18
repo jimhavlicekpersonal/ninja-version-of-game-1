@@ -83,6 +83,7 @@
   "objective.upgrade": "Upgrade {building} to Lv {level}",
   "objective.save": "{need} more for {building} Lv {level}: collect or raid",
   "objective.builders": "Next Artisan free in {time}",
+  "objective.claim": "Ready to claim in {where}",
   "objective.aria": "Next: {text}",
   "toast.raided": "{n, plural, one {# player raided your village} other {# players raided your village}}. See the battle log.",
   "unlocks.chip": "{n, plural, one {# unlock} other {# unlocks}}",

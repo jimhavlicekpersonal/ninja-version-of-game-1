@@ -866,6 +866,12 @@ a.btn.primary, a.btn.danger, a.btn.sky { color: #fff; }
 .objective-chip { display: inline-flex; align-items: center; gap: 6px; pointer-events: auto; max-width: 100%; min-height: 36px; padding-block: 5px; padding-inline: 6px 12px; border: 0; border-radius: 999px; background: rgba(20, 26, 34, .82); color: #fff; font: inherit; font-size: 0.8125rem; font-weight: 700; text-align: start; box-shadow: 0 2px 8px rgba(0, 0, 0, .3); }
 .objective-chip .icon { width: 22px; height: 22px; flex: none; }
 .objective-chip span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* P6-05 (UIS-04): the chip's sentence takes two lines before it is cut (a 76-106 character line on a 20-40 character
+   chip); the shortfall shows as cost chips. */
+.objective-chip { border-radius: 18px; }
+.objective-chip > span:not([aria-hidden]) { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; line-height: 1.2; min-width: 0; }
+.objective-chip .cost { display: inline-flex; gap: 3px; flex: none; }
+.objective-chip .cost .chip { font-size: 0.75rem; padding: 1px 6px; min-height: 0; background: rgba(255, 255, 255, .16); color: #fff; }
 .objective-chip:disabled { opacity: .85; }
 .unlock-chip { display: flex; align-items: center; gap: 4px; pointer-events: auto; max-width: 100%; }
 /* min-width 0: a long translated label truncates instead of pushing the dismiss button under the side rail. */

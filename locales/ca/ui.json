@@ -83,6 +83,7 @@
   "objective.upgrade": { "en": "Upgrade {building} to Lv {level}", "text": "Millora: {building} fins al Nv. {level}" },
   "objective.save": { "en": "{need} more for {building} Lv {level}: collect or raid", "text": "Falten {need} per a {building} Nv. {level}: recull o fes incursions" },
   "objective.builders": { "en": "Next Artisan free in {time}", "text": "Proper Artesà lliure d'aquí a {time}" },
+  "objective.claim": { "en": "Ready to claim in {where}", "text": "" },
   "objective.aria": { "en": "Next: {text}", "text": "Següent: {text}" },
   "toast.raided": { "en": "{n, plural, one {# player raided your village} other {# players raided your village}}. See the battle log.", "text": "{n, plural, one {# jugador ha assaltat el teu poble} other {# jugadors han assaltat el teu poble}}. Consulta el registre de batalles." },
   "unlocks.chip": { "en": "{n, plural, one {# unlock} other {# unlocks}}", "text": "{n, plural, one {# desbloqueig} other {# desbloquejos}}" },

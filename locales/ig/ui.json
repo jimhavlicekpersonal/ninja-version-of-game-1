@@ -83,6 +83,7 @@
   "objective.upgrade": { "en": "Upgrade {building} to Lv {level}", "text": "Kwalite {building} ruo ọkwa {level}" },
   "objective.save": { "en": "{need} more for {building} Lv {level}: collect or raid", "text": "Ọ fọdụrụ {need} maka {building} ọkwa {level}: nara ma ọ bụ wakpo" },
   "objective.builders": { "en": "Next Artisan free in {time}", "text": "Onye Ọrụaka ọzọ ga-ezu ike n'ime {time}" },
+  "objective.claim": { "en": "Ready to claim in {where}", "text": "" },
   "objective.aria": { "en": "Next: {text}", "text": "Nke ọzọ: {text}" },
   "toast.raided": { "en": "{n, plural, one {# player raided your village} other {# players raided your village}}. See the battle log.", "text": "{n, plural, other {Ndị egwuregwu # wakporo obodo gị}}. Lee akụkọ agha." },
   "unlocks.chip": { "en": "{n, plural, one {# unlock} other {# unlocks}}", "text": "{n, plural, other {Mmeghe #}}" },

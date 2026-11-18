@@ -1375,15 +1375,32 @@ export class Hud {
     let ic = icons.star;
     let text = '';
     let action: (() => void) | null = null;
+    let chips: HTMLElement | null = null;
     if (o.kind === 'chest') {
       [ic, text, action] = [icons.chest, t('objective.chest'), () => this.daily.openDaily()];
     } else if (o.kind === 'raid') {
       [ic, text, action] = [icons.swords, t('objective.raid'), () => this.deps.onAttack()];
     } else if (o.kind === 'upgrade') {
-      [ic, text, action] = [icons.hammer, o.keep ? t('objective.keep', { level: o.toLevel }) : t('objective.upgrade', { building: name(o.type), level: o.toLevel }), () => this.bus.emit('select', o.buildingId)];
+      [ic, text, action] = [icons.hammer, o.keep ? t('objective.keep', { level: o.toLevel }) : t('objective.upgrade', { building: name(o.type), level: o.toLevel }), () => this.selectAndFocus(o.buildingId)];
     } else if (o.kind === 'save') {
-      const need = (Object.entries(o.missing) as [ResourceKind, number][]).filter(([, v]) => v > 0).map(([k, v]) => i18nText("ui.message_14677cb26f", { arg1: formatCompact(v), arg2: RES_LABEL[k] })).join(' + ');
-      [ic, text, action] = [icons.acorns, t('objective.save', { need, building: name(o.type), level: o.toLevel }), () => this.bus.emit('select', o.buildingId)];
+      // P6-05 (UIS-04): the shortfall as cost chips beside the building's name (the sentence ran to 106 characters).
+      [ic, text, action] = [icons.acorns, t('objective.upgrade', { building: name(o.type), level: o.toLevel }), () => this.selectAndFocus(o.buildingId)];
+      chips = costChips(o.missing);
+    } else if (o.kind === 'claim') {
+      const where = o.what === 'pass' ? t('rail.Pass') : o.what === 'achievement' ? t('rail.Goals') : null;
+      const hall = this.c.state.buildings.find((b) => buildingDef(data, b.type).category === 'hall');
+      [ic, text, action] =
+        o.what === 'seal'
+          ? [icons.star, t('seal.claim', { keep: hallLevel(s, data) }), () => hall && this.selectAndFocus(hall.id)]
+          : [icons.star, t('objective.claim', { where: where! }), () => (o.what === 'pass' ? this.econ.openPass() : this.econ.openGoals())];
+    } else if (o.kind === 'rematch') {
+      [ic, text, action] = [icons.swords, i18nText("ui.settle_the_score_819ad8b9c9"), () => this.openLog()];
+    } else if (o.kind === 'goalEvent') {
+      [ic, text, action] = [icons.swords, o.goal === 'gauntlet' ? t('events.gauntlet.attack') : o.goal === 'festival' ? t('events.festival.attack') : i18nText("ui.attack_the_bounty_fortress_0d8fd46d63"), () => this.daily.openEvents()];
+    } else if (o.kind === 'trial') {
+      [ic, text, action] = [icons.leaf, i18nText("ui.scout_tier_8fde370df8", { arg1: o.tier }), () => this.openTrials()];
+    } else if (o.kind === 'drill') {
+      [ic, text, action] = [icons.swords, t('drill.button'), () => this.deps.onDrill?.()];
     } else if (o.kind === 'research') {
       // Growth 7 follow-up (game-theory batch 2026-11-13): existing translated lines, so every ready language keeps them.
       [ic, text, action] = [icons.star, t('research.lanesFree', { n: o.lanesFree }), () => this.openTraining()];
@@ -1394,16 +1411,23 @@ export class Hud {
     } else if (o.kind === 'builders') {
       [ic, text] = [icons.clock, t('objective.builders', { time: formatDuration(o.freeAt - now) })];
     }
-    const sig = `${o.kind}|${text}`;
+    const sig = `${o.kind}|${text}|${o.kind === 'save' ? JSON.stringify(o.missing) : ''}`;
     this.objectiveChip.hidden = o.kind === 'none';
     this.objectiveAction = action;
     if (sig === this.objectiveSig) return;
     this.objectiveSig = sig;
     clear(this.objectiveChip);
     this.objectiveChip.append(icon(ic), h('span', {}, text));
+    if (chips) this.objectiveChip.append(chips);
     if (action) this.objectiveChip.append(h('span', { 'aria-hidden': 'true' }, '▸'));
     this.objectiveChip.disabled = !action;
     this.objectiveChip.setAttribute('aria-label', t('objective.aria', { text }));
+  }
+
+  /** P6-05: select a building from the objective chip and bring it into view. */
+  private selectAndFocus(id: string): void {
+    this.bus.emit('select', id);
+    this.bus.emit('camera:focus', { id });
   }
 
   private renderUnlockChip(): void {

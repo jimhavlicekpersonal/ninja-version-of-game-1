@@ -83,6 +83,7 @@
   "objective.upgrade": { "en": "Upgrade {building} to Lv {level}", "text": "Gbé {building} dé Ìp. {level}" },
   "objective.save": { "en": "{need} more for {building} Lv {level}: collect or raid", "text": "Ó kù {need} fún {building} Ìp. {level}: kó jọ tàbí gbógun ti" },
   "objective.builders": { "en": "Next Artisan free in {time}", "text": "Oníṣẹ́-ọnà tí ó kàn yóò ní àyè ní {time}" },
+  "objective.claim": { "en": "Ready to claim in {where}", "text": "" },
   "objective.aria": { "en": "Next: {text}", "text": "Èyí tí ó kàn: {text}" },
   "toast.raided": { "en": "{n, plural, one {# player raided your village} other {# players raided your village}}. See the battle log.", "text": "{n, plural, other {Òṣèré # gbógun ti abúlé rẹ}}. Wo àkọsílẹ̀ ogun." },
   "unlocks.chip": { "en": "{n, plural, one {# unlock} other {# unlocks}}", "text": "{n, plural, other {Ohun tuntun #}}" },

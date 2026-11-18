@@ -83,6 +83,7 @@
   "objective.upgrade": { "en": "Upgrade {building} to Lv {level}", "text": "ترقية {building} إلى المستوى {level}" },
   "objective.save": { "en": "{need} more for {building} Lv {level}: collect or raid", "text": "ينقص {need} من أجل {building} مستوى {level}: بالجمع أو بالإغارة" },
   "objective.builders": { "en": "Next Artisan free in {time}", "text": "الحرفي التالي يتفرغ خلال {time}" },
+  "objective.claim": { "en": "Ready to claim in {where}", "text": "" },
   "objective.aria": { "en": "Next: {text}", "text": "التالي: {text}" },
   "toast.raided": { "en": "{n, plural, one {# player raided your village} other {# players raided your village}}. See the battle log.", "text": "{n, plural, zero {لم يُغِر أحد على قريتك} one {أغار لاعب واحد على قريتك} two {أغار لاعبان على قريتك} few {أغار # لاعبين على قريتك} many {أغار # لاعبًا على قريتك} other {أغار # لاعب على قريتك}}. التفاصيل في سجل المعارك." },
   "unlocks.chip": { "en": "{n, plural, one {# unlock} other {# unlocks}}", "text": "{n, plural, zero {لا عناصر جديدة} one {عنصر جديد واحد} two {عنصران جديدان} few {# عناصر جديدة} many {# عنصرًا جديدًا} other {# عنصر جديد}}" },

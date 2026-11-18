@@ -83,6 +83,7 @@
   "objective.upgrade": { "en": "Upgrade {building} to Lv {level}", "text": "Opgrader {building} til Niv. {level}" },
   "objective.save": { "en": "{need} more for {building} Lv {level}: collect or raid", "text": "{need} mere til {building} Niv. {level}: indsaml eller plyndr" },
   "objective.builders": { "en": "Next Artisan free in {time}", "text": "Næste Håndværker ledig om {time}" },
+  "objective.claim": { "en": "Ready to claim in {where}", "text": "" },
   "objective.aria": { "en": "Next: {text}", "text": "Næste: {text}" },
   "toast.raided": { "en": "{n, plural, one {# player raided your village} other {# players raided your village}}. See the battle log.", "text": "{n, plural, one {# spiller plyndrede din landsby} other {# spillere plyndrede din landsby}}. Se kamploggen." },
   "unlocks.chip": { "en": "{n, plural, one {# unlock} other {# unlocks}}", "text": "{n, plural, one {# oplåsning} other {# oplåsninger}}" },
