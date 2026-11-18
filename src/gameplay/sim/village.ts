@@ -508,7 +508,12 @@ export function canHireArtisan(state: VillageState, data: GameData): boolean {
   const type = Object.keys(data.buildings).find((t) => data.buildings[t].category === 'builder' && data.buildings[t].inShop);
   if (!type) return false;
   const have = countOfType(state, type);
-  return have >= 2 && data.economy.builderHutCosts[have - 2] !== undefined && have < limitFor(state, data, type).count;
+  const cost = data.economy.builderHutCosts[have - 2];
+  if (!(have >= 2 && cost !== undefined && have < limitFor(state, data, type).count)) return false;
+  // Economy ECO-05 (P1-04): the Artisan's Bundle is offered only while its Jade covers the next hut. With four
+  // huts the fifth costs 1,000 Jade and the bundle gives 650, yet it said "Jade to hire another Village Artisan".
+  const bundles = data.offers.rules.filter((r) => r.trigger === 'all_builders_busy').map((r) => r.contents.moonstones ?? 0);
+  return !bundles.length || cost <= Math.max(...bundles);
 }
 
 export type PayWith = 'acorns' | 'dew';

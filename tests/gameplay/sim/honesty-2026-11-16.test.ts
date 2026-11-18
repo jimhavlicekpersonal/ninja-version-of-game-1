@@ -4,7 +4,7 @@
  */
 import { describe, expect, it } from 'vitest';
 import { currentTasks, passBonusCount, passPremiumValue, passSeason, passSeasonEndsAt, unlockedTier } from '../../../src/gameplay/sim/pass';
-import { advance, applyCommand, passTierReward } from '../../../src/gameplay/sim/village';
+import { advance, applyCommand, canHireArtisan, passTierReward } from '../../../src/gameplay/sim/village';
 import { migrate, SAVE_VERSION, serialize, deserialize } from '../../../src/gameplay/sim/save';
 import { data, newGame } from './helpers';
 
@@ -132,5 +132,22 @@ describe('RET-02 / ECO-03 (P1-03): tasks keep paying after the last tier', () =>
     if (!r.ok) return;
     const ev = r.events.find((e) => e.kind === 'reward')!;
     expect(ev.kind === 'reward' && (ev.grants.acorns ?? 0) + (ev.grants.dew ?? 0)).toBeGreaterThan(0);
+  });
+});
+
+describe('ECO-05 (P1-04): the Artisan\'s Bundle only while it can do what it says', () => {
+  it('is offered with two and three huts, not with four (the fifth costs more than the bundle gives)', () => {
+    const hut = Object.keys(data.buildings).find((t) => data.buildings[t].category === 'builder' && data.buildings[t].inShop)!;
+    const withHuts = (n: number) => {
+      const { state } = newGame();
+      const at = state.buildings.filter((b) => b.type === hut);
+      const extra = Array.from({ length: Math.max(0, n - at.length) }, (_, i) => ({ id: `hut${i}`, type: hut, level: 1, x: 2 + i * 3, y: 2, upgrade: null, collector: null }));
+      state.buildings = [...state.buildings, ...extra];
+      state.buildings = state.buildings.map((b) => (data.buildings[b.type].category === 'hall' ? { ...b, level: 10 } : b));
+      return state;
+    };
+    expect(canHireArtisan(withHuts(2), data)).toBe(true);
+    expect(canHireArtisan(withHuts(3), data)).toBe(true);
+    expect(canHireArtisan(withHuts(4), data)).toBe(false);
   });
 });
