@@ -2108,6 +2108,8 @@ export class Hud {
     // Settle the score (sim/rematch.ts): a recent simulated raider's own base, once, labelled as generated.
     const answerable = new Set(this.deps.onRematch ? rematchable(s, this.c.now(), localizedData(this.c.data)).map((d) => d.id) : []);
     if (!attacks.length) body.append(h('p', { class: 'muted' }, i18nText("ui.no_battles_yet_tap_attack_to_raid_a_ne_5372be52a7")));
+    // P6-04: the simulated raider against the village as it is now (nothing lost; device only).
+    if (this.deps.onTestDefense && s.tutorial.done) body.prepend(h('div', { class: 'actions' }, h('button', { class: 'btn sky', type: 'button', 'data-id': 'test-defense', onclick: () => { this.closeAllModals(); this.deps.onTestDefense?.(); } }, icon(icons.shield), t('defense.test'))));
     for (const r of attacks) {
       const stars = h('span', { class: 'stars-mini' });
       for (let i = 0; i < 3; i++) stars.append(h('span', { class: i < r.result.stars ? '' : 'off' }, '★'));
@@ -2132,6 +2134,10 @@ export class Hud {
       // P6-03: the defense report (what holding kept, stars denied, the reward, where the raider came in, and on
       // demand the first buildings to fall, replayed only under the rules the raid was fought with).
       const report = r.kind === 'defense' ? this.defenseReportLine(r) : null;
+      // P6-04: practice with this raider's army against the village as it is now (after a lost defense).
+      const tryAgain = r.kind === 'defense' && r.result.stars > 0 && this.deps.onPracticeAgainst
+        ? h('button', { class: 'btn ghost', type: 'button', 'data-id': 'practice-against', onclick: () => { this.closeAllModals(); this.deps.onPracticeAgainst?.(r); } }, t('defense.practiceAgainst'))
+        : null;
       const settle = answerable.has(r.id)
         ? h('button', { class: 'btn danger', type: 'button', title: i18nText("ui.attack_s_own_base_a_simulated_raider_n_0be62cf5a4", { arg1: r.opponentName }), onclick: () => { this.closeAllModals(); this.deps.onRematch?.(r.id); } }, i18nText("ui.settle_the_score_819ad8b9c9"))
         : null;
@@ -2140,7 +2146,7 @@ export class Hud {
           'div',
           { class: 'log-row' },
           h('div', {}, h('b', {}, r.kind === 'attack' ? i18nText("ui.you_raided_b4bf27bb8b", { arg1: isolateName(r.opponentName), arg2: r.setup.base.practice ? i18nLabel(' (practice)') : '' }) : i18nText("ui.raided_you_29f66d0636", { arg1: isolateName(r.opponentName), arg2: r.simulated ? i18nText("ui.simulated_raider_aaf83ad5d6") : '' })), h('div', { class: 'row' }, stars, r.trophies !== undefined ? h('span', { class: `chip ${r.trophies >= 0 ? 'good' : 'short'}` }, icon(icons.leaf), `${r.trophies >= 0 ? '+' : ''}${r.trophies}`) : null, h('span', { class: 'muted small' }, i18nText("ui.ago_ecf7d53ab9", { arg1: r.result.destruction, arg2: formatDuration(this.c.now() - r.at) })), Object.keys(loot).some((k) => (loot as Record<string, number>)[k] > 0) ? costChips(loot) : h('span', { class: 'chip' }, i18nText("ui.no_loot_bdac804bb2")), held), report),
-          h('div', { class: 'row' }, settle, share, replay),
+          h('div', { class: 'row' }, settle, tryAgain, share, replay),
         ),
       );
     }

@@ -18,6 +18,7 @@ import { hallLevel } from './gameplay/sim/keep';
 import { rematchBase, rematchStatus } from './gameplay/sim/rematch';
 import { hasAttacked, shieldAfterAttack } from './gameplay/sim/shield';
 import { totalLoot } from './gameplay/sim/battle/basegen';
+import { testDefense, villageToBase } from './gameplay/sim/defense';
 import { capacity } from './gameplay/sim/resources';
 import { armyDiversity, contractById, contractMultiplier, diversityPartOf, diversityShare, trainableRoles } from './gameplay/sim/carry';
 import { BattleHud } from './presentation/ui/battleHud';
@@ -236,6 +237,29 @@ export class App {
     delete base.trophies;
     const loadout = battleLoadout(c.state, c.data);
     const setup: BattleSetup = { seed, base, army, levels: loadout.levels, infiltration: true };
+    this.open(new BattleSession(setup, c.data, 'scout'), undefined, undefined, undefined, true);
+  }
+
+  /**
+   * P6-04: "Test my defenses": the simulated raider against the village as it is now, played as a replay. Device
+   * only: no loot, no honor, no shield change, never stored; labelled as a test by a simulated raider.
+   */
+  testDefenses(): void {
+    const c = this.d.controller;
+    const record = testDefense(c.state, c.now(), mixSeed(c.state.seed, 0x7e57 + Math.floor(c.now() / 1000)), c.data);
+    record.opponentName = i18nText('defense.testName', { name: record.opponentName });
+    this.replay(record);
+  }
+
+  /**
+   * P6-04: from a defense in the log, practice with that raider's army against the village as it is now (labelled
+   * practice; nothing spent or won). Moving a tower becomes an experiment with a result.
+   */
+  practiceAgainst(r: BattleRecord): void {
+    const c = this.d.controller;
+    const base = villageToBase(c.state, c.now(), c.data, i18nText('defense.yourVillage'));
+    base.practice = 'Practice battle (nothing spent or won)';
+    const setup: BattleSetup = { seed: mixSeed(c.state.seed, 0x5eed + Math.floor(c.now() / 1000)), base, army: { ...r.setup.army }, levels: { ...r.setup.levels }, infiltration: true };
     this.open(new BattleSession(setup, c.data, 'scout'), undefined, undefined, undefined, true);
   }
 

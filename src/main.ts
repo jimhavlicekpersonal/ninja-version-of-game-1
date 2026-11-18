@@ -537,6 +537,8 @@ async function boot(): Promise<void> {
     onDrill: () => app?.drill(),
     onBounty: (eventKey, base) => app?.bounty(eventKey, base),
     onRematch: (defenseId) => app?.rematch(defenseId),
+    onTestDefense: () => app?.testDefenses(),
+    onPracticeAgainst: (record) => app?.practiceAgainst(record),
     onPractice: (army) => app?.practice(army),
     onDuel: (friendId, name, opts) => void app?.duel(friendId, name, opts),
     onGangWarAttack: (target, relay, enemyName, bot) => void app?.gangWarAttack(target, relay, enemyName, bot),

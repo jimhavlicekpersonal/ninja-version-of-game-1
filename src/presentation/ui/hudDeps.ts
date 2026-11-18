@@ -67,6 +67,10 @@ export interface HudDeps {
   friendLinkBase?: () => string | null;
   /** Settle the score with a simulated raider (app.ts: a battle settled with `rematchEnd`). */
   onRematch?(defenseId: string): void;
+  /** P6-04: watch the simulated raider against the village as it is now (device only, nothing lost). */
+  onTestDefense?(): void;
+  /** P6-04: a practice battle with a past raider's army against the village as it is now. */
+  onPracticeAgainst?(record: import('../../gameplay/sim/battle/types').BattleRecord): void;
   /** Attack a goal event's bounty fortress (app.ts: a battle settled with `bountyEnd`). */
   onBounty?(eventKey: string, base: import('../../gameplay/sim/battle/types').BaseLayout): void;
   /**

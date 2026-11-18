@@ -47,3 +47,23 @@ describe('the defense report on screen (P6-03)', () => {
     expect(line.textContent).toContain('Held');
   });
 });
+
+describe('test my defenses on screen (P6-04)', () => {
+  it('the battle log offers the test, and practice against the army of a lost defense', async () => {
+    const { hud, controller } = await buildHud();
+    controller.dispatch({ type: 'tutorial', step: 9, done: true });
+    let tested = 0;
+    let against: BattleRecord | null = null;
+    const deps = (hud as unknown as { deps: { onTestDefense?(): void; onPracticeAgainst?(r: BattleRecord): void } }).deps;
+    deps.onTestDefense = () => void tested++;
+    deps.onPracticeAgainst = (r) => void (against = r);
+    const lost = record(controller.now() - 60_000, SIM_RULES);
+    controller.state.defenseLog = [{ ...lost, result: { ...lost.result, stars: Math.max(1, lost.result.stars) } }];
+    hud.openLog();
+    (document.querySelector('[data-id="practice-against"]') as HTMLButtonElement).click();
+    expect(against!.id).toBe(lost.id);
+    hud.openLog();
+    (document.querySelector('[data-id="test-defense"]') as HTMLButtonElement).click();
+    expect(tested).toBe(1);
+  });
+});
