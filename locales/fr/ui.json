@@ -23,7 +23,7 @@
   "tutorial.end.button": { "en": "Finish", "text": "Terminer" },
   "tutorial.skip": { "en": "Skip tutorial", "text": "Passer le tutoriel" },
   "kind.practice": { "en": "Practice", "text": "Entraînement" },
-  "whatsNew.0_1_0": { "en": "What's new: send your squad in with one order, watch the fight up close or faster, and see what another entry point would have done. Every raid on your village now has a report, and you can test your defenses. New: a four-week event calendar with festivals, a weekly Gauntlet, daily contracts, achievements, Keep seals and looks to earn.", "text": "" },
+  "whatsNew.0_1_0": { "en": "What's new: send your squad in with one order, watch the fight up close or faster, and see what another entry point would have done. Every raid on your village now has a report, and you can test your defenses. New: a four-week event calendar with festivals, a weekly Gauntlet, daily contracts, achievements, Keep seals and looks to earn.", "text": "Nouveautés : envoie ton escouade d'un seul ordre, suis le combat de près ou en accéléré, et découvre ce qu'aurait donné un autre point d'entrée. Chaque raid contre ton village a désormais son rapport, et tu peux tester tes défenses. Nouveau : un calendrier d'événements sur quatre semaines avec des festivals, un Grand Assaut hebdomadaire, des contrats du jour, des succès, des sceaux de Donjon et des apparences à gagner." },
   "trials.ladder": { "en": "The ladder ahead", "text": "Les paliers à venir" },
   "trials.cleared": { "en": "Cleared: tiers 1 to {best}", "text": "Réussis : paliers 1 à {best}" },
   "milestone.keep": { "en": "Clan Keep Lv {level}!", "text": "Donjon du Clan niv. {level} !" },

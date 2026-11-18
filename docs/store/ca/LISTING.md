@@ -26,8 +26,15 @@ Lidera un clan ninja. Construeix un poble amagat a la muntanya, entrena cinquant
 **Fes incursions amb un pla**
 
 - Els guerrers només entren pels punts d'infiltració: explora els camins i les torres que els cobreixen.
-- Llença Bombes de fum quan els guerrers entrin a l'abast de les torres i envia els Sabotejadors a bloquejar les defenses.
+- Envia l'esquadró amb una sola ordre (junts, en tenalla o en filera; tancs primer o en envestida), o col·loca cada guerrer a mà.
+- Llença Bombes de fum quan els guerrers entrin a l'abast de les torres i envia els Sabotejadors a bloquejar les defenses. A partir del nivell 7 de la Fortalesa del Clan, el Capità de l'Ombra agrupa tot l'esquadró un cop per batalla.
+- Després d'una incursió, mira què hauria fet el mateix exèrcit per un altre punt.
 - Un atac ben pensat val més que un atac enorme.
+
+**Defensa el teu poble**
+
+- Cada incursió al teu poble té el seu informe: què has conservat, les estrelles que has negat i per on ha entrat l'assaltant.
+- Posa a prova les defenses contra un assaltant simulat i practica contra l'exèrcit que t'ha vençut.
 
 **Juga en equip** (en línia)
 
@@ -38,7 +45,12 @@ Lidera un clan ninja. Construeix un poble amagat a la muntanya, entrena cinquant
 
 **Les Proves de l'Ombra**
 
-- Una escala infinita de fortaleses. Cada graó paga la seva recompensa un sol cop i és més difícil.
+- Una escala infinita de fortaleses. Cada graó paga la seva recompensa un sol cop i és més difícil. L'exercici diari et permet practicar mentre l'exèrcit s'entrena.
+
+**Alguna cosa nova cada dia**
+
+- Esdeveniments en un calendari fix de quatre setmanes, cinc festivals l'any amb una fortalesa i un aspecte de Fortalesa per guanyar, un Desafiament setmanal i un contracte diari.
+- Assoliments, segells de Fortalesa, rangs de mestratge de guerrer i aspectes que guanyes jugant.
 
 **Joc net**
 

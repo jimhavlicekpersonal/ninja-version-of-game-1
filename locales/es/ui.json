@@ -23,7 +23,7 @@
   "tutorial.end.button": { "en": "Finish", "text": "Terminar" },
   "tutorial.skip": { "en": "Skip tutorial", "text": "Saltar tutorial" },
   "kind.practice": { "en": "Practice", "text": "Práctica" },
-  "whatsNew.0_1_0": { "en": "What's new: send your squad in with one order, watch the fight up close or faster, and see what another entry point would have done. Every raid on your village now has a report, and you can test your defenses. New: a four-week event calendar with festivals, a weekly Gauntlet, daily contracts, achievements, Keep seals and looks to earn.", "text": "" },
+  "whatsNew.0_1_0": { "en": "What's new: send your squad in with one order, watch the fight up close or faster, and see what another entry point would have done. Every raid on your village now has a report, and you can test your defenses. New: a four-week event calendar with festivals, a weekly Gauntlet, daily contracts, achievements, Keep seals and looks to earn.", "text": "Novedades: envía a tu escuadra con una sola orden, sigue la batalla de cerca o más rápido y descubre qué habría pasado por otro punto de entrada. Ahora cada saqueo a tu aldea tiene un informe y puedes probar tus defensas. Nuevo: un calendario de eventos de cuatro semanas con festivales, un Guantelete semanal, contratos diarios, logros, sellos de la Fortaleza y aspectos que puedes ganar." },
   "trials.ladder": { "en": "The ladder ahead", "text": "Los próximos niveles" },
   "trials.cleared": { "en": "Cleared: tiers 1 to {best}", "text": "Superados: niveles 1 a {best}" },
   "milestone.keep": { "en": "Clan Keep Lv {level}!", "text": "¡Fortaleza del Clan niv. {level}!" },

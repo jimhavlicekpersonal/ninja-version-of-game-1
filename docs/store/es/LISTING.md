@@ -26,8 +26,15 @@ Lidera un clan ninja. Construye una aldea oculta entre las montañas, entrena ci
 **Saquea con un plan**
 
 - Los guerreros solo entran por los Puntos de Infiltración: explora las rutas y las torres que las cubren.
-- Lanza Bombas de humo cuando tus guerreros entren en el alcance de las torres y envía Saboteadores para bloquear defensas.
+- Envía a tu escuadra con una sola orden (juntos, en pinza o en fila; tanques primero o en carga) o coloca a cada guerrero a mano.
+- Lanza Bombas de humo cuando tus guerreros entren en el alcance de las torres y envía Saboteadores para bloquear defensas. Desde el nivel 7 de la Fortaleza del Clan, el Capitán de las Sombras anima a toda tu escuadra una vez por batalla.
+- Tras un saqueo, mira qué habría hecho el mismo ejército por otro punto.
 - Un ataque bien planeado supera a uno enorme.
+
+**Defiende tu aldea**
+
+- Cada saqueo a tu aldea llega con un informe: lo que conservaste, las estrellas que negaste y por dónde entró el atacante.
+- Pon a prueba tus defensas contra un atacante simulado y practica contra el ejército que te venció.
 
 **Juega en equipo** (en línea)
 
@@ -38,7 +45,12 @@ Lidera un clan ninja. Construye una aldea oculta entre las montañas, entrena ci
 
 **Las Pruebas de las Sombras**
 
-- Una escalera infinita de fortalezas. Cada nivel da su recompensa una vez y aumenta la dificultad.
+- Una escalera infinita de fortalezas. Cada nivel da su recompensa una vez y aumenta la dificultad. Con la práctica diaria puedes entrenar mientras tu ejército se prepara.
+
+**Algo nuevo cada día**
+
+- Eventos en un calendario fijo de cuatro semanas, cinco festivales al año con una fortaleza y un aspecto de la Fortaleza que ganar, un Guantelete semanal y un contrato diario.
+- Logros, sellos de la Fortaleza, rangos de maestría de guerrero y aspectos que ganas jugando.
 
 **Juego limpio**
 

@@ -26,8 +26,15 @@ Guida un clan ninja. Costruisci un villaggio nascosto tra i monti, addestra cinq
 **Fai incursioni con un piano**
 
 - I guerrieri entrano solo dai punti d'infiltrazione: esplora i percorsi e le torri che li coprono.
-- Lancia Bombe fumogene quando i guerrieri entrano nel raggio delle torri e manda i Sabotatori a inceppare le difese.
+- Manda la tua squadra con un solo ordine (uniti, a tenaglia o in fila; prima i tank o all'assalto), oppure disponi ogni guerriero a mano.
+- Lancia Bombe fumogene quando i guerrieri entrano nel raggio delle torri e manda i Sabotatori a inceppare le difese. Dal livello 7 della Rocca del Clan, il Capitano delle Ombre raduna tutta la squadra una volta per battaglia.
+- Dopo un'incursione, scopri cosa avrebbe fatto lo stesso esercito da un altro punto.
 - Un attacco ben pianificato vale più di un attacco enorme.
+
+**Difendi il tuo villaggio**
+
+- Ogni incursione nel tuo villaggio ha il suo rapporto: cosa hai conservato, le stelle che hai negato, da dove è entrato l'assalitore.
+- Metti alla prova le difese contro un assalitore simulato e allenati contro l'esercito che ha avuto la meglio su di te.
 
 **Gioca in squadra** (online)
 
@@ -38,7 +45,12 @@ Guida un clan ninja. Costruisci un villaggio nascosto tra i monti, addestra cinq
 
 **Le Prove dell'Ombra**
 
-- Una scala infinita di fortezze. Ogni grado paga la sua ricompensa una volta e diventa più difficile.
+- Una scala infinita di fortezze. Ogni grado paga la sua ricompensa una volta e diventa più difficile. L'esercitazione quotidiana ti permette di fare pratica mentre l'esercito si addestra.
+
+**Ogni giorno qualcosa di nuovo**
+
+- Eventi su un calendario fisso di quattro settimane, cinque feste all'anno con una fortezza e un aspetto della Rocca da ottenere, un Guanto di Sfida settimanale e un contratto giornaliero.
+- Obiettivi, sigilli della Rocca, ranghi di maestria dei guerrieri e aspetti da ottenere giocando.
 
 **Gioco leale**
 

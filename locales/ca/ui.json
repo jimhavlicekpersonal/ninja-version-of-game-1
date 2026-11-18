@@ -23,7 +23,7 @@
   "tutorial.end.button": { "en": "Finish", "text": "Acaba" },
   "tutorial.skip": { "en": "Skip tutorial", "text": "Omet el tutorial" },
   "kind.practice": { "en": "Practice", "text": "Pràctica" },
-  "whatsNew.0_1_0": { "en": "What's new: send your squad in with one order, watch the fight up close or faster, and see what another entry point would have done. Every raid on your village now has a report, and you can test your defenses. New: a four-week event calendar with festivals, a weekly Gauntlet, daily contracts, achievements, Keep seals and looks to earn.", "text": "" },
+  "whatsNew.0_1_0": { "en": "What's new: send your squad in with one order, watch the fight up close or faster, and see what another entry point would have done. Every raid on your village now has a report, and you can test your defenses. New: a four-week event calendar with festivals, a weekly Gauntlet, daily contracts, achievements, Keep seals and looks to earn.", "text": "Novetats: envia l'esquadró amb una sola ordre, segueix el combat de prop o més ràpid i descobreix què hauria passat per un altre punt d'entrada. Ara cada incursió al teu poble té un informe i pots posar a prova les defenses. Nou: un calendari d'esdeveniments de quatre setmanes amb festivals, un Desafiament setmanal, contractes diaris, assoliments, segells de Fortalesa i aspectes per guanyar." },
   "trials.ladder": { "en": "The ladder ahead", "text": "Els graons que t'esperen" },
   "trials.cleared": { "en": "Cleared: tiers 1 to {best}", "text": "Superats: graons 1–{best}" },
   "milestone.keep": { "en": "Clan Keep Lv {level}!", "text": "Fortalesa del Clan Nv. {level}!" },

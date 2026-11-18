@@ -26,8 +26,15 @@ Pimpin klan ninja, bangun desa tersembunyi di pegunungan, latih lima puluh jenis
 **Serbu dengan rencana**
 
 - Prajurit hanya bisa masuk lewat Titik Penyusupan. Intai jalurnya dan menara yang menjaganya.
-- Lempar Bom Asap saat prajuritmu masuk jangkauan menara, dan kirim Penyabot untuk melumpuhkan pertahanan.
+- Kirim regumu dengan satu perintah (bersama, jepit, atau berbaris; tank dulu atau terjang), atau tempatkan setiap prajurit secara manual.
+- Lempar Bom Asap saat prajuritmu masuk jangkauan menara, dan kirim Penyabot untuk melumpuhkan pertahanan. Mulai Benteng Klan level 7, Kapten Bayangan menyemangati seluruh regumu sekali dalam setiap pertempuran.
+- Setelah serbuan, lihat apa yang bisa dicapai pasukan yang sama lewat titik lain.
 - Serangan yang direncanakan mengalahkan pasukan yang lebih besar.
+
+**Pertahankan desamu**
+
+- Setiap serbuan ke desamu disertai laporan: apa yang terselamatkan, bintang yang kamu gagalkan, dan tempat penyerbu menerobos masuk.
+- Uji pertahananmu melawan penyerbu simulasi, dan berlatih melawan pasukan yang mengalahkanmu.
 
 **Main bersama** (online)
 
@@ -38,7 +45,12 @@ Pimpin klan ninja, bangun desa tersembunyi di pegunungan, latih lima puluh jenis
 
 **Ujian Bayangan**
 
-- Rangkaian kubu yang tak berujung. Setiap tingkat makin sulit dan hanya memberi hadiah sekali.
+- Rangkaian kubu yang tak berujung. Setiap tingkat makin sulit dan hanya memberi hadiah sekali. Latihan harian memungkinkanmu berlatih selagi pasukanmu dilatih.
+
+**Hal baru setiap hari**
+
+- Acara dengan kalender tetap empat minggu, lima festival tahunan dengan kubu dan tampilan Benteng yang bisa didapat, Uji Nyali mingguan, dan kontrak harian.
+- Pencapaian, segel Benteng, peringkat Penguasaan Prajurit, dan tampilan yang kamu dapat dengan bermain.
 
 **Main adil**
 

@@ -23,7 +23,7 @@
   "tutorial.end.button": { "en": "Finish", "text": "Selesai" },
   "tutorial.skip": { "en": "Skip tutorial", "text": "Lewati tutorial" },
   "kind.practice": { "en": "Practice", "text": "Latihan" },
-  "whatsNew.0_1_0": { "en": "What's new: send your squad in with one order, watch the fight up close or faster, and see what another entry point would have done. Every raid on your village now has a report, and you can test your defenses. New: a four-week event calendar with festivals, a weekly Gauntlet, daily contracts, achievements, Keep seals and looks to earn.", "text": "" },
+  "whatsNew.0_1_0": { "en": "What's new: send your squad in with one order, watch the fight up close or faster, and see what another entry point would have done. Every raid on your village now has a report, and you can test your defenses. New: a four-week event calendar with festivals, a weekly Gauntlet, daily contracts, achievements, Keep seals and looks to earn.", "text": "Yang baru: kirim regumu dengan satu perintah, tonton pertarungan dari dekat atau lebih cepat, dan lihat hasilnya jika lewat titik masuk lain. Setiap serbuan ke desamu kini punya laporan, dan kamu bisa menguji pertahananmu. Baru: kalender acara empat minggu dengan festival, Uji Nyali mingguan, kontrak harian, pencapaian, segel Benteng, dan tampilan yang bisa didapat." },
   "trials.ladder": { "en": "The ladder ahead", "text": "Tangga di depan" },
   "trials.cleared": { "en": "Cleared: tiers 1 to {best}", "text": "Tuntas: tingkat 1 sampai {best}" },
   "milestone.keep": { "en": "Clan Keep Lv {level}!", "text": "Benteng Klan Lv {level}!" },

@@ -23,7 +23,7 @@
   "tutorial.end.button": { "en": "Finish", "text": "Fine" },
   "tutorial.skip": { "en": "Skip tutorial", "text": "Salta il tutorial" },
   "kind.practice": { "en": "Practice", "text": "Allenamento" },
-  "whatsNew.0_1_0": { "en": "What's new: send your squad in with one order, watch the fight up close or faster, and see what another entry point would have done. Every raid on your village now has a report, and you can test your defenses. New: a four-week event calendar with festivals, a weekly Gauntlet, daily contracts, achievements, Keep seals and looks to earn.", "text": "" },
+  "whatsNew.0_1_0": { "en": "What's new: send your squad in with one order, watch the fight up close or faster, and see what another entry point would have done. Every raid on your village now has a report, and you can test your defenses. New: a four-week event calendar with festivals, a weekly Gauntlet, daily contracts, achievements, Keep seals and looks to earn.", "text": "Novità: manda la tua squadra con un solo ordine, segui lo scontro da vicino o a velocità maggiore e scopri cosa avrebbe fatto un altro punto d'ingresso. Ora ogni incursione nel tuo villaggio ha un rapporto e puoi mettere alla prova le difese. Nuovo: un calendario di eventi di quattro settimane con feste, un Guanto di Sfida settimanale, contratti giornalieri, obiettivi, sigilli della Rocca e aspetti da ottenere." },
   "trials.ladder": { "en": "The ladder ahead", "text": "I gradi che ti aspettano" },
   "trials.cleared": { "en": "Cleared: tiers 1 to {best}", "text": "Superati: gradi da 1 a {best}" },
   "milestone.keep": { "en": "Clan Keep Lv {level}!", "text": "Rocca del Clan liv. {level}!" },

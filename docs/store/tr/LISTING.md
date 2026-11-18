@@ -26,8 +26,15 @@ Bir ninja klanına liderlik et: dağlarda gizli bir köy kur, elli çeşit sava�
 **Planla, sonra baskın yap**
 
 - Savaşçılar yalnızca Sızma Noktaları'ndan girebilir. Yolları ve onları koruyan kuleleri keşfet.
-- Savaşçıların kule menziline girerken Duman Bombası at, bir savunmayı kilitlemek için Sabotajcı gönder.
+- Bölüğünü tek emirle gönder (birlikte, kıskaç ya da tek sıra; önce tanklar ya da hücum) veya her savaşçıyı elle yerleştir.
+- Savaşçıların kule menziline girerken Duman Bombası at, bir savunmayı kilitlemek için Sabotajcı gönder. Klan Kalesi 7. seviyeden itibaren Gölge Kaptanı her savaşta bir kez tüm bölüğünü coşturur.
+- Baskından sonra aynı ordunun başka bir noktadan neler yapabileceğini gör.
 - İyi planlanmış bir saldırı daha büyük bir orduyu yener.
+
+**Köyünü koru**
+
+- Köyüne yapılan her baskının bir raporu var: neyi koruduğun, hangi yıldızları vermediğin ve baskıncının nereden girdiği.
+- Savunmanı simüle edilmiş bir baskıncıya karşı test et ve seni yenen orduya karşı antrenman yap.
 
 **Birlikte oyna** (çevrim içi)
 
@@ -38,7 +45,12 @@ Bir ninja klanına liderlik et: dağlarda gizli bir köy kur, elli çeşit sava�
 
 **Gölge Sınavları**
 
-- Bitmeyen bir kaleler dizisi. Her kat daha zordur ve ödülünü yalnızca bir kez verir.
+- Bitmeyen bir kaleler dizisi. Her kat daha zordur ve ödülünü yalnızca bir kez verir. Günlük antrenman, ordun eğitilirken pratik yapmanı sağlar.
+
+**Her gün yeni bir şey**
+
+- Sabit dört haftalık takvimde etkinlikler, her biri bir kale ve kazanılacak bir Kale görünümü sunan yılda beş şenlik, haftalık Meydan Okuma ve günlük sözleşme.
+- Oynayarak kazandığın başarımlar, Kale mühürleri, savaşçı ustalığı rütbeleri ve görünümler.
 
 **Adil oyun**
 
