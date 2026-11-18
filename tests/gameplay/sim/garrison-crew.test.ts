@@ -2,7 +2,7 @@
 import { describe, expect, it } from 'vitest';
 import { nextObjective } from '../../../src/gameplay/sim/objective';
 import type { GameData, VillageState } from '../../../src/gameplay/sim/types';
-import { applyCommand, builderStatus, onGarrisonCrew, topUpQuote } from '../../../src/gameplay/sim/village';
+import { applyCommand, builderStatus, onGarrisonCrew, payableInProvisions, topUpQuote } from '../../../src/gameplay/sim/village';
 import { data, newGame } from './helpers';
 
 const withCrew = (n: number | undefined): GameData => ({ ...data, economy: { ...data.economy, garrisonCrew: n } });
@@ -79,5 +79,14 @@ describe('P2-14: the garrison crew', () => {
     expect(o.kind).toBe('upgrade');
     if (o.kind === 'upgrade') expect(onGarrisonCrew(o.type, data)).toBe(true);
     expect(nextObjective(s, clock.now(), withCrew(0)).kind).not.toBe('upgrade');
+  });
+});
+
+describe('P2-13: towers and support counters may be paid in Provisions', () => {
+  it('a Kunai Tower and a Repair Crane are Provisions-payable; the Keep and the Dojo are not', () => {
+    expect(payableInProvisions('acorn_cannon', data)).toBe(true);
+    expect(payableInProvisions('clockwork_repairer', data)).toBe(true);
+    expect(payableInProvisions('elder_toadstool', data)).toBe(false);
+    expect(payableInProvisions('burrow_barracks', data)).toBe(false);
   });
 });
