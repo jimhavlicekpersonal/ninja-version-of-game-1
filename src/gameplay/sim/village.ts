@@ -525,6 +525,14 @@ export function builderStatus(state: VillageState, data: GameData, now: number, 
   return { total, busy, free };
 }
 
+/** P6-12: the garrison crew's own queue (`economy.garrisonCrew` places; crew builds beyond it take artisans). */
+export function crewStatus(state: VillageState, data: GameData, now: number): { total: number; busy: number; free: number } {
+  const total = data.economy.garrisonCrew ?? 0;
+  const onCrew = state.buildings.filter((b) => b.upgrade && b.upgrade.endsAt > now && onGarrisonCrew(b.type, data)).length;
+  const busy = Math.min(total, onCrew);
+  return { total, busy, free: total - busy };
+}
+
 /** 5448274 → "5,448,274" (no locale: the sim is the same everywhere; the text layer will localise it). */
 function thousands(n: number): string {
   const digits = String(Math.round(Math.abs(n)));

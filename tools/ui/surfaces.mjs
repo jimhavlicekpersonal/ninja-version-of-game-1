@@ -22,7 +22,8 @@ const ONLY = arg('only', '').split(',').filter(Boolean);
 
 /** Surfaces: how to open each one from the village, and the elements a player must be able to tap there. */
 const SURFACES = [
-  { id: 'village', open: () => undefined, targets: ['.hud-bottom button', '.objective-chip:not([hidden])'] },
+  { id: 'village', open: () => undefined, targets: ['.hud-bottom button', '.objective-chip:not([hidden])', '[data-id="builders"]'] },
+  { id: 'builders', open: (tk) => tk.hud.openBuilders(), targets: ['.modal .modal-head .icon-btn'] },
   { id: 'army', open: (tk) => tk.hud.openShortcut('army'), targets: ['.army-list > .troop-row:first-child .btn.primary', '.army-tabrow button'] },
   { id: 'store', open: (tk) => tk.hud.openShortcut('store'), targets: ['.modal .shop-tabs button'] },
   { id: 'daily', open: (tk) => tk.hud.openShortcut('daily'), targets: ['.daily > .actions .btn'] },
@@ -94,6 +95,8 @@ for (const lang of LANGS) {
         // One-time questions answered, so they do not cover the panels under test.
         localStorage.setItem('tk.ageAskedAfterTutorial', JSON.stringify({ count: 3, last: Date.now() }));
         localStorage.setItem('tk.notifyAsked', '1');
+        // The garrison crew's badge shows once it has worked (P6-12): show it, so the top bar is measured with it.
+        localStorage.setItem('tk.crewSeen', '1');
       } catch {
         /* storage blocked */
       }

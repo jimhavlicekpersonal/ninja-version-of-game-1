@@ -49,7 +49,7 @@ import { ledgerReason } from './ledgerReason';
 import { openShareReplay, shareable } from './growthUi';
 import { Connection } from '../../backend/net/connection';
 import { attacksLeft, raidPhase } from '../../gameplay/sim/social/groveRaid';
-import { builderStatus, countOfType, hallLevel, limitFor, payableInProvisions, placeQuote, skipQuote, temperQuote, topUpQuote, upgradeQuote, type PayWith, type QuoteResult } from '../../gameplay/sim/village';
+import { builderStatus, countOfType, crewStatus, onGarrisonCrew, hallLevel, limitFor, payableInProvisions, placeQuote, skipQuote, temperQuote, topUpQuote, upgradeQuote, type PayWith, type QuoteResult } from '../../gameplay/sim/village';
 import { TEMPER_AXES, temperAxes, temperable, temperDef } from '../../gameplay/sim/battle/temper';
 import { attemptTier, canTryAlternate, trialInfo, trialRewardsThrough, trialVariant } from '../../gameplay/sim/trials';
 import { drillArmy, drillAvailable } from '../../gameplay/sim/drill';
@@ -85,6 +85,7 @@ export class Hud {
 
   private resEls = new Map<ResourceKind, { amt: HTMLElement; bar: HTMLElement; cap: HTMLElement | null }>();
   private buildersEl!: HTMLElement;
+  private crewEl!: HTMLElement;
   private trophiesEl!: HTMLElement;
   private shieldEl!: HTMLElement;
   private shieldBox!: HTMLElement;
@@ -326,7 +327,9 @@ export class Hud {
     top.append(moonBtn);
     this.resEls.set('moonstones', { amt: moonAmt, bar: h('i'), cap: null });
     this.buildersEl = h('span', { class: 'res-amt' });
-    top.append(h('div', { class: 'res res-builders', title: i18nText("ui.free_village_artisans_747cc3abe1") }, icon(icons.beaver, 'res-icon'), h('div', { class: 'res-body' }, this.buildersEl)));
+    // P6-12: the builders pill opens the builder panel (artisans and the garrison crew, each a named queue).
+    this.crewEl = h('span', { class: 'crew-badge', hidden: true, 'aria-hidden': 'true' });
+    top.append(h('button', { class: 'res res-builders', type: 'button', 'data-id': 'builders', title: i18nText("ui.free_village_artisans_747cc3abe1"), 'aria-label': i18nText("ui.free_village_artisans_747cc3abe1"), onclick: () => this.openBuilders() }, icon(icons.beaver, 'res-icon'), h('div', { class: 'res-body' }, this.buildersEl), this.crewEl));
     this.trophiesEl = h('span', { class: 'res-amt' });
     const trophyBtn = h('div', { class: 'res res-trophies', title: i18nText("ui.honor_22ea092e76"), role: 'button' }, icon(icons.leaf, 'res-icon'), h('div', { class: 'res-body' }, this.trophiesEl));
     trophyBtn.addEventListener('click', () => this.openLeague());
@@ -526,6 +529,7 @@ export class Hud {
     }
     const bs = builderStatus(s, gd, this.c.now());
     this.buildersEl.textContent = `${bs.free}/${bs.total}`;
+    this.updateCrew();
     this.trophiesEl.textContent = String(s.trophies);
     this.updateShield();
     this.updateRail();
@@ -1260,6 +1264,7 @@ export class Hud {
     const s = this.c.state;
     const bs = builderStatus(s, localizedData(this.c.data), this.c.now());
     this.buildersEl.textContent = `${bs.free}/${bs.total}`;
+    this.updateCrew();
     if (!this.selectedId || this.sheet.hidden) return;
     if (this.sheetSignature() !== this.sheetSig) this.renderSheet();
     else this.updateSheetLive();
@@ -2151,6 +2156,47 @@ export class Hud {
       );
     }
     this.modal(i18nText("ui.battle_log_f618f95afb"), body, [], 'wide');
+  }
+
+  /** P6-12: a shield badge with the free crew places once a crew build has happened; the first one gets a line. */
+  private updateCrew(): void {
+    const gd = this.c.data;
+    const now = this.c.now();
+    const crew = crewStatus(this.c.state, gd, now);
+    const used = crew.busy > 0;
+    let seen = false;
+    try {
+      seen = localStorage.getItem('tk.crewSeen') === '1';
+      if (used && !seen) localStorage.setItem('tk.crewSeen', '1');
+    } catch {
+      seen = true;
+    }
+    if (used && !seen) this.toast(t('builders.crewNote'), 'info');
+    this.crewEl.hidden = crew.total === 0 || (!used && !seen);
+    const txt = `${crew.free}/${crew.total}`;
+    if (this.crewEl.textContent !== txt) this.crewEl.replaceChildren(icon(icons.shield), txt);
+  }
+
+  /** P6-12: the builder panel: the Village Artisans and the garrison crew, each with what it is building. */
+  openBuilders(): void {
+    const gd = localizedData(this.c.data);
+    const now = this.c.now();
+    const s = this.c.state;
+    const bs = builderStatus(s, gd, now);
+    const crew = crewStatus(s, gd, now);
+    const working = s.buildings.filter((b) => b.upgrade && b.upgrade.endsAt > now).sort((a, b) => a.upgrade!.endsAt - b.upgrade!.endsAt);
+    const crewIds = new Set(working.filter((b) => onGarrisonCrew(b.type, gd)).slice(0, crew.total).map((b) => b.id));
+    const row = (b: Building) => h('div', { class: 'log-row' }, h('b', {}, buildingDef(gd, b.type).name), h('span', { class: 'chip' }, icon(icons.clock), formatDuration(b.upgrade!.endsAt - now)));
+    const body = h(
+      'div',
+      { class: 'builders-panel' },
+      h('h3', {}, i18nText("ui.free_village_artisans_747cc3abe1"), ` ${bs.free}/${bs.total}`),
+      ...working.filter((b) => !crewIds.has(b.id)).map(row),
+      crew.total > 0 ? h('h3', {}, t('builders.crew', { free: crew.free, total: crew.total })) : null,
+      crew.total > 0 ? h('p', { class: 'muted small' }, t('builders.crewNote')) : null,
+      ...working.filter((b) => crewIds.has(b.id)).map(row),
+    );
+    this.modal(t('builders.title'), body, []);
   }
 
   /** P6-03: one line per defense: kept share, stars denied, entry point, and a button for the first to fall. */
