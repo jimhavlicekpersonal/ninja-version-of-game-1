@@ -28,7 +28,7 @@
   "achievements.calendar_keeper.name": { "en": "Calendar Keeper", "text": "守曆人" },
   "achievements.calendar_keeper.text": { "en": "Claim {n} calendar days", "text": "領取 {n} 個日曆天" },
   "achievements.full_roster.name": { "en": "Full Roster", "text": "陣容齊全" },
-  "achievements.full_roster.text": { "en": "Unlock {n} warriors", "text": "解鎖 {n} 名戰士" },
+  "achievements.full_roster.text": { "en": "Unlock {n} warriors", "text": "解鎖 {n} 種戰士" },
   "achievements.wardrobe.name": { "en": "Many Colours", "text": "百色千姿" },
   "achievements.wardrobe.text": { "en": "Own {n} Clan Keep looks", "text": "擁有 {n} 種天守閣外觀" },
   "achievements.tempered.name": { "en": "Tempered Steel", "text": "百鍊精鋼" },

@@ -204,9 +204,9 @@
   "zh-Hant": {
     "coverage": 1,
     "ready": true,
-    "hash": "1c3116a981b3b7b9",
+    "hash": "7d9dac9d2ebaba09",
     "keys": 3229,
-    "path": "lang/zh-Hant-1c3116a981b3b7b9.json",
+    "path": "lang/zh-Hant-7d9dac9d2ebaba09.json",
     "namespaces": {
       "boot": {
         "total": 17,
@@ -320,9 +320,9 @@
   "ru": {
     "coverage": 1,
     "ready": true,
-    "hash": "db9110241dbc1c80",
+    "hash": "3e1d41bb74e23cf6",
     "keys": 3229,
-    "path": "lang/ru-db9110241dbc1c80.json",
+    "path": "lang/ru-3e1d41bb74e23cf6.json",
     "namespaces": {
       "boot": {
         "total": 17,
@@ -523,9 +523,9 @@
   "uk": {
     "coverage": 1,
     "ready": true,
-    "hash": "20beb28bc506280d",
+    "hash": "e5b1204b198fcf3d",
     "keys": 3229,
-    "path": "lang/uk-20beb28bc506280d.json",
+    "path": "lang/uk-e5b1204b198fcf3d.json",
     "namespaces": {
       "boot": {
         "total": 17,
@@ -639,9 +639,9 @@
   "ur": {
     "coverage": 1,
     "ready": true,
-    "hash": "df89c42320336ecb",
+    "hash": "85275821dfec7096",
     "keys": 3229,
-    "path": "lang/ur-df89c42320336ecb.json",
+    "path": "lang/ur-85275821dfec7096.json",
     "namespaces": {
       "boot": {
         "total": 17,
@@ -871,9 +871,9 @@
   "te": {
     "coverage": 1,
     "ready": true,
-    "hash": "28ca0aca09c7c0ea",
+    "hash": "41cbfd92b3cf2285",
     "keys": 3229,
-    "path": "lang/te-28ca0aca09c7c0ea.json",
+    "path": "lang/te-41cbfd92b3cf2285.json",
     "namespaces": {
       "boot": {
         "total": 17,
@@ -958,9 +958,9 @@
   "kn": {
     "coverage": 1,
     "ready": true,
-    "hash": "22e8abdde9662289",
+    "hash": "1dc8b1edc0145e10",
     "keys": 3229,
-    "path": "lang/kn-22e8abdde9662289.json",
+    "path": "lang/kn-1dc8b1edc0145e10.json",
     "namespaces": {
       "boot": {
         "total": 17,
@@ -1103,9 +1103,9 @@
   "el": {
     "coverage": 1,
     "ready": true,
-    "hash": "5e0e6d46b096dd4f",
+    "hash": "7415d2fdfb4a375b",
     "keys": 3229,
-    "path": "lang/el-5e0e6d46b096dd4f.json",
+    "path": "lang/el-7415d2fdfb4a375b.json",
     "namespaces": {
       "boot": {
         "total": 17,

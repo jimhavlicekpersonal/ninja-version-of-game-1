@@ -286,7 +286,7 @@
   "pass.dailyTasks.finish_research.text": { "en": "Finish {n} research", "text": "Ολοκλήρωσε {n} έρευνες" },
   "pass.dailyTasks.trial_tier.text": { "en": "Clear a new Shadow Trial tier", "text": "Πέρασε μια νέα βαθμίδα των Δοκιμασιών Σκιάς" },
   "pass.dailyTasks.donate.text": { "en": "Donate {n} warriors to your Alliance", "text": "Δώρισε {n} πολεμιστές στη Συμμαχία σου" },
-  "pass.dailyTasks.daily_drill.text": { "en": "Fight today's daily drill", "text": "Δώσε τη σημερινή ημερήσια άσκηση" },
+  "pass.dailyTasks.daily_drill.text": { "en": "Fight today's daily drill", "text": "Κάνε τη σημερινή ημερήσια άσκηση" },
   "pass.dailyTasks.stake_won.text": { "en": "Reach a declared stake in a raid", "text": "Πέτυχε ένα δηλωμένο στοίχημα σε επιδρομή" },
   "pass.dailyTasks.three_star.text": { "en": "Win a raid with three stars", "text": "Κέρδισε μια επιδρομή με τρία αστέρια" },
   "pass.weeklyChallenges.w_win_raids.text": { "en": "Win {n} raids this week", "text": "Κέρδισε {n} επιδρομές αυτή την εβδομάδα" },

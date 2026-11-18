@@ -434,7 +434,7 @@
   "raids.contracts.list.iron_tide_hunt.text": { "en": "Won raids on Iron Tide outposts carry 20% more today.", "text": "آج آہنی موج کی چوکیوں پر جیتے ہوئے دھاوے 20% زیادہ مال لاتے ہیں۔" },
   "raids.contracts.list.clean_sweep.name": { "en": "Clean sweep", "text": "مکمل صفایا" },
   "raids.contracts.list.clean_sweep.text": { "en": "Three-star raids carry 15% more today.", "text": "آج تین ستاروں والے دھاوے 15% زیادہ مال لاتے ہیں۔" },
-  "raids.contracts.list.moon_veil_hunt.name": { "en": "Moon Veil hunt", "text": "چاند کا پردہ کا شکار" },
+  "raids.contracts.list.moon_veil_hunt.name": { "en": "Moon Veil hunt", "text": "چاند کا پردہ قبیلے کا شکار" },
   "raids.contracts.list.moon_veil_hunt.text": { "en": "Won raids on Moon Veil outposts carry 20% more today.", "text": "آج چاند کا پردہ قبیلے کی چوکیوں پر جیتے ہوئے دھاوے 20% زیادہ مال لاتے ہیں۔" },
   "ranks.leagues.sprout.name": { "en": "Bamboo League", "text": "بانس لیگ" },
   "ranks.leagues.fern.name": { "en": "Cedar League", "text": "دیودار لیگ" },

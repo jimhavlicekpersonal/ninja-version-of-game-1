@@ -2110,7 +2110,7 @@
   "sim.this_purchase_was_already_refunded_05408e619d": { "en": "This purchase was already refunded.", "text": "這筆購買已經退款了。" },
   "sim.this_look_is_earned_in_play_never_sold_9025163fca": { "en": "This look is earned in play, never sold.", "text": "這個外觀只能在遊戲中獲得，絕不販售。" },
   "sim.you_ve_opened_today_s_chest_a_new_one_is_b4753d2b3f": { "en": "You've opened today's chest. A new one is ready when your next day starts.", "text": "你已經打開今天的寶箱了。你的下一天開始時，就會有新的寶箱。" },
-  "sim.trial_fortress_damage_is_not_allowed_05759d6468": { "en": "Trial fortress damage is not allowed.", "text": "不允許的試煉要塞損傷。" },
+  "sim.trial_fortress_damage_is_not_allowed_05759d6468": { "en": "Trial fortress damage is not allowed.", "text": "不允許對試煉要塞造成損傷。" },
   "sim.there_is_no_daily_drill_49086be800": { "en": "There is no daily drill.", "text": "沒有每日操練。" },
   "sim.too_long_ago_146e28a63e": { "en": "Too long ago.", "text": "時間太久了。" },
   "sim.build_a_training_dojo_and_a_squad_courty_ad04d756ab": { "en": "Build a Training Dojo and a Squad Courtyard first.", "text": "請先建造修行道場和集結庭院。" }

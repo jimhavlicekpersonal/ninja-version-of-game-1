@@ -165,7 +165,7 @@
   "events.schedule.gauntlet_2.name": { "en": "The Gauntlet", "text": "Сквозь строй" },
   "events.schedule.gauntlet_2.description": { "en": "One fortress for the whole week: everyone at your Keep attacks this same base. Each star mark on the ladder pays once.", "text": "Одна крепость на всю неделю: все игроки твоего уровня Замка атакуют одну и ту же базу. Каждая отметка звёзд на лестнице оплачивается один раз." },
   "events.schedule.golden_rice.name": { "en": "Golden Rice Days", "text": "Дни золотого риса" },
-  "events.schedule.golden_rice.description": { "en": "Collecting from Coin Mints and Terraced Farms gives 50% extra for half a day.", "text": "Сбор с Монетных дворов и Террасных ферм даёт на 50% больше в течение полудня." },
+  "events.schedule.golden_rice.description": { "en": "Collecting from Coin Mints and Terraced Farms gives 50% extra for half a day.", "text": "Сбор с Монетных дворов и Террасных ферм даёт на 50% больше в течение половины дня." },
   "events.schedule.gauntlet_3.name": { "en": "The Gauntlet", "text": "Сквозь строй" },
   "events.schedule.gauntlet_3.description": { "en": "One fortress for the whole week: everyone at your Keep attacks this same base. Each star mark on the ladder pays once.", "text": "Одна крепость на всю неделю: все игроки твоего уровня Замка атакуют одну и ту же базу. Каждая отметка звёзд на лестнице оплачивается один раз." },
   "events.schedule.long_night.name": { "en": "Long Night of Raids", "text": "Долгая ночь набегов" },

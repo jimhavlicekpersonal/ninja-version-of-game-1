@@ -307,10 +307,10 @@
     "zh-Hant": {
       "ready": true,
       "strings": 3229,
-      "installedUtf8": 243637,
-      "gzip": 87126,
-      "brotli": 68927,
-      "zipDeflatePayload": 87108,
+      "installedUtf8": 243643,
+      "gzip": 87133,
+      "brotli": 68887,
+      "zipDeflatePayload": 87115,
       "namespaces": {
         "boot": {
           "total": 17,
@@ -427,10 +427,10 @@
     "ru": {
       "ready": true,
       "strings": 3229,
-      "installedUtf8": 362123,
-      "gzip": 99513,
-      "brotli": 76871,
-      "zipDeflatePayload": 99495,
+      "installedUtf8": 362132,
+      "gzip": 99531,
+      "brotli": 76883,
+      "zipDeflatePayload": 99513,
       "namespaces": {
         "boot": {
           "total": 17,
@@ -637,9 +637,9 @@
     "uk": {
       "ready": true,
       "strings": 3229,
-      "installedUtf8": 363236,
+      "installedUtf8": 363238,
       "gzip": 99201,
-      "brotli": 77105,
+      "brotli": 77090,
       "zipDeflatePayload": 99183,
       "namespaces": {
         "boot": {
@@ -757,10 +757,10 @@
     "ur": {
       "ready": true,
       "strings": 3229,
-      "installedUtf8": 342721,
-      "gzip": 91926,
-      "brotli": 72541,
-      "zipDeflatePayload": 91908,
+      "installedUtf8": 342732,
+      "gzip": 91927,
+      "brotli": 72508,
+      "zipDeflatePayload": 91909,
       "namespaces": {
         "boot": {
           "total": 17,
@@ -997,10 +997,10 @@
     "te": {
       "ready": true,
       "strings": 3229,
-      "installedUtf8": 454919,
-      "gzip": 98528,
-      "brotli": 74690,
-      "zipDeflatePayload": 98510,
+      "installedUtf8": 454928,
+      "gzip": 98535,
+      "brotli": 74704,
+      "zipDeflatePayload": 98517,
       "namespaces": {
         "boot": {
           "total": 17,
@@ -1088,9 +1088,9 @@
       "ready": true,
       "strings": 3229,
       "installedUtf8": 464391,
-      "gzip": 97741,
-      "brotli": 74400,
-      "zipDeflatePayload": 97723,
+      "gzip": 97736,
+      "brotli": 74370,
+      "zipDeflatePayload": 97718,
       "namespaces": {
         "boot": {
           "total": 17,
@@ -1237,10 +1237,10 @@
     "el": {
       "ready": true,
       "strings": 3229,
-      "installedUtf8": 395241,
-      "gzip": 103464,
-      "brotli": 78830,
-      "zipDeflatePayload": 103446,
+      "installedUtf8": 395263,
+      "gzip": 103471,
+      "brotli": 78845,
+      "zipDeflatePayload": 103453,
       "namespaces": {
         "boot": {
           "total": 17,
