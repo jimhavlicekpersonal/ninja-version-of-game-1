@@ -1,7 +1,7 @@
 {
-  "$comment": "Shadow Trials: an endless ladder of practice fortresses. Tier t uses Keep min(15, 1 + floor((t-1)/tiersPerHall)) (the last Keep level in hall.json); past it (tier 60), defenses grow by powerGrowthPerTier per tier. Rewards are paid once, on the first clear of the next tier. taskMaxGrowth (economy E27, 2026-11-13): a 'clear N Trial tiers' task is offered only while the next N tiers are at or below the player's Keep and their growth past tier 60 is at most this (1.1236 = the first two tiers past the Keep ladder); a judgement, not measured against players.",
+  "$comment": "Shadow Trials: an endless ladder of practice fortresses. Tier t uses Keep min(15, 1 + floor((t-1)/tiersPerHall)) (the last Keep level in hall.json); past it (tier 60), defenses grow by powerGrowthPerTier per tier. Rewards are paid once, on the first clear of the next tier. taskMaxGrowth (economy E27, 2026-11-13): a 'clear N Trial tiers' task is offered only while the next N tiers are at or below the player's Keep and their growth past tier 60 is at most this (1.0404 = the first two tiers past the Keep ladder at 2% a tier; 1.1236 at the old 6%); a judgement, not measured against players. 2026-11-16 pass (P1-06, P1-07, P1-17): growth is applied by repeated multiplication (no Math.pow), rewards past the Keep ladder grow by rewardGrowthPerTierBeyond a tier, and modifiers carry an offset so walls double only on Walled Keep tiers and no tier carries two.",
   "tiersPerHall": 4,
-  "powerGrowthPerTier": 0.06,
+  "powerGrowthPerTier": 0.02,
   "maxPower": 1000000000,
   "starsToClear": 2,
   "rewardShareOfRaidLoot": 0.25,
@@ -10,10 +10,55 @@
   "jadeReward": 5,
   "candidates": 5,
   "maxAlternates": 4,
-  "taskMaxGrowth": 1.1236,
-  "layoutPower": { "kunai_ring": 1, "walled_keep": 1, "mortar_core": 0.94, "twin_gates": 1, "open_court": 1.08 },
+  "taskMaxGrowth": 1.0404,
+  "layoutPower": {
+    "kunai_ring": 1,
+    "walled_keep": 1,
+    "mortar_core": 0.94,
+    "twin_gates": 1,
+    "open_court": 1.08
+  },
   "modifiers": [
-    { "id": "ironclad", "every": 5, "name": "Ironclad Walls", "description": "Walls have double HP.", "wallPower": 2 },
-    { "id": "elite", "every": 10, "name": "Elite Garrison", "description": "Defenses are 20% tougher and hit 20% harder.", "power": 1.2 }
-  ]
+    {
+      "id": "ironclad",
+      "every": 5,
+      "offset": 2,
+      "name": "Ironclad Walls",
+      "description": "Walls have double HP.",
+      "wallPower": 2
+    },
+    {
+      "id": "elite",
+      "every": 10,
+      "name": "Elite Garrison",
+      "description": "Defenses are 20% tougher and hit 20% harder.",
+      "power": 1.2
+    },
+    {
+      "id": "rival_crimson_lotus",
+      "every": 10,
+      "offset": 4,
+      "name": "Crimson Lotus Outpost",
+      "description": "Its towers are tempered the way the Crimson Lotus clan tempers theirs.",
+      "rival": "crimson_lotus"
+    },
+    {
+      "id": "rival_iron_tide",
+      "every": 10,
+      "offset": 8,
+      "name": "Iron Tide Outpost",
+      "description": "Its towers are tempered the way the Iron Tide clan tempers theirs.",
+      "rival": "iron_tide"
+    },
+    {
+      "id": "rival_moon_veil",
+      "every": 10,
+      "offset": 6,
+      "name": "Moon Veil Outpost",
+      "description": "Its towers are tempered the way the Moon Veil clan tempers theirs.",
+      "rival": "moon_veil"
+    }
+  ],
+  "rewardGrowthPerTierBeyond": 0.003,
+  "$commentCap": "P1-06 (2026-11-18, /tmp script recorded in PROGRESS.md): a fully researched Keep 15 army with the raid bots' mix, the bot plan and the Shadow Captain clears tier 58 with two stars in 8 of 8 fortress/seed combinations and tier 60 (a maxed Keep 15 fortress, no growth yet) in 2 of 8, at every growth tried (0.06, 0.03, 0.02). Growth 0.02 keeps tiers 62-64 at 2-3 of 8 (0.06: 1-2). achievements.json trial_walker ends at 58 - 5 = 53."
 }

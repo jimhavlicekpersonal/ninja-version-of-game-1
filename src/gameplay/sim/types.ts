@@ -1198,10 +1198,14 @@ export interface GameData {
 export interface TrialModifierDef {
   id: string;
   every: number;
+  /** P1-07: the modifier lands on tiers t with (t − offset) mod every = 0 (absent: 0). */
+  offset?: number;
   name: string;
   description: string;
   power?: number;
   wallPower?: number;
+  /** P1-07: the fortress is tempered as this rival clan tempers its outposts (`battle.json` `temper.rivals`), from the temper unlock Keep. */
+  rival?: string;
 }
 
 export interface TrialsDef {
@@ -1211,6 +1215,8 @@ export interface TrialsDef {
   starsToClear: number;
   rewardShareOfRaidLoot: number;
   rewardLog2Growth: number;
+  /** P1-06: past the Keep ladder each tier's reward grows by this share per tier (linear, so it keeps growing a little). */
+  rewardGrowthPerTierBeyond?: number;
   jadeEveryTiers: number;
   jadeReward: number;
   modifiers: TrialModifierDef[];

@@ -14,6 +14,7 @@
 import { generateOpponent, LAYOUTS, type LayoutArchetype } from './battle/basegen';
 import type { BaseLayout } from './battle/types';
 import { mixSeed } from './rng';
+import { temperBase } from './battle/temper';
 import type { Cost, GameData, TrialModifierDef } from './types';
 
 export interface TrialInfo {
@@ -38,9 +39,14 @@ export function trialInfo(tier: number, data: GameData, variant = 0): TrialInfo 
   const halls = data.hall.levels.length;
   const hall = Math.min(halls, 1 + Math.floor((t - 1) / cfg.tiersPerHall));
   const beyond = Math.max(0, t - halls * cfg.tiersPerHall);
-  const modifiers = cfg.modifiers.filter((m) => t % m.every === 0);
+  // P1-07: each modifier on its own period and offset; a rival's tempers need the Keep that unlocks tempering.
+  const temperKeep = data.battle.temper?.unlockKeep ?? Infinity;
+  const modifiers = cfg.modifiers.filter((m) => (t - (m.offset ?? 0)) % m.every === 0 && t >= (m.offset ?? 0) && (!m.rival || hall >= temperKeep));
   const layout = LAYOUTS[(t - 1 + Math.max(0, Math.floor(variant))) % LAYOUTS.length];
-  let power = Math.min(cfg.maxPower, Math.pow(1 + cfg.powerGrowthPerTier, beyond));
+  // XPL-08 (P1-17): repeated multiplication, never Math.pow (engines need not agree on it to the last bit).
+  let power = 1;
+  for (let i = 0; i < beyond && power < cfg.maxPower; i++) power *= 1 + cfg.powerGrowthPerTier;
+  power = Math.min(cfg.maxPower, power);
   let wallPower = 1;
   for (const m of modifiers) {
     power = Math.min(cfg.maxPower, power * (m.power ?? 1));
@@ -85,6 +91,8 @@ export function trialBase(tier: number, data: GameData, variant = 0): BaseLayout
   base.practice = info.layout.name;
   if (info.power !== 1) base.power = info.power;
   if (info.wallPower !== 1) base.wallPower = info.wallPower;
+  // P1-07: a rival clan's outpost tempers.
+  for (const m of info.modifiers) if (m.rival) temperBase(base, data.battle.temper?.rivals[m.rival]?.tempers, data);
   return base;
 }
 
@@ -93,10 +101,26 @@ export function trialReward(tier: number, data: GameData): Cost {
   const info = trialInfo(tier, data);
   const cfg = data.trials;
   const loot = data.battle.generatedLootByHall[info.hall - 1];
-  const amount = Math.floor(loot.min * cfg.rewardShareOfRaidLoot * (1 + cfg.rewardLog2Growth * Math.log2(info.tier)));
+  // P1-06: past the Keep ladder the reward keeps growing a little (it was flat but for the log term).
+  const beyond = Math.max(0, info.tier - data.hall.levels.length * cfg.tiersPerHall);
+  const raw = loot.min * cfg.rewardShareOfRaidLoot * (1 + cfg.rewardLog2Growth * log2Exact(info.tier)) * (1 + (cfg.rewardGrowthPerTierBeyond ?? 0) * beyond);
+  // XPL-08 (P1-17): an integer-safe floor. The product lands exactly on a whole number at tiers 2, 4, 16, 32 and
+  // 64; an engine whose result is one unit in the last place low would pay one less and the economies would differ.
+  const amount = Math.floor(raw + 1e-7);
   const out: Cost = { acorns: amount, dew: amount };
   if (info.tier % cfg.jadeEveryTiers === 0) out.moonstones = cfg.jadeReward;
   return out;
+}
+
+/** log2 of a whole tier, exact at powers of two (Math.log2 is not guaranteed exact on every engine). */
+function log2Exact(n: number): number {
+  let p = 0;
+  let v = n;
+  while (v > 1 && v % 2 === 0) {
+    v /= 2;
+    p++;
+  }
+  return v === 1 ? p : p + Math.log2(v);
 }
 
 /** Whether the player may switch the next tier to an alternate fortress: after failing it, a few times per tier. */

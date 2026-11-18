@@ -756,7 +756,7 @@
   "ui.already_linked_an_account_on_another_d_c06434826d": { "en": "Already linked an account on another device? Sign in with it here to play that account.", "text": "다른 기기에서 이미 계정을 연결했나요? 여기에서 그 계정으로 로그인하면 그 계정으로 플레이할 수 있어요." },
   "ui.also_block_87576e2627": { "en": " Also block {arg1}", "text": " {arg1} 님도 차단" },
   "ui.amounts_are_the_items_us_dollar_list_p_8a3498b500": { "en": "Amounts are the items' US-dollar list prices; your store receipts show what you actually paid in your currency.", "text": "금액은 상품의 미국 달러 정가예요. 실제로 결제한 현지 통화 금액은 스토어 영수증에 나와요." },
-  "ui.an_endless_ladder_of_practice_fortress_5c41313067": { "en": "An endless ladder of practice fortresses guarded by the clan. Each tier is harder than the last, and there is no top.", "text": "가문이 지키는 연습용 요새가 끝없이 이어져요. 층마다 앞보다 어려워지고, 꼭대기는 없어요." },
+  "ui.an_endless_ladder_of_practice_fortress_5c41313067": { "en": "A ladder of practice fortresses guarded by the clan. Each tier is harder than the last, and past tier {tier} the defenses grow {pct}% stronger with every tier.", "text": "", "old": "가문이 지키는 연습용 요새가 끝없이 이어져요. 층마다 앞보다 어려워지고, 꼭대기는 없어요." },
   "ui.analytics_events_this_device_4fe12a5b11": { "en": "Analytics events (this device)", "text": "분석 이벤트(이 기기)" },
   "ui.and_it_comes_back_from_time_to_time_e8db8be5a2": { "en": ", and it comes back from time to time", "text": ", 그리고 가끔 다시 돌아와요" },
   "ui.anything_else_they_should_know_optiona_1ecfe6847d": { "en": "Anything else they should know (optional)", "text": "더 알려 줄 내용(선택)" },

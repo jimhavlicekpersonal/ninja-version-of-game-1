@@ -2156,7 +2156,7 @@ export class Hud {
     const alternate = canTryAlternate(this.c.state.trials, gd);
     const body = h('div', {});
     body.append(
-      h('p', {}, i18nText("ui.an_endless_ladder_of_practice_fortress_5c41313067")),
+      h('p', {}, i18nText("ui.an_endless_ladder_of_practice_fortress_5c41313067", { tier: this.c.data.hall.levels.length * this.c.data.trials.tiersPerHall, pct: Math.round(this.c.data.trials.powerGrowthPerTier * 100) })),
       h('p', { class: 'muted small' }, i18nText("ui.practice_mode_these_are_generated_fort_420a3ab093", { arg1: gd.trials.starsToClear })),
       h(
         'div',

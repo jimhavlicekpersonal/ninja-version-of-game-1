@@ -9,7 +9,7 @@ import { createBattle } from '../../../src/gameplay/sim/battle/battle';
 import { topUpOne, topUpScale } from '../../../src/gameplay/sim/economy';
 import { activeGoalEvent, bountyBase, goalEventView } from '../../../src/gameplay/sim/goalEvents';
 import { canPurchase, productGrantsFor, productInfo, storeProductId } from '../../../src/gameplay/sim/monetization';
-import { currentTasks, passPremiumValue, passSaleOpen, passSeasonEndsAt, recentRaidRates, taskTarget } from '../../../src/gameplay/sim/pass';
+import { currentTasks, passPointsPerDay, passPremiumValue, passSaleOpen, passSeasonEndsAt, recentRaidRates, taskTarget } from '../../../src/gameplay/sim/pass';
 import { rematchBase, rematchable, rematchReward } from '../../../src/gameplay/sim/rematch';
 import { capacity } from '../../../src/gameplay/sim/resources';
 import { createRng } from '../../../src/gameplay/sim/rng';
@@ -113,7 +113,9 @@ describe('Season Scroll value and fair late purchases (item 5)', () => {
     const { state } = newGame();
     const start = data.pass.epoch + DAY / 2;
     const v = passPremiumValue({ ...state, pass: { ...state.pass, season: 0 } }, start, data);
-    expect(v.tiers).toBe(data.pass.tiers.length);
+    // P1-05 (2026-11-18): reachable tiers follow the player's pace; in a season's first days, the default pace.
+    const days = data.pass.seasonDays - 0.5;
+    expect(v.tiers).toBe(Math.min(data.pass.tiers.length, Math.floor((days * passPointsPerDay(data) * data.pass.estimate!.defaultPace) / data.pass.pointsPerTier)));
     expect(v.total).toBeGreaterThan(v.packJade);
   });
 

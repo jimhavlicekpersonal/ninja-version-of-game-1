@@ -56,11 +56,35 @@ describe('Shadow Trials ladder', () => {
     }
   });
 
+  // P1-07 (RET-07, 2026-11-18; this item authorised restating the pinned tiers): Ironclad used to land only on
+  // Open Courtyard (no walls) and doubled up with Elite every tenth tier.
   it('adds modifiers on their tiers', () => {
-    expect(trialInfo(5, data).modifiers.map((m) => m.id)).toEqual(['ironclad']);
-    expect(trialInfo(10, data).modifiers.map((m) => m.id).sort()).toEqual(['elite', 'ironclad']);
-    expect(trialBase(5, data).wallPower).toBe(2);
-    expect(trialInfo(7, data).modifiers).toEqual([]);
+    expect(trialInfo(7, data).modifiers.map((m) => m.id)).toEqual(['ironclad']);
+    expect(trialInfo(10, data).modifiers.map((m) => m.id)).toEqual(['elite']);
+    expect(trialBase(7, data).wallPower).toBe(2);
+    expect(trialInfo(5, data).modifiers).toEqual([]);
+  });
+
+  it('a modifier that names walls lands on a fortress with walls, and no tier carries two (tiers 1-120)', () => {
+    for (let t = 1; t <= 120; t++) {
+      const info = trialInfo(t, data);
+      expect(info.modifiers.length, `tier ${t}`).toBeLessThanOrEqual(1);
+      if (info.modifiers.some((m) => m.wallPower)) {
+        const walls = trialBase(t, data).buildings.filter((b) => data.buildings[b.type]?.category === 'hedge').length;
+        expect(walls, `tier ${t} (${info.layout.id})`).toBeGreaterThan(0);
+      }
+    }
+  });
+
+  it('a rival modifier tempers the fortress as that clan does, from the temper unlock Keep', () => {
+    const t = Array.from({ length: 120 }, (_, i) => i + 1).find((x) => trialInfo(x, data).modifiers.some((m) => m.rival))!;
+    expect(trialInfo(t, data).hall).toBeGreaterThanOrEqual(data.battle.temper!.unlockKeep);
+    expect(trialBase(t, data).buildings.some((b) => b.temper)).toBe(true);
+  });
+
+  it('rewards at tiers whose formula lands on a whole number are pinned (XPL-08, P1-17)', () => {
+    // 550, 600, 4,900 and 82,728 as before; tier 64 is 3,840,074 × (1 + 0.003 × 4) past the Keep ladder.
+    expect([2, 4, 16, 32, 64].map((t) => trialReward(t, data).acorns)).toEqual([550, 600, 4900, 82728, 3886154]);
   });
 
   it('rewards grow slowly (logarithmically) and Jade comes every 10 tiers', () => {

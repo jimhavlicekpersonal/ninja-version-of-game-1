@@ -756,7 +756,7 @@
   "ui.already_linked_an_account_on_another_d_c06434826d": "Already linked an account on another device? Sign in with it here to play that account.",
   "ui.also_block_87576e2627": " Also block {arg1}",
   "ui.amounts_are_the_items_us_dollar_list_p_8a3498b500": "Amounts are the items' US-dollar list prices; your store receipts show what you actually paid in your currency.",
-  "ui.an_endless_ladder_of_practice_fortress_5c41313067": "An endless ladder of practice fortresses guarded by the clan. Each tier is harder than the last, and there is no top.",
+  "ui.an_endless_ladder_of_practice_fortress_5c41313067": "A ladder of practice fortresses guarded by the clan. Each tier is harder than the last, and past tier {tier} the defenses grow {pct}% stronger with every tier.",
   "ui.analytics_events_this_device_4fe12a5b11": "Analytics events (this device)",
   "ui.and_it_comes_back_from_time_to_time_e8db8be5a2": ", and it comes back from time to time",
   "ui.anything_else_they_should_know_optiona_1ecfe6847d": "Anything else they should know (optional)",

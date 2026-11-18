@@ -756,7 +756,7 @@
   "ui.already_linked_an_account_on_another_d_c06434826d": { "en": "Already linked an account on another device? Sign in with it here to play that account.", "text": "別の端末ですでにアカウントを連携していますか？ここでそのアカウントでサインインすると、そのアカウントでプレイできます。" },
   "ui.also_block_87576e2627": { "en": " Also block {arg1}", "text": " {arg1}もブロックする" },
   "ui.amounts_are_the_items_us_dollar_list_p_8a3498b500": { "en": "Amounts are the items' US-dollar list prices; your store receipts show what you actually paid in your currency.", "text": "金額は各商品の米ドルの定価です。実際に支払った額は、ストアのレシートにお住まいの通貨で表示されます。" },
-  "ui.an_endless_ladder_of_practice_fortress_5c41313067": { "en": "An endless ladder of practice fortresses guarded by the clan. Each tier is harder than the last, and there is no top.", "text": "一族が守る、果てしなく続く練習用の砦。段が進むほど難しくなり、頂上はありません。" },
+  "ui.an_endless_ladder_of_practice_fortress_5c41313067": { "en": "A ladder of practice fortresses guarded by the clan. Each tier is harder than the last, and past tier {tier} the defenses grow {pct}% stronger with every tier.", "text": "", "old": "一族が守る、果てしなく続く練習用の砦。段が進むほど難しくなり、頂上はありません。" },
   "ui.analytics_events_this_device_4fe12a5b11": { "en": "Analytics events (this device)", "text": "分析イベント（この端末）" },
   "ui.and_it_comes_back_from_time_to_time_e8db8be5a2": { "en": ", and it comes back from time to time", "text": "（時々再登場します）" },
   "ui.anything_else_they_should_know_optiona_1ecfe6847d": { "en": "Anything else they should know (optional)", "text": "ほかに伝えたいこと（任意）" },
