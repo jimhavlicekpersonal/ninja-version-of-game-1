@@ -4,19 +4,19 @@
   "measured": {
     "en": {
       "ready": true,
-      "strings": 3060,
-      "installedUtf8": 232494,
-      "gzip": 74992,
-      "brotli": 61414,
-      "zipDeflatePayload": 74974,
+      "strings": 3067,
+      "installedUtf8": 232908,
+      "gzip": 75084,
+      "brotli": 61486,
+      "zipDeflatePayload": 75066,
       "namespaces": {
         "boot": {
           "total": 17,
           "translated": 17
         },
         "data": {
-          "total": 669,
-          "translated": 669
+          "total": 676,
+          "translated": 676
         },
         "messages": {
           "total": 2102,
@@ -45,7 +45,7 @@
           "translated": 17
         },
         "data": {
-          "total": 669,
+          "total": 676,
           "translated": 669
         },
         "messages": {
@@ -75,7 +75,7 @@
           "translated": 17
         },
         "data": {
-          "total": 669,
+          "total": 676,
           "translated": 669
         },
         "messages": {
@@ -105,7 +105,7 @@
           "translated": 17
         },
         "data": {
-          "total": 669,
+          "total": 676,
           "translated": 669
         },
         "messages": {
@@ -135,7 +135,7 @@
           "translated": 17
         },
         "data": {
-          "total": 669,
+          "total": 676,
           "translated": 669
         },
         "messages": {
@@ -165,7 +165,7 @@
           "translated": 17
         },
         "data": {
-          "total": 669,
+          "total": 676,
           "translated": 669
         },
         "messages": {
@@ -195,7 +195,7 @@
           "translated": 17
         },
         "data": {
-          "total": 669,
+          "total": 676,
           "translated": 669
         },
         "messages": {
@@ -225,7 +225,7 @@
           "translated": 17
         },
         "data": {
-          "total": 669,
+          "total": 676,
           "translated": 669
         },
         "messages": {
@@ -255,7 +255,7 @@
           "translated": 17
         },
         "data": {
-          "total": 669,
+          "total": 676,
           "translated": 669
         },
         "messages": {
@@ -285,7 +285,7 @@
           "translated": 17
         },
         "data": {
-          "total": 669,
+          "total": 676,
           "translated": 669
         },
         "messages": {
@@ -315,7 +315,7 @@
           "translated": 17
         },
         "data": {
-          "total": 669,
+          "total": 676,
           "translated": 669
         },
         "messages": {
@@ -345,7 +345,7 @@
           "translated": 17
         },
         "data": {
-          "total": 669,
+          "total": 676,
           "translated": 669
         },
         "messages": {
@@ -375,7 +375,7 @@
           "translated": 17
         },
         "data": {
-          "total": 669,
+          "total": 676,
           "translated": 669
         },
         "messages": {
@@ -405,7 +405,7 @@
           "translated": 17
         },
         "data": {
-          "total": 669,
+          "total": 676,
           "translated": 669
         },
         "messages": {
@@ -435,7 +435,7 @@
           "translated": 17
         },
         "data": {
-          "total": 669,
+          "total": 676,
           "translated": 669
         },
         "messages": {
@@ -465,7 +465,7 @@
           "translated": 17
         },
         "data": {
-          "total": 669,
+          "total": 676,
           "translated": 669
         },
         "messages": {
@@ -495,7 +495,7 @@
           "translated": 17
         },
         "data": {
-          "total": 669,
+          "total": 676,
           "translated": 669
         },
         "messages": {
@@ -525,7 +525,7 @@
           "translated": 17
         },
         "data": {
-          "total": 669,
+          "total": 676,
           "translated": 669
         },
         "messages": {
@@ -555,7 +555,7 @@
           "translated": 17
         },
         "data": {
-          "total": 669,
+          "total": 676,
           "translated": 669
         },
         "messages": {
@@ -585,7 +585,7 @@
           "translated": 17
         },
         "data": {
-          "total": 669,
+          "total": 676,
           "translated": 669
         },
         "messages": {
@@ -615,7 +615,7 @@
           "translated": 17
         },
         "data": {
-          "total": 669,
+          "total": 676,
           "translated": 669
         },
         "messages": {
@@ -645,7 +645,7 @@
           "translated": 17
         },
         "data": {
-          "total": 669,
+          "total": 676,
           "translated": 669
         },
         "messages": {
@@ -675,7 +675,7 @@
           "translated": 17
         },
         "data": {
-          "total": 669,
+          "total": 676,
           "translated": 669
         },
         "messages": {
@@ -705,7 +705,7 @@
           "translated": 17
         },
         "data": {
-          "total": 669,
+          "total": 676,
           "translated": 669
         },
         "messages": {
@@ -735,7 +735,7 @@
           "translated": 17
         },
         "data": {
-          "total": 669,
+          "total": 676,
           "translated": 669
         },
         "messages": {
@@ -765,7 +765,7 @@
           "translated": 17
         },
         "data": {
-          "total": 669,
+          "total": 676,
           "translated": 669
         },
         "messages": {
@@ -795,7 +795,7 @@
           "translated": 17
         },
         "data": {
-          "total": 669,
+          "total": 676,
           "translated": 669
         },
         "messages": {
@@ -825,7 +825,7 @@
           "translated": 17
         },
         "data": {
-          "total": 669,
+          "total": 676,
           "translated": 669
         },
         "messages": {
@@ -855,7 +855,7 @@
           "translated": 17
         },
         "data": {
-          "total": 669,
+          "total": 676,
           "translated": 669
         },
         "messages": {
@@ -885,7 +885,7 @@
           "translated": 17
         },
         "data": {
-          "total": 669,
+          "total": 676,
           "translated": 669
         },
         "messages": {
@@ -915,7 +915,7 @@
           "translated": 17
         },
         "data": {
-          "total": 669,
+          "total": 676,
           "translated": 669
         },
         "messages": {
@@ -945,7 +945,7 @@
           "translated": 17
         },
         "data": {
-          "total": 669,
+          "total": 676,
           "translated": 669
         },
         "messages": {
@@ -975,7 +975,7 @@
           "translated": 17
         },
         "data": {
-          "total": 669,
+          "total": 676,
           "translated": 669
         },
         "messages": {
@@ -1005,7 +1005,7 @@
           "translated": 17
         },
         "data": {
-          "total": 669,
+          "total": 676,
           "translated": 669
         },
         "messages": {
@@ -1035,7 +1035,7 @@
           "translated": 17
         },
         "data": {
-          "total": 669,
+          "total": 676,
           "translated": 669
         },
         "messages": {
@@ -1065,7 +1065,7 @@
           "translated": 17
         },
         "data": {
-          "total": 669,
+          "total": 676,
           "translated": 669
         },
         "messages": {
@@ -1095,7 +1095,7 @@
           "translated": 17
         },
         "data": {
-          "total": 669,
+          "total": 676,
           "translated": 669
         },
         "messages": {
@@ -1125,7 +1125,7 @@
           "translated": 17
         },
         "data": {
-          "total": 669,
+          "total": 676,
           "translated": 669
         },
         "messages": {
@@ -1155,7 +1155,7 @@
           "translated": 17
         },
         "data": {
-          "total": 669,
+          "total": 676,
           "translated": 669
         },
         "messages": {
@@ -1185,7 +1185,7 @@
           "translated": 17
         },
         "data": {
-          "total": 669,
+          "total": 676,
           "translated": 669
         },
         "messages": {
@@ -1215,7 +1215,7 @@
           "translated": 17
         },
         "data": {
-          "total": 669,
+          "total": 676,
           "translated": 669
         },
         "messages": {
@@ -1245,7 +1245,7 @@
           "translated": 17
         },
         "data": {
-          "total": 669,
+          "total": 676,
           "translated": 669
         },
         "messages": {
@@ -1275,7 +1275,7 @@
           "translated": 17
         },
         "data": {
-          "total": 669,
+          "total": 676,
           "translated": 669
         },
         "messages": {
@@ -1305,7 +1305,7 @@
           "translated": 17
         },
         "data": {
-          "total": 669,
+          "total": 676,
           "translated": 669
         },
         "messages": {
@@ -1335,7 +1335,7 @@
           "translated": 17
         },
         "data": {
-          "total": 669,
+          "total": 676,
           "translated": 669
         },
         "messages": {
@@ -1365,7 +1365,7 @@
           "translated": 17
         },
         "data": {
-          "total": 669,
+          "total": 676,
           "translated": 669
         },
         "messages": {
@@ -1395,7 +1395,7 @@
           "translated": 17
         },
         "data": {
-          "total": 669,
+          "total": 676,
           "translated": 669
         },
         "messages": {
@@ -1425,7 +1425,7 @@
           "translated": 17
         },
         "data": {
-          "total": 669,
+          "total": 676,
           "translated": 669
         },
         "messages": {
@@ -1455,7 +1455,7 @@
           "translated": 17
         },
         "data": {
-          "total": 669,
+          "total": 676,
           "translated": 669
         },
         "messages": {
@@ -1485,7 +1485,7 @@
           "translated": 17
         },
         "data": {
-          "total": 669,
+          "total": 676,
           "translated": 669
         },
         "messages": {

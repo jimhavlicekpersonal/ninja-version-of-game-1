@@ -6,6 +6,13 @@ import type { Cost, GameData, ResourceKind, Stats, TaskTemplate, VillageState } 
 
 const DAY = 86_400_000;
 
+/** P1-02: the Season Scroll's look this season (the tier's own `skin` when no list is set). */
+export function passSeasonSkin(season: number, data: GameData, fallback?: string): string | undefined {
+  const list = data.pass.seasonSkins;
+  if (!list?.length) return fallback;
+  return list[((season % list.length) + list.length) % list.length];
+}
+
 export function passSeason(t: number, data: GameData): number {
   return Math.floor((t - data.pass.epoch) / (data.pass.seasonDays * DAY));
 }
@@ -84,8 +91,11 @@ export function passPremiumValue(state: VillageState, now: number, data: GameDat
   const skins: string[] = [];
   for (const t of p.tiers) {
     if (t.tier > reach) continue;
-    const { skin, ...res } = t.premium;
-    if (skin) skins.push(skin);
+    const { skin: tierSkin, ...res } = t.premium;
+    // P1-02: this season's look; one the player already owns is worth `repeatJade`, never listed as a look.
+    const skin = tierSkin ? passSeasonSkin(season, data, tierSkin) : undefined;
+    if (skin && !state.cosmetics.owned.includes(skin)) skins.push(skin);
+    else if (skin) jade += p.repeatJade ?? 0;
     // Tiers already unlocked pay at the Keep they unlocked at (balance audit CU-6, `pass.tierKeep`).
     const at = state.pass.season === season && t.tier * p.pointsPerTier <= points ? state.pass.tierKeep?.[t.tier - 1] : undefined;
     const tierKeep = typeof at === 'number' && at >= 1 ? Math.min(at, keep) : keep;

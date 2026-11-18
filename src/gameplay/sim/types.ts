@@ -1024,6 +1024,10 @@ export interface PassDef {
   /** How star/win task targets follow recent raids. */
   adaptiveTasks?: { recentRaids: number; minRecent: number; minExpected: number };
   tiers: { tier: number; free: Cost & { skin?: string }; premium: Cost & { skin?: string } }[];
+  /** P1-02: the season's look, by season number modulo the list (a tier's `skin` stands for it). */
+  seasonSkins?: string[];
+  /** P1-02: Jade for a look tier when the buyer already owns this season's look. */
+  repeatJade?: number;
   dailyTaskPoints: number;
   weeklyChallengePoints: number;
   dailyTasks: TaskTemplate[];

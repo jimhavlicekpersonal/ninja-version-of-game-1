@@ -28,7 +28,7 @@ server's own row). The prompt's baseline (205 files, 1,934 tests) predates `0c5e
 | P0-03 | done | 80d180d | Postgres suites: 3 consecutive runs, 66 files / 692 tests each, 87-94 s, all green (local Postgres 16 + Redis 7, --maxWorkers=2) |  | 30 s test/hook timeout only when TEST_DATABASE_URL is set; --maxWorkers=2 in deploy.yml and server.yml. Not done: a template schema per worker (not needed for green). Not shown here: that the old 5 s limit fails on this machine |
 | P0-04 | done (cause not found) | 80d180d | det.ts: Node 22.23.4, Node 24.22.3 (Dockerfile pin; also today's latest 24.x), 24.22.3 --no-turbofan --no-maglev, 24.22.3 --no-turbofan --no-maglev --no-sparkplug, 24.22.3 --jitless (bundled with esbuild) and 22 --jitless: all byte-identical to det-node22.txt (md5 231afcfc…). matched Keep 8 lag 0 = 2.167 |  | No engine fault found on any compiler tier of the pinned Node. .node-version (24.22.3) read by every workflow; Dockerfile pins the same (test). matched.test.ts asserts levels and opponent Keep before stars and prints each battle's hash. New pins tests/gameplay/battle/matchmaking-pins.test.ts, run a second time in CI with --no-turbofan --no-maglev. tk_desyncs_total alerts already existed. Step 6 (the 2.2 gate's one-star margin) is P4-08: not widened. Could not run: the GitHub runner itself (no Actions access from here) |
 | P1-01 | done | 12561ca | premium Scroll, 20 tiers unlocked unclaimed, season roll: Jade +0, Coins +0 → every unclaimed free and premium tier granted at the roll, premium recorded on the purchase (refund takes it back), overflow reported, pass.lastSeason shown in the welcome back | ui:welcome.scrollEnded | Introduced the pass's one SAVE_VERSION bump (24). Save v24 also carries stats.timedUpgradesDone (P1-08) and keepReachedAt (P1-21); repairStats fills any STAT_KEYS counter on every load, so later counters need no second bump. NO BUILD OF THIS BRANCH MAY BE RELEASED until the pass's last stored field lands (section 3.2) |
-| P1-02 | todo | | | | |
+| P1-02 | done |  | the same look every season; an owner's look tier granted nothing while the estimate listed it → 8 seasonal looks by season number, repeatJade 60 for an owned one, estimate leaves owned looks out | data:cosmetics.hallSkins.{crimson_maple,snow_pine,indigo_tide,jade_bamboo,plum_blossom,golden_harvest,storm_cloud}.name | docs/store/LISTING.md reworded (no single look named) with a test against pass.json; docs/store/<code>/LISTING.md still name the Lantern Festival look: re-translate in the Phase 1 translation batch. Free Jade added: at most 60 a season, only for a returning Scroll buyer |
 | P1-03 | todo | | | | |
 | P1-04 | todo | | | | |
 | P1-05 | todo | | | | |
@@ -47,7 +47,7 @@ server's own row). The prompt's baseline (205 files, 1,934 tests) predates `0c5e
 | P1-18 | done | 0a99f87 | 3 Jade bought 50 Coins that stayed → the top-up buys Provisions for a Provisions-paid action |  |  |
 | P1-19 | done | adbc983 | upgrade dated 11 h back started 11 h back → starts at now − 10 min (MAX_TIMER_BACKDATE_MS); other commands keep 12 h |  | Backend decision recorded in REQUESTS.md and PROTOCOL.md: the conservative bound. Cost: a timer command queued offline for hours is corrected on sync. Three tests that pinned the old bound or synced 6 h late restated (authorised: this item changes the rule) |
 | P1-20 | done | adbc983 | missed stake shielded the defender 14-16 h and exhausted its stores; lost raids gave unlimited honor → no shield/exhaustion without loot; ≤ 40 honor per attacker per defender per UTC day |  | balance-round2.test.ts |
-| P1-21 | done | 12561ca | setProfile(null) unlocked a minor; donate 1.5 ok; groveBattleEnd trusted base and target → refused / rebuilt from enemyGrove |  | Left for the save bump (Phase 1 honesty batch): bountyEnd's Keep − 1 fortress choice needs the time the Keep finished (a stored field) |
+| P1-21 | done | 989ac53, 87bff7f | setProfile(null) unlocked a minor; donate 1.5 ok; groveBattleEnd trusted base and target → refused / rebuilt from enemyGrove |  | Left for the save bump (Phase 1 honesty batch): bountyEnd's Keep − 1 fortress choice needs the time the Keep finished (a stored field) |
 | P1-22 | done | adbc983 | shared replay setup.mastery copied unchecked → dropped unless features.mastery; hero validated |  |  |
 | P2-01 | todo | | | | |
 | P2-02 | todo | | | | |
@@ -137,5 +137,12 @@ server's own row). The prompt's baseline (205 files, 1,934 tests) predates `0c5e
 | Key | Phase | What it is for (screen, placeholders) |
 |---|---|---|
 | `ui:welcome.scrollEnded` | 1 | Welcome-back dialog list item (P1-01): followed by resource chips of what an ended Season Scroll auto-granted. No placeholders. |
+| `data:cosmetics.hallSkins.crimson_maple.name` | 1 | Name of a Season Scroll Keep look (P1-02), shown in the Store, the Scroll panel and the looks grid; a short label, Japanese-inspired nature theme |
+| `data:cosmetics.hallSkins.snow_pine.name` | 1 | Name of a Season Scroll Keep look (P1-02), shown in the Store, the Scroll panel and the looks grid; a short label, Japanese-inspired nature theme |
+| `data:cosmetics.hallSkins.indigo_tide.name` | 1 | Name of a Season Scroll Keep look (P1-02), shown in the Store, the Scroll panel and the looks grid; a short label, Japanese-inspired nature theme |
+| `data:cosmetics.hallSkins.jade_bamboo.name` | 1 | Name of a Season Scroll Keep look (P1-02), shown in the Store, the Scroll panel and the looks grid; a short label, Japanese-inspired nature theme |
+| `data:cosmetics.hallSkins.plum_blossom.name` | 1 | Name of a Season Scroll Keep look (P1-02), shown in the Store, the Scroll panel and the looks grid; a short label, Japanese-inspired nature theme |
+| `data:cosmetics.hallSkins.golden_harvest.name` | 1 | Name of a Season Scroll Keep look (P1-02), shown in the Store, the Scroll panel and the looks grid; a short label, Japanese-inspired nature theme |
+| `data:cosmetics.hallSkins.storm_cloud.name` | 1 | Name of a Season Scroll Keep look (P1-02), shown in the Store, the Scroll panel and the looks grid; a short label, Japanese-inspired nature theme |
 
 ## Open ideas and items left open on purpose

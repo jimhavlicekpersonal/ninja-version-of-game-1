@@ -8,7 +8,7 @@
  */
 import { describe, expect, it } from 'vitest';
 import { defaultData as data } from '../../../src/gameplay/sim/data';
-import { passSeason } from '../../../src/gameplay/sim/pass';
+import { passSeason, passSeasonSkin } from '../../../src/gameplay/sim/pass';
 import { migrate, serialize, SAVE_VERSION } from '../../../src/gameplay/sim/save';
 import type { VillageState } from '../../../src/gameplay/sim/types';
 import { advance, applyCommand, createNewVillage, type Command } from '../../../src/gameplay/sim/village';
@@ -121,7 +121,8 @@ describe('Season Scroll refunds', () => {
 
   it('takes back every claimed premium reward and the Scroll-only look, and lets a new Scroll claim again', () => {
     const { before, s: claimed } = claimedAll(T);
-    const look = data.cosmetics.hallSkins.find((k) => k.passOnly)!.id;
+    // P1-02: the Scroll's look is this season's (pass.json seasonSkins).
+    const look = passSeasonSkin(claimed.pass.season, data)!;
     expect(claimed.cosmetics.owned).toContain(look);
     expect(claimed.resources.moonstones).toBeGreaterThan(before.resources.moonstones);
     const wearing = run(claimed, { type: 'equipSkin', skin: look }, T);

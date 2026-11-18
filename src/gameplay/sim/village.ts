@@ -21,7 +21,7 @@ import { rematchBase, rematchReward, rematchStatus } from './rematch';
 import { scatterObstacles } from './obstacles';
 import { offerCanStillShow, triggerOffer } from './offers';
 import { claimCalendarDay, emptyCalendar, setLocalTime } from './calendar';
-import { buildTimeFactor, currentTasks, dayIndex, passSeason, rollPeriods, unlockedTier } from './pass';
+import { buildTimeFactor, currentTasks, dayIndex, passSeason, passSeasonSkin, rollPeriods, unlockedTier } from './pass';
 import { emptyStats, type OfferTrigger } from './types';
 import { advanceGrove, canRequest, donate as donateTroops, emptyGrove, joinGrove, requestTroops, sendChat } from './social/grove';
 import { attacksLeft, enemyGrove, ensureRaid, raidPhase, settleRaids } from './social/groveRaid';
@@ -1360,8 +1360,12 @@ export function dailyChestOverflowRisk(state: VillageState, now: number, data: G
 export function passTierReward(state: VillageState, tier: number, track: 'free' | 'premium', data: GameData): (Cost & { skin?: string }) | null {
   const def = data.pass.tiers.find((t) => t.tier === tier);
   if (!def) return null;
-  const { skin, ...res } = track === 'free' ? def.free : def.premium;
-  return { ...scaleReward(res, passTierKeep(state, tier, data), data), ...(skin ? { skin } : {}) };
+  const { skin: tierSkin, ...res } = track === 'free' ? def.free : def.premium;
+  const scaled = scaleReward(res, passTierKeep(state, tier, data), data);
+  // P1-02: the look is this season's; a buyer who already owns it gets `repeatJade` instead of nothing.
+  const skin = tierSkin ? passSeasonSkin(state.pass.season, data, tierSkin) : undefined;
+  if (skin && state.cosmetics.owned.includes(skin) && data.pass.repeatJade) return { ...scaled, moonstones: (scaled.moonstones ?? 0) + data.pass.repeatJade };
+  return { ...scaled, ...(skin ? { skin } : {}) };
 }
 
 /**

@@ -3,8 +3,8 @@
  * each as a test that failed on the code it describes.
  */
 import { describe, expect, it } from 'vitest';
-import { passSeason, passSeasonEndsAt, unlockedTier } from '../../../src/gameplay/sim/pass';
-import { advance, applyCommand } from '../../../src/gameplay/sim/village';
+import { passPremiumValue, passSeason, passSeasonEndsAt, unlockedTier } from '../../../src/gameplay/sim/pass';
+import { advance, applyCommand, passTierReward } from '../../../src/gameplay/sim/village';
 import { migrate, SAVE_VERSION, serialize, deserialize } from '../../../src/gameplay/sim/save';
 import { data, newGame } from './helpers';
 
@@ -83,5 +83,31 @@ describe('save v24: the pass bump', () => {
     const file = serialize(state, clock.now()) as unknown as { village: { stats: Record<string, number> } };
     delete file.village.stats.timedUpgradesDone;
     expect(deserialize(file, data).stats.timedUpgradesDone).toBe(0);
+  });
+});
+
+describe('RET-04 (P1-02): the paid look changes each season, and an owned one pays Jade', () => {
+  const lookTier = data.pass.tiers.find((t) => t.premium.skin)!.tier;
+  it('twelve seasons give the list in order', () => {
+    const list = data.pass.seasonSkins!;
+    expect(list.length).toBeGreaterThanOrEqual(6);
+    for (let i = 0; i < 12; i++) {
+      const { state } = newGame();
+      state.pass.season = 100 + i;
+      expect(passTierReward(state, lookTier, 'premium', data)!.skin).toBe(list[(100 + i) % list.length]);
+    }
+    for (const id of list) expect(data.cosmetics.hallSkins.find((s) => s.id === id)?.passOnly).toBe(true);
+  });
+
+  it('an owner gets repeatJade, and the estimate never lists a look the player owns', () => {
+    const { state, clock } = newGame();
+    state.pass.season = passSeason(clock.now(), data);
+    const look = passTierReward(state, lookTier, 'premium', data)!.skin!;
+    state.cosmetics.owned.push(look);
+    const r = passTierReward(state, lookTier, 'premium', data)!;
+    expect(r.skin).toBeUndefined();
+    expect(r.moonstones).toBe(data.pass.repeatJade);
+    state.pass.points = data.pass.tiers.length * data.pass.pointsPerTier;
+    expect(passPremiumValue(state, clock.now(), data).skins).not.toContain(look);
   });
 });

@@ -125,3 +125,17 @@ describe('privacy defaults and declarations (GLOBAL-019)', () => {
     expect(read('public/privacy.html')).toContain('It is off until you turn it on');
   });
 });
+
+describe('the listing names the Season Scroll look as the data has it (P1-02)', () => {
+  it("its claims row matches pass.json seasonSkins and the description names no single look", () => {
+    const listing = readFileSync(resolve('docs/store/LISTING.md'), 'utf8');
+    const pass = JSON.parse(readFileSync(resolve('src/gameplay/data/pass.json'), 'utf8')) as { seasonSkins: string[] };
+    const cosmetics = JSON.parse(readFileSync(resolve('src/gameplay/data/cosmetics.json'), 'utf8')) as { hallSkins: { id: string; name: string; passOnly?: boolean }[] };
+    const row = listing.split('\n').find((l) => l.startsWith('| A Keep look that changes each season'));
+    expect(row).toBeDefined();
+    expect(row).toContain(`(${pass.seasonSkins.length} looks`);
+    for (const id of pass.seasonSkins) expect(cosmetics.hallSkins.find((s) => s.id === id)?.passOnly).toBe(true);
+    const description = listing.split('\n').find((l) => l.startsWith('Kagemura is free to download'))!;
+    for (const id of pass.seasonSkins) expect(description).not.toContain(cosmetics.hallSkins.find((s) => s.id === id)!.name);
+  });
+});

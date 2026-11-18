@@ -11,7 +11,7 @@ import { askAgeBand } from './ageScreen';
 import { canPurchase, productGrantsFor, productInfo, spentThisMonth, spentTotal, storeProductId } from '../../gameplay/sim/monetization';
 import { stipendStatus } from '../../gameplay/sim/stipend';
 import type { StorePrice } from '../../backend/payments/provider';
-import { currentTasks, passPremiumValue, passSaleOpen, passSeasonEndsAt, unlockedTier } from '../../gameplay/sim/pass';
+import { currentTasks, passPremiumValue, passSaleOpen, passSeasonEndsAt, passSeasonSkin, unlockedTier } from '../../gameplay/sim/pass';
 import type { Cost, OfferRule, ResourceKind } from '../../gameplay/sim/types';
 import { RESOURCE_KINDS } from '../../gameplay/sim/types';
 import { hallLevel, passTierReward, rewardOverflow } from '../../gameplay/sim/village';
@@ -67,7 +67,11 @@ export class EconomyUi {
 
   private skinName = (id: string) => localizedData(this.c.data).cosmetics.hallSkins.find((s) => s.id === id)?.name ?? id;
   /** The pass-only Keep look, by its data name (it was hard-coded as "Lantern Elder"; the data calls it Lantern Festival). */
-  private passLookName = () => localizedData(this.c.data).cosmetics.hallSkins.find((s) => s.passOnly)?.name ?? 'season';
+  /** P1-02: this season's Scroll look (it changes each season). */
+  private passLookName = () => {
+    const id = passSeasonSkin(this.c.state.pass.season, this.c.data, this.c.data.cosmetics.hallSkins.find((s) => s.passOnly)?.id);
+    return localizedData(this.c.data).cosmetics.hallSkins.find((s) => s.id === id)?.name ?? 'season';
+  };
   /** The Scroll's build speed bonus as the data has it (a balance bundle can change it; the text used to say 20 regardless). */
   private passSpeedPct = () => Math.round(this.c.data.pass.premiumBuildSpeedBonus * 100);
 

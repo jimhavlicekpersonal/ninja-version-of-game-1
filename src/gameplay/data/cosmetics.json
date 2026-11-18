@@ -67,6 +67,62 @@
       "passOnly": true,
       "cap": "#d9632a",
       "spots": "#ffe9a0"
+    },
+    {
+      "id": "crimson_maple",
+      "name": "Crimson Maple",
+      "moonstones": 0,
+      "passOnly": true,
+      "cap": "#9c2a22",
+      "spots": "#f2c14e"
+    },
+    {
+      "id": "snow_pine",
+      "name": "Snow Pine",
+      "moonstones": 0,
+      "passOnly": true,
+      "cap": "#e8eef2",
+      "spots": "#2f5d50"
+    },
+    {
+      "id": "indigo_tide",
+      "name": "Indigo Tide",
+      "moonstones": 0,
+      "passOnly": true,
+      "cap": "#2a3b78",
+      "spots": "#bfe3f0"
+    },
+    {
+      "id": "jade_bamboo",
+      "name": "Jade Bamboo",
+      "moonstones": 0,
+      "passOnly": true,
+      "cap": "#3d7a4f",
+      "spots": "#d9e8a6"
+    },
+    {
+      "id": "plum_blossom",
+      "name": "Plum Blossom",
+      "moonstones": 0,
+      "passOnly": true,
+      "cap": "#7a2f5a",
+      "spots": "#f5c6d8"
+    },
+    {
+      "id": "golden_harvest",
+      "name": "Golden Harvest",
+      "moonstones": 0,
+      "passOnly": true,
+      "cap": "#b07a1c",
+      "spots": "#fff2b8"
+    },
+    {
+      "id": "storm_cloud",
+      "name": "Storm Cloud",
+      "moonstones": 0,
+      "passOnly": true,
+      "cap": "#4a5160",
+      "spots": "#e4e7ee"
     }
   ]
 }
