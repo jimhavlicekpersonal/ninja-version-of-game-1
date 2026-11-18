@@ -1007,6 +1007,8 @@ export interface TaskTemplate {
   perHall: number;
   /** Star/win tasks: raids assumed in the period; the target follows the recent star or win rate (sim/pass.ts). */
   adaptive?: number;
+  /** P1-08: a collect task's target is this share of the village's own daily collector output (base/perHall the floor). */
+  ofDailyProduction?: number;
 }
 
 export interface PassDef {

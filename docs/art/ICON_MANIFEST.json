@@ -1,6 +1,6 @@
 {
   "generated": "npm run docs:progression",
-  "count": 608,
+  "count": 611,
   "icons": [
     {
       "key": "icon.warrior.shinobi.s1",
@@ -7731,6 +7731,33 @@
       "subject": "Elite Garrison",
       "live": true,
       "prompt": "Shadow Trial modifier \"Elite Garrison\": Defenses are 20% tougher and hit 20% harder."
+    },
+    {
+      "key": "icon.trial.rival_crimson_lotus",
+      "file": "public/art/icons/trials/rival_crimson_lotus.png",
+      "size": 96,
+      "group": "trial",
+      "subject": "Crimson Lotus Outpost",
+      "live": true,
+      "prompt": "Shadow Trial modifier \"Crimson Lotus Outpost\": Its towers are tempered the way the Crimson Lotus clan tempers theirs."
+    },
+    {
+      "key": "icon.trial.rival_iron_tide",
+      "file": "public/art/icons/trials/rival_iron_tide.png",
+      "size": 96,
+      "group": "trial",
+      "subject": "Iron Tide Outpost",
+      "live": true,
+      "prompt": "Shadow Trial modifier \"Iron Tide Outpost\": Its towers are tempered the way the Iron Tide clan tempers theirs."
+    },
+    {
+      "key": "icon.trial.rival_moon_veil",
+      "file": "public/art/icons/trials/rival_moon_veil.png",
+      "size": 96,
+      "group": "trial",
+      "subject": "Moon Veil Outpost",
+      "live": true,
+      "prompt": "Shadow Trial modifier \"Moon Veil Outpost\": Its towers are tempered the way the Moon Veil clan tempers theirs."
     },
     {
       "key": "icon.trial.ladder",

@@ -290,4 +290,4 @@ Rock-paper-scissors, checked by `tests/gameplay/balance/building-matchups.test.t
 | 14 | 106k | 53-56 | 0.94 | 2.1M |
 | 15 | 149k | 57-60 | 1.00 | 3.8M |
 
-Tiers past the last live Keep keep growing by 6% per tier with no top: tier 50 = x1.3, tier 100 = x13, tier 200 = x4523.
+Tiers past the last live Keep keep growing by 6% per tier with no top: tier 50 = x1.3, tier 100 = x3, tier 200 = x21.

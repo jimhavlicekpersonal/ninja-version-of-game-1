@@ -2,6 +2,7 @@
 import { scaleReward, topUpOne } from './economy';
 import { createRng, mixSeed, next } from './rng';
 import { localDayIndex } from './calendar';
+import { collectorRatePerHour, producedResource } from './resources';
 import type { Cost, GameData, ResourceKind, Stats, TaskTemplate, VillageState } from './types';
 
 const DAY = 86_400_000;
@@ -196,14 +197,16 @@ export function taskEligible(tpl: TaskTemplate, target: number, state: VillageSt
   switch (tpl.stat) {
     case 'obstaclesCleared':
       return state.buildings.filter((b) => data.buildings[b.type]?.category === 'obstacle').length >= target;
-    case 'upgradesDone': {
+    case 'upgradesDone':
+    case 'timedUpgradesDone': {
       let n = 0;
       for (const b of state.buildings) {
         const def = data.buildings[b.type];
         if (!def || ['obstacle', 'decor', 'hedge'].includes(def.category)) continue;
         const max = def.category === 'hall' ? Math.min(data.hall.levels.length, def.levels.length) : limits[b.type]?.maxLevel ?? 0;
         const nextLevel = def.levels[b.level];
-        if (b.level < max && nextLevel && nextLevel.buildSeconds <= period) n++;
+        // P1-08: a timed-upgrade task counts only upgrades that take a builder's time.
+        if (b.level < max && nextLevel && nextLevel.buildSeconds <= period && (tpl.stat !== 'timedUpgradesDone' || nextLevel.buildSeconds > 0)) n++;
       }
       return n >= target;
     }
@@ -235,7 +238,9 @@ export function taskEligible(tpl: TaskTemplate, target: number, state: VillageSt
       for (let t = best + 1; t <= best + target; t++) {
         if (Math.min(halls, 1 + Math.floor((t - 1) / cfg.tiersPerHall)) > hall) return false;
         const beyond = Math.max(0, t - halls * cfg.tiersPerHall);
-        if (cfg.taskMaxGrowth !== undefined && Math.pow(1 + cfg.powerGrowthPerTier, beyond) > cfg.taskMaxGrowth + 1e-9) return false;
+        let growth = 1;
+        for (let i = 0; i < beyond; i++) growth *= 1 + cfg.powerGrowthPerTier;
+        if (cfg.taskMaxGrowth !== undefined && growth > cfg.taskMaxGrowth + 1e-9) return false;
       }
       return true;
     }
@@ -244,6 +249,25 @@ export function taskEligible(tpl: TaskTemplate, target: number, state: VillageSt
     default:
       return true;
   }
+}
+
+/**
+ * Retention audit RET-05 (P1-08): a collect task's share of the village's own daily collector output, rounded to
+ * two significant digits (0 when the template has none). Targets linear in the Keep were 0.3% of a day's
+ * production at Keep 12, so the task finished on the first collect.
+ */
+function productionTarget(tpl: TaskTemplate, state: VillageState, data: GameData): number {
+  if (!tpl.ofDailyProduction) return 0;
+  const kind = tpl.stat === 'collectedAcorns' ? 'acorns' : tpl.stat === 'collectedDew' ? 'dew' : null;
+  if (!kind) return 0;
+  let perHour = 0;
+  for (const b of state.buildings) if (b.level >= 1 && producedResource(b, data) === kind) perHour += collectorRatePerHour(b, b.level, data);
+  const want = perHour * 24 * tpl.ofDailyProduction;
+  if (!(want > 0)) return 0;
+  // Exact on every engine (no log10): the largest power of ten that leaves two significant digits.
+  let step = 1;
+  while (want >= step * 100) step *= 10;
+  return Math.round(want / step) * step;
 }
 
 function fixedTarget(tpl: TaskTemplate, hall: number): number {
@@ -258,7 +282,7 @@ function fixedTarget(tpl: TaskTemplate, hall: number): number {
  * needed ~100 raids at Keep 12 for a casual player).
  */
 export function taskTarget(tpl: TaskTemplate, state: VillageState, data: GameData): number | null {
-  const base = fixedTarget(tpl, hallOf(state, data));
+  const base = Math.max(fixedTarget(tpl, hallOf(state, data)), productionTarget(tpl, state, data));
   if (!tpl.adaptive || (tpl.stat !== 'starsEarned' && tpl.stat !== 'raidsWon')) return base;
   const rates = recentRaidRates(state, data);
   if (!rates) return base;

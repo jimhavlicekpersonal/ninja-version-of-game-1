@@ -3,7 +3,8 @@
  * each as a test that failed on the code it describes.
  */
 import { describe, expect, it } from 'vitest';
-import { currentTasks, passBonusCount, passPointsPerDay, passPremiumValue, passSeason, passSeasonEndsAt, unlockedTier } from '../../../src/gameplay/sim/pass';
+import { currentTasks, passBonusCount, passPointsPerDay, passPremiumValue, passSeason, passSeasonEndsAt, taskTarget, unlockedTier } from '../../../src/gameplay/sim/pass';
+import { collectorRatePerHour, producedResource } from '../../../src/gameplay/sim/resources';
 import { advance, applyCommand, canHireArtisan, passTierReward } from '../../../src/gameplay/sim/village';
 import { migrate, SAVE_VERSION, serialize, deserialize } from '../../../src/gameplay/sim/save';
 import { data, newGame } from './helpers';
@@ -185,5 +186,42 @@ describe('ECO-06 (P1-05): the Scroll value estimate stays honest', () => {
     const projected = Math.floor((state.pass.points + 20 * passPointsPerDay(data) * 0.5) / data.pass.pointsPerTier);
     expect(Math.abs(half.tiers - Math.min(data.pass.tiers.length, projected))).toBeLessThanOrEqual(1);
     expect(half.tiers).toBeLessThan(all.tiers);
+  });
+});
+
+describe('RET-05 (P1-08): daily tasks mean something', () => {
+  it('no collect task is finished by one collect of an hour of production, at Keeps 3, 8 and 15', () => {
+    for (const keep of [3, 8, 15]) {
+      const { state } = newGame();
+      const limits = data.hall.levels[keep - 1].limits as Record<string, { count: number; maxLevel: number }>;
+      state.buildings = state.buildings.map((b) => (data.buildings[b.type].category === 'hall' ? { ...b, level: keep } : b));
+      // Every collector the Keep allows, at its cap (positions do not matter to a target).
+      for (const [type, l] of Object.entries(limits)) {
+        if (!data.buildings[type]?.produces) continue;
+        for (let i = 0; i < l.count; i++) state.buildings.push({ id: `c-${type}-${i}`, type, level: l.maxLevel, x: 0, y: 0, upgrade: null, collector: { stored: 0, accrueFrom: 0 } });
+      }
+      for (const id of ['collect_acorns', 'collect_dew']) {
+        const tpl = data.pass.dailyTasks.find((t) => t.id === id)!;
+        const kind = tpl.stat === 'collectedAcorns' ? 'acorns' : 'dew';
+        const hour = state.buildings.filter((b) => producedResource(b, data) === kind).reduce((n, b) => n + collectorRatePerHour(b, b.level, data), 0);
+        expect(hour, `Keep ${keep}`).toBeGreaterThan(0);
+        expect(taskTarget(tpl, state, data)!, `Keep ${keep} ${id}`).toBeGreaterThan(hour);
+      }
+    }
+  });
+
+  it('ten instant wall levels do not move the upgrade tasks; a timed upgrade does', () => {
+    expect(data.pass.dailyTasks.find((t) => t.id === 'finish_upgrades')!.stat).toBe('timedUpgradesDone');
+    expect(data.pass.weeklyChallenges.find((t) => t.id === 'w_upgrades')!.stat).toBe('timedUpgradesDone');
+    const { state, clock } = newGame({ acorns: 1e6, dew: 1e6 });
+    const before = state.stats.timedUpgradesDone;
+    // An instant finish (a wall level) and a timed one, both run through advance.
+    const hall = state.buildings.find((b) => data.buildings[b.type].category === 'hall')!;
+    hall.upgrade = { toLevel: 2, startedAt: clock.now(), endsAt: clock.now() + 1000, cost: {} };
+    const wall = Object.keys(data.buildings).find((t) => data.buildings[t].category === 'hedge')!;
+    state.buildings.push({ id: 'w1', type: wall, level: 1, x: 1, y: 1, upgrade: { toLevel: 2, startedAt: clock.now(), endsAt: clock.now(), cost: {} }, collector: null });
+    const after = advance(state, clock.now() + 2000, data).state;
+    expect(after.stats.upgradesDone - state.stats.upgradesDone).toBe(2);
+    expect(after.stats.timedUpgradesDone - before).toBe(1);
   });
 });
