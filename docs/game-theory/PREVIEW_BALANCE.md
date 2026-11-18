@@ -102,22 +102,22 @@ Each planned building is added at its catalog max level for the Keep (the Living
 | `steam_vent` | 15 | beats it | 67.2 | 59.0 | -8.2 | -0.6 | 0.2 | 0.0 |
 | `sleep_dart_tower` | 10 | raid mix | 70.9 | 66.7 | -4.2 | -0.0 | 0.2 | 13.1 |
 | `sleep_dart_tower` | 10 | it beats | 51.3 | 47.4 | -3.9 | -0.2 | 0.4 | 9.9 |
-| `sleep_dart_tower` | 10 | beats it | 43.8 | 40.9 | -3.0 | -0.2 | 0.3 | 7.0 |
+| `sleep_dart_tower` | 10 | beats it | 44.8 | 40.9 | -3.9 | +0.2 | 0.2 | 8.6 |
 | `sleep_dart_tower` | 13 | raid mix | 81.6 | 77.6 | -4.0 | -1.4 | 1.7 | 12.4 |
 | `sleep_dart_tower` | 13 | it beats | 52.1 | 50.9 | -1.1 | +0.6 | 1.4 | 20.9 |
-| `sleep_dart_tower` | 13 | beats it | 37.9 | 42.3 | +4.4 | -0.4 | 0.9 | 15.5 |
+| `sleep_dart_tower` | 13 | beats it | 41.1 | 40.6 | -0.4 | +1.3 | 2.4 | 15.1 |
 | `sleep_dart_tower` | 15 | raid mix | 82.9 | 80.7 | -2.2 | +0.2 | 0.7 | 13.3 |
 | `sleep_dart_tower` | 15 | it beats | 47.9 | 40.5 | -7.3 | +0.1 | 0.2 | 7.7 |
-| `sleep_dart_tower` | 15 | beats it | 51.6 | 49.2 | -2.4 | +0.3 | 1.3 | 8.7 |
+| `sleep_dart_tower` | 15 | beats it | 50.7 | 49.3 | -1.4 | +0.3 | 1.0 | 9.3 |
 | `rolling_log_chute` | 8 | raid mix | 67.6 | 62.4 | -5.2 | +0.0 | 0.0 | 0.0 |
-| `rolling_log_chute` | 8 | it beats | 21.9 | 24.8 | +2.9 | -0.2 | 0.2 | 0.0 |
+| `rolling_log_chute` | 8 | it beats | 22.3 | 24.4 | +2.1 | +0.0 | 0.0 | 0.0 |
 | `rolling_log_chute` | 8 | beats it | 13.3 | 13.4 | +0.1 | +0.0 | 0.0 | 0.0 |
 | `rolling_log_chute` | 12 | raid mix | 66.3 | 60.4 | -5.9 | -0.6 | 0.6 | 0.0 |
-| `rolling_log_chute` | 12 | it beats | 48.4 | 44.7 | -3.7 | -0.8 | 0.7 | 0.0 |
-| `rolling_log_chute` | 12 | beats it | 35.4 | 33.9 | -1.5 | +0.0 | 0.0 | 0.0 |
+| `rolling_log_chute` | 12 | it beats | 48.7 | 48.0 | -0.7 | -0.4 | 0.3 | 0.0 |
+| `rolling_log_chute` | 12 | beats it | 35.3 | 33.9 | -1.4 | +0.0 | 0.0 | 0.0 |
 | `rolling_log_chute` | 15 | raid mix | 82.9 | 80.4 | -2.5 | -0.8 | 0.5 | 0.0 |
-| `rolling_log_chute` | 15 | it beats | 52.3 | 48.8 | -3.6 | -0.8 | 0.6 | 0.0 |
-| `rolling_log_chute` | 15 | beats it | 41.1 | 39.5 | -1.6 | +0.0 | 0.0 | 0.0 |
+| `rolling_log_chute` | 15 | it beats | 48.9 | 47.0 | -1.9 | -0.7 | 0.6 | 0.0 |
+| `rolling_log_chute` | 15 | beats it | 39.8 | 38.2 | -1.6 | +0.0 | 0.0 | 0.0 |
 | `moonlit_gravel` | 12 | raid mix | 66.3 | 64.2 | -2.0 | +0.0 | 0.0 | 0.0 |
 | `moonlit_gravel` | 12 | it beats | 30.8 | 30.6 | -0.1 | +0.0 | 0.0 | 0.2 |
 | `moonlit_gravel` | 12 | beats it | 31.0 | 32.1 | +1.1 | +0.0 | 0.0 | 0.0 |
@@ -128,14 +128,14 @@ Each planned building is added at its catalog max level for the Keep (the Living
 | `moonlit_gravel` | 15 | it beats | 35.4 | 33.6 | -1.8 | -0.2 | 0.2 | 1.6 |
 | `moonlit_gravel` | 15 | beats it | 42.0 | 39.8 | -2.2 | +0.0 | 0.0 | 0.0 |
 | `ink_seal_post` | 12 | raid mix | 66.3 | 61.8 | -4.4 | +0.0 | 0.0 | 1.4 |
-| `ink_seal_post` | 12 | it beats | 41.7 | 39.7 | -2.0 | +0.0 | 0.1 | 3.5 |
-| `ink_seal_post` | 12 | beats it | 48.9 | 45.7 | -3.2 | +0.0 | 0.0 | 2.3 |
+| `ink_seal_post` | 12 | it beats | 41.5 | 39.8 | -1.7 | +0.0 | 0.1 | 2.7 |
+| `ink_seal_post` | 12 | beats it | 46.3 | 45.1 | -1.1 | +0.0 | 0.0 | 2.3 |
 | `ink_seal_post` | 14 | raid mix | 81.4 | 84.1 | +2.7 | +0.0 | 0.0 | 6.9 |
-| `ink_seal_post` | 14 | it beats | 42.3 | 37.0 | -5.3 | +0.0 | 0.0 | 3.7 |
-| `ink_seal_post` | 14 | beats it | 57.8 | 54.0 | -3.7 | +0.0 | 0.0 | 6.7 |
+| `ink_seal_post` | 14 | it beats | 43.1 | 38.2 | -4.9 | +0.0 | 0.0 | 3.5 |
+| `ink_seal_post` | 14 | beats it | 56.9 | 53.4 | -3.4 | +0.0 | 0.0 | 6.6 |
 | `ink_seal_post` | 15 | raid mix | 82.9 | 82.2 | -0.7 | +0.0 | 0.0 | 7.6 |
-| `ink_seal_post` | 15 | it beats | 44.1 | 40.7 | -3.5 | +0.0 | 0.0 | 4.8 |
-| `ink_seal_post` | 15 | beats it | 51.3 | 46.9 | -4.4 | +0.0 | 0.0 | 6.0 |
+| `ink_seal_post` | 15 | it beats | 43.2 | 39.5 | -3.7 | +0.0 | 0.0 | 3.6 |
+| `ink_seal_post` | 15 | beats it | 51.3 | 45.7 | -5.6 | +0.0 | 0.0 | 6.2 |
 | `lightning_rod_pagoda` | 13 | raid mix | 81.6 | 75.2 | -6.4 | -5.7 | 2.2 | 25.6 |
 | `lightning_rod_pagoda` | 13 | it beats | 57.3 | 46.9 | -10.4 | -5.8 | 1.5 | 36.1 |
 | `lightning_rod_pagoda` | 13 | beats it | 62.4 | 63.4 | +1.0 | +0.0 | 0.0 | 0.0 |
@@ -152,21 +152,21 @@ The same army with no hero, with the live Shadow Captain at the Keep's level, an
 
 | Hero | Keep | Army | No hero % | Shadow Captain % | Hero first % | Hero last % | Best vs Captain |
 |---|---|---|---|---|---|---|---|
-| `iron_matriarch` | 9 | raid mix | 83.0 | 91.0 | 84.6 | 87.1 | -3.9 |
-| `iron_matriarch` | 9 | guardian family | 43.6 | 53.4 | 47.2 | 45.2 | -6.1 |
+| `iron_matriarch` | 9 | raid mix | 83.0 | 91.5 | 84.6 | 87.1 | -4.4 |
+| `iron_matriarch` | 9 | guardian family | 43.6 | 53.2 | 47.2 | 45.2 | -6.0 |
 | `iron_matriarch` | 12 | raid mix | 66.3 | 71.6 | 71.1 | 70.5 | -0.5 |
 | `iron_matriarch` | 12 | guardian family | 39.1 | 49.4 | 43.5 | 42.0 | -6.0 |
-| `iron_matriarch` | 15 | raid mix | 82.9 | 89.5 | 88.0 | 85.9 | -1.5 |
-| `iron_matriarch` | 15 | guardian family | 44.0 | 52.0 | 48.8 | 46.3 | -3.2 |
+| `iron_matriarch` | 15 | raid mix | 82.9 | 89.2 | 88.0 | 85.9 | -1.1 |
+| `iron_matriarch` | 15 | guardian family | 44.0 | 52.6 | 48.8 | 46.3 | -3.8 |
 | `sky_admiral` | 11 | raid mix | 79.8 | 83.9 | 77.6 | 80.4 | -3.5 |
-| `sky_admiral` | 11 | sky family | 18.3 | 31.0 | 20.4 | 19.2 | -10.5 |
-| `sky_admiral` | 13 | raid mix | 81.6 | 85.6 | 80.1 | 79.4 | -5.5 |
-| `sky_admiral` | 13 | sky family | 22.1 | 30.9 | 23.7 | 22.3 | -7.2 |
-| `sky_admiral` | 15 | raid mix | 82.9 | 89.5 | 82.7 | 83.3 | -6.2 |
-| `sky_admiral` | 15 | sky family | 38.6 | 44.4 | 43.8 | 42.1 | -0.6 |
-| `grand_sensei` | 13 | raid mix | 81.6 | 85.6 | 90.0 | 97.6 | +11.9 |
-| `grand_sensei` | 13 | mystic family | 47.0 | 56.7 | 34.6 | 57.4 | +0.7 |
-| `grand_sensei` | 14 | raid mix | 81.4 | 88.5 | 85.8 | 97.2 | +8.7 |
-| `grand_sensei` | 14 | mystic family | 58.5 | 69.1 | 47.4 | 59.1 | -10.0 |
-| `grand_sensei` | 15 | raid mix | 82.9 | 89.5 | 87.3 | 97.6 | +8.1 |
-| `grand_sensei` | 15 | mystic family | 57.2 | 63.2 | 46.9 | 66.2 | +3.0 |
+| `sky_admiral` | 11 | sky family | 18.3 | 31.0 | 20.4 | 19.2 | -10.6 |
+| `sky_admiral` | 13 | raid mix | 81.6 | 85.5 | 80.1 | 79.4 | -5.4 |
+| `sky_admiral` | 13 | sky family | 22.1 | 31.2 | 23.7 | 22.3 | -7.5 |
+| `sky_admiral` | 15 | raid mix | 82.9 | 89.2 | 82.7 | 83.3 | -5.9 |
+| `sky_admiral` | 15 | sky family | 38.6 | 44.6 | 43.8 | 42.1 | -0.8 |
+| `grand_sensei` | 13 | raid mix | 81.6 | 85.5 | 90.0 | 97.6 | +12.0 |
+| `grand_sensei` | 13 | mystic family | 48.1 | 56.6 | 36.5 | 62.5 | +5.9 |
+| `grand_sensei` | 14 | raid mix | 81.4 | 87.2 | 85.8 | 97.2 | +10.0 |
+| `grand_sensei` | 14 | mystic family | 56.8 | 62.6 | 49.1 | 58.9 | -3.8 |
+| `grand_sensei` | 15 | raid mix | 82.9 | 89.2 | 87.3 | 97.6 | +8.4 |
+| `grand_sensei` | 15 | mystic family | 51.6 | 60.4 | 43.9 | 63.2 | +2.9 |
