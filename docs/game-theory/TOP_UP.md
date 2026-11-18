@@ -23,14 +23,16 @@ We calculated what an open "spend Jade, get Coins/Provisions" market would do:
 
 | Keep | Scale | Jade per raid of loot | Rush next Keep (Coins + timer) |
 |---|---|---|---|
-| 1 | 0.22 | 69 | 33 |
-| 2 | 0.30 | 89 | 82 |
-| 5 | 1.00 | 268 | 1,664 |
-| 8 | 2.29 | 557 | 3,914 |
-| 10 | 3.91 | 793 | 4,920 |
-| 15 | 15.12 | 2,428 | – |
+| 1 | 0.105 | 133 | 59 |
+| 2 | 0.165 | 152 | 134 |
+| 5 | 1.00 | 268 | 1,644 |
+| 8 | 3.47 | 400 | 2,627 |
+| 10 | 7.73 | 511 | 2,677 |
+| 15 | 54.80 | 831 | – |
 
-The scale is `(average loot at Keep / average loot at Keep 5) ^ 0.5`, lowered where needed so that rushing the next Keep still costs more at every Keep (balance fix #20). Regenerate it with `node tools/balance/topup.mjs` after changing loot, Keep costs or either curve.
+(P3-08, 2026-11-18: exponent 0.5 -> 0.75. Before, Keep 1 cost 69 a raid and Keep 15 2,428, and an hour of one resource's income cost 15 Jade at Keep 1 and 550 at Keep 15; now 92-207 from Keep 5 to 15. A full Keep 1 to 15 rush by Jade costs 27,204 Jade, so it stays a bad idea. Offers: the Keep Celebration's supplies are 1.0-2.4 hours of production at Keeps 5-15 (were 0.34 h at Keep 15); the Starter Pack's Coins and Provisions went 5,000 -> 15,000 each in `offers.json` (about an hour of production at Keeps 3-5, was 17-20 minutes); War Supplies 0.6-1.5 hours of Provisions, 4-12 armies.)
+
+The scale is `(average loot at Keep / average loot at Keep 5) ^ 0.75`, lowered where needed so that rushing the next Keep still costs more at every Keep (balance fix #20), and lowered again where needed so that a raid's worth never costs less than at the Keep before (P3-08). Regenerate it with `node tools/balance/topup.mjs` after changing loot, Keep costs or either curve.
 
 ## What the tests guard
 
@@ -45,14 +47,14 @@ The scale is `(average loot at Keep / average loot at Keep 5) ^ 0.5`, lowered wh
 
 The other way to turn Jade into resources is to finish army training with Jade and raid again. At the flat time price, a two-hour army cost ~37 Jade to finish at every Keep. At Keep 15 its raid then looted what a top-up sells for ~2,428 Jade: a 65× discount, which made the top-up price meaningless to big spenders.
 
-Finishing training now costs the time price × `trainingSkipScaleByHall[keep]`: the top-up scale, never below 1, written by the same tool. Building and research skips keep the plain time price, because they don't feed a loot loop. Report section 5 step 6 (economy E05) made that price ~40% cheaper (`skipCurve`: 1 h 15, 1 day 180, 1 week 720 Jade), so buying time is the rational Jade sink; finishing training reads its own `trainingSkipCurve` (the old 25/300/1,200), so skip-and-raid did not get cheaper.
+Finishing training now costs the time price × `trainingSkipScaleByHall[keep]`, written by the same tool with its own formula since P3-08: a raid's price ÷ (4.5 × the plain two-hour skip), 1 through Keep 5, at least 1 and never falling with the Keep. Building and research skips keep the plain time price, because they don't feed a loot loop. Report section 5 step 6 (economy E05) made that price ~40% cheaper (`skipCurve`: 1 h 15, 1 day 180, 1 week 720 Jade), so buying time is the rational Jade sink; finishing training reads its own `trainingSkipCurve` (the old 25/300/1,200), so skip-and-raid did not get cheaper.
 
 | Keep | Finish a 2 h army | One raid's loot by top-up | Top-up ÷ skip-and-raid |
 |---|---|---|---|
-| 1–5 | 37 | 69–268 | 1.9–7.2 |
-| 6 | 55 | 391 | 7.1 |
-| 10 | 145 | 793 | 5.5 |
-| 15 | 559 | 2,428 | 4.3 |
+| 1–5 | 37 | 133–268 | 3.6–7.2 |
+| 6 | 72 | 324 | 4.5 |
+| 10 | 114 | 511 | 4.5 |
+| 15 | 185 | 831 | 4.5 |
 
 Time stays the better buy at every Keep: the tests require a ratio between 1 and 10.
 
