@@ -13,7 +13,8 @@
  */
 import { describe, expect, it } from 'vitest';
 import campaigns from '../../../docs/game-theory/campaign.json';
-import { campaignFingerprint, CAMPAIGNS, type CampaignResult } from '../../../tools/balance/campaign';
+import { defaultData } from '../../../src/gameplay/sim/data';
+import { campaignData, campaignFingerprint, CAMPAIGNS, type CampaignResult } from '../../../tools/balance/campaign';
 
 const results = campaigns.results as unknown as CampaignResult[];
 const byId = (id: string) => {
@@ -23,6 +24,14 @@ const byId = (id: string) => {
 };
 /** Keeps with enough raids to mean something. */
 const rows = (id: string, minRaids = 5) => byId(id).byKeep.filter((k) => k.keep >= 3 && k.raids >= minRaids);
+
+describe('the fortress campaign\'s layout is a lab flag only (P2-04)', () => {
+  it('live data sets neither raids.labAutoLayout nor raids.labWalls; only the labLayout campaign does', () => {
+    expect(defaultData.raids.labAutoLayout).toBeUndefined();
+    expect(defaultData.raids.labWalls).toBeUndefined();
+    for (const c of CAMPAIGNS) expect(Boolean(campaignData(c).raids.labAutoLayout), c.id).toBe(c.id === 'regular_fortress');
+  });
+});
 
 describe('campaign results are current', () => {
   it('match the data and code they were played with (run npm run balance:campaign)', () => {
@@ -98,14 +107,27 @@ describe('policy dominance margins (balance audit 2026-11-08 Change-12, PS-1)', 
     expect(sand[15], 'Keep 15').toBeGreaterThanOrEqual(reg[15]);
   });
 
-  it('KNOWN FAILING (PS-1, open): skipping defense should cost at least 10% of the pace to Keep 12 against the defender', () => {
-    // The audit's target is rusher >= 1.1 x the defender's days to Keep 12. Measured 2026-11-13: rusher 51.2 days,
-    // defender 51.4 (1.00x); the rusher plays exactly like the regular raider, who already never builds defenses
-    // before Keep 12. Defense buys no progression (DM-2): a design change (raids.json held-raid reward, loot cap),
-    // not a test change. Held here as a known failure: when the margin reaches 10%, this assertion fails and must
-    // become the real gate (expect(...).toBeGreaterThanOrEqual(1.1)).
-    const ratio = byId('regular_rusher').reached[12] / byId('regular_defender').reached[12];
-    expect(ratio, 'PS-1 fixed: turn this into the real gate').toBeLessThan(1.1);
+  // P2-04 (DEF-03, 2026-11-18): the gates that say what defense is for, replacing the KNOWN FAILING PS-1 assertion
+  // (rusher >= 1.1 x the defender's days to Keep 12, which held defense to a pace cost it should not have). They read
+  // the fortress campaign (counters within two levels of the caps, walled generated layout, garrison crew of 2).
+  // Set from the first full run (2026-11-18) with at least five points or two days of margin:
+  // held 42% at Keeps 9-15 (gate 37%); stolen/looted 0.57x the rusher's (gate 0.62x); Keep 12 at 1.17x the
+  // rusher's days, 3.9 days inside 1.25x (gate 1.25x, which needs the garrison crew: 1.34x without it).
+  const late = (id: string) => byId(id).byKeep.filter((k) => k.keep >= 9 && k.defenses);
+  it('the fortress holds at least 37% of the raids against it at Keeps 9-15', () => {
+    const ks = late('regular_fortress');
+    const n = ks.reduce((a, k) => a + k.defenses, 0);
+    expect(n).toBeGreaterThan(50);
+    expect(ks.reduce((a, k) => a + k.held * k.defenses, 0) / n).toBeGreaterThanOrEqual(0.37);
+  });
+
+  it('defense keeps loot: the fortress loses at most 0.62x the rusher\'s share of what it looted', () => {
+    const ratio = (id: string) => byId(id).totals.stolen / byId(id).totals.looted;
+    expect(ratio('regular_fortress') / ratio('regular_rusher')).toBeLessThanOrEqual(0.62);
+  });
+
+  it('defense does not cost the climb: the fortress reaches Keep 12 within 1.25x the rusher\'s days', () => {
+    expect(byId('regular_fortress').reached[12] / byId('regular_rusher').reached[12]).toBeLessThanOrEqual(1.25);
   });
 });
 

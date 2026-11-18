@@ -349,8 +349,9 @@ export class ModelPlayer {
       this.state = res.state;
       const rec = this.state.battleLog[this.state.battleLog.length - 1];
       this.raidLog.push({ hall: hl, opponentHall: base.hallLevel, stars: rec.result.stars, destruction: rec.result.destruction, loot: this.state.resources.acorns + this.state.resources.dew - before, trophies: this.state.trophies, strength });
-      // Replays are not needed here, and cloning them on every command is slow.
-      this.state.battleLog = [];
+      // Replays are not needed here, and cloning them on every command is slow; but the live rules read the latest
+      // raids (P2-10's losing streak, Tempering's counters), so the last ten stay (`temper.offers.recentRaids`), as a real player's log keeps them.
+      this.state.battleLog = this.state.battleLog.slice(-10);
       this.raids++;
     }
   }
