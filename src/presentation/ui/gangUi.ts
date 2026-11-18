@@ -1,4 +1,5 @@
 import { messageText as ownedError } from './i18n';
+import { unitName } from './unitName';
 import { chatText } from './i18n';
 import { displayData as localizedData, labelText as i18nLabel } from './i18n';
 import { t as i18nText } from './i18n';
@@ -175,7 +176,7 @@ export class GangUi {
       const give = Object.entries(army)
         .filter(([, n]) => n > 0)
         .slice(0, 4)
-        .map(([t]) => h('button', { class: 'btn ghost', type: 'button', disabled: this.busy || r.filled >= r.size, onclick: () => void this.run(() => this.conn.squadDonate(r.id, t), 'Sent.') }, i18nText("ui.give_c470198396", { arg1: localizedData(this.d.kit.c.data).troops[t]?.name ?? t })));
+        .map(([t]) => h('button', { class: 'btn ghost', type: 'button', disabled: this.busy || r.filled >= r.size, onclick: () => void this.run(() => this.conn.squadDonate(r.id, t), 'Sent.') }, i18nText("ui.give_c470198396", { arg1: unitName(t, localizedData(this.d.kit.c.data)) })));
       body.append(h('div', { class: 'log-row' }, h('div', {}, h('b', {}, h('bdi', {}, r.name)), h('div', { class: 'muted small' }, i18nText("ui.space_filled_20d9ffb14e", { arg1: r.filled, arg2: r.size }))), h('div', { class: 'row' }, ...give)));
     }
   }

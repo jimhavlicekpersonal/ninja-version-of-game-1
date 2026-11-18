@@ -14,7 +14,8 @@
  * acknowledged on this device (`tk.significantUpdate.ack`). Only for minors (a band other than adult) on
  * iOS with the regulatory features in effect; the web and Android ask nothing here.
  */
-import { Capacitor, registerPlugin } from '@capacitor/core';
+import { Capacitor } from '@capacitor/core';
+import { tkAgePlugin } from './auth';
 import { compareBuilds } from '../net/dataVersion';
 import type { AgeBand } from '../../gameplay/sim/age';
 
@@ -32,7 +33,8 @@ interface TkAgeRegulatoryPlugin {
   acknowledgeSignificantUpdate(o: { description: string }): Promise<{ status: SignificantUpdateAnswer; reason?: string }>;
 }
 
-const TkAge = registerPlugin<TkAgeRegulatoryPlugin>('TkAge');
+// P6-09: the same plugin object auth.ts registered (a second registerPlugin('TkAge') warned on every boot).
+const TkAge = tkAgePlugin() as TkAgeRegulatoryPlugin;
 
 async function regulatoryFeatures(): Promise<RegulatoryFeatures> {
   if (!Capacitor.isNativePlatform() || Capacitor.getPlatform() !== 'ios') return { eligible: false, features: [] };

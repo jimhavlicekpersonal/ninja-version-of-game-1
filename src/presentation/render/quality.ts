@@ -186,7 +186,8 @@ function measureFillMs(): number | undefined {
     const c = document.createElement('canvas');
     c.width = 128;
     c.height = 128;
-    const ctx = c.getContext('2d');
+    // P6-09: the test reads one pixel back to finish the drawing; say so, or the browser warns about read-back.
+    const ctx = c.getContext('2d', { willReadFrequently: true });
     if (!ctx || typeof performance === 'undefined') return undefined;
     let best = Infinity;
     for (let run = 0; run < 3; run++) {

@@ -1371,7 +1371,7 @@
   "ui.search_49c266baaa": { "en": "Search", "text": "Chercher" },
   "ui.search_alliances_a696ac16e8": { "en": "Search Alliances…", "text": "Chercher des Alliances…" },
   "ui.search_stopped_acf16c738e": { "en": "Search stopped.", "text": "Recherche arrêtée." },
-  "ui.season_ends_in_at_the_end_of_each_mont_c60052cb71": { "en": "Season ends in {arg1}. At the end of each month you get your league's chest, and honor above {arg2} are halved.", "text": "La saison se termine dans {arg1}. À la fin de chaque mois, tu reçois le coffre de ta ligue, et l'honneur au-delà de {arg2} est réduit de moitié." },
+  "ui.season_ends_in_at_the_end_of_each_mont_c60052cb71": { "en": "Season ends in {arg1}. At the end of each month you get your league's chest, and honor above {arg2} is halved.", "text": "", "old": "La saison se termine dans {arg1}. À la fin de chaque mois, tu reçois le coffre de ta ligue, et l'honneur au-delà de {arg2} est réduit de moitié." },
   "ui.season_ends_in_complete_tasks_to_earn__300938261c": { "en": "Season ends in {arg1}. Complete tasks to earn points and unlock tiers.", "text": "La saison se termine dans {arg1}. Accomplis des tâches pour gagner des points et débloquer des paliers." },
   "ui.see_defense_replays_db4b59b872": { "en": "See defense replays", "text": "Voir les rediffusions de défense" },
   "ui.see_offer_in_the_store_afae86c740": { "en": "See offer in the store", "text": "Voir l'offre dans la boutique" },
@@ -1603,7 +1603,7 @@
   "ui.who_can_find_me_by_name_ed481ead6d": { "en": "Who can find me by name", "text": "Qui peut me trouver par mon nom" },
   "ui.win_bonus_76ff020d10": { "en": "Win bonus ", "text": "Bonus de victoire " },
   "ui.win_c622058960": { "en": "Win ", "text": "Victoire " },
-  "ui.win_raids_to_earn_honor_lose_it_when_y_a98b0bc1b5": { "en": "Win raids to earn honor; lose it when your attacks fail or when raiders beat your village. More honor bring tougher opponents with more loot.", "text": "Gagne des raids pour obtenir de l'honneur ; tu en perds quand tes attaques échouent ou quand des assaillants battent ton village. Plus d'honneur amène des adversaires plus coriaces avec plus de butin." },
+  "ui.win_raids_to_earn_honor_lose_it_when_y_a98b0bc1b5": { "en": "Win raids to earn honor; lose it when your attacks fail or when raiders beat your village. More honor brings tougher opponents with more loot.", "text": "", "old": "Gagne des raids pour obtenir de l'honneur ; tu en perds quand tes attaques échouent ou quand des assaillants battent ton village. Plus d'honneur amène des adversaires plus coriaces avec plus de butin." },
   "ui.won_acdf2907db": { "en": "Won", "text": "Gagné" },
   "ui.won_cf6247318b": { "en": "{arg1} won", "text": "Victoire : {arg1}" },
   "ui.year_89f6832560": { "en": "Year", "text": "Année" },
@@ -2113,5 +2113,6 @@
   "sim.trial_fortress_damage_is_not_allowed_05759d6468": { "en": "Trial fortress damage is not allowed.", "text": "Les dégâts aux forteresses des Épreuves ne sont pas autorisés." },
   "sim.there_is_no_daily_drill_49086be800": { "en": "There is no daily drill.", "text": "Il n'y a pas d'exercice du jour." },
   "sim.too_long_ago_146e28a63e": { "en": "Too long ago.", "text": "Trop ancien." },
-  "sim.build_a_training_dojo_and_a_squad_courty_ad04d756ab": { "en": "Build a Training Dojo and a Squad Courtyard first.", "text": "Construis d'abord un Dojo d'Entraînement et une Cour des Escouades." }
+  "sim.build_a_training_dojo_and_a_squad_courty_ad04d756ab": { "en": "Build a Training Dojo and a Squad Courtyard first.", "text": "Construis d'abord un Dojo d'Entraînement et une Cour des Escouades." },
+  "sim.upgrade_your_clan_keep_to_level_arg1_to_9970fcfb20": { "en": "Upgrade your Clan Keep to level {arg1} to build a {arg2}.", "text": "" }
 }

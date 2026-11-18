@@ -51,6 +51,10 @@ interface TkAgePlugin {
   >;
 }
 const TkAge = registerPlugin<TkAgePlugin>('TkAge');
+/** P6-09: the one registration of the native "TkAge" plugin (registering it twice warned on every boot); `ageRegulatory.ts` reuses it. */
+export function tkAgePlugin(): unknown {
+  return TkAge;
+}
 
 /**
  * The age band the device's store reports (sim/age.ts `bandFromAgeRange`: the

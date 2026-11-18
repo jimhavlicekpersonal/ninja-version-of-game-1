@@ -1,4 +1,5 @@
 import { displayData as localizedData, messageText as ownedText, generatedName } from './i18n';
+import { unitName } from './unitName';
 import { messageText as i18nMessage, listText as i18nList } from './i18n';
 import { labelText as i18nLabel } from './i18n';
 import { t as i18nText } from './i18n';
@@ -125,6 +126,8 @@ export class BattleHud {
         { class: 'b-name', type: 'button', 'aria-expanded': 'true', 'aria-controls': 'b-left-more', onclick: () => this.toggleCard() },
         h('bdi', {}, baseName),
         h('span', { class: 'level' }, i18nText("ui.lv_445f51ab9e", { arg1: this.s.setup.base.hallLevel })),
+        // P6-09 (Honesty): what kind of opponent this is stays on the folded line, at 320 px too.
+        this.kindTag(),
         h('span', { class: 'b-caret', 'aria-hidden': 'true' }),
       ),
       h(
@@ -178,6 +181,15 @@ export class BattleHud {
   }
 
   private leftEl!: HTMLElement;
+
+  /** A short label for a generated, practice or Trial opponent (never for a real player or a replay). */
+  private kindTag(): HTMLElement | null {
+    const d = this.deps;
+    const base = this.s.setup.base;
+    if (this.s.mode === 'replay' || d.grove) return null;
+    const key = d.practice ? 'kind.practice' : d.trial ? 'kind.trial' : base.rival ? 'kind.rival' : d.special || base.practice ? 'kind.generated' : null;
+    return key ? h('span', { class: 'chip b-kind', 'data-id': 'opponent-kind' }, t(key)) : null;
+  }
 
   /**
    * Art audit F4: on a narrow or short phone the opponent card took a fifth of the screen. It folds to one line (name
@@ -645,7 +657,7 @@ export class BattleHud {
       if (won) window.setTimeout(() => celebrate('star'), still ? 0 : (250 + i * STAR_GAP * 1000 + 180));
     }
     if (r.destruction >= 100) window.setTimeout(() => celebrate('perfect'), still ? 0 : 250 + 3 * STAR_GAP * 1000);
-    const used = i18nList(Object.entries(r.used).map(([t, n]) => i18nText("ui.message_14677cb26f", { arg1: n, arg2: localizedData(this.s.data).troops[t]?.name ?? t })));
+    const used = i18nList(Object.entries(r.used).map(([t, n]) => i18nText("ui.message_14677cb26f", { arg1: n, arg2: unitName(t, localizedData(this.s.data)) })));
     const title = r.stars === 3 ? t('battle.perfect') : r.stars > 0 ? t('battle.victory') : t('battle.defeat');
     const body = h(
       'div',

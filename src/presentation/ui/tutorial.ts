@@ -132,6 +132,8 @@ export class Tutorial {
     private readonly c: GameController,
     private readonly analytics: Analytics,
     root: HTMLElement,
+    /** P6-09: asks before skipping (the HUD's confirm dialog); without it a skip is one tap, as before. */
+    private readonly ask?: (title: string, text: string, confirmLabel: string) => Promise<boolean>,
   ) {
     this.bubble.hidden = true;
     this.ring.hidden = true;
@@ -179,9 +181,16 @@ export class Tutorial {
     this.lastStep = i;
     clear(this.bubble);
     this.bubble.hidden = false;
-    const skip = h('button', { class: 'tut-skip', type: 'button' }, t('tutorial.skip'));
-    skip.addEventListener('click', () => this.go(STEPS.length));
-    const actions = h('div', { class: 'tut-actions' }, i < STEPS.length - 1 ? skip : '');
+    // P6-09 (PLY-01): the skip link sits in the bubble's top corner, away from the bottom bar, and asks once (it was one
+    // tap over the Army button, and a playtester skipped the whole tutorial twice by accident).
+    const skip = h('button', { class: 'tut-skip corner', type: 'button', 'data-id': 'tutorial-skip' }, t('tutorial.skip'));
+    skip.addEventListener('click', () => {
+      if (!this.ask) return this.go(STEPS.length);
+      void this.ask(t('tutorial.skip'), t('tutorial.skipAsk'), t('tutorial.skip')).then((yes) => {
+        if (yes) this.go(STEPS.length);
+      });
+    });
+    const actions = h('div', { class: 'tut-actions' });
     if (step.button) {
       const b = h('button', { class: 'btn primary', type: 'button' }, typeof step.button === 'function' ? step.button() : step.button);
       b.addEventListener('click', () => {
@@ -196,7 +205,7 @@ export class Tutorial {
     const face = h('div', { class: 'tut-face' });
     if (uiArt.senseiPortrait) face.innerHTML = uiArt.senseiPortrait(step.mood ?? 'calm');
     else face.append(icon(icons.toadstool));
-    this.bubble.append(face, h('div', { class: 'tut-body' }, h('p', { class: 'tut-step' }, t('tutorial.step', { n: i + 1, total: STEPS.length })), this.text, extra ? h('p', { class: 'tut-extra' }, extra) : null, actions));
+    this.bubble.append(face, h('div', { class: 'tut-body' }, h('p', { class: 'tut-step' }, t('tutorial.step', { n: i + 1, total: STEPS.length })), this.text, extra ? h('p', { class: 'tut-extra' }, extra) : null, actions), i < STEPS.length - 1 ? skip : '');
   }
 
   private stepText(step: Step): string {

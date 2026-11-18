@@ -1,4 +1,5 @@
 import { heroPickerSection } from './contentPreviewUi';
+import { unitName } from './unitName';
 import { consumptionConsentBlock, replayPrivacyBlock } from './complianceUi';
 import { messageText as i18nMessage, dateText as i18nDate, listText as i18nList } from './i18n';
 import { displayData as localizedData, labelText as i18nLabel } from './i18n';
@@ -509,7 +510,7 @@ export class Hud {
     saveKnown(now);
     const warriors = added.map((id) => {
       const badge = badgeIdFor(id);
-      return { name: gd.troops[id]?.name ?? id, badge: badge ? this.deps.warriorIcon(badge) : this.deps.troopThumb(id) };
+      return { name: unitName(id, gd), badge: badge ? this.deps.warriorIcon(badge) : this.deps.troopThumb(id) };
     });
     void showCeremony(this.modalRoot, warriors, () => this.openTraining()).then(() => {
       this.ceremonyBusy = false;
@@ -1808,10 +1809,33 @@ export class Hud {
         };
         body.append(h('div', { class: 'chips pay-choice', role: 'group', 'aria-label': t('pay.label') }, h('span', { class: 'muted small' }, t('pay.label')), choice(false, t('pay.coins')), choice(true, t('pay.provisions'))));
       }
+      gridCats = cats;
+      gridSig = this.shopSignature(cats);
       body.append(this.shopGrid(cats, () => close()));
     };
+    // P6-09 (PLY-08): the cards followed the state of the moment the panel opened ("All your Village Artisans are busy"
+    // 52 s after they were free). Redraw when what a card says changes, and quote again in the click.
+    let gridCats: string[] = [];
+    let gridSig = '';
     draw();
-    const close = this.modal(i18nText("ui.build_bdd254b65b"), body, [], 'wide');
+    const unsub = this.c.subscribe(() => {
+      if (this.shopSignature(gridCats) !== gridSig) draw();
+    });
+    const close = this.modal(i18nText("ui.build_bdd254b65b"), body, [], 'wide', unsub);
+  }
+
+  /** What the Build cards say (each card's verdict), to redraw them only when it changes. */
+  private shopSignature(categories: string[]): string {
+    const gd = localizedData(this.c.data);
+    const now = this.c.now();
+    const out: string[] = [];
+    for (const [type, def] of Object.entries(gd.buildings)) {
+      if (!def.inShop || !categories.includes(def.category)) continue;
+      const pay: PayWith = payableInProvisions(type, gd) && this.payWallsWithProvisions() ? 'dew' : 'acorns';
+      const q = placeQuote(this.c.state, gd, type, now, pay);
+      out.push(`${type}:${q.ok ? 1 : q.code}:${countOfType(this.c.state, type)}`);
+    }
+    return out.join('|');
   }
 
   /** Walls and traps paid in Provisions in the shop (a per-device choice; Coins when storage is blocked). */
@@ -1885,13 +1909,16 @@ export class Hud {
           'data-type': type,
           'aria-disabled': !q.ok && !tq,
           onclick: () => {
-            if (!q.ok && !tq) {
-              this.toast(i18nMessage(q.message, true), 'error');
+            // P6-09: quote again at the tap (the card may be older than the state).
+            const fresh = placeQuote(this.c.state, gd, type, this.c.now(), pay);
+            const freshTop = pay === 'acorns' && !fresh.ok && fresh.code === 'NOT_ENOUGH_RESOURCES' ? topUpQuote(this.c.state, { type: 'place', buildingType: type, x: 0, y: 0 }, this.c.now(), gd) : null;
+            if (!fresh.ok && !freshTop) {
+              this.toast(i18nMessage(fresh.message, true), 'error');
               return;
             }
             close();
             // Jade-priced buildings (Artisan's Hut) also go through the HUD's confirm when the spot is chosen.
-            this.bus.emit('placement:start', { kind: 'new', buildingType: type, buy: !q.ok || Boolean(price.moonstones), ...(pay === 'dew' ? { pay } : {}) });
+            this.bus.emit('placement:start', { kind: 'new', buildingType: type, buy: !fresh.ok || Boolean((fresh.quote?.cost ?? price).moonstones), ...(pay === 'dew' ? { pay } : {}) });
           },
         },
         thumb ? h('img', { src: thumb, alt: '' }) : h('div', { class: 'thumb-ph' }),
@@ -2073,7 +2100,7 @@ export class Hud {
       const name = buildingDef(gd, f.type).name;
       list.append(h('li', {}, f.level === 1 ? i18nText("ui.finished_building_c35f17b9de", { arg1: name }) : i18nText("ui.reached_level_643665f2d6", { arg1: name, arg2: f.level })));
     }
-    const trained = i18nList(Object.entries(s.trained).map(([t, n]) => i18nText("ui.message_14677cb26f", { arg1: n, arg2: gd.troops[t]?.name ?? t })));
+    const trained = i18nList(Object.entries(s.trained).map(([t, n]) => i18nText("ui.message_14677cb26f", { arg1: n, arg2: unitName(t, gd) })));
     if (trained) list.append(h('li', {}, i18nText("ui.finished_training_f0d9a0ead3", { arg1: trained })));
     const gains = RESOURCE_KINDS.filter((k) => (s.collectorGains[k] ?? 0) > 0);
     if (gains.length) {

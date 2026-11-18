@@ -596,7 +596,7 @@ export function placeQuote(state: VillageState, data: GameData, type: BuildingTy
   if (have >= lim.count) {
     const need = hallLevelRequiredFor(data, type, (l) => l.count > have);
     return need
-      ? { ...fail('HALL_LEVEL_TOO_LOW', `Upgrade your Clan Keep to level ${need} to build another ${def.name}.`, { keep: need, building: type }), quote }
+      ? { ...fail('HALL_LEVEL_TOO_LOW', have > 0 ? `Upgrade your Clan Keep to level ${need} to build another ${def.name}.` : `Upgrade your Clan Keep to level ${need} to build a ${def.name}.`, { keep: need, building: type }), quote }
       : { ...fail('LIMIT_REACHED', `Your Keep allows no more of these (${def.name}: ${have} of ${lim.count}).`, { building: type, have, max: lim.count }), quote };
   }
   if (!canAfford(s.resources, cost)) {

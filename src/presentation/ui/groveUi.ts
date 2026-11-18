@@ -1,4 +1,5 @@
 import { chatText, generatedName, labelText } from './i18n';
+import { unitName } from './unitName';
 import { messageText as i18nMessage } from './i18n';
 import { labelText as i18nLabel, displayData as localizedData } from './i18n';
 import { bannerLine } from './growthUi';
@@ -262,7 +263,7 @@ export class GroveUi {
     for (const [t, n] of Object.entries(s.grove.reinforcements)) {
       if (n <= 0) continue;
       const th = this.d.troopThumb(t);
-      rein.append(h('span', { class: 'army-chip' }, th ? h('img', { src: th, alt: '' }) : null, i18nText("ui.message_fb705db4f9", { arg1: gd.troops[t]?.name ?? t, arg2: n })));
+      rein.append(h('span', { class: 'army-chip' }, th ? h('img', { src: th, alt: '' }) : null, i18nText("ui.message_fb705db4f9", { arg1: unitName(t, gd), arg2: n })));
     }
     const can = snap.ask;
     const ask = h('button', { class: 'btn sky', type: 'button', disabled: !can.ok || this.busy }, i18nText("ui.ask_for_warriors_fa3ec9e608"));

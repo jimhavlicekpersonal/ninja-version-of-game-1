@@ -1,4 +1,5 @@
 import { messageText as i18nMessage, listText as i18nList } from './i18n';
+import { unitName } from './unitName';
 import { displayData as localizedData, labelText as i18nLabel } from './i18n';
 import { t as i18nText } from './i18n';
 /**
@@ -62,7 +63,7 @@ export class ArmyUi {
   }
 
   private armyText(army: Record<string, number>): string {
-    return i18nList(Object.entries(army).map(([t, n]) => i18nText("ui.message_14677cb26f", { arg1: n, arg2: this.gd.troops[t]?.name ?? t })));
+    return i18nList(Object.entries(army).map(([t, n]) => i18nText("ui.message_14677cb26f", { arg1: n, arg2: unitName(t, this.gd) })));
   }
 
   private thumb(troop: string): HTMLElement | null {
@@ -266,7 +267,7 @@ export class ArmyUi {
     if (v.waiting) detail.push(i18nText("ui.waiting_4d88af2107", { arg1: v.waiting }));
     const line = h('div', { class: 'army-strip-line' });
     if (v.active) {
-      const name = this.gd.troops[v.active.troop]?.name ?? v.active.troop;
+      const name = unitName(v.active.troop, this.gd);
       line.append(
         this.thumb(v.active.troop) ?? '',
         h(
@@ -383,9 +384,9 @@ export class ArmyUi {
     const ready = h('div', { class: 'army-row' });
     for (const [t, n] of Object.entries(s.army)) {
       if (n <= 0) continue;
-      const x = h('button', { class: 'qx', type: 'button', 'aria-label': i18nText("ui.dismiss_8e63f52b79", { arg1: gd.troops[t]?.name ?? t }) }, '×');
+      const x = h('button', { class: 'qx', type: 'button', 'aria-label': i18nText("ui.dismiss_8e63f52b79", { arg1: unitName(t, gd) }) }, '×');
       x.addEventListener('click', () => this.dismiss(t, n, redraw));
-      ready.append(h('span', { class: 'army-chip' }, this.thumb(t), i18nText("ui.message_fb705db4f9", { arg1: gd.troops[t]?.name ?? t, arg2: n }), x));
+      ready.append(h('span', { class: 'army-chip' }, this.thumb(t), i18nText("ui.message_fb705db4f9", { arg1: unitName(t, gd), arg2: n }), x));
     }
     if (!ready.childElementCount) ready.append(h('span', { class: 'muted' }, i18nText("ui.no_warriors_ready_yet_0132a774ac")));
     const units = Object.values(s.army).reduce((a, b) => a + b, 0);
@@ -394,7 +395,7 @@ export class ArmyUi {
     if (lodge.length) {
       wrap.append(
         h('h3', {}, i18nText("ui.donated_by_your_alliance_07bb504dfc")),
-        h('div', { class: 'army-row' }, ...lodge.map(([t, l]) => h('span', { class: 'army-chip' }, this.thumb(t), i18nText("ui.message_cf83918ca6", { arg1: gd.troops[t]?.name ?? t, arg2: l.count }), h('span', { class: 'muted small' }, i18nText("ui.lv_445f51ab9e", { arg1: l.level }))))),
+        h('div', { class: 'army-row' }, ...lodge.map(([t, l]) => h('span', { class: 'army-chip' }, this.thumb(t), i18nText("ui.message_cf83918ca6", { arg1: unitName(t, gd), arg2: l.count }), h('span', { class: 'muted small' }, i18nText("ui.lv_445f51ab9e", { arg1: l.level }))))),
         h('p', { class: 'muted small' }, i18nText("ui.they_fight_first_in_your_next_attack_a_889c0c0bce")),
       );
     }
@@ -448,7 +449,7 @@ export class ArmyUi {
 
   private stackRow(st: QueueStack, redraw: () => void): HTMLElement {
     const { c, gd } = this;
-    const name = gd.troops[st.troop]?.name ?? st.troop;
+    const name = unitName(st.troop, gd);
     const cancel = (count: number) => {
       const r = c.dispatch({ type: 'cancelTraining', index: st.lastIndex, troop: st.troop, count });
       if (!r.ok) this.d.kit.toast(refusalText(r), 'error');
@@ -492,7 +493,7 @@ export class ArmyUi {
   /** Send warriors home, one or all of a kind, with the refund and space shown first. */
   private dismiss(troop: string, have: number, redraw: () => void): void {
     const { c, gd } = this;
-    const name = gd.troops[troop]?.name ?? troop;
+    const name = unitName(troop, gd);
     const text = (count: number) => {
       const p = dismissPreview(c.state, troop, count, gd);
       const refund = i18nList(RESOURCE_KINDS.filter((k) => p.refund[k]).map((k) => i18nText("ui.message_14677cb26f", { arg1: formatNumber(p.refund[k]!), arg2: RES_LABEL[k] })), 'conjunction');

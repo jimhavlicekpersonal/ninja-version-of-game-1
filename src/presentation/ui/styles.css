@@ -550,6 +550,9 @@ details summary { cursor: pointer; font-weight: 800; margin: 8px 0 4px; }
 
 .tut-bubble button { pointer-events: auto; }
 .tut-bubble.low { top: auto; bottom: calc(12px + var(--safe-b)); padding: 8px 12px; opacity: .97; }
+/* P6-09: the skip link in the bubble's top corner (never beside the bottom bar), and room for it in the text. */
+.tut-bubble .tut-skip.corner { position: absolute; top: 2px; inset-inline-end: 10px; padding: 4px 2px; min-height: 0; }
+.tut-bubble .tut-body { padding-top: 14px; }
 .tut-bubble.low .tut-face { width: 36px; height: 36px; }
 .tut-bubble.low .tut-body p { font-size: 0.8125rem; margin-bottom: 4px; }
 
@@ -979,6 +982,8 @@ html[dir="rtl"] .objective-chip, html[dir="rtl"] .log-row { text-align: right; }
 .b-left.collapsed .b-caret::before { content: '▸'; }
 html[dir="rtl"] .b-left.collapsed .b-caret::before { content: '◂'; }
 .b-left.collapsed .b-more { display: none; }
+/* P6-09: the opponent's kind stays visible on the folded line. */
+.b-name .b-kind { flex: none; font-size: 0.75rem; padding: 1px 6px; min-height: 0; margin-inline-start: 4px; }
 .b-left.collapsed { padding-top: 4px; padding-bottom: 4px; }
 /* Art audit F12: battle cards show the warrior's badge (role disc and tier ring) instead of the dark field sprite. */
 .troop-card.badge-art img { height: 46px; padding: 2px 6px 0; filter: drop-shadow(0 1px 1px rgba(38, 48, 61, .3)); }
