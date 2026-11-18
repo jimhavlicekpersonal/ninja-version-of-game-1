@@ -39,11 +39,12 @@ function row(keep: number, lag: number, battles: number): string[] {
   return out;
 }
 
-// Re-pinned for SIM_RULES 8 (2026-11-18): Phase 4's combat changes and P4-07's raid layouts.
+// Re-pinned for SIM_RULES 8 (2026-11-18): Phase 4's combat changes and P4-07's raid layouts; Keep 8 rows again for
+// the rules-8 power slack (ranks.json powerSlackByKeep, Keep 8 0.75 -> 0.5), which rides the same bump.
 const PINNED: string[] = [
-  'K8 lag0 #0: base d0358f56 Keep 8 deps 9018cbfb 3* 100% t623 266752cb',
-  'K8 lag0 #1: base d0d8ee62 Keep 8 deps 22c24102 1* 65% t1059 65616630',
-  'K8 lag0 #2: base 6f3ea2e5 Keep 8 deps 2ec9874c 3* 100% t1140 d8a9b12e',
+  'K8 lag0 #0: base d4aaffaf Keep 8 deps 9018cbfb 1* 52% t877 7bb3ba61',
+  'K8 lag0 #1: base 5be08c91 Keep 8 deps 22c24102 0* 47% t1100 c5a6f8a4',
+  'K8 lag0 #2: base 96b74eab Keep 8 deps 2ec9874c 1* 52% t685 e42a7058',
   'K8 lag2 #0: base 083557ac Keep 7 deps 8894ed06 3* 100% t681 6e93f037',
   'K8 lag2 #1: base 881784bf Keep 7 deps 22c24102 1* 70% t719 0c30883b',
   'K8 lag2 #2: base dd410f6e Keep 7 deps 798fbbfd 2* 53% t1442 e6bf2cef',

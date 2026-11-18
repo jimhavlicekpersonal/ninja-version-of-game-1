@@ -70,7 +70,7 @@
     }
   ],
   "$commentP301": "P3-01 (PAC-01, 2026-11-18): collectorHoursCap 8 -> 24 and raidableUncollectedFraction 0.5 -> 0.25 (with raids.shieldTiers 16/20/24 h): a once-a-day player banked 8 of 24 hours and lost half of it to raids, so the casual Keep 5 -> 6 stretch took 26 days. collectBubbleMinFraction 0.02 -> 0.007 keeps the first collect bubble near ten minutes.",
-  "$commentBuildCap": "P3-03 (PAC-03, 2026-11-18): the longest any build takes unless a building names its own buildCapSeconds (the Coin Mint, Terraced Farm, Treasury and Storehouse: 4 days, so economy buildings stop eating three quarters of all builder time; their collectors keep producing while they upgrade). tests/gameplay/sim/data.test.ts reads it.",
+  "$commentBuildCap": "P3-03 (PAC-03, 2026-11-18): the longest any build takes unless a building names its own buildCapSeconds (the Coin Mint, Terraced Farm, Treasury and Storehouse: 4 days, 5 days since Phase 4's rules-8 campaign (regular Keep 15 at day 98 with 4: the gate is 100-140), so economy buildings stop eating three quarters of all builder time; their collectors keep producing while they upgrade). tests/gameplay/sim/data.test.ts reads it.",
   "buildSecondsCap": 604800,
   "collectorHoursCap": 24,
   "raidableStoredFraction": 0.2,

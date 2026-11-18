@@ -41,7 +41,7 @@ describe('balance data', () => {
       const cap = def.buildCapSeconds ?? data.economy.buildSecondsCap!;
       for (const l of def.levels) expect(l.buildSeconds ?? 0, type).toBeLessThanOrEqual(cap);
     }
-    for (const t of ['acorn_orchard', 'dewdrop_well', 'acorn_silo', 'dew_cistern']) expect(data.buildings[t].buildCapSeconds).toBe(4 * 86400);
+    for (const t of ['acorn_orchard', 'dewdrop_well', 'acorn_silo', 'dew_cistern']) expect(data.buildings[t].buildCapSeconds).toBe(5 * 86400);
   });
 
   it('timed buildings get ~2.2x longer each level', () => {

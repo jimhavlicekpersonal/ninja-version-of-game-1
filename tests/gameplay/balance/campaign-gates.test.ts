@@ -84,13 +84,15 @@ describe('lower bounds: the model player keeps winning at every Keep (E24, E25)'
     for (const k of pairs(late)) expect(k.stars, `Keeps ${k.keeps}`).toBeGreaterThanOrEqual(1.2);
   });
 
-  it('the casual explorer (newest warrior of each family) does not get worse (E25 still open for it)', () => {
-    // Known gap: at the same army strength as the regular player, the explorer's mixed army wins
-    // about a third as often at Keeps 8-14. Matchmaking is not the cause; the composition and the
-    // simple attack plan are. This only stops it from getting worse until that is fixed.
+  // P4-09 (PAC-07, raised 2026-11-18 at SIM_RULES 8): the run gives 0.80 stars on average at Keeps 8-15 and 0.67-0.97
+  // per pair of adjacent Keeps (Keeps 12 and 15 alone 0.48 and 0.46). The 0.9 target is NOT met. The cause is the
+  // warriors, not matchmaking: the explorer fields the newest tier of each family, and 13 of those score below the
+  // tier before them at Keep 15 (kits-tiers.test.ts TIER_KNOWN_BELOW). Gates at what the run gives, a little under
+  // because one seed swings about 0.1 (P4-08): 0.55 per pair and 0.75 on average. Was 0.1 per Keep and 0.3.
+  it('the casual explorer (newest warrior of each family) does not fall back (P4-09: 0.80 stars, target 0.9 open)', () => {
     const mid = rows('casual_explorer').filter((k) => k.keep >= 8);
-    for (const k of mid) expect(k.stars, `Keep ${k.keep}`).toBeGreaterThanOrEqual(0.1);
-    expect(mid.reduce((a, k) => a + k.stars, 0) / mid.length).toBeGreaterThanOrEqual(0.3);
+    for (const k of pairs(mid)) expect(k.stars, `Keeps ${k.keeps}`).toBeGreaterThanOrEqual(0.55);
+    expect(mid.reduce((a, k) => a + k.stars, 0) / mid.length).toBeGreaterThanOrEqual(0.75);
   });
 });
 
