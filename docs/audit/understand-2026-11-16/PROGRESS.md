@@ -156,3 +156,17 @@ server's own row). The prompt's baseline (205 files, 1,934 tests) predates `0c5e
 | `messages:ui.an_endless_ladder_of_practice_fortress_5c41313067 (changed)` | 1 | Shadow Trials panel intro (P1-06): was 'endless … no top'; now {tier} = the last tier of the Keep ladder (60), {pct} = how much stronger defenses get per tier past it (2) |
 
 ## Open ideas and items left open on purpose
+
+## Section 14: final checks (2026-11-18, from a clean install at cf05cf9 plus the two fixes in the next commit)
+
+| Check | Result |
+|---|---|
+| `npm ci` | exit 0 |
+| `npm test` | first run 2 failures (the social test still used 'hell', removed from the list by P7-07 review H1; `whatsNewUnseen` exported but unused): both fixed; second run 251 files passed, 1 skipped; 2,228 tests passed, 19 skipped |
+| `npm run test:slow` | exit 0 (2,230 s, includes the go-live gate) |
+| `npm run lint`, `build`, `typecheck:server`, `server:build` | exit 0 each |
+| `npm run balance:campaign` | exit 0 (1,020 s); campaign.json and CAMPAIGN.md byte-identical to the committed ones |
+| `npm run status`, `balance:armies`, `docs:progression`, `store:storekit`, `i18n:status` | regenerated, no change; all languages complete |
+| `npm run balance:preview` | NOT re-run to the end: stopped by the 30-minute background limit. Last regenerated at 70044d7 on rules 8; since then no combat data changed (only codex.json text and social.json word lists), and the go-live gate in test:slow passed |
+| Postgres and Redis suites | NOT run at the end (no TEST_DATABASE_URL / TEST_REDIS_URL here); last run in P0-03 with a local Postgres 16 and Redis 7 |
+| Perf scripts | `perf:lowend` run in Phase 6 (headless Chromium at CPU ×6, longest task 129 ms on the low profile); headless Chromium is not a phone |
