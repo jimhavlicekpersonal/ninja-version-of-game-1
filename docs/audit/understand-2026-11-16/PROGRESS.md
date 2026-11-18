@@ -53,7 +53,7 @@ server's own row). The prompt's baseline (205 files, 1,934 tests) predates `0c5e
 | P2-02 | done | 8b072ca | raider a point mass at Keep−1's weakest at campaign honor, Keep+1 above 350×Keep honor → strength uniform over Keep−2..Keep−1 at every honor; never above the defender's Keep (test at honor 0/1,500/4,300/6,000, Keeps 5/9/12/15) |  | raids.test 'get stronger as the defender climbs' restated (authorised: this item changes the rule) |
 | P2-03 | todo | | | | |
 | P2-04 | todo | | | | |
-| P2-05 and P2-06 | todo | | | | |
+| P2-05 and P2-06 | done | 64b32b4 | share of stored resources lost (away.ts): 30 days away K9 30% full 96.6% → 24.9%, K12 93.7% → 15.9%; same for 3 and 7 days; full storages 7.5% / 4.8% |  | maxRaidsPerCatchUp 24→3; exhaustion window 24→36 h; round2-rules exhaustion test restated (authorised) |
 | P2-07 | todo | | | | |
 | P2-08 | todo | | | | |
 | P2-09 | todo | | | | |
