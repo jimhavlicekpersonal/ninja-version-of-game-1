@@ -32,6 +32,7 @@ import type { AgeBand } from '../../gameplay/sim/age';
 import { askAgeBand } from './ageScreen';
 import { bandFromProfile } from '../../gameplay/sim/age';
 import { armyBehindKeep, nextObjective } from '../../gameplay/sim/objective';
+import { sealProgress } from '../../gameplay/sim/seals';
 import { calendarView } from '../../gameplay/sim/calendar';
 import { advance, leagueBonusOf } from '../../gameplay/sim/village';
 import { EconomyUi } from './economyUi';
@@ -1465,6 +1466,19 @@ export class Hud {
     }
     // P3-09 (ECO-10): one plain line when the army is more than a Keep behind the village (no forced prerequisite).
     if (def.category === 'hall' && armyBehindKeep(this.c.state, gd)) this.sheet.append(h('p', { class: 'note keep-rush' }, t('keep.armyBehind')));
+    // P5-08 (PAC-11): the Keep's seal: progress, the claim, or the mark.
+    const seal = def.category === 'hall' ? sealProgress(this.c.state, gd) : null;
+    if (seal?.sealed) this.sheet.append(h('p', { class: 'chip good keep-seal' }, t('seal.done', { keep: seal.keep })));
+    else if (seal?.ready) {
+      const claim = h('button', { class: 'btn gold', type: 'button' }, t('seal.claim', { keep: seal.keep }), costChips(seal.reward));
+      claim.addEventListener('click', () => {
+        if (this.c.dispatch({ type: 'claimKeepSeal' }).ok) {
+          this.sheetSig = '';
+          this.renderSheet();
+        }
+      });
+      this.sheet.append(h('div', { class: 'actions keep-seal' }, claim));
+    } else if (seal) this.sheet.append(h('p', { class: 'muted small keep-seal' }, t('seal.progress', { n: seal.done, total: seal.total })));
 
     // Upgrade in progress
     if (b.upgrade && now < b.upgrade.endsAt) {
@@ -1986,6 +2000,8 @@ export class Hud {
       h('p', {}, h('b', {}, cur.name), i18nText("ui.honor_0c29c8fc2d", { arg1: s.trophies })),
       nxt ? h('p', { class: 'muted' }, i18nText("ui.more_honor_to_reach_3b60f7cad1", { arg1: nxt.min - s.trophies, arg2: nxt.name })) : h('p', { class: 'muted' }, i18nText("ui.you_are_in_the_top_league_8b390ac669")),
       h('p', { class: 'muted' }, i18nText("ui.season_ends_in_at_the_end_of_each_mont_c60052cb71", { arg1: formatDuration(seasonEndsAt(this.c.now()) - this.c.now()), arg2: gd.ranks.seasonResetFloor })),
+      // P5-08: the Keeps this clan has sealed.
+      s.seals?.length ? h('p', { class: 'muted' }, t('seal.count', { list: i18nList([...s.seals].sort((a, b) => a - b).map(String)) })) : null,
       h('h3', {}, i18nText("ui.league_chests_fixed_contents_82950a94cd")),
       h('p', { class: 'muted small' }, i18nText("ui.sized_for_your_clan_keep_level_won_att_efc90477c4", { arg1: hallLevel(s, gd) })),
     );

@@ -314,6 +314,8 @@ export function validateVillage(v: VillageState, data: GameData): string[] {
   if (!v.resources || typeof v.resources !== 'object') problems.push('resources missing');
   else for (const k of RESOURCE_KINDS) if (!Number.isFinite(v.resources[k])) problems.push(`bad ${k}`);
   if (!v.trials || !Number.isInteger(v.trials.best) || v.trials.best < 0) problems.push('bad trials');
+  // Save v24 (P5-08): the sealed Keeps.
+  if (v.seals !== undefined && (!Array.isArray(v.seals) || !v.seals.every((k) => Number.isInteger(k) && k >= 1))) problems.push('bad seals');
   // Save v24 (P3-07): the daily drill's last paid local day.
   if (v.drill !== undefined && (!v.drill || typeof v.drill !== 'object' || !Number.isInteger(v.drill.day))) problems.push('bad drill');
   if (!Array.isArray(v.buildings)) return [...problems, 'buildings missing'];

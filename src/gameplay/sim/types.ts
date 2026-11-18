@@ -208,6 +208,8 @@ export interface VillageState {
   keepReachedAt?: number;
   /** Save v24 (P3-07): the local day the daily drill last paid (sim/drill.ts). Absent: never. */
   drill?: { day: number };
+  /** Save v24 (P5-08): the Keep levels whose seal was claimed (sim/seals.ts). Absent: none. */
+  seals?: number[];
   /** Task periods; `dayIds`/`weekIds` are the tasks chosen when the period began (absent on older saves until the next roll). */
   tasks: { day: number; dayBaseline: Stats; dayClaimed: string[]; week: number; weekBaseline: Stats; weekClaimed: string[]; dayIds?: string[]; weekIds?: string[]; dayTargets?: Record<string, number>; weekTargets?: Record<string, number> };
   cosmetics: { owned: string[]; hallSkin: string };
@@ -1291,7 +1293,8 @@ export interface GameData {
   /** Absent in the shipped data: every feature off. */
   features?: FeatureFlags;
   buildings: Record<BuildingType, BuildingDef>;
-  hall: { levels: HallLevelDef[] };
+  /** P5-08: `seal`, what a Keep's seal pays once (Keep-scaled) when every building that Keep allows is at its cap. */
+  hall: { levels: HallLevelDef[]; seal?: { reward: Cost } };
   economy: EconomyDef;
   troops: Record<string, TroopDef>;
   battle: BattleDef;

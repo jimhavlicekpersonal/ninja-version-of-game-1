@@ -1,5 +1,6 @@
 import { choosableHeroes, heroFor } from './heroes';
 import { defenseWinReward } from './defenseReward';
+import { sealProgress } from './seals';
 import { hasAttacked, shieldAfterAttack } from './shield';
 import { awardMastery, masteryBonuses, masteryMatches, masteryOn } from './mastery';
 import { hallLevel } from './keep';
@@ -130,6 +131,8 @@ export type Command =
   /** `fallen`: server only, the buildings its own simulation saw destroyed and their loot (saves re-running the raid). */
   /** P3-07: the daily drill (sim/drill.ts): the army is rebuilt here, the client's is ignored; nothing is spent. */
   | { type: 'drillEnd'; record: Omit<BattleRecord, 'result' | 'id' | 'kind'> }
+  /** P5-08: claim the current Keep's seal (sim/seals.ts). */
+  | { type: 'claimKeepSeal' }
   | { type: 'applyDefense'; record: BattleRecord; lost: Cost; trophies: number; shieldUntil: number; fallen?: { id: string; loot: Cost }[]; /** The server's verdict on the per-star hold reward (false: this attacker already raided this defender today). Absent: paid. */ holdReward?: boolean }
   | { type: 'syncRank'; trophies: number; shieldUntil?: number }
   // Multiplayer server results (see sim/net.ts); each is safe to apply twice.
@@ -964,6 +967,14 @@ function runCommand(s: VillageState, cmd: Command, now: number, data: GameData):
       return rematchEnd(s, cmd.defenseId, cmd.record, now, data);
     case 'drillEnd':
       return drillEnd(s, cmd.record, now, data);
+    case 'claimKeepSeal': {
+      const p = sealProgress(s, data);
+      if (!p || p.sealed) return fail('ALREADY_CLAIMED', 'This Keep is already sealed.');
+      if (!p.ready) return fail('NOT_AVAILABLE', `Build every building this Keep allows to its cap first (${p.done} of ${p.total}).`, { n: p.done, total: p.total });
+      s.seals = [...(s.seals ?? []), p.keep];
+      const { granted, overflow } = grantResources(s, p.reward, data);
+      return { ok: true, state: s, events: [{ kind: 'reward', source: `keep_seal:${p.keep}`, grants: granted, ...(hasAny(overflow) ? { overflow } : {}) }] };
+    }
     case 'leaveLocalGrove':
       // Playing online: the real Grove replaces the bot one (XP, Lodge troops and history stay).
       s.grove.joined = false;
