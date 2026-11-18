@@ -23,6 +23,8 @@
   "tutorial.end.button": "Finish",
   "tutorial.skip": "Skip tutorial",
   "kind.practice": "Practice",
+  "trials.ladder": "The ladder ahead",
+  "trials.cleared": "Cleared: tiers 1 to {best}",
   "milestone.keep": "Clan Keep Lv {level}!",
   "milestone.hero": "{name} joins your clan",
   "milestone.promoted": "Promoted to {league}",

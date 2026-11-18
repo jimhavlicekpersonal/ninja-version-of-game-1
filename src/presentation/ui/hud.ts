@@ -52,7 +52,7 @@ import { Connection } from '../../backend/net/connection';
 import { attacksLeft, raidPhase } from '../../gameplay/sim/social/groveRaid';
 import { builderStatus, countOfType, crewStatus, onGarrisonCrew, hallLevel, limitFor, payableInProvisions, placeQuote, skipQuote, temperQuote, topUpQuote, upgradeQuote, type PayWith, type QuoteResult } from '../../gameplay/sim/village';
 import { TEMPER_AXES, temperAxes, temperable, temperDef } from '../../gameplay/sim/battle/temper';
-import { attemptTier, canTryAlternate, trialInfo, trialRewardsThrough, trialVariant } from '../../gameplay/sim/trials';
+import { attemptTier, canTryAlternate, trialInfo, trialReward, trialRewardsThrough, trialVariant } from '../../gameplay/sim/trials';
 import { drillArmy, drillAvailable } from '../../gameplay/sim/drill';
 import type { UiBus } from './bus';
 import { clear, h, icon } from './dom';
@@ -2535,16 +2535,54 @@ export class Hud {
       ),
       h('p', { class: 'muted small' }, best > 0 ? i18nText("ui.best_tier_you_can_replay_any_cleared_t_000ba0e5d5", { arg1: best }) : i18nText("ui.you_have_not_cleared_a_tier_yet_cb231a4e2d")),
     );
+    // P6-06 (UIS-11): the ladder: what is cleared, and the ten tiers beyond the next with layout and modifiers;
+    // a tier that pays Jade is marked with it.
+    const ladder = h('div', { class: 'trial-ladder', 'data-id': 'trial-ladder' }, h('h3', {}, t('trials.ladder')));
+    if (best > 0) ladder.append(h('p', { class: 'muted small' }, t('trials.cleared', { best })));
+    for (let tier = next + 1; tier <= next + 10; tier++) {
+      const ti = trialInfo(tier, gd);
+      const jade = trialReward(tier, gd).moonstones ?? 0;
+      ladder.append(
+        h(
+          'div',
+          { class: 'log-row trial-step' },
+          h('div', {}, h('b', {}, i18nText("ui.tier_e94add5d59", { arg1: tier, arg2: i18nMessage(ti.layout.name) })), ti.modifiers.length ? h('div', { class: 'muted small' }, i18nList(ti.modifiers.map((m) => m.name))) : null),
+          jade > 0 ? h('span', { class: 'chip good' }, icon(icons.moonstones), formatNumber(jade)) : null,
+        ),
+      );
+    }
+    body.append(ladder);
+    // A stepper for replays (no reward): any cleared tier, not only the best.
+    let replayTier = best;
+    const replayBtn = h('button', { class: 'btn ghost', type: 'button', 'data-id': 'trial-replay' }, i18nText("ui.replay_tier_ba6a185124", { arg1: replayTier })) as HTMLButtonElement;
+    const step = (d: number) => {
+      replayTier = Math.min(best, Math.max(1, replayTier + d));
+      replayBtn.textContent = i18nText("ui.replay_tier_ba6a185124", { arg1: replayTier });
+    };
+    if (best > 0) {
+      body.append(
+        h(
+          'div',
+          { class: 'actions trial-stepper' },
+          h('button', { class: 'btn ghost', type: 'button', 'aria-label': '−', 'data-id': 'trial-down', onclick: () => step(-1) }, '−'),
+          replayBtn,
+          h('button', { class: 'btn ghost', type: 'button', 'aria-label': '+', 'data-id': 'trial-up', onclick: () => step(1) }, '+'),
+        ),
+      );
+    }
     if (alternate) body.append(h('p', { class: 'note' }, i18nText("ui.stuck_on_tier_you_can_switch_it_to_a_d_36ad80b724", { arg1: next, arg2: gd.trials.maxAlternates - (this.c.state.trials.alternate ?? 0) })));
     // P3-07: the daily drill (practice against this fortress with a full camp of your own warriors; nothing spent).
     const drillOpen = Boolean(this.deps.onDrill && gd.daily.drill && Object.keys(drillArmy(this.c.state, gd)).length);
     if (drillOpen) body.append(h('p', { class: 'small drill-line' }, drillAvailable(this.c.state, this.c.now(), gd) ? t('drill.about') : t('drill.doneToday')));
     const close = this.modal(i18nText("ui.shadow_trials_340bccf3a7"), body, [
-      best > 0 && { label: i18nText("ui.replay_tier_ba6a185124", { arg1: best }), onClick: () => { close(); this.deps.onTrial(best); } },
       alternate && { label: i18nText("ui.try_a_different_fortress_d0b3ff0e49"), onClick: () => { const r = this.c.dispatch({ type: 'trialAlternate' }); close(); if (r.ok) this.openTrials(); else this.toast(i18nMessage(r.message, true), 'error'); } },
       drillOpen && { label: t('drill.button'), onClick: () => { close(); this.deps.onDrill?.(); } },
       { label: i18nText("ui.scout_tier_8fde370df8", { arg1: next }), primary: true, onClick: () => { close(); this.deps.onTrial(next); } },
     ]);
+    replayBtn.addEventListener('click', () => {
+      close();
+      this.deps.onTrial(replayTier);
+    });
   }
 
   modal(

@@ -23,6 +23,8 @@
   "tutorial.end.button": { "en": "Finish", "text": "Parí" },
   "tutorial.skip": { "en": "Skip tutorial", "text": "Fo ẹ̀kọ́ náà" },
   "kind.practice": { "en": "Practice", "text": "" },
+  "trials.ladder": { "en": "The ladder ahead", "text": "" },
+  "trials.cleared": { "en": "Cleared: tiers 1 to {best}", "text": "" },
   "milestone.keep": { "en": "Clan Keep Lv {level}!", "text": "" },
   "milestone.hero": { "en": "{name} joins your clan", "text": "" },
   "milestone.promoted": { "en": "Promoted to {league}", "text": "" },
