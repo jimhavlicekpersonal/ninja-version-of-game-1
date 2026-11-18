@@ -193,6 +193,7 @@
   "unlock.title": { "en": "{n, plural, one {New warrior unlocked!} other {New warriors unlocked!}}", "text": "{n, plural, one {Mpiganaji mpya amefunguliwa!} other {Wapiganaji wapya wamefunguliwa!}}" },
   "unlock.train": { "en": "Train", "text": "Funza" },
   "unlock.later": { "en": "Later", "text": "Baadaye" },
+  "scout.shieldEnds": { "en": "Your shield has {time} left: attacking ends it.", "text": "" },
   "tutorial.end.daily": { "en": "Your first daily chest is ready: Finish opens it.", "text": "Kasha lako la kwanza la kila siku liko tayari: Maliza inalifungua." },
   "panel.loadFailed": { "en": "This could not open. Check your connection and try again.", "text": "Hiki hakikuweza kufunguka. Kagua muunganisho wako kisha ujaribu tena." },
   "panel.staleChunk": { "en": "A newer version of Kagemura is out. Reload to open this.", "text": "Toleo jipya zaidi la Kagemura limetoka. Pakia upya ili kufungua hiki." },

@@ -12,6 +12,7 @@ import type { runBattle } from '../../src/gameplay/sim/battle/battle';
 import type { BaseLayout } from '../../src/gameplay/sim/battle/types';
 import { buildingDef } from '../../src/gameplay/sim/data';
 import { exhaustionFactor, scaleBaseLoot, shieldHoursFor } from '../../src/gameplay/sim/defense';
+import { shieldAfterAttack } from '../../src/gameplay/sim/shield';
 import { applyLootPenalty, hallWindow, powerSlackAt, recentRaidArmies } from '../../src/gameplay/sim/matchmaking';
 import { defenseHonorLoss, lossTrophies, winTrophies } from '../../src/gameplay/sim/ranks';
 import { stakeMet, validStake } from '../../src/gameplay/sim/carry';
@@ -700,7 +701,10 @@ export async function attack(ctx: ServerContext, me: Player, sub: BattleReport):
     const holdReward = todayFromMe.length === 0;
     const defLoss = delta > 0 ? Math.max(0, Math.min(defenseHonorLoss(delta, data), rdef.defenderDailyHonorLossCap - lostToday)) : -Math.min(-delta, Math.max(0, MAX_HONOR_FROM_ONE_ATTACKER - fromThisAttacker));
     const defPatch: { trophies: number; shieldUntil?: number; honorLoss?: { day: number; lost: number }; ratings?: { attack: Rating; base: Rating } } = { trophies: Math.max(0, (defender?.trophies ?? 0) - defLoss) };
-    const mePatch: { trophies: number; shieldUntil: number; ratings?: { attack: Rating; base: Rating } } = { trophies: playerTrophies, shieldUntil: Math.min(attacker.shieldUntil, t) };
+    // P3-12: one rule with the game (sim/shield.ts): the player's first attack keeps its shield.
+    // Its attack history (pruned after months) or any honor (a shielded newcomer cannot be raided, so honor means raids).
+    const attackedBefore = (attacker.trophies ?? 0) > 0 || (await tx.recentTargets(me.id, 0)).length > 0;
+    const mePatch: { trophies: number; shieldUntil: number; ratings?: { attack: Rating; base: Rating } } = { trophies: playerTrophies, shieldUntil: shieldAfterAttack(attacker.shieldUntil, t, attackedBefore, data) };
     if (defender) {
       defPatch.honorLoss = { day, lost: lostToday + Math.max(0, defLoss) };
       // Step 28: the attacker's Attack Rating and the defender's Base Rating move; bots never move a rating.

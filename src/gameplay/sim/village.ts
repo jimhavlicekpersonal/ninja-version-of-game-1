@@ -1,5 +1,6 @@
 import { choosableHeroes, heroFor } from './heroes';
 import { defenseWinReward } from './defenseReward';
+import { hasAttacked, shieldAfterAttack } from './shield';
 import { awardMastery, masteryBonuses, masteryMatches, masteryOn } from './mastery';
 import { hallLevel } from './keep';
 import { canTryAlternate, nextTrialTier, trialBase, trialReward, trialVariant } from './trials';
@@ -874,7 +875,7 @@ function runCommand(s: VillageState, cmd: Command, now: number, data: GameData):
         // anything deployed is still a lost attack.
         if (!cmd.record.ticket && s.scout !== null && (cmd.record.deployments?.length ?? 0) > 0) {
           s.trophies = Math.max(0, s.trophies - lossTrophies(s.trophies, s.trophies, data));
-          s.shieldUntil = Math.min(s.shieldUntil, now);
+          s.shieldUntil = shieldAfterAttack(s.shieldUntil, now, hasAttacked(s), data);
           s.scout = null;
         }
         return { ok: true, state: s, events: [] };
@@ -900,7 +901,7 @@ function runCommand(s: VillageState, cmd: Command, now: number, data: GameData):
       if (scouted && (heroWent || foughtWithWarriors({ used: sent }, abandoned))) {
         const opp = cmd.record.setup.base.trophies ?? s.trophies;
         s.trophies = Math.max(0, s.trophies - lossTrophies(s.trophies, opp, data));
-        s.shieldUntil = Math.min(s.shieldUntil, now);
+        s.shieldUntil = shieldAfterAttack(s.shieldUntil, now, hasAttacked(s), data);
         s.scout = null;
       }
       return { ok: true, state: s, events: [] };
@@ -1962,7 +1963,7 @@ function battleEnd(s: VillageState, rec0: Omit<BattleRecord, 'result' | 'id' | '
       const opp = rec.setup.base.trophies ?? s.trophies;
       trophies = -lossTrophies(s.trophies, opp, data);
       s.trophies = Math.max(0, s.trophies + trophies);
-      s.shieldUntil = Math.min(s.shieldUntil, now);
+      s.shieldUntil = shieldAfterAttack(s.shieldUntil, now, hasAttacked(s), data);
     }
     s.scout = null;
     const record: BattleRecord = { ...rec, id: `r${s.nextSeed++}`, kind: 'attack', at: rec.at ?? now, result: { ...result, loot: { ...result.loot } }, trophies, banked: {}, rules: SIM_RULES, settlement: 'rejected', rejected: 'no_warriors' };
@@ -1975,7 +1976,7 @@ function battleEnd(s: VillageState, rec0: Omit<BattleRecord, 'result' | 'id' | '
     // (they fought), but loot and honor wait for the server's answer, so a
     // refused or expired report can never leave loot behind (settleOnlineAttack).
     if (s.battleLog.some((r) => r.ticket === rec.ticket)) return fail('ALREADY_CLAIMED', 'This attack was already recorded.');
-    s.shieldUntil = Math.min(s.shieldUntil, now);
+    s.shieldUntil = shieldAfterAttack(s.shieldUntil, now, hasAttacked(s), data);
     s.scout = null;
     const record: BattleRecord = { ...rec, id: `r${s.nextSeed++}`, kind: 'attack', at: rec.at ?? now, result: { ...result, loot: { ...result.loot } }, trophies: 0, banked: {}, rules: SIM_RULES, settlement: 'pending' };
     if (!validStake(record.stake, data)) delete record.stake;
@@ -1995,7 +1996,7 @@ function battleEnd(s: VillageState, rec0: Omit<BattleRecord, 'result' | 'id' | '
   const trophies = result.stars >= 1 ? winTrophies(s.trophies, opp, data) : -lossTrophies(s.trophies, opp, data);
   s.trophies = Math.max(0, s.trophies + trophies);
   // Attacking ends your shield, and the next look at an opponent is free again.
-  s.shieldUntil = Math.min(s.shieldUntil, now);
+  s.shieldUntil = shieldAfterAttack(s.shieldUntil, now, hasAttacked(s), data);
   s.scout = null;
   const record: BattleRecord = { ...rec, id: `r${s.nextSeed++}`, kind: 'attack', at: rec.at ?? now, result: { ...result, loot: { ...result.loot } }, trophies, banked, rules: SIM_RULES };
   delete record.stake;

@@ -1,5 +1,7 @@
 {
   "newPlayerShieldHours": 24,
+  "$commentFirstAttack": "P3-12 (PLY-11, 2026-11-18): the tutorial's forced first raid used to end the 24-hour new-player shield silently; a village's first attack keeps it (sim/shield.ts, also server/core/pvp.ts).",
+  "firstAttackKeepsShield": true,
   "newPlayerRaids": {
     "$comment": "The first `count` bot raids a village ever faces (after the new-player shield) bring a smaller, less researched army, so a new village with its first Kunai Tower usually holds (sim/defense.ts attackerFor).",
     "count": 3,

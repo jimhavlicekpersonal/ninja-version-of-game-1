@@ -193,6 +193,7 @@
   "unlock.title": { "en": "{n, plural, one {New warrior unlocked!} other {New warriors unlocked!}}", "text": "{n, plural, other {A ti ṣí jagunjagun tuntun sílẹ̀!}}" },
   "unlock.train": { "en": "Train", "text": "Dá lẹ́kọ̀ọ́" },
   "unlock.later": { "en": "Later", "text": "Lẹ́yìn náà" },
+  "scout.shieldEnds": { "en": "Your shield has {time} left: attacking ends it.", "text": "" },
   "tutorial.end.daily": { "en": "Your first daily chest is ready: Finish opens it.", "text": "Àpótí ojoojúmọ́ rẹ àkọ́kọ́ ti ṣetán: Parí yóò ṣí i." },
   "panel.loadFailed": { "en": "This could not open. Check your connection and try again.", "text": "Èyí kò ṣí. Ṣàyẹ̀wò ìsopọ̀ rẹ kí o sì gbìyànjú lẹ́ẹ̀kan sí i." },
   "panel.staleChunk": { "en": "A newer version of Kagemura is out. Reload to open this.", "text": "Ẹ̀dà Kagemura tuntun ti jáde. Tún un ṣí láti ṣí èyí." },

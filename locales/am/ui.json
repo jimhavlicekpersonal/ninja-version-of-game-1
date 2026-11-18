@@ -193,6 +193,7 @@
   "unlock.title": { "en": "{n, plural, one {New warrior unlocked!} other {New warriors unlocked!}}", "text": "{n, plural, one {አዲስ ተዋጊ ተከፍቷል!} other {አዲስ ተዋጊዎች ተከፍተዋል!}}" },
   "unlock.train": { "en": "Train", "text": "ያሠልጥኑ" },
   "unlock.later": { "en": "Later", "text": "በኋላ" },
+  "scout.shieldEnds": { "en": "Your shield has {time} left: attacking ends it.", "text": "" },
   "tutorial.end.daily": { "en": "Your first daily chest is ready: Finish opens it.", "text": "የመጀመሪያው ዕለታዊ ሣጥንዎ ዝግጁ ነው፦ «ይጨርሱ» ይከፍተዋል።" },
   "panel.loadFailed": { "en": "This could not open. Check your connection and try again.", "text": "ይህ ሊከፈት አልቻለም። ግንኙነትዎን ያረጋግጡና እንደገና ይሞክሩ።" },
   "panel.staleChunk": { "en": "A newer version of Kagemura is out. Reload to open this.", "text": "አዲስ የKagemura ስሪት ወጥቷል። ይህን ለመክፈት እንደገና ይጫኑ።" },

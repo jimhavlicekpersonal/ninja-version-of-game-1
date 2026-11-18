@@ -193,6 +193,7 @@
   "unlock.title": { "en": "{n, plural, one {New warrior unlocked!} other {New warriors unlocked!}}", "text": "{n, plural, one {নতুন যোদ্ধা খুলেছে!} other {নতুন যোদ্ধা খুলেছে!}}" },
   "unlock.train": { "en": "Train", "text": "প্রশিক্ষণ" },
   "unlock.later": { "en": "Later", "text": "পরে" },
+  "scout.shieldEnds": { "en": "Your shield has {time} left: attacking ends it.", "text": "" },
   "tutorial.end.daily": { "en": "Your first daily chest is ready: Finish opens it.", "text": "আপনার প্রথম দৈনিক সিন্দুক তৈরি: শেষ বোতাম চাপলে এটি খুলবে।" },
   "panel.loadFailed": { "en": "This could not open. Check your connection and try again.", "text": "এটি খোলা যায়নি। সংযোগ দেখে আবার চেষ্টা করুন।" },
   "panel.staleChunk": { "en": "A newer version of Kagemura is out. Reload to open this.", "text": "Kagemura-র নতুন সংস্করণ এসেছে। এটি খুলতে আবার লোড করুন।" },

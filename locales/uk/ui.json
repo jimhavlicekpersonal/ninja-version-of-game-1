@@ -193,6 +193,7 @@
   "unlock.title": { "en": "{n, plural, one {New warrior unlocked!} other {New warriors unlocked!}}", "text": "{n, plural, one {Розблоковано нового воїна!} few {Розблоковано нових воїнів!} many {Розблоковано нових воїнів!} other {Розблоковано нових воїнів!}}" },
   "unlock.train": { "en": "Train", "text": "Тренувати" },
   "unlock.later": { "en": "Later", "text": "Пізніше" },
+  "scout.shieldEnds": { "en": "Your shield has {time} left: attacking ends it.", "text": "" },
   "tutorial.end.daily": { "en": "Your first daily chest is ready: Finish opens it.", "text": "Твоя перша щоденна скриня чекає: кнопка «Завершити» відкриє її." },
   "panel.loadFailed": { "en": "This could not open. Check your connection and try again.", "text": "Не вдалося відкрити. Перевір з’єднання й спробуй ще раз." },
   "panel.staleChunk": { "en": "A newer version of Kagemura is out. Reload to open this.", "text": "Вийшла новіша версія Kagemura. Перезавантаж, щоб відкрити це." },

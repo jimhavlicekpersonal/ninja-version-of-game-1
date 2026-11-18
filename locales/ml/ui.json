@@ -193,6 +193,7 @@
   "unlock.title": { "en": "{n, plural, one {New warrior unlocked!} other {New warriors unlocked!}}", "text": "{n, plural, one {പുതിയ യോദ്ധാവിനെ തുറന്നു!} other {പുതിയ യോദ്ധാക്കളെ തുറന്നു!}}" },
   "unlock.train": { "en": "Train", "text": "പരിശീലിപ്പിക്കുക" },
   "unlock.later": { "en": "Later", "text": "പിന്നീട്" },
+  "scout.shieldEnds": { "en": "Your shield has {time} left: attacking ends it.", "text": "" },
   "tutorial.end.daily": { "en": "Your first daily chest is ready: Finish opens it.", "text": "നിങ്ങളുടെ ആദ്യ ദിവസപ്പെട്ടി തയ്യാറാണ്: \"പൂർത്തിയാക്കുക\" അമർത്തിയാൽ അത് തുറക്കും." },
   "panel.loadFailed": { "en": "This could not open. Check your connection and try again.", "text": "ഇത് തുറക്കാനായില്ല. കണക്ഷൻ പരിശോധിച്ച് വീണ്ടും ശ്രമിക്കുക." },
   "panel.staleChunk": { "en": "A newer version of Kagemura is out. Reload to open this.", "text": "Kagemura-യുടെ പുതിയ പതിപ്പ് ഇറങ്ങി. ഇത് തുറക്കാൻ വീണ്ടും ലോഡ് ചെയ്യുക." },

@@ -926,6 +926,8 @@ export interface RaidsDef {
   graceMinutes: number;
   /** Safety cap on raids simulated in one catch-up. */
   maxRaidsPerCatchUp: number;
+  /** P3-12 (PLY-11): a village's first attack does not end its shield (`sim/shield.ts`). */
+  firstAttackKeepsShield?: boolean;
   maxDefenseLog: number;
   /** Bot army make-up by attacker hall level: share of housing per troop. */
   botArmyMix: Record<string, number>[];

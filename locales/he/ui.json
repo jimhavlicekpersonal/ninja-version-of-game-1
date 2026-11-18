@@ -193,6 +193,7 @@
   "unlock.title": { "en": "{n, plural, one {New warrior unlocked!} other {New warriors unlocked!}}", "text": "{n, plural, one {לוחם חדש נפתח!} two {לוחמים חדשים נפתחו!} other {לוחמים חדשים נפתחו!}}" },
   "unlock.train": { "en": "Train", "text": "אימון" },
   "unlock.later": { "en": "Later", "text": "אחר כך" },
+  "scout.shieldEnds": { "en": "Your shield has {time} left: attacking ends it.", "text": "" },
   "tutorial.end.daily": { "en": "Your first daily chest is ready: Finish opens it.", "text": "התיבה היומית הראשונה שלך מוכנה: סיום פותח אותה." },
   "panel.loadFailed": { "en": "This could not open. Check your connection and try again.", "text": "לא ניתן היה לפתוח את זה. בדקו את החיבור ונסו שוב." },
   "panel.staleChunk": { "en": "A newer version of Kagemura is out. Reload to open this.", "text": "יצאה גרסה חדשה יותר של Kagemura. טענו מחדש כדי לפתוח את זה." },

@@ -193,6 +193,7 @@
   "unlock.title": { "en": "{n, plural, one {New warrior unlocked!} other {New warriors unlocked!}}", "text": "{n, plural, one {Uusi soturi avattu!} other {Uusia sotureita avattu!}}" },
   "unlock.train": { "en": "Train", "text": "Kouluta" },
   "unlock.later": { "en": "Later", "text": "Myöhemmin" },
+  "scout.shieldEnds": { "en": "Your shield has {time} left: attacking ends it.", "text": "" },
   "tutorial.end.daily": { "en": "Your first daily chest is ready: Finish opens it.", "text": "Ensimmäinen päivän arkkusi on valmis: Valmis-painike avaa sen." },
   "panel.loadFailed": { "en": "This could not open. Check your connection and try again.", "text": "Tätä ei voitu avata. Tarkista yhteys ja yritä uudelleen." },
   "panel.staleChunk": { "en": "A newer version of Kagemura is out. Reload to open this.", "text": "Kagemurasta on julkaistu uudempi versio. Lataa uudelleen avataksesi tämän." },

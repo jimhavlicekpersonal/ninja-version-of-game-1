@@ -193,6 +193,7 @@
   "unlock.title": { "en": "{n, plural, one {New warrior unlocked!} other {New warriors unlocked!}}", "text": "{n, plural, one {An buɗe sabon mayaƙi!} other {An buɗe sababbin mayaƙa!}}" },
   "unlock.train": { "en": "Train", "text": "Horar" },
   "unlock.later": { "en": "Later", "text": "Daga baya" },
+  "scout.shieldEnds": { "en": "Your shield has {time} left: attacking ends it.", "text": "" },
   "tutorial.end.daily": { "en": "Your first daily chest is ready: Finish opens it.", "text": "Akwatinku na farko na yau da kullum ya shirya: Gama zai buɗe shi." },
   "panel.loadFailed": { "en": "This could not open. Check your connection and try again.", "text": "Ba a iya buɗe wannan ba. Ku duba haɗin intanet ɗinku ku sake gwadawa." },
   "panel.staleChunk": { "en": "A newer version of Kagemura is out. Reload to open this.", "text": "Sabuwar sigar Kagemura ta fito. Ku sake lodawa don buɗe wannan." },

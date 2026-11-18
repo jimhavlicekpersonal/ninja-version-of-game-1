@@ -193,6 +193,7 @@
   "unlock.title": { "en": "{n, plural, one {New warrior unlocked!} other {New warriors unlocked!}}", "text": "{n, plural, one {Νέος πολεμιστής ξεκλειδώθηκε!} other {Νέοι πολεμιστές ξεκλειδώθηκαν!}}" },
   "unlock.train": { "en": "Train", "text": "Εκπαίδευση" },
   "unlock.later": { "en": "Later", "text": "Αργότερα" },
+  "scout.shieldEnds": { "en": "Your shield has {time} left: attacking ends it.", "text": "" },
   "tutorial.end.daily": { "en": "Your first daily chest is ready: Finish opens it.", "text": "Το πρώτο σου ημερήσιο σεντούκι είναι έτοιμο: το Τέλος το ανοίγει." },
   "panel.loadFailed": { "en": "This could not open. Check your connection and try again.", "text": "Δεν ήταν δυνατό να ανοίξει. Έλεγξε τη σύνδεσή σου και δοκίμασε ξανά." },
   "panel.staleChunk": { "en": "A newer version of Kagemura is out. Reload to open this.", "text": "Κυκλοφόρησε νεότερη έκδοση του Kagemura. Κάνε επαναφόρτωση για να το ανοίξεις." },

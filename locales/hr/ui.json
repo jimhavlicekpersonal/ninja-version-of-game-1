@@ -193,6 +193,7 @@
   "unlock.title": { "en": "{n, plural, one {New warrior unlocked!} other {New warriors unlocked!}}", "text": "{n, plural, one {Otključan je novi ratnik!} few {Otključani su novi ratnici!} other {Otključani su novi ratnici!}}" },
   "unlock.train": { "en": "Train", "text": "Obuči" },
   "unlock.later": { "en": "Later", "text": "Kasnije" },
+  "scout.shieldEnds": { "en": "Your shield has {time} left: attacking ends it.", "text": "" },
   "tutorial.end.daily": { "en": "Your first daily chest is ready: Finish opens it.", "text": "Tvoja prva dnevna škrinja je spremna: „Završi“ je otvara." },
   "panel.loadFailed": { "en": "This could not open. Check your connection and try again.", "text": "Ovo se nije moglo otvoriti. Provjeri vezu i pokušaj ponovno." },
   "panel.staleChunk": { "en": "A newer version of Kagemura is out. Reload to open this.", "text": "Izašla je novija inačica igre Kagemura. Ponovno učitaj da ovo otvoriš." },

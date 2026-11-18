@@ -193,6 +193,7 @@
   "unlock.title": { "en": "{n, plural, one {New warrior unlocked!} other {New warriors unlocked!}}", "text": "{n, plural, one {Nový bojovník odomknutý!} few {Noví bojovníci odomknutí!} many {Noví bojovníci odomknutí!} other {Noví bojovníci odomknutí!}}" },
   "unlock.train": { "en": "Train", "text": "Cvičiť" },
   "unlock.later": { "en": "Later", "text": "Neskôr" },
+  "scout.shieldEnds": { "en": "Your shield has {time} left: attacking ends it.", "text": "" },
   "tutorial.end.daily": { "en": "Your first daily chest is ready: Finish opens it.", "text": "Tvoja prvá denná truhlica je pripravená: tlačidlo Dokončiť ju otvorí." },
   "panel.loadFailed": { "en": "This could not open. Check your connection and try again.", "text": "Nepodarilo sa to otvoriť. Skontroluj pripojenie a skús to znova." },
   "panel.staleChunk": { "en": "A newer version of Kagemura is out. Reload to open this.", "text": "Vyšla novšia verzia Kagemura. Znova načítaj hru a otvor to." },

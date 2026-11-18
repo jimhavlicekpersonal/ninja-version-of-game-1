@@ -193,6 +193,7 @@
   "unlock.title": { "en": "{n, plural, one {New warrior unlocked!} other {New warriors unlocked!}}", "text": "{n, plural, one {Nowy wojownik odblokowany!} few {Nowi wojownicy odblokowani!} many {Nowi wojownicy odblokowani!} other {Nowi wojownicy odblokowani!}}" },
   "unlock.train": { "en": "Train", "text": "Szkol" },
   "unlock.later": { "en": "Later", "text": "Później" },
+  "scout.shieldEnds": { "en": "Your shield has {time} left: attacking ends it.", "text": "" },
   "tutorial.end.daily": { "en": "Your first daily chest is ready: Finish opens it.", "text": "Twoja pierwsza codzienna skrzynia czeka: przycisk Zakończ ją otworzy." },
   "panel.loadFailed": { "en": "This could not open. Check your connection and try again.", "text": "Nie udało się tego otworzyć. Sprawdź połączenie i spróbuj ponownie." },
   "panel.staleChunk": { "en": "A newer version of Kagemura is out. Reload to open this.", "text": "Jest nowsza wersja Kagemura. Wczytaj ponownie, aby to otworzyć." },

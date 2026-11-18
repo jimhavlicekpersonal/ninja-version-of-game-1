@@ -193,6 +193,7 @@
   "unlock.title": { "en": "{n, plural, one {New warrior unlocked!} other {New warriors unlocked!}}", "text": "{n, plural, one {Iqhawe elisha livuliwe!} other {Amaqhawe amasha avuliwe!}}" },
   "unlock.train": { "en": "Train", "text": "Qeqesha" },
   "unlock.later": { "en": "Later", "text": "Kamuva" },
+  "scout.shieldEnds": { "en": "Your shield has {time} left: attacking ends it.", "text": "" },
   "tutorial.end.daily": { "en": "Your first daily chest is ready: Finish opens it.", "text": "Ibhokisi lakho lokuqala lansuku zonke selilungile: inkinobho ethi Qeda iyalivula." },
   "panel.loadFailed": { "en": "This could not open. Check your connection and try again.", "text": "Lokhu akukwazanga ukuvuleka. Hlola uxhumano lwakho bese uzama futhi." },
   "panel.staleChunk": { "en": "A newer version of Kagemura is out. Reload to open this.", "text": "Uhlobo olusha lwe-Kagemura selukhona. Layisha kabusha ukuze uvule lokhu." },

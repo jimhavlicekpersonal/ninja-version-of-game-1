@@ -193,6 +193,7 @@
   "unlock.title": { "en": "{n, plural, one {New warrior unlocked!} other {New warriors unlocked!}}", "text": "{n, plural, one {فُتح محارب جديد!} two {فُتح محاربان جديدان!} few {فُتح محاربون جدد!} many {فُتح محاربون جدد!} other {فُتح محاربون جدد!}}" },
   "unlock.train": { "en": "Train", "text": "تدريب" },
   "unlock.later": { "en": "Later", "text": "لاحقًا" },
+  "scout.shieldEnds": { "en": "Your shield has {time} left: attacking ends it.", "text": "" },
   "tutorial.end.daily": { "en": "Your first daily chest is ready: Finish opens it.", "text": "صندوقك اليومي الأول جاهز: «إنهاء» يفتحه." },
   "panel.loadFailed": { "en": "This could not open. Check your connection and try again.", "text": "تعذّر فتح هذا. يُرجى التحقق من الاتصال والمحاولة مجددًا." },
   "panel.staleChunk": { "en": "A newer version of Kagemura is out. Reload to open this.", "text": "يتوفر إصدار أحدث من Kagemura. إعادة التحميل تفتحه." },

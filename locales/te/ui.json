@@ -193,6 +193,7 @@
   "unlock.title": { "en": "{n, plural, one {New warrior unlocked!} other {New warriors unlocked!}}", "text": "{n, plural, one {కొత్త యోధుల రకం తెరుచుకుంది!} other {కొత్త యోధుల రకాలు తెరుచుకున్నాయి!}}" },
   "unlock.train": { "en": "Train", "text": "శిక్షణ" },
   "unlock.later": { "en": "Later", "text": "తర్వాత" },
+  "scout.shieldEnds": { "en": "Your shield has {time} left: attacking ends it.", "text": "" },
   "tutorial.end.daily": { "en": "Your first daily chest is ready: Finish opens it.", "text": "మీ మొదటి రోజువారీ పెట్టె సిద్ధంగా ఉంది: ముగించు నొక్కితే అది తెరుచుకుంటుంది." },
   "panel.loadFailed": { "en": "This could not open. Check your connection and try again.", "text": "ఇది తెరుచుకోలేదు. మీ కనెక్షన్‌ను చూసి మళ్లీ ప్రయత్నించండి." },
   "panel.staleChunk": { "en": "A newer version of Kagemura is out. Reload to open this.", "text": "Kagemura కొత్త వెర్షన్ వచ్చింది. దీన్ని తెరవడానికి మళ్లీ లోడ్ చేయండి." },

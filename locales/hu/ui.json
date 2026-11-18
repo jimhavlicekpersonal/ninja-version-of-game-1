@@ -193,6 +193,7 @@
   "unlock.title": { "en": "{n, plural, one {New warrior unlocked!} other {New warriors unlocked!}}", "text": "{n, plural, one {Új harcos feloldva!} other {Új harcosok feloldva!}}" },
   "unlock.train": { "en": "Train", "text": "Kiképzés" },
   "unlock.later": { "en": "Later", "text": "Később" },
+  "scout.shieldEnds": { "en": "Your shield has {time} left: attacking ends it.", "text": "" },
   "tutorial.end.daily": { "en": "Your first daily chest is ready: Finish opens it.", "text": "Kész az első napi ládád: a Befejezés gomb kinyitja." },
   "panel.loadFailed": { "en": "This could not open. Check your connection and try again.", "text": "Ezt nem sikerült megnyitni. Ellenőrizd a kapcsolatot, és próbáld újra." },
   "panel.staleChunk": { "en": "A newer version of Kagemura is out. Reload to open this.", "text": "Megjelent a Kagemura újabb verziója. Töltsd újra a megnyitáshoz." },

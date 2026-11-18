@@ -17,7 +17,7 @@ import type { BattleResult } from '../../gameplay/sim/battle/types';
 import type { Cost, ResourceKind } from '../../gameplay/sim/types';
 import { RESOURCE_KINDS } from '../../gameplay/sim/types';
 import { clear, h, icon } from './dom';
-import { formatNumber } from './format';
+import { formatDuration, formatNumber } from './format';
 import { icons } from './icons';
 import { sound } from '../audio/sound';
 import { celebrate, countUp, reducedMotion, removeWithExit, uiArt } from './feedback';
@@ -44,6 +44,8 @@ interface BattleHudDeps {
   trial?: { tier: number; layout: string; modifiers: string[]; reward: Cost; firstClear: boolean; starsToClear: number };
   troopThumb(type: string): string | null;
   scoutFee: number;
+  /** P3-12: the time left on a shield this raid would end (absent: none, or the first attack keeps it). */
+  shieldLeftMs?: number;
   canPayFee(): boolean;
   onHome(): void;
   onNext(): void;
@@ -383,7 +385,9 @@ export class BattleHud {
       this.renderScout();
       this.view?.fit();
     });
-    this.scoutEl = h('div', { class: `panel scout-report${this.scoutOpen ? ' open' : ''}` }, h('div', { class: 'scout-row' }, toggle, ...this.pointChips()), ...this.stakeRow(), more);
+    // P3-12: one line while a shield is running that this attack would end.
+    const shieldNote = this.deps.shieldLeftMs && this.deps.shieldLeftMs > 0 ? h('p', { class: 'small shield-note' }, t('scout.shieldEnds', { time: formatDuration(this.deps.shieldLeftMs) })) : null;
+    this.scoutEl = h('div', { class: `panel scout-report${this.scoutOpen ? ' open' : ''}` }, h('div', { class: 'scout-row' }, toggle, ...this.pointChips()), shieldNote, ...this.stakeRow(), more);
     this.deps.root.insertBefore(this.scoutEl, this.troopsEl);
   }
 

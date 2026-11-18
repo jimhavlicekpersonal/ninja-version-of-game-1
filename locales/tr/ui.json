@@ -193,6 +193,7 @@
   "unlock.title": { "en": "{n, plural, one {New warrior unlocked!} other {New warriors unlocked!}}", "text": "{n, plural, one {Yeni savaşçı açıldı!} other {Yeni savaşçılar açıldı!}}" },
   "unlock.train": { "en": "Train", "text": "Eğit" },
   "unlock.later": { "en": "Later", "text": "Sonra" },
+  "scout.shieldEnds": { "en": "Your shield has {time} left: attacking ends it.", "text": "" },
   "tutorial.end.daily": { "en": "Your first daily chest is ready: Finish opens it.", "text": "İlk günlük sandığın hazır: Bitir'e basınca açılır." },
   "panel.loadFailed": { "en": "This could not open. Check your connection and try again.", "text": "Bu açılamadı. Bağlantını kontrol edip tekrar dene." },
   "panel.staleChunk": { "en": "A newer version of Kagemura is out. Reload to open this.", "text": "Kagemura'nın yeni bir sürümü çıktı. Bunu açmak için yeniden yükle." },

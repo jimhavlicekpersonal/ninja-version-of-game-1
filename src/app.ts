@@ -14,6 +14,7 @@ import { mixSeed } from './gameplay/sim/rng';
 import { battleArmy, battleLoadout, scoutFee } from './gameplay/sim/village';
 import { nextTrialTier, trialBase, trialInfo, trialReward, trialVariant } from './gameplay/sim/trials';
 import { rematchBase, rematchStatus } from './gameplay/sim/rematch';
+import { hasAttacked, shieldAfterAttack } from './gameplay/sim/shield';
 import { armyDiversity, diversityPartOf, diversityShare, trainableRoles } from './gameplay/sim/carry';
 import { BattleHud } from './presentation/ui/battleHud';
 import { sound } from './presentation/audio/sound';
@@ -289,6 +290,8 @@ export class App {
           : undefined,
       troopThumb: this.d.troopThumb,
       scoutFee: scoutFee(c.state, c.data),
+      // P3-12: a raid ends a running shield (not the village's first: sim/shield.ts).
+      shieldLeftMs: !replayOf && !grove && !duel && trialTier === undefined && !practice && !special && shieldAfterAttack(c.state.shieldUntil, c.now(), hasAttacked(c.state), c.data) < c.state.shieldUntil ? c.state.shieldUntil - c.now() : undefined,
       canPayFee: () => c.state.resources.acorns >= scoutFee(c.state, c.data),
       onHome: () => this.home(),
       onNext: () => this.scout(true),

@@ -193,6 +193,7 @@
   "unlock.title": { "en": "{n, plural, one {New warrior unlocked!} other {New warriors unlocked!}}", "text": "{n, plural, other {Prajurit baru terbuka!}}" },
   "unlock.train": { "en": "Train", "text": "Latih" },
   "unlock.later": { "en": "Later", "text": "Nanti" },
+  "scout.shieldEnds": { "en": "Your shield has {time} left: attacking ends it.", "text": "" },
   "tutorial.end.daily": { "en": "Your first daily chest is ready: Finish opens it.", "text": "Peti harian pertamamu sudah siap: Selesai akan membukanya." },
   "panel.loadFailed": { "en": "This could not open. Check your connection and try again.", "text": "Ini tidak bisa dibuka. Periksa koneksimu dan coba lagi." },
   "panel.staleChunk": { "en": "A newer version of Kagemura is out. Reload to open this.", "text": "Versi Kagemura yang lebih baru sudah tersedia. Muat ulang untuk membuka ini." },

@@ -130,6 +130,26 @@ for (const [label, makeRepo] of repoFactories) {
         expect(defs[0]).toMatchObject({ attackerName: 'Ann', trophies: -r.trophies, seed });
       });
 
+      it('P3-12: the player\'s first attack keeps its shield (the same rule as the game, sim/shield.ts); the next ends it', async () => {
+        const w = await W();
+        const a = await w.player('Ann', baseAt(1));
+        await w.player('Dot', baseAt(1, 77));
+        await w.player('Eve', baseAt(1, 78));
+        w.pastShields();
+        const annId = (await a.me()).id;
+        const shield = w.now() + 10 * HOUR;
+        await w.repo.updatePlayer(annId, { shieldUntil: shield });
+        const raid = async () => {
+          const m = (await a.match())!;
+          const { army, deployments } = rush(20);
+          return a.submitAttack({ ticket: m.ticket, seed: await startSeed(a, m.ticket), army, deployments });
+        };
+        await raid();
+        expect((await a.me()).shieldUntil).toBe(shield);
+        await raid();
+        expect((await a.me()).shieldUntil).toBeLessThanOrEqual(w.now());
+      });
+
       it('issues the battle seed with each ticket and re-simulates with it, never with one the client picks', async () => {
         const w = await W();
         const a = await w.player('Ann', baseAt(1));

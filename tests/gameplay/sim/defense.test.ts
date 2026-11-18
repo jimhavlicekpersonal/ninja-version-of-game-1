@@ -7,6 +7,7 @@ import { collectorAmount } from '../../../src/gameplay/sim/resources';
 import { migrate } from '../../../src/gameplay/sim/save';
 import { advance } from '../../../src/gameplay/sim/village';
 import type { VillageState } from '../../../src/gameplay/sim/types';
+import { hasAttacked, shieldAfterAttack } from '../../../src/gameplay/sim/shield';
 import { data, find, must, newGame, pointDeploys } from './helpers';
 
 /** A small built-up village with no shield, ready to be raided. */
@@ -139,7 +140,7 @@ describe('leaf ranks', () => {
 
   it('attacks change trophies and end the shield', () => {
     const { state, clock } = newGame();
-    const s0 = { ...state, army: { hedgehog_roller: 15 }, trophies: 100 };
+    const s0 = { ...state, /* P3-12: a village that raided before (its first attack keeps the shield) */ stats: { ...state.stats, raidsWon: 1 }, army: { hedgehog_roller: 15 }, trophies: 100 };
     const base = { name: 'Dummy', hallLevel: 1, trophies: 120, buildings: [{ id: 'h', type: 'elder_toadstool', level: 1, x: 18, y: 18 }] };
     const deps = pointDeploys({ seed: 4, base, army: s0.army }, 'hedgehog_roller', 12);
     const s1 = must(s0, { type: 'battleEnd', record: { at: clock.now(), opponentName: 'Dummy', setup: { seed: 4, base, army: s0.army }, deployments: deps } }, clock.now());
@@ -149,6 +150,20 @@ describe('leaf ranks', () => {
     // One Shinobi that never reaches anything (a battle with no warrior deployed is practice, balance audit 2026-11-08).
     const s2 = must(s1, { type: 'battleEnd', record: { at: clock.now(), opponentName: 'Dummy', setup: { seed: 4, base, army: s1.army }, deployments: [{ tick: 0, troop: 'hedgehog_roller', x: 0, y: 0 }], endTick: 1 } }, clock.now());
     expect(s2.trophies).toBe(s1.trophies - lossTrophies(s1.trophies, 120, data));
+  });
+
+  it('P3-12: a village\'s first attack keeps its new-player shield; the next one ends it', () => {
+    const { state, clock } = newGame();
+    expect(state.shieldUntil).toBeGreaterThan(clock.now());
+    const s0 = { ...state, army: { hedgehog_roller: 15 } };
+    const base = { name: 'Dummy', hallLevel: 1, trophies: 0, buildings: [{ id: 'h', type: 'elder_toadstool', level: 1, x: 18, y: 18 }] };
+    const deps = pointDeploys({ seed: 4, base, army: s0.army }, 'hedgehog_roller', 12);
+    const s1 = must(s0, { type: 'battleEnd', record: { at: clock.now(), opponentName: 'Dummy', setup: { seed: 4, base, army: s0.army }, deployments: deps } }, clock.now());
+    expect(s1.shieldUntil).toBe(state.shieldUntil);
+    const s2 = must({ ...s1, army: { hedgehog_roller: 15 } }, { type: 'battleEnd', record: { at: clock.now(), opponentName: 'Dummy', setup: { seed: 4, base, army: { hedgehog_roller: 15 } }, deployments: deps } }, clock.now());
+    expect(s2.shieldUntil).toBeLessThanOrEqual(clock.now());
+    // The stats remember it even when the battle log has been trimmed.
+    expect(shieldAfterAttack(state.shieldUntil, clock.now(), hasAttacked({ battleLog: [], stats: s1.stats }), data)).toBe(clock.now());
   });
 });
 
