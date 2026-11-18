@@ -7,7 +7,8 @@ import { t as i18nText, fmtPercent, listText, t } from './i18n';
 import codex from '../../gameplay/data/codex.json';
 import type { GameController } from '../../gameplay/control/controller';
 import { troopUnlock } from '../../gameplay/sim/army';
-import { WARRIORS as CANONICAL_WARRIORS, MODEL as CANONICAL_MODEL } from '../../gameplay/sim/progression';
+import { HEROES as CANONICAL_HEROES, WARRIORS as CANONICAL_WARRIORS, MODEL as CANONICAL_MODEL } from '../../gameplay/sim/progression';
+import { hallLevel as hallLevelOf } from '../../gameplay/sim/keep';
 import { troopLevelOf } from '../../gameplay/sim/research';
 import { role as canonicalRoleDef, warriorUnlockKeep } from '../../gameplay/sim/progression';
 import type { UiKit } from './uiKit';
@@ -16,6 +17,7 @@ import { masterySection } from './contentPreviewUi';
 
 const MODEL = localizedData(CANONICAL_MODEL, 'progression');
 const WARRIORS = localizedData(CANONICAL_WARRIORS, 'roster.warriors');
+const HEROES = localizedData(CANONICAL_HEROES, 'roster.heroes');
 const roleDef = (id: Parameters<typeof canonicalRoleDef>[0]) => localizedData(canonicalRoleDef(id), `progression.roles.${id}`);
 
 /** What the Codex needs from the HUD. */
@@ -108,6 +110,11 @@ export function openCodex(host: CodexHost): void {
     statusSelect.addEventListener('change', () => { statusFilter = statusSelect.value as typeof statusFilter; render(); });
     body.append(h('div', { class: 'actions' }, tierSelect, roleSelect, statusSelect));
     const list = h('div', { class: 'codex-list' });
+    // P6-08: the live hero(es) at the top: name, the Keep that brings them, the ability.
+    for (const hero of HEROES.filter((x) => gd.battle.heroes?.[x.id])) {
+      const here = (gd.battle.heroes![hero.id].unlockKeep ?? 99) <= hallLevelOf(s, gd);
+      list.append(h('div', { class: `codex-row hero${here ? ' unlocked' : ' locked'}`, 'data-id': 'codex-hero' }, host.warriorIcon(hero.id) ? h('img', { src: host.warriorIcon(hero.id)!, alt: '' }) : null, h('div', {}, h('b', {}, hero.name), h('div', { class: `small codex-status${here ? ' ok' : ''}` }, here ? i18nText("ui.unlocked_531c7b28ab") : i18nText("ui.needs_5162618d8e", { arg1: i18nText("ui.clan_keep_2cf84349d4", { arg1: hero.unlockKeep }) })), h('div', { class: 'small' }, h('b', {}, `${hero.ability.name}: `), hero.ability.text))));
+    }
     const shown = rows
       .filter((r) => (!tierFilter || r.w.tier === tierFilter) && (!roleFilter || r.w.role === roleFilter))
       .filter((r) => !statusFilter || (statusFilter === 'unlocked') === Boolean(r.u?.unlocked))

@@ -10,6 +10,7 @@ import { Capacitor } from '@capacitor/core';
 import type { GameController, VillageBackup } from '../../gameplay/control/controller';
 import { buildingDef, hallType, levelDef } from '../../gameplay/sim/data';
 import type { OfflineSummary } from '../../gameplay/sim/offline';
+import { heroAtKeep } from '../../gameplay/sim/heroes';
 import { hallUnlocks, troopCapUnlock, type UnlockItem } from '../../gameplay/sim/preview';
 import { capacity, collectorAmount, collectorCapacity, effectiveLevel, missingFor } from '../../gameplay/sim/resources';
 import type { Building, Cost, ResourceKind, Temper, TemperAxis } from '../../gameplay/sim/types';
@@ -58,11 +59,11 @@ import { clear, h, icon } from './dom';
 import { formatCompact, formatDuration, formatNumber } from './format';
 import { icons } from './icons';
 import { quality } from '../render/quality';
-import { removeWithExit } from './feedback';
+import { reducedMotion, removeWithExit, uiArt } from './feedback';
 import { badgeIdFor, provideBadges } from './cardArt';
 import { toastMs } from './toastTime';
 import { parseAskRecord, shouldAskAge } from './askAgain';
-import { loadKnown, newUnlocks, saveKnown, showCeremony } from './unlockCeremony';
+import { loadKnown, loadMarks, milestonesDue, newUnlocks, saveKnown, saveMarks, showCeremony, showMilestone, type Milestone, type MilestoneMarks } from './unlockCeremony';
 import { markNoticeSeen, newsBody, seenNoticeKey, unseenNews, type NewsItem } from './newsUi';
 import { lazyPanel, staleChunkError } from './lazyPanel';
 import type { SettingsHost } from './settingsUi';
@@ -216,7 +217,8 @@ export class Hud {
     this.deps.connection.subscribe(() => this.tellRefused());
     this.updateNet();
     this.deps.groveSource.subscribe(() => this.refresh());
-    this.c.onOffer((rule) => this.econ.showOffer(rule));
+    // P6-08: an offer the same moment triggered (the Keep Celebration) waits until the milestone card is gone.
+    this.c.onOffer((rule) => this.afterMilestones(() => this.econ.showOffer(rule)));
     // Report section 5 step 8 (growth 8): notifications stay off until the player says yes, but the
     // question is asked once at the moment it helps: right after the first long timer they start.
     this.c.onEvents((events) => {
@@ -520,13 +522,21 @@ export class Hud {
         continue;
       }
       if (pill && k !== 'moonstones') pill.setAttribute('title', RES_LABEL[k]);
-      el.amt.textContent = formatNumber(v);
+      // P6-08: a gain (a claim, a raid's loot, a collect) counts up on the pill, with a light haptic.
+      const prev = this.lastRes[k];
+      this.lastRes[k] = v;
+      if (prev !== undefined && v > prev && !reducedMotion()) this.countPill(el.amt, prev, v, pill);
+      else if (!this.pillCounting.has(el.amt)) el.amt.textContent = formatNumber(v);
       if (el.cap) {
         el.cap.textContent = `/ ${formatCompact(cap[k])}`;
         el.bar.style.width = `${Math.min(100, (s.resources[k] / Math.max(1, cap[k])) * 100)}%`;
         el.bar.parentElement!.classList.toggle('full', s.resources[k] >= cap[k]);
       }
     }
+    // P6-08: a finished upgrade gets a haptic (the levels across the village went up).
+    const levels = s.buildings.reduce((a, b) => a + b.level, 0);
+    if (this.lastLevels !== null && levels > this.lastLevels) uiArt.haptic('success');
+    this.lastLevels = levels;
     const bs = builderStatus(s, gd, this.c.now());
     this.buildersEl.textContent = `${bs.free}/${bs.total}`;
     this.updateCrew();
@@ -540,10 +550,100 @@ export class Hud {
     this.checkUnlocks();
   }
 
+  private lastRes: Partial<Record<ResourceKind, number>> = {};
+  private lastLevels: number | null = null;
+  private pillCounting = new Set<HTMLElement>();
+
+  /** Count a resource pill up from `from` to `to` (~0.6 s, ease out); the pill pulses once. */
+  private countPill(el: HTMLElement, from: number, to: number, pill: HTMLElement | null): void {
+    this.pillCounting.add(el);
+    uiArt.haptic('light');
+    pill?.classList.remove('gain');
+    void pill?.offsetWidth;
+    pill?.classList.add('gain');
+    const start = performance.now();
+    const step = (now: number) => {
+      const k = Math.min(1, (now - start) / 600);
+      el.textContent = formatNumber(Math.round(from + (to - from) * (1 - Math.pow(1 - k, 3))));
+      if (k < 1 && el.isConnected) requestAnimationFrame(step);
+      else {
+        this.pillCounting.delete(el);
+        el.textContent = formatNumber(this.lastRes[[...this.resEls].find(([, x]) => x.amt === el)?.[0] as ResourceKind] ?? to);
+      }
+    };
+    requestAnimationFrame(step);
+  }
+
+  /** P6-08: what is true now, in the shape the device remembers. */
+  private milestoneMarks(): MilestoneMarks {
+    const s = this.c.state;
+    const gd = this.c.data;
+    const keep = hallLevel(s, gd);
+    return { league: leagueFor(s.trophies, gd).id, keep, hero: Boolean(heroAtKeep(keep, gd)), temper: keep >= (gd.battle.temper?.unlockKeep ?? Infinity) };
+  }
+
+  private milestoneWaiters: (() => void)[] = [];
+
+  /** Run `fn` now, or once the milestone cards that are due have been shown. */
+  private afterMilestones(fn: () => void): void {
+    this.checkMilestones();
+    if (this.ceremonyBusy) this.milestoneWaiters.push(fn);
+    else fn();
+  }
+
+  /** P6-08 (UIS-06): a card for a league change, each Keep level, the hero's arrival and tempering (once each, by device). */
+  private checkMilestones(): boolean {
+    const s = this.c.state;
+    if (this.ceremonyBusy || !s.tutorial.done) return false;
+    const now = this.milestoneMarks();
+    const seen = loadMarks();
+    const due = milestonesDue(seen, now);
+    if (!seen || !due.length) {
+      if (!seen || JSON.stringify(seen) !== JSON.stringify(now)) saveMarks(now);
+      return false;
+    }
+    if (document.getElementById('battle-hud')?.hidden === false || this.modalRoot.querySelector('.modal-backdrop:not(.out)')) return false;
+    const gd = localizedData(this.c.data);
+    const cards: Milestone[] = [];
+    for (const kind of due) {
+      if (kind === 'keep') {
+        const items = hallUnlocks(now.keep - 1, gd);
+        const hall = s.buildings.find((b) => buildingDef(gd, b.type).category === 'hall');
+        cards.push({ title: t('milestone.keep', { level: now.keep }), icons: [hall ? this.deps.thumbnail(hall.type) : null], lines: items.slice(0, 3).map((u) => this.unlockText(u)), button: hall ? { label: i18nText("ui.go_to_clan_keep_4d567aa33e"), onClick: () => this.selectAndFocus(hall.id) } : undefined });
+      } else if (kind === 'hero') {
+        const hero = heroAtKeep(now.keep, gd);
+        const def = hero ? gd.battle.heroes?.[hero.id] : undefined;
+        if (def) cards.push({ title: t('milestone.hero', { name: def.name }), icons: [this.deps.troopThumb(hero!.id)], lines: [def.description], button: { label: t('unlock.train'), onClick: () => this.openTraining() } });
+      } else if (kind === 'temper') {
+        cards.push({ title: t('temper.title'), lines: [t('codex.temperRule', { level: gd.battle.temper?.unlockKeep ?? now.keep })] });
+      } else {
+        const order = gd.ranks.leagues.map((l) => l.id);
+        const up = order.indexOf(now.league) > order.indexOf(seen.league);
+        const name = gd.ranks.leagues.find((l) => l.id === now.league)?.name ?? now.league;
+        cards.push({ title: t(up ? 'milestone.promoted' : 'milestone.demoted', { league: name }), button: { label: i18nText("ui.honor_22ea092e76"), onClick: () => this.openLeague() } });
+      }
+    }
+    saveMarks(now);
+    if (!cards.length) return false;
+    this.ceremonyBusy = true;
+    const next = (i: number): void => {
+      if (i >= cards.length) {
+        this.ceremonyBusy = false;
+        const waiting = this.milestoneWaiters.splice(0);
+        for (const fn of waiting) fn();
+        return;
+      }
+      void showMilestone(this.modalRoot, cards[i]).then(() => next(i + 1));
+    };
+    next(0);
+    return true;
+  }
+
   /** Retention audit G22: a short ceremony for each warrior that became trainable (unlockCeremony.ts). */
   private ceremonyBusy = false;
   private checkUnlocks(): void {
     const s = this.c.state;
+    if (this.checkMilestones()) return;
     if (this.ceremonyBusy || !s.tutorial.done) return;
     const gd = localizedData(this.c.data);
     const now = Object.keys(gd.troops).filter((id) => troopUnlock(s, id, gd).unlocked);

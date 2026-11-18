@@ -15,7 +15,8 @@ import { suggestedArmy } from '../../gameplay/sim/suggest';
 import { armyDiversity, diversityShare, trainableRoles } from '../../gameplay/sim/carry';
 import { troopLevelOf, researchLanes } from '../../gameplay/sim/research';
 import { troopLevel } from '../../gameplay/sim/data';
-import { MODEL as CANONICAL_MODEL, WARRIORS as CANONICAL_WARRIORS } from '../../gameplay/sim/progression';
+import { HEROES as CANONICAL_HEROES, MODEL as CANONICAL_MODEL, WARRIORS as CANONICAL_WARRIORS } from '../../gameplay/sim/progression';
+import { heroAtKeep } from '../../gameplay/sim/heroes';
 import { missingFor } from '../../gameplay/sim/resources';
 import { RESOURCE_KINDS, type ResourceKind } from '../../gameplay/sim/types';
 import { troopUnlock, trainingSpeed } from '../../gameplay/sim/army';
@@ -30,6 +31,7 @@ import { icons } from './icons';
 
 const MODEL = localizedData(CANONICAL_MODEL, 'progression');
 const WARRIORS = localizedData(CANONICAL_WARRIORS, 'roster.warriors');
+const HEROES_SHOWN = localizedData(CANONICAL_HEROES, 'roster.heroes');
 
 type ArmyTab = 'train' | 'army' | 'research';
 
@@ -392,6 +394,12 @@ export class ArmyUi {
     if (!ready.childElementCount) ready.append(h('span', { class: 'muted' }, i18nText("ui.no_warriors_ready_yet_0132a774ac")));
     const units = Object.values(s.army).reduce((a, b) => a + b, 0);
     wrap.append(h('h3', {}, units ? t('army.readyN', { n: units }) : t('army.ready')), ready);
+    // P6-08: the hero has a card outside the battle bar (his name and ability, translated).
+    const hero = heroAtKeep(hallLevel(s, gd), gd);
+    const heroEntry = hero ? HEROES_SHOWN.find((x) => x.id === hero.id) : undefined;
+    if (hero && heroEntry) {
+      wrap.append(h('div', { class: 'troop-row army-card hero-card', 'data-id': 'hero-card' }, this.thumb(hero.id), h('div', { class: 'army-card-body' }, h('b', {}, `${heroEntry.name} `, h('span', { class: 'muted small' }, i18nText("ui.lv_445f51ab9e", { arg1: hero.level }))), h('span', { class: 'small' }, h('b', {}, `${heroEntry.ability.name}: `), heroEntry.ability.text))));
+    }
     // P6-13 (UIS-07): the share of the loot this ready army would carry, before the raid (only when under 100%).
     if (units) {
       const share = diversityShare(armyDiversity(s.army, { hero: undefined }, gd), gd, trainableRoles(s, gd));

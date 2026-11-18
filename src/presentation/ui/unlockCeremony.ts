@@ -84,3 +84,94 @@ export function showCeremony(root: HTMLElement, warriors: CeremonyWarrior[], onT
     const timer = window.setTimeout(close, CEREMONY_MS);
   });
 }
+
+/**
+ * P6-08 (UIS-06, BNL-08, PLY-12): the same card for any milestone: a title, up to three icons, up to three lines and
+ * one button. A league change, each Keep level (its unlock list, before any offer), the hero at his Keep, tempering.
+ */
+export interface Milestone {
+  title: string;
+  icons?: (string | null)[];
+  lines?: string[];
+  button?: { label: string; onClick(): void };
+}
+
+export function showMilestone(root: HTMLElement, m: Milestone): Promise<void> {
+  return new Promise((resolve) => {
+    let done = false;
+    const close = () => {
+      if (done) return;
+      done = true;
+      window.clearTimeout(timer);
+      if (reducedMotion()) {
+        card.remove();
+        resolve();
+        return;
+      }
+      card.classList.add('out');
+      window.setTimeout(() => {
+        card.remove();
+        resolve();
+      }, 220);
+    };
+    const act = m.button ? h('button', { class: 'btn primary', type: 'button' }, m.button.label) : null;
+    act?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      close();
+      m.button!.onClick();
+    });
+    const icons = (m.icons ?? []).filter((x): x is string => Boolean(x)).slice(0, 3);
+    const card = h(
+      'div',
+      { class: 'ceremony milestone', role: 'status', 'aria-live': 'polite', 'data-id': 'milestone' },
+      h('div', { class: 'ceremony-card' },
+        h('p', { class: 'ceremony-title' }, m.title),
+        icons.length ? h('div', { class: 'ceremony-badges' }, ...icons.map((src) => h('figure', {}, h('img', { src, alt: '' })))) : null,
+        ...(m.lines ?? []).slice(0, 3).map((l) => h('p', { class: 'small' }, l)),
+        h('div', { class: 'actions' }, act, h('button', { class: 'btn ghost', type: 'button', onclick: () => close() }, t('unlock.later'))),
+      ),
+    );
+    card.addEventListener('click', () => close());
+    root.append(card);
+    uiArt.haptic('success');
+    const timer = window.setTimeout(close, CEREMONY_MS + 1500);
+  });
+}
+
+const MILESTONES_KEY = 'tk.milestones';
+
+/** What the device has already celebrated (null: never stored, so the first look is silent). */
+export interface MilestoneMarks {
+  league: string;
+  keep: number;
+  hero: boolean;
+  temper: boolean;
+}
+
+export function loadMarks(): MilestoneMarks | null {
+  try {
+    const v = JSON.parse(localStorage.getItem(MILESTONES_KEY) ?? 'null') as Partial<MilestoneMarks> | null;
+    return v && typeof v.keep === 'number' && typeof v.league === 'string' ? { league: v.league, keep: v.keep, hero: Boolean(v.hero), temper: Boolean(v.temper) } : null;
+  } catch {
+    return null;
+  }
+}
+
+export function saveMarks(m: MilestoneMarks): void {
+  try {
+    localStorage.setItem(MILESTONES_KEY, JSON.stringify(m));
+  } catch {
+    /* no storage: the next start is silent again */
+  }
+}
+
+/** The milestones between what the device saw and what is true now (in the order to show them). */
+export function milestonesDue(seen: MilestoneMarks | null, now: MilestoneMarks): ('league' | 'keep' | 'hero' | 'temper')[] {
+  if (!seen) return [];
+  const out: ('league' | 'keep' | 'hero' | 'temper')[] = [];
+  if (now.keep > seen.keep) out.push('keep');
+  if (now.hero && !seen.hero) out.push('hero');
+  if (now.temper && !seen.temper) out.push('temper');
+  if (now.league !== seen.league) out.push('league');
+  return out;
+}

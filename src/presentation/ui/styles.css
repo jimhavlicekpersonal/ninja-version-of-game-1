@@ -1206,3 +1206,7 @@ html[dir="rtl"] .training .actions.army-filters select { padding: 6px 8px 6px 20
 button.res.res-builders { border: none; font: inherit; color: inherit; cursor: pointer; }
 .res-builders .crew-badge { display: inline-flex; align-items: center; gap: 2px; margin-inline-start: 4px; font-weight: 800; font-size: 0.75rem; }
 .res-builders .crew-badge .icon { width: 14px; height: 14px; }
+/* P6-08: a resource gain pulses the pill once (no movement with reduced motion: the global rule ends it). */
+.res.gain { animation: res-gain .6s ease-out; }
+@keyframes res-gain { 0% { box-shadow: 0 0 0 0 rgba(255, 210, 63, .8); } 100% { box-shadow: 0 0 0 10px rgba(255, 210, 63, 0); } }
+.milestone .ceremony-card p.small { margin: 4px 0; }

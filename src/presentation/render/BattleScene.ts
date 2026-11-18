@@ -7,7 +7,7 @@ import { drainEvents, type BattleSession } from '../../gameplay/control/battleSe
 import { buildingDef } from '../../gameplay/sim/data';
 import { airborne, deployBlock, destruction, isAbility, stars as starsOf, type SimBuilding, type SmokeCloud } from '../../gameplay/sim/battle/battle';
 import { coverLeft, pointAt } from '../../gameplay/sim/battle/infiltration';
-import { WARRIORS } from '../../gameplay/sim/progression';
+import { HEROES, WARRIORS } from '../../gameplay/sim/progression';
 import { isHidden } from '../../gameplay/sim/battle/warriors';
 import { GROUND_PAD, Keys, TEX_SCALE, addSurroundings, groundScale, buildingOrigin, buildingScale, buildingTexture, ensureTextures, troopSize, holdBuildingTextures, releaseBuildingTextures } from './assets';
 import { CameraControl } from './cameraControl';
@@ -132,7 +132,8 @@ interface TView {
 
 const OVER = 1_000_000;
 /** Ability names by live troop id, for the floating callouts. */
-const ABILITY_NAME = new Map(WARRIORS.filter((w) => w.liveTroop).map((w) => [w.liveTroop!, w.ability.name]));
+// P6-08: heroes too (the Shadow Captain's Rally had no callout: the names came from roster warriors only).
+const ABILITY_NAME = new Map([...WARRIORS.filter((w) => w.liveTroop).map((w) => [w.liveTroop!, w.ability.name] as const), ...HEROES.map((h) => [h.id, h.ability.name] as const)]);
 const COUNTER_LABEL: Record<string, string> = { lit: 'Lit up!', repair: 'Repaired!', grounded: 'Grounded!' };
 /** Milliseconds between callouts over the same troop or building, so a fight stays readable. */
 const CALLOUT_GAP_MS = 1400;
