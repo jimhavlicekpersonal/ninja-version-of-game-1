@@ -756,7 +756,7 @@
   "ui.already_linked_an_account_on_another_d_c06434826d": { "en": "Already linked an account on another device? Sign in with it here to play that account.", "text": "已經在另一台裝置上連結帳號了嗎？在這裡用它登入，就能玩那個帳號。" },
   "ui.also_block_87576e2627": { "en": " Also block {arg1}", "text": " 同時封鎖 {arg1}" },
   "ui.amounts_are_the_items_us_dollar_list_p_8a3498b500": { "en": "Amounts are the items' US-dollar list prices; your store receipts show what you actually paid in your currency.", "text": "金額是項目的美元定價；商店收據會顯示你實際以當地貨幣支付的金額。" },
-  "ui.an_endless_ladder_of_practice_fortress_5c41313067": { "en": "A ladder of practice fortresses guarded by the clan. Each tier is harder than the last, and past tier {tier} the defenses grow {pct}% stronger with every tier.", "text": "", "old": "由忍族守護、無止盡的練習要塞階梯。每一層都比上一層難，而且沒有頂。" },
+  "ui.an_endless_ladder_of_practice_fortress_5c41313067": { "en": "A ladder of practice fortresses guarded by the clan. Each tier is harder than the last, and past tier {tier} the defenses grow {pct}% stronger with every tier.", "text": "由忍族守護的練習要塞階梯。每一層都比上一層難，超過第 {tier} 層後，防禦每層再增強 {pct}%。" },
   "ui.analytics_events_this_device_4fe12a5b11": { "en": "Analytics events (this device)", "text": "分析事件（這台裝置）" },
   "ui.and_it_comes_back_from_time_to_time_e8db8be5a2": { "en": ", and it comes back from time to time", "text": "，而且會不定期回歸" },
   "ui.anything_else_they_should_know_optiona_1ecfe6847d": { "en": "Anything else they should know (optional)", "text": "還有什麼要讓他們知道的（選填）" },

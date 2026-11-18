@@ -46,7 +46,7 @@ Duo agbụrụ ninja, wuo obodo zoro ezo n'ugwu, zụọ ụdị ndị dike iri 
 - A na-akpọ ndị iro kọmputa mere aha ha mgbe niile.
 - Oke mmefu maka ndị egwuregwu na-erubeghị afọ 18, na ihe ncheta ị họọrọ (ha na-anọ n'agbanyụ ruo mgbe i gbanyere ha).
 
-Kagemura bụ n'efu ibudata na igwu. Ụlọ ọ bụla, dike ọ bụla, ọkwa Obi ọ bụla na ụdị egwuregwu ọ bụla nwere ike iru n'enweghị ịkwụ ụgwọ, ọ nweghịkwa mgbasa ozi. Jed, ego pụrụ iche, na-enweta ntakịrị ntakịrị site n'igwu egwuregwu (ihe ịga nke ọma, otu, igbe kwa ụbọchị na ụzọ efu nke Mpịakọta Oge), a pụkwara ịzụta ya. Ụfọdụ ihe a na-ere naanị n'ezigbo ego: ụzọ pụrụ iche nke Mpịakọta Oge (ihe nrite ndị ọzọ, iwu ụlọ ọsọ ọsọ n'oge ahụ niile na ọdịdị Obi "Mmemme Oriọna") na ngwugwu Jed na akụ dị ruo oge a kara aka.
+Kagemura bụ n'efu ibudata na igwu. Ụlọ ọ bụla, dike ọ bụla, ọkwa Obi ọ bụla na ụdị egwuregwu ọ bụla nwere ike iru n'enweghị ịkwụ ụgwọ, ọ nweghịkwa mgbasa ozi. Jed, ego pụrụ iche, na-enweta ntakịrị ntakịrị site n'igwu egwuregwu (ihe ịga nke ọma, otu, igbe kwa ụbọchị na ụzọ efu nke Mpịakọta Oge), a pụkwara ịzụta ya. Ụfọdụ ihe a na-ere naanị n'ezigbo ego: ụzọ pụrụ iche nke Mpịakọta Oge (ihe nrite ndị ọzọ, iwu ụlọ ọsọ ọsọ n'oge ahụ na ọdịdị Obi na-agbanwe kwa oge) na ngwugwu Jed na akụ dị ruo oge a kara aka.
 
 ## Njikọ mwepụta
 

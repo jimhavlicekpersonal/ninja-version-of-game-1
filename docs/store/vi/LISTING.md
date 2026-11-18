@@ -46,7 +46,7 @@ Dẫn dắt một gia tộc ninja, xây ngôi làng ẩn trên núi, huấn luy�
 - Đối thủ do máy tạo luôn được ghi rõ.
 - Người chơi dưới 18 tuổi có hạn mức chi tiêu; chỉ có những thông báo bạn chọn, và chúng tắt cho đến khi bạn bật.
 
-Kagemura miễn phí tải về và chơi. Mọi công trình, chiến binh, cấp Thành và chế độ chơi đều dùng được mà không cần trả tiền, và không có quảng cáo. Ngọc Bích, đơn vị tiền tệ cao cấp, kiếm được dần qua việc chơi (mục tiêu, giải đấu, rương hằng ngày và nhánh miễn phí của Cuộn Mùa Giải) và cũng có thể mua. Một số nội dung chỉ có khi mua: nhánh cao cấp của Cuộn Mùa Giải (thêm phần thưởng, xây nhanh hơn suốt mùa giải và ngoại hình Thành "Lễ Hội Đèn Lồng") và các gói Ngọc Bích cùng tài nguyên có thời hạn.
+Kagemura miễn phí tải về và chơi. Mọi công trình, chiến binh, cấp Thành và chế độ chơi đều dùng được mà không cần trả tiền, và không có quảng cáo. Ngọc Bích, đơn vị tiền tệ cao cấp, kiếm được dần qua việc chơi (mục tiêu, giải đấu, rương hằng ngày và nhánh miễn phí của Cuộn Mùa Giải) và cũng có thể mua. Một số nội dung chỉ có khi mua: nhánh cao cấp của Cuộn Mùa Giải (thêm phần thưởng, xây nhanh hơn suốt mùa giải và một ngoại hình Thành thay đổi theo từng mùa giải) và các gói Ngọc Bích cùng tài nguyên có thời hạn.
 
 ## Liên kết phát hành
 

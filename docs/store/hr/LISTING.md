@@ -46,7 +46,7 @@ Vodi nindža klan, izgradi skriveno selo u planinama, obuči pedeset vrsta ratni
 - Računalno stvoreni protivnici uvijek su tako označeni.
 - Ograničenja potrošnje za igrače mlađe od 18 godina i samo podsjetnici koje odabereš (isključeni dok ih ne uključiš).
 
-Kagemura je besplatna za preuzimanje i igranje: svaka zgrada, ratnik, razina Utvrde i način igre dostupni su bez plaćanja, a oglasa nema. Žad, premium valuta, zarađuje se u malim količinama igranjem (postignuća, lige, dnevna škrinja i besplatna staza Sezonskog svitka), a može se i kupiti. Neke stvari prodaju se samo za pravi novac: premium staza Sezonskog svitka (dodatne nagrade, brža gradnja tijekom sezone i izgled Utvrde „Festival lampiona“) i vremenski ograničeni paketi žada i resursa.
+Kagemura je besplatna za preuzimanje i igranje: svaka zgrada, ratnik, razina Utvrde i način igre dostupni su bez plaćanja, a oglasa nema. Žad, premium valuta, zarađuje se u malim količinama igranjem (postignuća, lige, dnevna škrinja i besplatna staza Sezonskog svitka), a može se i kupiti. Neke stvari prodaju se samo za pravi novac: premium staza Sezonskog svitka (dodatne nagrade, brža gradnja tijekom sezone i izgled Utvrde koji se mijenja svake sezone) i vremenski ograničeni paketi žada i resursa.
 
 ## Poveznice za izdavanje
 

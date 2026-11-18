@@ -46,7 +46,7 @@ Dirige un clan ninja. Bâtis un village caché dans la montagne, entraîne cinqu
 - Les adversaires générés par l'ordinateur sont toujours indiqués.
 - Limites de dépenses pour les moins de 18 ans et rappels choisis par toi, désactivés tant que tu ne les actives pas.
 
-Kagemura est gratuit à télécharger et à jouer : tous les bâtiments, guerriers, niveaux de Donjon et modes sont disponibles sans payer, et il n'y a pas de publicité. Le Jade, la monnaie premium, se gagne en petites quantités en jouant (succès, ligues, coffre quotidien et voie gratuite du Parchemin de Saison) et peut aussi s'acheter. Certains contenus ne sont vendus que contre de l'argent réel : la voie premium du Parchemin de Saison (récompenses en plus, constructions plus rapides pendant la saison et l'apparence Fête des Lanternes pour le Donjon) et des packs limités de Jade et de ressources.
+Kagemura est gratuit à télécharger et à jouer : tous les bâtiments, guerriers, niveaux de Donjon et modes sont disponibles sans payer, et il n'y a pas de publicité. Le Jade, la monnaie premium, se gagne en petites quantités en jouant (succès, ligues, coffre quotidien et voie gratuite du Parchemin de Saison) et peut aussi s'acheter. Certains contenus ne sont vendus que contre de l'argent réel : la voie premium du Parchemin de Saison (récompenses en plus, constructions plus rapides pendant la saison et une apparence de Donjon qui change à chaque saison) et des packs limités de Jade et de ressources.
 
 ## Liens de la version
 

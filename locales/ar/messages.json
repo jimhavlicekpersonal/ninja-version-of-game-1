@@ -756,7 +756,7 @@
   "ui.already_linked_an_account_on_another_d_c06434826d": { "en": "Already linked an account on another device? Sign in with it here to play that account.", "text": "ربطت حسابًا على جهاز آخر من قبل؟ يمكن تسجيل الدخول به هنا للعب بذلك الحساب." },
   "ui.also_block_87576e2627": { "en": " Also block {arg1}", "text": " حظر {arg1} أيضًا" },
   "ui.amounts_are_the_items_us_dollar_list_p_8a3498b500": { "en": "Amounts are the items' US-dollar list prices; your store receipts show what you actually paid in your currency.", "text": "المبالغ هي أسعار القائمة بالدولار الأمريكي؛ تُظهر إيصالات متجرك ما دفعته فعلًا بعملتك." },
-  "ui.an_endless_ladder_of_practice_fortress_5c41313067": { "en": "A ladder of practice fortresses guarded by the clan. Each tier is harder than the last, and past tier {tier} the defenses grow {pct}% stronger with every tier.", "text": "", "old": "سلّم لا نهاية له من حصون التدريب تحرسها العشيرة. كل مرتبة أصعب من سابقتها، ولا قمة له." },
+  "ui.an_endless_ladder_of_practice_fortress_5c41313067": { "en": "A ladder of practice fortresses guarded by the clan. Each tier is harder than the last, and past tier {tier} the defenses grow {pct}% stronger with every tier.", "text": "سلّم من حصون التدريب تحرسها العشيرة. كل مرتبة أصعب من سابقتها، وبعد المرتبة {tier} تزداد الدفاعات قوةً بنسبة {pct}% مع كل مرتبة." },
   "ui.analytics_events_this_device_4fe12a5b11": { "en": "Analytics events (this device)", "text": "أحداث التحليلات (هذا الجهاز)" },
   "ui.and_it_comes_back_from_time_to_time_e8db8be5a2": { "en": ", and it comes back from time to time", "text": "، ويعود من حين لآخر" },
   "ui.anything_else_they_should_know_optiona_1ecfe6847d": { "en": "Anything else they should know (optional)", "text": "أي شيء آخر ينبغي أن يعرفوه (اختياري)" },

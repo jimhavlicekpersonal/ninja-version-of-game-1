@@ -270,7 +270,7 @@
   "replays.allowBase.label": { "en": "Allow my base in other players' shared replays", "text": "อนุญาตให้ฐานของฉันปรากฏในรีเพลย์ที่ผู้เล่นอื่นแชร์" },
   "replays.allowBase.detail": { "en": "When someone shares a replay of a raid on your village, it shows your base layout (never your name). Turn this off and your base is never shown, and shares already made of it are removed.", "text": "เมื่อมีคนแชร์รีเพลย์การบุกหมู่บ้านของคุณ รีเพลย์จะแสดงผังฐานของคุณ (ไม่แสดงชื่อเด็ดขาด) ถ้าปิดไว้ ฐานของคุณจะไม่ถูกแสดงอีก และรีเพลย์ที่แชร์ไว้แล้วจะถูกลบ" },
   "significantUpdate.description": { "en": "This update changes how Kagemura works. A parent or guardian can review it before it is used.", "text": "อัปเดตนี้เปลี่ยนวิธีการทำงานของ Kagemura ผู้ปกครองตรวจดูได้ก่อนใช้งาน" },
-  "welcome.scrollEnded": { "en": "The Season Scroll ended, and the rewards you had not claimed were added:", "text": "" },
-  "pass.bonus.title": { "en": "Bonus", "text": "" },
-  "pass.bonus.detail": { "en": "{left, plural, =0 {All {max} bonuses collected this season ({got} of {max})} one {Every task still pays: the next bonus in # point ({got} of {max} this season)} other {Every task still pays: the next bonus in # points ({got} of {max} this season)}}", "text": "" }
+  "welcome.scrollEnded": { "en": "The Season Scroll ended, and the rewards you had not claimed were added:", "text": "คัมภีร์ซีซันจบแล้ว และได้เพิ่มรางวัลที่คุณยังไม่ได้รับให้แล้ว:" },
+  "pass.bonus.title": { "en": "Bonus", "text": "โบนัส" },
+  "pass.bonus.detail": { "en": "{left, plural, =0 {All {max} bonuses collected this season ({got} of {max})} one {Every task still pays: the next bonus in # point ({got} of {max} this season)} other {Every task still pays: the next bonus in # points ({got} of {max} this season)}}", "text": "{left, plural, =0 {เก็บโบนัสครบทั้ง {max} ครั้งของซีซันนี้แล้ว ({got} จาก {max})} other {ทุกภารกิจยังให้แต้มอยู่: โบนัสถัดไปในอีก # แต้ม ({got} จาก {max} ในซีซันนี้)}}" }
 }

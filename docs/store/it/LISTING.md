@@ -46,7 +46,7 @@ Guida un clan ninja. Costruisci un villaggio nascosto tra i monti, addestra cinq
 - Gli avversari generati dal computer sono sempre indicati.
 - Limiti di spesa per chi ha meno di 18 anni e promemoria scelti da te, disattivati finché non li attivi.
 
-Kagemura è gratuito da scaricare e da giocare: tutti gli edifici, i guerrieri, i livelli della Rocca e le modalità sono disponibili senza pagare, e non ci sono pubblicità. La Giada, la valuta premium, si guadagna in piccole quantità giocando (obiettivi, leghe, forziere giornaliero e percorso gratuito della Pergamena della Stagione) e si può anche acquistare. Alcuni contenuti sono in vendita solo con denaro vero: il percorso premium della Pergamena della Stagione (ricompense extra, costruzioni più veloci durante la stagione e l'aspetto Festa delle Lanterne per la Rocca) e pacchetti a tempo di Giada e risorse.
+Kagemura è gratuito da scaricare e da giocare: tutti gli edifici, i guerrieri, i livelli della Rocca e le modalità sono disponibili senza pagare, e non ci sono pubblicità. La Giada, la valuta premium, si guadagna in piccole quantità giocando (obiettivi, leghe, forziere giornaliero e percorso gratuito della Pergamena della Stagione) e si può anche acquistare. Alcuni contenuti sono in vendita solo con denaro vero: il percorso premium della Pergamena della Stagione (ricompense extra, costruzioni più veloci durante la stagione e un aspetto della Rocca che cambia a ogni stagione) e pacchetti a tempo di Giada e risorse.
 
 ## Link della versione
 

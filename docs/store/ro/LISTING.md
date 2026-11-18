@@ -46,7 +46,7 @@ Condu un clan de ninja. Construiește un sat ascuns în munți, antrenează cinc
 - Adversarii generați de calculator sunt mereu marcați.
 - Limite de cheltuieli pentru cei sub 18 ani și mementouri alese de tine, oprite până le pornești.
 
-Kagemura se descarcă și se joacă gratuit: toate clădirile, războinicii, nivelurile Cetății și modurile de joc sunt disponibile fără plată și nu există reclame. Jadul, moneda premium, se câștigă în cantități mici jucând (obiective, ligi, cufărul zilnic și traseul gratuit al Pergamentului Sezonului) și poate fi și cumpărat. Unele conținuturi se vând doar pe bani reali: traseul premium al Pergamentului Sezonului (recompense în plus, construcții mai rapide în timpul sezonului și aspectul Festivalul Felinarelor pentru Cetate) și pachete limitate de Jad și resurse.
+Kagemura se descarcă și se joacă gratuit: toate clădirile, războinicii, nivelurile Cetății și modurile de joc sunt disponibile fără plată și nu există reclame. Jadul, moneda premium, se câștigă în cantități mici jucând (obiective, ligi, cufărul zilnic și traseul gratuit al Pergamentului Sezonului) și poate fi și cumpărat. Unele conținuturi se vând doar pe bani reali: traseul premium al Pergamentului Sezonului (recompense în plus, construcții mai rapide în timpul sezonului și un aspect al Cetății care se schimbă în fiecare sezon) și pachete limitate de Jad și resurse.
 
 ## Linkurile versiunii
 

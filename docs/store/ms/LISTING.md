@@ -46,7 +46,7 @@ Pimpin klan ninja, bina kampung tersembunyi di pergunungan, latih lima puluh jen
 - Lawan yang dijana komputer sentiasa dilabel dengan jelas.
 - Had perbelanjaan untuk pemain bawah 18 tahun; hanya peringatan yang kamu pilih, dan semuanya dimatikan sehingga kamu menghidupkannya.
 
-Kagemura percuma untuk dimuat turun dan dimainkan. Setiap bangunan, pahlawan, tahap Kubu dan mod permainan boleh dicapai tanpa membayar, dan tiada iklan. Jed, mata wang premium, diperoleh sedikit demi sedikit dengan bermain (pencapaian, liga, peti harian dan laluan percuma Skrol Musim) dan juga boleh dibeli. Sesetengah perkara hanya dijual dengan wang sebenar: laluan premium Skrol Musim (ganjaran tambahan, pembinaan lebih pantas sepanjang musim dan rupa Kubu "Pesta Tanglung") serta berkas Jed dan sumber untuk masa terhad.
+Kagemura percuma untuk dimuat turun dan dimainkan. Setiap bangunan, pahlawan, tahap Kubu dan mod permainan boleh dicapai tanpa membayar, dan tiada iklan. Jed, mata wang premium, diperoleh sedikit demi sedikit dengan bermain (pencapaian, liga, peti harian dan laluan percuma Skrol Musim) dan juga boleh dibeli. Sesetengah perkara hanya dijual dengan wang sebenar: laluan premium Skrol Musim (ganjaran tambahan, pembinaan lebih pantas sepanjang musim dan rupa Kubu yang berubah setiap musim) serta berkas Jed dan sumber untuk masa terhad.
 
 ## Pautan pelancaran
 

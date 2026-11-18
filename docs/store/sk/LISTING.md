@@ -46,7 +46,7 @@ Veď klan nindžov, postav skrytú dedinu v horách, vycvič päťdesiat druhov 
 - Súperi generovaní počítačom sú vždy jasne označení.
 - Hráči do 18 rokov majú limit útrat; dostávaš len upozornenia, ktoré si vyberieš, a sú vypnuté, kým ich nezapneš.
 
-Kagemura je zadarmo na stiahnutie aj hranie. Všetky budovy, bojovníci, úrovne Pevnosti a herné režimy sú dostupné bez platenia a hra nemá žiadne reklamy. Nefrit, prémiová mena, sa postupne získava hraním (úspechy, ligy, denná truhlica a bezplatná cesta Sezónneho zvitku) a dá sa aj kúpiť. Niektoré veci sú len za skutočné peniaze: prémiová cesta Sezónneho zvitku (odmeny navyše, rýchlejšie stavanie počas celej sezóny a vzhľad Pevnosti „Sviatok lampiónov“) a časovo obmedzené balíky Nefritu a surovín.
+Kagemura je zadarmo na stiahnutie aj hranie. Všetky budovy, bojovníci, úrovne Pevnosti a herné režimy sú dostupné bez platenia a hra nemá žiadne reklamy. Nefrit, prémiová mena, sa postupne získava hraním (úspechy, ligy, denná truhlica a bezplatná cesta Sezónneho zvitku) a dá sa aj kúpiť. Niektoré veci sú len za skutočné peniaze: prémiová cesta Sezónneho zvitku (odmeny navyše, rýchlejšie stavanie počas celej sezóny a vzhľad Pevnosti, ktorý sa mení každú sezónu) a časovo obmedzené balíky Nefritu a surovín.
 
 ## Odkazy na vydanie
 

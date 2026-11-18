@@ -46,7 +46,7 @@ Lidere um clã ninja. Construa uma vila escondida nas montanhas, treine cinquent
 - Os adversários gerados pelo computador são sempre indicados.
 - Limites de gastos para menores de 18 anos e lembretes que você escolhe, desativados até você ativar.
 
-O Kagemura é grátis para baixar e jogar: todas as construções, guerreiros, níveis da Fortaleza e modos estão disponíveis sem pagar, e não há anúncios. O Jade, a moeda premium, é ganho em pequenas quantidades jogando (conquistas, ligas, baú diário e trilha gratuita do Pergaminho da Temporada) e também pode ser comprado. Alguns conteúdos só são vendidos por dinheiro de verdade: a trilha premium do Pergaminho da Temporada (recompensas extras, construções mais rápidas durante a temporada e o visual Festival das Lanternas para a Fortaleza) e pacotes temporários de Jade e recursos.
+O Kagemura é grátis para baixar e jogar: todas as construções, guerreiros, níveis da Fortaleza e modos estão disponíveis sem pagar, e não há anúncios. O Jade, a moeda premium, é ganho em pequenas quantidades jogando (conquistas, ligas, baú diário e trilha gratuita do Pergaminho da Temporada) e também pode ser comprado. Alguns conteúdos só são vendidos por dinheiro de verdade: a trilha premium do Pergaminho da Temporada (recompensas extras, construções mais rápidas durante a temporada e um visual para a Fortaleza que muda a cada temporada) e pacotes temporários de Jade e recursos.
 
 ## Links da versão
 

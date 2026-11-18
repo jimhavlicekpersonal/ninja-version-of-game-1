@@ -46,7 +46,7 @@ Darí ìdílé ninja kan, kọ́ abúlé àṣírí sórí òkè, kọ́ àád�
 - A máa ń fi hàn kedere nígbà gbogbo pé kọ̀ǹpútà ló ṣe àwọn alátakò kan.
 - Àwọn òṣèré tí kò tíì pé ọmọ ọdún 18 ní ààlà ìnáwó; ìfitónilétí tí o yàn nìkan ló wà, wọ́n sì wà ní pípa títí ìwọ yóò fi tàn wọ́n.
 
-Kagemura jẹ́ ọ̀fẹ́ láti gbà sílẹ̀ àti láti ṣe. Gbogbo ilé, jagunjagun, ìpele Ilé Olódi àti ọ̀nà eré ni o lè dé láìsanwó, kò sì sí ìpolówó. Jéèdì, owó àkànṣe eré náà, ni a ń rí díẹ̀díẹ̀ nípa ṣíṣe eré (àwọn àfojúsùn, líìgì, àpótí ojoojúmọ́ àti ọ̀nà ọ̀fẹ́ Ìwé-àkájọ Àsìkò), a sì tún lè rà á. Àwọn nǹkan kan wà tí a lè rí nípa rírà nìkan: ọ̀nà ẹ̀bùn àkànṣe Ìwé-àkájọ Àsìkò (ẹ̀bùn àfikún, kíkọ́lé kíákíá ní gbogbo àsìkò náà àti ìrísí Ilé Olódi "Ayẹyẹ Àtùpà") àti àwọn àpò Jéèdì àti ohun-ìní fún àkókò díẹ̀.
+Kagemura jẹ́ ọ̀fẹ́ láti gbà sílẹ̀ àti láti ṣe. Gbogbo ilé, jagunjagun, ìpele Ilé Olódi àti ọ̀nà eré ni o lè dé láìsanwó, kò sì sí ìpolówó. Jéèdì, owó àkànṣe eré náà, ni a ń rí díẹ̀díẹ̀ nípa ṣíṣe eré (àwọn àfojúsùn, líìgì, àpótí ojoojúmọ́ àti ọ̀nà ọ̀fẹ́ Ìwé-àkájọ Àsìkò), a sì tún lè rà á. Àwọn nǹkan kan wà tí a lè rí nípa rírà nìkan: ọ̀nà ẹ̀bùn àkànṣe Ìwé-àkájọ Àsìkò (ẹ̀bùn àfikún, kíkọ́lé kíákíá ní gbogbo àsìkò náà àti ìrísí Ilé Olódi tí ń yí padà ní àsìkò kọ̀ọ̀kan) àti àwọn àpò Jéèdì àti ohun-ìní fún àkókò díẹ̀.
 
 ## Ìjápọ̀ ìtújáde
 

@@ -46,7 +46,7 @@ Hola isizwe se-ninja. Yakha isigodi esifihlekile ezintabeni, uqeqeshe izinhlobo 
 - Izitha ezenziwe yikhompyutha zihlala zibhalwe kanjalo.
 - Imikhawulo yokusebenzisa imali kubadlali abangaphansi kweminyaka eyi-18, nezikhumbuzi ozikhethayo (zivaliwe uze uzivule).
 
-I-Kagemura imahhala ukuyilanda nokuyidlala. Zonke izakhiwo, amaqhawe, amazinga eNqaba nezindlela zokudlala kungafinyelelwa ngaphandle kokukhokha, futhi azikho izikhangiso. Ijeyidi, imali ekhethekile, litholakala kancane ngokudlala (izimpumelelo, amaligi, ibhokisi lansuku zonke nomzila wamahhala woMqulu Wesizini) futhi lingathengwa. Ezinye izinto zithengiswa ngemali yangempela kuphela: umzila okhethekile woMqulu Wesizini (imiklomelo eyengeziwe, ukwakha okusheshayo isizini yonke nokubukeka kweNqaba "Umkhosi Wamalambu") namaphakethe ejeyidi nezinsiza esikhathi esilinganiselwe.
+I-Kagemura imahhala ukuyilanda nokuyidlala. Zonke izakhiwo, amaqhawe, amazinga eNqaba nezindlela zokudlala kungafinyelelwa ngaphandle kokukhokha, futhi azikho izikhangiso. Ijeyidi, imali ekhethekile, litholakala kancane ngokudlala (izimpumelelo, amaligi, ibhokisi lansuku zonke nomzila wamahhala woMqulu Wesizini) futhi lingathengwa. Ezinye izinto zithengiswa ngemali yangempela kuphela: umzila okhethekile woMqulu Wesizini (imiklomelo eyengeziwe, ukwakha okusheshayo isizini yonke nokubukeka kweNqaba okushintsha isizini ngayinye) namaphakethe ejeyidi nezinsiza esikhathi esilinganiselwe.
 
 ## Izixhumanisi zokukhishwa
 

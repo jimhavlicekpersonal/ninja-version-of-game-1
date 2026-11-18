@@ -46,7 +46,7 @@ Ongoza ukoo wa ninja, jenga kijiji kilichofichwa milimani, funza aina hamsini za
 - Wapinzani waliotengenezwa na kompyuta huonyeshwa hivyo kila mara.
 - Wachezaji walio chini ya miaka 18 wana kikomo cha matumizi; arifa ni zile tu unazochagua, na zimezimwa hadi uziwashe.
 
-Kagemura ni bure kupakua na kucheza. Kila jengo, mpiganaji, ngazi ya Ngome na hali ya mchezo vinapatikana bila kulipa, na hakuna matangazo. Jade, sarafu ya kulipia, hupatikana kidogo kidogo kwa kucheza (malengo, ligi, kasha la kila siku na mstari wa bure wa Gombo la Msimu) na pia inaweza kununuliwa. Baadhi ya vitu hupatikana kwa kununua tu: mstari wa kulipia wa Gombo la Msimu (zawadi za ziada, ujenzi wa haraka zaidi msimu mzima na mwonekano wa Ngome "Tamasha la Taa") na vifurushi vya Jade na rasilimali vya muda maalum.
+Kagemura ni bure kupakua na kucheza. Kila jengo, mpiganaji, ngazi ya Ngome na hali ya mchezo vinapatikana bila kulipa, na hakuna matangazo. Jade, sarafu ya kulipia, hupatikana kidogo kidogo kwa kucheza (malengo, ligi, kasha la kila siku na mstari wa bure wa Gombo la Msimu) na pia inaweza kununuliwa. Baadhi ya vitu hupatikana kwa kununua tu: mstari wa kulipia wa Gombo la Msimu (zawadi za ziada, ujenzi wa haraka zaidi msimu mzima na mwonekano wa Ngome unaobadilika kila msimu) na vifurushi vya Jade na rasilimali vya muda maalum.
 
 ## Viungo vya kuchapisha
 

@@ -46,7 +46,7 @@ Lidera un clan ninja. Construeix un poble amagat a la muntanya, entrena cinquant
 - Els adversaris generats per l'ordinador sempre s'indiquen.
 - Límits de despesa per als menors de 18 anys i recordatoris triats per tu, desactivats fins que els activis.
 
-Kagemura és gratuït per baixar i per jugar: tots els edificis, guerrers, nivells de la Fortalesa i modes de joc estan disponibles sense pagar, i no hi ha anuncis. El Jade, la moneda premium, es guanya en petites quantitats jugant (objectius, lligues, cofre diari i recorregut gratuït del Pergamí de la Temporada) i també es pot comprar. Alguns continguts només es venen amb diners reals: el recorregut premium del Pergamí de la Temporada (recompenses extra, construccions més ràpides durant la temporada i l'aspecte Festival dels Fanals per a la Fortalesa) i paquets temporals de Jade i recursos.
+Kagemura és gratuït per baixar i per jugar: tots els edificis, guerrers, nivells de la Fortalesa i modes de joc estan disponibles sense pagar, i no hi ha anuncis. El Jade, la moneda premium, es guanya en petites quantitats jugant (objectius, lligues, cofre diari i recorregut gratuït del Pergamí de la Temporada) i també es pot comprar. Alguns continguts només es venen amb diners reals: el recorregut premium del Pergamí de la Temporada (recompenses extra, construccions més ràpides durant la temporada i un aspecte per a la Fortalesa que canvia cada temporada) i paquets temporals de Jade i recursos.
 
 ## Enllaços de la versió
 

@@ -46,7 +46,7 @@ Leid een ninjaclan. Bouw een verborgen bergdorp, train vijftig soorten krijgers,
 - Door de computer gegenereerde tegenstanders worden altijd aangegeven.
 - Uitgavenlimieten voor spelers onder de 18 en herinneringen die jij kiest, uit tot je ze aanzet.
 
-Kagemura is gratis te downloaden en te spelen: alle gebouwen, krijgers, Burchtniveaus en spelmodi zijn beschikbaar zonder te betalen, en er zijn geen advertenties. Jade, de premiummunt, verdien je in kleine hoeveelheden door te spelen (doelen, liga's, de dagelijkse kist en het gratis spoor van de Seizoensrol) en kun je ook kopen. Sommige inhoud is alleen voor echt geld te koop: het premiumspoor van de Seizoensrol (extra beloningen, sneller bouwen tijdens het seizoen en de Burchtlook Lantaarnfeest) en tijdelijke pakketten met Jade en grondstoffen.
+Kagemura is gratis te downloaden en te spelen: alle gebouwen, krijgers, Burchtniveaus en spelmodi zijn beschikbaar zonder te betalen, en er zijn geen advertenties. Jade, de premiummunt, verdien je in kleine hoeveelheden door te spelen (doelen, liga's, de dagelijkse kist en het gratis spoor van de Seizoensrol) en kun je ook kopen. Sommige inhoud is alleen voor echt geld te koop: het premiumspoor van de Seizoensrol (extra beloningen, sneller bouwen tijdens het seizoen en een Burchtlook die elk seizoen verandert) en tijdelijke pakketten met Jade en grondstoffen.
 
 ## Links voor de release
 

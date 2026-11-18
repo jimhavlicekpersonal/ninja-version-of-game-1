@@ -46,7 +46,7 @@ Poprowadź klan ninja: zbuduj ukrytą wioskę w górach, wyszkol pięćdziesiąt
 - Przeciwnicy wygenerowani komputerowo są zawsze tak oznaczeni.
 - Gracze poniżej 18 lat mają limit wydatków; powiadomienia są tylko te, które wybierzesz, i pozostają wyłączone, dopóki ich nie włączysz.
 
-Kagemura można pobrać i grać za darmo. Wszystkie budynki, wojownicy, poziomy Twierdzy i tryby gry są dostępne bez płacenia, a reklam nie ma. Jadeit, walutę premium, zdobywa się po trochu w grze (osiągnięcia, ligi, codzienna skrzynia i darmowa ścieżka Zwoju Sezonu), można go też kupić. Niektóre rzeczy są dostępne tylko za prawdziwe pieniądze: ścieżka premium Zwoju Sezonu (dodatkowe nagrody, szybsza budowa przez cały sezon i wygląd Twierdzy „Święto Lampionów”) oraz ograniczone czasowo pakiety Jadeitu i zasobów.
+Kagemura można pobrać i grać za darmo. Wszystkie budynki, wojownicy, poziomy Twierdzy i tryby gry są dostępne bez płacenia, a reklam nie ma. Jadeit, walutę premium, zdobywa się po trochu w grze (osiągnięcia, ligi, codzienna skrzynia i darmowa ścieżka Zwoju Sezonu), można go też kupić. Niektóre rzeczy są dostępne tylko za prawdziwe pieniądze: ścieżka premium Zwoju Sezonu (dodatkowe nagrody, szybsza budowa przez cały sezon i wygląd Twierdzy zmieniający się co sezon) oraz ograniczone czasowo pakiety Jadeitu i zasobów.
 
 ## Linki do wydania
 

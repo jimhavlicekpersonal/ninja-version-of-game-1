@@ -46,7 +46,7 @@ Vezess egy nindzsaklánt, építs rejtett falut a hegyekben, képezz ötvenféle
 - A gépi ellenfelek mindig meg vannak jelölve.
 - Költési korlát 18 év alatti játékosoknak, és csak az általad választott emlékeztetők (kikapcsolva, amíg be nem kapcsolod őket).
 
-A Kagemura ingyenesen letölthető és játszható: minden épület, harcos, Vár-szint és játékmód elérhető fizetés nélkül, és nincsenek hirdetések. A Jáde, a prémium fizetőeszköz, kis mennyiségben játékkal szerezhető (eredmények, ligák, a napi láda és a Szezontekercs ingyenes sávja), és meg is vásárolható. Néhány dolog csak valódi pénzért kapható: a Szezontekercs prémium sávja (extra jutalmak, gyorsabb építés a szezon során és a „Lámpásünnep” várkinézet), valamint korlátozott ideig elérhető Jáde- és nyersanyagcsomagok.
+A Kagemura ingyenesen letölthető és játszható: minden épület, harcos, Vár-szint és játékmód elérhető fizetés nélkül, és nincsenek hirdetések. A Jáde, a prémium fizetőeszköz, kis mennyiségben játékkal szerezhető (eredmények, ligák, a napi láda és a Szezontekercs ingyenes sávja), és meg is vásárolható. Néhány dolog csak valódi pénzért kapható: a Szezontekercs prémium sávja (extra jutalmak, gyorsabb építés a szezon során és egy szezononként változó várkinézet), valamint korlátozott ideig elérhető Jáde- és nyersanyagcsomagok.
 
 ## Kiadási hivatkozások
 

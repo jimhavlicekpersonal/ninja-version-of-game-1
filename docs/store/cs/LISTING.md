@@ -46,7 +46,7 @@ Veď klan nindžů, postav skrytou vesnici v horách, vycvič padesát druhů bo
 - Soupeři generovaní počítačem jsou vždy jasně označeni.
 - Hráči do 18 let mají limit útrat; dostáváš jen upozornění, která si vybereš, a ta jsou vypnutá, dokud je nezapneš.
 
-Kagemura je zdarma ke stažení i hraní. Všechny budovy, bojovníci, úrovně Pevnosti a herní režimy jsou dostupné bez placení a hra nemá žádné reklamy. Nefrit, prémiová měna, se postupně získává hraním (úspěchy, ligy, denní truhla a bezplatná cesta Sezónního svitku) a dá se také koupit. Některé věci jsou jen za skutečné peníze: prémiová cesta Sezónního svitku (odměny navíc, rychlejší stavění po celou sezónu a vzhled Pevnosti „Svátek luceren“) a časově omezené balíčky nefritu a zdrojů.
+Kagemura je zdarma ke stažení i hraní. Všechny budovy, bojovníci, úrovně Pevnosti a herní režimy jsou dostupné bez placení a hra nemá žádné reklamy. Nefrit, prémiová měna, se postupně získává hraním (úspěchy, ligy, denní truhla a bezplatná cesta Sezónního svitku) a dá se také koupit. Některé věci jsou jen za skutečné peníze: prémiová cesta Sezónního svitku (odměny navíc, rychlejší stavění po celou sezónu a vzhled Pevnosti, který se každou sezónu mění) a časově omezené balíčky nefritu a zdrojů.
 
 ## Odkazy pro vydání
 

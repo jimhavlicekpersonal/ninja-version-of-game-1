@@ -46,7 +46,7 @@ Bir ninja klanına liderlik et: dağlarda gizli bir köy kur, elli çeşit sava�
 - Bilgisayar üretimi rakipler her zaman açıkça belirtilir.
 - 18 yaşından küçük oyuncular için harcama sınırı; yalnızca senin seçtiğin hatırlatmalar var ve sen açana kadar kapalı kalırlar.
 
-Kagemura'yı indirmek ve oynamak ücretsizdir. Her bina, savaşçı, Kale seviyesi ve oyun modu ödeme yapmadan açılabilir ve reklam yoktur. Premium para birimi Yeşim, oynayarak azar azar kazanılır (başarımlar, ligler, günlük sandık ve Sezon Parşömeni'nin ücretsiz yolu) ve satın da alınabilir. Bazı şeyler yalnızca gerçek parayla satılır: Sezon Parşömeni'nin premium yolu (ek ödüller, sezon boyunca daha hızlı inşa ve "Fener Şenliği" Kale görünümü) ve süreli Yeşim ve kaynak paketleri.
+Kagemura'yı indirmek ve oynamak ücretsizdir. Her bina, savaşçı, Kale seviyesi ve oyun modu ödeme yapmadan açılabilir ve reklam yoktur. Premium para birimi Yeşim, oynayarak azar azar kazanılır (başarımlar, ligler, günlük sandık ve Sezon Parşömeni'nin ücretsiz yolu) ve satın da alınabilir. Bazı şeyler yalnızca gerçek parayla satılır: Sezon Parşömeni'nin premium yolu (ek ödüller, sezon boyunca daha hızlı inşa ve her sezon değişen bir Kale görünümü) ve süreli Yeşim ve kaynak paketleri.
 
 ## Yayın bağlantıları
 

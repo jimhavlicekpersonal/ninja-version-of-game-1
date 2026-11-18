@@ -46,7 +46,7 @@ Johda ninjaklaania, rakenna piilotettu kylä vuorille, kouluta viittäkymmentä 
 - Tietokoneen luomat vastustajat on aina merkitty sellaisiksi.
 - Kulutusrajat alle 18-vuotiaille pelaajille ja vain itse valitsemasi muistutukset (pois päältä, kunnes otat ne käyttöön).
 
-Kagemuran voi ladata ja sitä voi pelata ilmaiseksi: jokainen rakennus, soturi, Linnan taso ja pelitila on saavutettavissa maksamatta, eikä mainoksia ole. Jadea, premium-valuuttaa, ansaitaan pieniä määriä pelaamalla (saavutukset, liigat, päivän arkku ja Kausikäärön ilmainen polku), ja sitä voi myös ostaa. Osaa asioista myydään vain oikealla rahalla: Kausikäärön premium-polku (lisäpalkinnot, nopeampi rakentaminen kauden ajan ja Linnan ulkoasu ”Lyhtyjuhla”) sekä rajoitetun ajan Jade- ja resurssipaketit.
+Kagemuran voi ladata ja sitä voi pelata ilmaiseksi: jokainen rakennus, soturi, Linnan taso ja pelitila on saavutettavissa maksamatta, eikä mainoksia ole. Jadea, premium-valuuttaa, ansaitaan pieniä määriä pelaamalla (saavutukset, liigat, päivän arkku ja Kausikäärön ilmainen polku), ja sitä voi myös ostaa. Osaa asioista myydään vain oikealla rahalla: Kausikäärön premium-polku (lisäpalkinnot, nopeampi rakentaminen kauden ajan ja joka kausi vaihtuva Linnan ulkoasu) sekä rajoitetun ajan Jade- ja resurssipaketit.
 
 ## Julkaisulinkit
 

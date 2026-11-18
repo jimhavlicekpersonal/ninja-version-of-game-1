@@ -46,7 +46,7 @@ Lidera un clan ninja. Construye una aldea oculta entre las montañas, entrena ci
 - Los oponentes generados siempre están indicados.
 - Límites de gastos para menores de 18 y recordatorios que tú eliges, desactivados hasta que los actives.
 
-Kagemura se descarga y se juega gratis: puedes acceder a todos los edificios, guerreros, niveles de Fortaleza y modos sin pagar, y no hay anuncios. El Jade, la moneda prémium, se gana en pequeñas cantidades jugando (logros, ligas, cofre diario y senda gratuita del Pergamino de Temporada) y también se puede comprar. Algunos contenidos solo se venden por dinero real: la senda prémium del Pergamino de Temporada (recompensas adicionales, construcciones más rápidas durante la temporada y el aspecto Festival de los Faroles para la Fortaleza) y paquetes temporales de Jade y recursos.
+Kagemura se descarga y se juega gratis: puedes acceder a todos los edificios, guerreros, niveles de Fortaleza y modos sin pagar, y no hay anuncios. El Jade, la moneda prémium, se gana en pequeñas cantidades jugando (logros, ligas, cofre diario y senda gratuita del Pergamino de Temporada) y también se puede comprar. Algunos contenidos solo se venden por dinero real: la senda prémium del Pergamino de Temporada (recompensas adicionales, construcciones más rápidas durante la temporada y un aspecto para la Fortaleza que cambia cada temporada) y paquetes temporales de Jade y recursos.
 
 ## Enlaces de la versión
 

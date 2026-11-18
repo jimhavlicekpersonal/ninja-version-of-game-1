@@ -270,7 +270,7 @@
   "replays.allowBase.label": { "en": "Allow my base in other players' shared replays", "text": "दूसरे खिलाड़ियों के साझा रीप्ले में मेरा बेस दिखने दें" },
   "replays.allowBase.detail": { "en": "When someone shares a replay of a raid on your village, it shows your base layout (never your name). Turn this off and your base is never shown, and shares already made of it are removed.", "text": "जब कोई आपके गाँव पर हुए हमले का रीप्ले साझा करता है, तो उसमें आपके बेस का लेआउट दिखता है (आपका नाम कभी नहीं)। इसे बंद करें तो आपका बेस कभी नहीं दिखेगा, और उसके पहले से साझा रीप्ले हटा दिए जाएँगे।" },
   "significantUpdate.description": { "en": "This update changes how Kagemura works. A parent or guardian can review it before it is used.", "text": "यह अपडेट Kagemura के काम करने का तरीका बदलता है। माता-पिता या अभिभावक इस्तेमाल से पहले इसे देख सकते हैं।" },
-  "welcome.scrollEnded": { "en": "The Season Scroll ended, and the rewards you had not claimed were added:", "text": "" },
-  "pass.bonus.title": { "en": "Bonus", "text": "" },
-  "pass.bonus.detail": { "en": "{left, plural, =0 {All {max} bonuses collected this season ({got} of {max})} one {Every task still pays: the next bonus in # point ({got} of {max} this season)} other {Every task still pays: the next bonus in # points ({got} of {max} this season)}}", "text": "" }
+  "welcome.scrollEnded": { "en": "The Season Scroll ended, and the rewards you had not claimed were added:", "text": "सीज़न स्क्रॉल ख़त्म हो गया, और जो इनाम आपने नहीं लिए थे, वे जोड़ दिए गए:" },
+  "pass.bonus.title": { "en": "Bonus", "text": "बोनस" },
+  "pass.bonus.detail": { "en": "{left, plural, =0 {All {max} bonuses collected this season ({got} of {max})} one {Every task still pays: the next bonus in # point ({got} of {max} this season)} other {Every task still pays: the next bonus in # points ({got} of {max} this season)}}", "text": "{left, plural, =0 {इस सीज़न के सभी {max} बोनस मिल गए ({got}/{max})} one {हर काम का अब भी फ़ायदा है: अगला बोनस # अंक दूर (इस सीज़न {got}/{max})} other {हर काम का अब भी फ़ायदा है: अगला बोनस # अंक दूर (इस सीज़न {got}/{max})}}" }
 }

@@ -46,7 +46,7 @@ Led en ninjaklan. Bygg en dold bergsby, träna femtio sorters krigare, spana på
 - Motståndare som genereras av datorn är alltid märkta.
 - Utgiftsgränser för spelare under 18 och påminnelser som du väljer, avstängda tills du slår på dem.
 
-Kagemura är gratis att ladda ner och spela: alla byggnader, krigare, Borgnivåer och spellägen är tillgängliga utan att betala, och det finns inga annonser. Jade, premiumvalutan, tjänas i små mängder genom att spela (mål, ligor, den dagliga kistan och Säsongsrullens gratisspår) och kan också köpas. Visst innehåll säljs bara för riktiga pengar: Säsongsrullens premiumspår (extra belöningar, snabbare byggen under säsongen och Borgutseendet Lyktfest) och tidsbegränsade paket med Jade och resurser.
+Kagemura är gratis att ladda ner och spela: alla byggnader, krigare, Borgnivåer och spellägen är tillgängliga utan att betala, och det finns inga annonser. Jade, premiumvalutan, tjänas i små mängder genom att spela (mål, ligor, den dagliga kistan och Säsongsrullens gratisspår) och kan också köpas. Visst innehåll säljs bara för riktiga pengar: Säsongsrullens premiumspår (extra belöningar, snabbare byggen under säsongen och ett Borgutseende som byts varje säsong) och tidsbegränsade paket med Jade och resurser.
 
 ## Länkar för versionen
 

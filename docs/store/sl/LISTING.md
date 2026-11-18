@@ -46,7 +46,7 @@ Vodi klan nindž, zgradi skrito vas v gorah, izuri petdeset vrst bojevnikov, raz
 - Računalniško ustvarjeni tekmeci so vedno jasno označeni.
 - Igralci, mlajši od 18 let, imajo omejitev porabe; prejemaš le obvestila, ki jih izbereš, in so izklopljena, dokler jih ne vklopiš.
 
-Kagemura je brezplačna za prenos in igranje. Vse stavbe, bojevniki, ravni trdnjave in načini igre so dosegljivi brez plačila, oglasov pa ni. Žad, premijska valuta, se postopoma prisluži z igranjem (dosežki, lige, dnevna skrinja in brezplačna pot Sezonskega zvitka), lahko pa ga tudi kupiš. Nekatere stvari so na voljo samo za pravi denar: premijska pot Sezonskega zvitka (dodatne nagrade, hitrejša gradnja vso sezono in videz trdnjave »Praznik lampijonov«) in časovno omejeni paketi žada in virov.
+Kagemura je brezplačna za prenos in igranje. Vse stavbe, bojevniki, ravni trdnjave in načini igre so dosegljivi brez plačila, oglasov pa ni. Žad, premijska valuta, se postopoma prisluži z igranjem (dosežki, lige, dnevna skrinja in brezplačna pot Sezonskega zvitka), lahko pa ga tudi kupiš. Nekatere stvari so na voljo samo za pravi denar: premijska pot Sezonskega zvitka (dodatne nagrade, hitrejša gradnja vso sezono in videz trdnjave, ki se spreminja vsako sezono) in časovno omejeni paketi žada in virov.
 
 ## Povezave za izdajo
 

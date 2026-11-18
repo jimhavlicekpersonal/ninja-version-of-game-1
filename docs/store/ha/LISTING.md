@@ -46,7 +46,7 @@ Ku jagoranci dangin ninja, ku gina ɓoyayyen ƙauye a kan duwatsu, ku horar da n
 - Ana nuna abokan hamayya na kwamfuta a fili koyaushe.
 - Ƴan wasa ƙasa da shekara 18 suna da iyakar kashe kuɗi; sanarwa sai waɗanda kuka zaɓa, kuma a kashe suke har sai kun kunna su.
 
-Kagemura kyauta ce don saukewa da yin wasa. Kowane gini, mayaƙi, matakin Fada da yanayin wasa ana iya samunsu ba tare da biyan kuɗi ba, kuma babu talla. Jed, kuɗin musamman na wasan, ana samunsa kaɗan-kaɗan ta yin wasa (manufofi, rukunai, akwatin yau da kullum da layin kyauta na Takardar Kaka) kuma ana iya saye shi. Wasu abubuwa sai an saya: layin musamman na Takardar Kaka (ƙarin lada, gini cikin sauri a duk tsawon kaka da kamannin Fada "Bikin Fitilu") da kunshin Jed da albarkatu na ɗan lokaci.
+Kagemura kyauta ce don saukewa da yin wasa. Kowane gini, mayaƙi, matakin Fada da yanayin wasa ana iya samunsu ba tare da biyan kuɗi ba, kuma babu talla. Jed, kuɗin musamman na wasan, ana samunsa kaɗan-kaɗan ta yin wasa (manufofi, rukunai, akwatin yau da kullum da layin kyauta na Takardar Kaka) kuma ana iya saye shi. Wasu abubuwa sai an saya: layin musamman na Takardar Kaka (ƙarin lada, gini cikin sauri a duk tsawon kaka da kamannin Fada da ke canzawa kowace kaka) da kunshin Jed da albarkatu na ɗan lokaci.
 
 ## Hanyoyin fitarwa
 

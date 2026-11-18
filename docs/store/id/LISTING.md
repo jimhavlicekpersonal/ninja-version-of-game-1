@@ -46,7 +46,7 @@ Pimpin klan ninja, bangun desa tersembunyi di pegunungan, latih lima puluh jenis
 - Lawan buatan komputer selalu diberi label yang jelas.
 - Batas belanja untuk pemain di bawah 18 tahun; hanya pengingat yang kamu pilih, dan semuanya mati sampai kamu menyalakannya.
 
-Kagemura gratis diunduh dan dimainkan. Setiap bangunan, prajurit, level Benteng, dan mode permainan bisa dicapai tanpa membayar, dan tidak ada iklan. Giok, mata uang premium, didapat sedikit demi sedikit dengan bermain (pencapaian, liga, peti harian, dan jalur gratis Gulungan Musim) dan juga bisa dibeli. Beberapa hal hanya dijual dengan uang sungguhan: jalur premium Gulungan Musim (hadiah tambahan, membangun lebih cepat selama musim berlangsung, dan tampilan Benteng "Festival Lentera") serta bundel Giok dan sumber daya berwaktu terbatas.
+Kagemura gratis diunduh dan dimainkan. Setiap bangunan, prajurit, level Benteng, dan mode permainan bisa dicapai tanpa membayar, dan tidak ada iklan. Giok, mata uang premium, didapat sedikit demi sedikit dengan bermain (pencapaian, liga, peti harian, dan jalur gratis Gulungan Musim) dan juga bisa dibeli. Beberapa hal hanya dijual dengan uang sungguhan: jalur premium Gulungan Musim (hadiah tambahan, membangun lebih cepat selama musim berlangsung, dan tampilan Benteng yang berganti setiap musim) serta bundel Giok dan sumber daya berwaktu terbatas.
 
 ## Tautan rilis
 

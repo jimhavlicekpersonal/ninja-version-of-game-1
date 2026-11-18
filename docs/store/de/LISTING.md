@@ -46,7 +46,7 @@ Führe einen Ninja-Clan. Baue ein verborgenes Dorf in den Bergen, bilde fünfzig
 - Computergenerierte Gegner sind immer gekennzeichnet.
 - Ausgabenlimits für Spieler unter 18 und Erinnerungen, die du selbst wählst, aus, bis du sie einschaltest.
 
-Kagemura ist kostenlos herunterzuladen und zu spielen: Alle Gebäude, Krieger, Burgstufen und Modi sind ohne Bezahlung verfügbar, und es gibt keine Werbung. Jade, die Premiumwährung, verdienst du in kleinen Mengen beim Spielen (Erfolge, Ligen, Tagestruhe und kostenloser Pfad der Saisonrolle), und du kannst sie auch kaufen. Manche Inhalte gibt es nur gegen echtes Geld: den Premium-Pfad der Saisonrolle (zusätzliche Belohnungen, schnelleres Bauen während der Saison und das Burgdesign Laternenfest) und zeitlich begrenzte Pakete mit Jade und Ressourcen.
+Kagemura ist kostenlos herunterzuladen und zu spielen: Alle Gebäude, Krieger, Burgstufen und Modi sind ohne Bezahlung verfügbar, und es gibt keine Werbung. Jade, die Premiumwährung, verdienst du in kleinen Mengen beim Spielen (Erfolge, Ligen, Tagestruhe und kostenloser Pfad der Saisonrolle), und du kannst sie auch kaufen. Manche Inhalte gibt es nur gegen echtes Geld: den Premium-Pfad der Saisonrolle (zusätzliche Belohnungen, schnelleres Bauen während der Saison und ein Burgdesign, das jede Saison wechselt) und zeitlich begrenzte Pakete mit Jade und Ressourcen.
 
 ## Links der Version
 

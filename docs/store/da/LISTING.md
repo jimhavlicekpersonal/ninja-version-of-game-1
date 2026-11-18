@@ -46,7 +46,7 @@ Led en ninjaklan. Byg en skjult bjerglandsby, træn halvtreds slags krigere, spe
 - Modstandere, som computeren genererer, er altid markeret.
 - Forbrugsgrænser for spillere under 18 og påmindelser, du selv vælger, slået fra, indtil du slår dem til.
 
-Kagemura er gratis at downloade og spille: alle bygninger, krigere, Borgniveauer og spiltilstande er tilgængelige uden betaling, og der er ingen reklamer. Jade, premiumvalutaen, tjenes i små mængder ved at spille (mål, ligaer, den daglige kiste og Sæsonrullens gratisspor) og kan også købes. Noget indhold sælges kun for rigtige penge: Sæsonrullens premiumspor (ekstra belønninger, hurtigere byggeri i sæsonen og Borgudseendet Lanternefest) og tidsbegrænsede pakker med Jade og ressourcer.
+Kagemura er gratis at downloade og spille: alle bygninger, krigere, Borgniveauer og spiltilstande er tilgængelige uden betaling, og der er ingen reklamer. Jade, premiumvalutaen, tjenes i små mængder ved at spille (mål, ligaer, den daglige kiste og Sæsonrullens gratisspor) og kan også købes. Noget indhold sælges kun for rigtige penge: Sæsonrullens premiumspor (ekstra belønninger, hurtigere byggeri i sæsonen og et Borgudseende, der skifter hver sæson) og tidsbegrænsede pakker med Jade og ressourcer.
 
 ## Links til versionen
 
