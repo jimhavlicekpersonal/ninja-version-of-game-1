@@ -39,6 +39,8 @@ export interface BattleHooks {
    * the camera stays on the entry points; once it is not, it follows the fight.
    */
   cardArmed?(): boolean;
+  /** P6-01: a tap on Infiltration Point `point` with a squad formation armed; returns how many warriors were ordered in (0: not a squad tap). */
+  squadTap?(point: number): number;
 }
 
 /** A camera position: zoom (CSS px per world px) and the world point at the canvas centre. */
@@ -676,6 +678,23 @@ export class BattleScene extends Phaser.Scene {
     // A held finger keeps deploying troops, but each ability needs its own tap.
     if (ability && !isTap) return;
     let t = worldToTile(wx, wy);
+    // P6-01: a tap on a ring with a formation armed sends the whole undeployed army through that point.
+    if (isTap && !ability && s.sim.entry && this.hooks.squadTap) {
+      const snapped = pointAt(s.sim.entry, t.tx, t.ty) >= 0 ? t : this.snapToPoint(wx, wy);
+      const point = snapped ? pointAt(s.sim.entry, snapped.tx, snapped.ty) : -1;
+      if (point >= 0) {
+        const n = this.hooks.squadTap(point);
+        if (n > 0) {
+          this.hooks.deployed();
+          haptic('medium');
+          sound.play('deploy');
+          const p = s.sim.entry.points[point];
+          const w = tileToWorld(p.x, p.y);
+          this.puff(w.x, w.y, 1.4);
+          return;
+        }
+      }
+    }
     // Warriors only (smoke goes anywhere): a near miss of a small ring goes to the nearest free tile inside it.
     if (!ability && s.sim.entry && pointAt(s.sim.entry, t.tx, t.ty) < 0) t = this.snapToPoint(wx, wy) ?? t;
     if (!s.tryDeploy(troop, t.tx, t.ty)) {

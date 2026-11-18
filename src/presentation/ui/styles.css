@@ -1176,3 +1176,18 @@ html[dir="rtl"] .training .actions.army-filters select { padding: 6px 8px 6px 20
 .b-stars .star.staked { border-radius: 50%; box-shadow: 0 0 0 2px var(--sun-dark), 0 0 8px rgba(233, 180, 76, .7); }
 .scout-report .stake-help { margin: 2px 0 4px; color: #8a4b12; font-weight: 700; }
 .carry-preview { color: #8a4b12; }
+/* P6-01: squad orders, one row above the troop cards (live battles). */
+.squad-row {
+  position: absolute; left: 50%; transform: translateX(-50%); bottom: calc(160px + var(--safe-b)); z-index: 1;
+  display: flex; gap: 6px; align-items: center; max-width: calc(100% - 16px); pointer-events: auto; touch-action: pan-x;
+  padding: 4px 6px; border-radius: 999px; background: rgba(247, 240, 225, .9); box-shadow: 0 2px 8px rgba(15, 20, 30, .2);
+}
+.squad-row .squad-group { display: flex; gap: 4px; }
+.squad-row .chip { min-height: 44px; border: none; cursor: pointer; font: 700 0.8125rem var(--font); padding: 4px 10px; white-space: nowrap; }
+.squad-row .chip.on { background: linear-gradient(#463c63, var(--plum)); color: #fff; }
+.squad-row .squad-order { background: #ffe8a8; gap: 4px; }
+.squad-row .squad-hold { background: linear-gradient(#ff8c7a, var(--berry)); color: #fff; }
+@media (max-width: 360px) { .squad-row .chip { padding: 4px 7px; font-size: 0.75rem; } .squad-row { gap: 3px; padding: 3px 4px; } }
+@media (max-height: 480px) {
+  #battle-hud .squad-row { bottom: calc(76px + var(--safe-b)); left: calc(158px + var(--safe-l)); transform: none; max-width: calc(100% - 316px - var(--safe-l) - var(--safe-r)); }
+}

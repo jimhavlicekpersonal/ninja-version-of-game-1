@@ -8,7 +8,7 @@ import { fmtDecimal, fmtPercent, pointLabel, t } from './i18n';
 import { stakeOptions } from '../../gameplay/sim/carry';
 import { rivalById } from '../../gameplay/sim/rivals';
 import { isolateName } from '../../gameplay/sim/social/names';
-import type { BattleSession } from '../../gameplay/control/battleSession';
+import type { BattleSession, Formation, WaveOrder } from '../../gameplay/control/battleSession';
 import type { BattleHooks, BattleView, ScreenInsets } from '../render/BattleScene';
 import { totalLoot } from '../../gameplay/sim/battle/basegen';
 import { isAbility } from '../../gameplay/sim/battle/battle';
@@ -70,6 +70,32 @@ interface BattleHudDeps {
   nextActions?(result: BattleResult): { label: string; primary?: boolean; onClick(): void }[];
 }
 
+/**
+ * P6-01: "hold a reserve" is offered only if it is the best order on at least one base in five at Keeps 9, 12 and 15
+ * (tools/balance/run-squad-orders.mjs; the measurement is in docs/audit/understand-2026-11-16/phase6/).
+ */
+export const SQUAD_RESERVE = true;
+const SQUAD_KEY = 'tk.squad';
+
+function loadSquadChoice(): { formation: Formation | null; order: WaveOrder } {
+  try {
+    const v = JSON.parse(localStorage.getItem(SQUAD_KEY) ?? 'null') as { formation?: unknown; order?: unknown } | null;
+    const formation = (['together', 'pincer', 'file'] as const).find((f) => f === v?.formation) ?? null;
+    const order = (['tanks', 'rush', ...(SQUAD_RESERVE ? ['reserve'] : [])] as WaveOrder[]).find((o) => o === v?.order) ?? 'tanks';
+    return { formation, order };
+  } catch {
+    return { formation: null, order: 'tanks' };
+  }
+}
+
+function saveSquadChoice(c: { formation: Formation | null; order: WaveOrder }): void {
+  try {
+    localStorage.setItem(SQUAD_KEY, JSON.stringify(c));
+  } catch {
+    /* storage blocked: the choice lasts this battle */
+  }
+}
+
 function lootChips(loot: Cost): HTMLElement {
   const wrap = h('span', { class: 'cost' });
   for (const k of RESOURCE_KINDS) {
@@ -110,6 +136,10 @@ export class BattleHud {
   private interval = 0;
   private finished = false;
   private lastStars = -1;
+  /** P6-01: the squad order row (above the troop cards). */
+  private squadEl = h('div', { class: 'squad-row', role: 'group' });
+  private squad: { formation: Formation | null; order: WaveOrder } = loadSquadChoice();
+  private squadSig = '';
   private lastStake: number | undefined = undefined;
   private lootSig = '';
   /** The map, once the scene is up: point positions for the chevrons, path highlight, refit. */
@@ -177,7 +207,7 @@ export class BattleHud {
     const right = h('div', { class: 'panel b-right' }, this.timerEl, this.starsEl, this.pctEl);
     this.coachEl.hidden = true;
     root.dataset.mode = this.s.mode;
-    root.append(left, right, this.chevronsEl, this.toastEl, this.coachEl, this.troopsEl, this.bottomEl, this.modalEl);
+    root.append(left, right, this.chevronsEl, this.toastEl, this.coachEl, this.squadEl, this.troopsEl, this.bottomEl, this.modalEl);
     // Pick the first available troop by default (Saboteurs first: jam, then attack).
     this.selected = this.firstTroop();
     this.renderBottom();
@@ -251,7 +281,7 @@ export class BattleHud {
     const box = (el: Element | null) => (el && el.getClientRects().length ? el.getBoundingClientRect() : null);
     const root = this.deps.root;
     // Anything in the upper half (the cards; sideways also the scout drawer) bounds the top, the rest the bottom.
-    const all = [box(root.querySelector('.b-left')), box(root.querySelector('.b-right')), box(this.troopsEl), box(this.bottomEl), box(this.scoutEl)].filter((r): r is DOMRect => Boolean(r) && r!.height > 0);
+    const all = [box(root.querySelector('.b-left')), box(root.querySelector('.b-right')), box(this.troopsEl), box(this.squadEl), box(this.bottomEl), box(this.scoutEl)].filter((r): r is DOMRect => Boolean(r) && r!.height > 0);
     const tops = all.filter((r) => r.top < vh / 2);
     const lows = all.filter((r) => r.top >= vh / 2);
     let top = Math.max(0, ...tops.map((r) => r.bottom)) + 4;
@@ -362,6 +392,7 @@ export class BattleHud {
         if (this.s.mode === 'live' && !this.speedShown && this.allDeployed()) this.renderBottom();
       },
       cardArmed: () => this.cardArmed(),
+      squadTap: (point) => this.squadTap(point),
     };
   }
 
@@ -556,8 +587,75 @@ export class BattleHud {
     return isAbility(localizedData(this.s.data), type) ? this.s.sim.charges[type] ?? 0 : this.s.sim.remaining[type] ?? 0;
   }
 
+  /**
+   * P6-01 (CMB-09, UIS-03): squad orders. Two chip groups (formation, wave order), remembered on the device. With a
+   * formation armed, a tap on a glowing ring sends every undeployed warrior through that point in that shape (the
+   * hero and Smoke stay by hand). Hold, with the waiting count, shows while a squad is still going in.
+   */
+  private renderSquad(): void {
+    const s = this.s;
+    const entry = s.sim.entry;
+    const warriorsLeft = Object.entries(s.sim.remaining).some(([t, n]) => n > 0 && s.data.troops[t] !== undefined);
+    const waiting = s.squadWaiting;
+    const show = s.mode === 'live' && !s.sim.ended && Boolean(entry?.points.length) && (warriorsLeft || waiting > 0);
+    const orders: WaveOrder[] = SQUAD_RESERVE ? ['tanks', 'rush', 'reserve'] : ['tanks', 'rush'];
+    const sig = JSON.stringify([show, this.squad, waiting, s.mode]);
+    if (sig === this.squadSig) return;
+    this.squadSig = sig;
+    clear(this.squadEl);
+    this.squadEl.hidden = !show;
+    if (!show) return;
+    this.squadEl.setAttribute('aria-label', t('squad.label'));
+    const chip = (on: boolean, label: string, id: string, click: () => void) => {
+      const b = h('button', { type: 'button', class: `chip${on ? ' on' : ''}`, 'aria-pressed': String(on), 'data-id': id }, label);
+      b.addEventListener('click', click);
+      return b;
+    };
+    const formations = h(
+      'div',
+      { class: 'squad-group' },
+      ...(['together', 'pincer', 'file'] as Formation[]).map((f) =>
+        chip(this.squad.formation === f, t(`squad.${f}`), `squad-${f}`, () => {
+          // A second tap on the armed formation disarms it: taps place warriors one by one again.
+          this.squad = { ...this.squad, formation: this.squad.formation === f ? null : f };
+          saveSquadChoice(this.squad);
+          this.renderSquad();
+          if (this.squad.formation && s.mode === 'live') this.toast(t('squad.armed'));
+        }),
+      ),
+    );
+    const second =
+      waiting > 0
+        ? h('button', { type: 'button', class: 'chip squad-hold', 'data-id': 'squad-hold', onclick: () => { s.holdSquad(); this.renderSquad(); } }, t('squad.hold', { n: waiting }))
+        : // One chip that cycles through the wave orders keeps the row on one line at 320 px.
+          h('button', {
+            type: 'button',
+            class: 'chip squad-order',
+            'data-id': 'squad-order',
+            'aria-label': t('squad.orderAria', { order: t(`squad.${this.squad.order}`) }),
+            onclick: () => {
+              this.squad = { ...this.squad, order: orders[(orders.indexOf(this.squad.order) + 1) % orders.length] };
+              saveSquadChoice(this.squad);
+              this.renderSquad();
+            },
+          }, t(`squad.${this.squad.order}`), h('span', { class: 'squad-cycle', 'aria-hidden': 'true' }, '⟳'));
+    this.squadEl.append(formations, second);
+  }
+
+  /** P6-01: with a formation armed and a warrior (not the hero, not an ability) selected, a ring tap sends the squad. */
+  squadTap(point: number): number {
+    const s = this.s;
+    const sel = this.selected;
+    if (!this.squad.formation || s.mode !== 'live' || !sel || isAbility(localizedData(s.data), sel) || s.data.troops[sel] === undefined) return 0;
+    const n = s.orderSquad({ point, formation: this.squad.formation, order: this.squad.order });
+    this.squadSig = '';
+    this.renderSquad();
+    return n;
+  }
+
   private renderTroops(): void {
     clear(this.troopsEl);
+    this.renderSquad();
     if (this.s.mode === 'replay') return;
     if ((this.s.sim.charges.smoke_bomb ?? 0) > 0 || (this.s.sim.abilitiesUsed.smoke_bomb ?? 0) > 0) {
       const left = this.left('smoke_bomb');
@@ -613,6 +711,7 @@ export class BattleHud {
   private tick(): void {
     const sim = this.s.sim;
     this.drawChevrons();
+    this.renderSquad();
     // P6-11: a squad order deploys over many ticks without a tap; the speed button follows the last warrior in.
     if (this.s.mode === 'live' && !sim.ended && !this.speedShown && this.allDeployed()) {
       if ((this.s.sim.remaining[this.selected ?? ''] ?? 0) <= 0 && this.selected && !isAbility(localizedData(this.s.data), this.selected)) this.selected = this.firstTroop();

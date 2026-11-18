@@ -101,6 +101,7 @@ for (const lang of LANGS) {
     const page = await ctx.newPage();
     const errors = [];
     page.on('pageerror', (e) => errors.push(String(e)));
+    page.on('framenavigated', (f) => f === page.mainFrame() && process.env.SURFACES_DEBUG && console.log('navigated', f.url(), errors.slice(-3)));
     page.on('console', (m) => (m.type() === 'warning' || m.type() === 'error') && !/GL Driver|GPU stall/.test(m.text()) && errors.push(`${m.type()}: ${m.text()}`));
     await page.goto(`${URL0}?debug`, { waitUntil: 'load' });
     await page.waitForFunction(() => window.tk && document.querySelector('#boot')?.classList.contains('done'), null, { timeout: 120000 });
@@ -139,6 +140,43 @@ for (const lang of LANGS) {
       await page.waitForTimeout(2500);
       await page.locator('.big-attack').tap();
       await page.waitForTimeout(600);
+      // P6-01: the squad row fits, does not overlap the cards, bars or top cards; then three real taps send the army.
+      const squadProblems = await page.evaluate(() => {
+        const out = [];
+        const row = document.querySelector('.squad-row:not([hidden])');
+        if (!row) return [{ problem: 'no squad row' }];
+        const r = row.getBoundingClientRect();
+        if (r.left < 0 || r.right > innerWidth || r.top < 0 || r.bottom > innerHeight) out.push({ problem: `squad row off screen ${Math.round(r.left)},${Math.round(r.top)} ${Math.round(r.width)}x${Math.round(r.height)}` });
+        if (row.scrollWidth > row.clientWidth + 1) out.push({ problem: `squad row scrolls (${row.clientWidth}/${row.scrollWidth})` });
+        for (const sel of ['.b-troops', '.b-bottom', '.b-left', '.b-right']) {
+          const o = document.querySelector(sel)?.getBoundingClientRect();
+          if (o && o.height && r.left < o.right && o.left < r.right && r.top < o.bottom && o.top < r.bottom) out.push({ problem: `squad row overlaps ${sel}` });
+        }
+        for (const b of row.querySelectorAll('button')) {
+          const q = b.getBoundingClientRect();
+          const hit = document.elementFromPoint(q.left + q.width / 2, q.top + q.height / 2);
+          if (!hit || !(hit === b || b.contains(hit))) out.push({ problem: `squad chip covered: ${b.textContent}` });
+          if (q.height < 44) out.push({ problem: `squad chip ${Math.round(q.height)} px tall` });
+        }
+        return out;
+      });
+      if (SHOTS) await page.screenshot({ path: join(SHOTS, `${lang}-${w}x${hgt}-squad.png`) });
+      await page.locator('[data-id="squad-together"]').tap();
+      const ring = await page.evaluate(() => {
+        const sc = window.tk.game.scene.getScene('battle');
+        const e = sc.entriesOnScreen().find((p) => p.inside && p.left > 0);
+        return e ? { x: e.x, y: e.y } : null;
+      });
+      if (ring) await page.touchscreen.tap(ring.x, ring.y);
+      await page.waitForTimeout(400);
+      const squadSent = await page.evaluate(() => window.tk.game.scene.getScene('battle').session.deployments.length + window.tk.game.scene.getScene('battle').session.squadWaiting).catch((e) => {
+        console.log('lost the page after the squad tap:', String(e).slice(0, 120), errors.slice(-5));
+        return -1;
+      });
+      if (!ring) squadProblems.push({ problem: 'no ring inside the free area to tap' });
+      else if (squadSent === 0) squadProblems.push({ problem: 'three taps sent nobody' });
+      // Back to hand placement for the rest of the check.
+      await page.locator('[data-id="squad-together"]').tap().catch(() => undefined);
       const zooms = await page.evaluate(async () => {
         const sc = window.tk.game.scene.getScene('battle');
         const z0 = sc.cam.userZoom;
@@ -155,7 +193,7 @@ for (const lang of LANGS) {
         }
         return { zooms: out, speed: Boolean(document.querySelector('[data-id="battle-speed"]')), left: Object.values(sc.session.sim.remaining).reduce((a, b) => a + b, 0) };
       });
-      const problems = [];
+      const problems = [...squadProblems];
       if (Math.max(...zooms.zooms.slice(1)) < zooms.zooms[0] * 1.5) problems.push({ problem: `camera stayed near the entry fit: ${zooms.zooms.join(' ')}` });
       if (zooms.left === 0 && !zooms.speed) problems.push({ problem: 'no speed button with every warrior in' });
       const sp = await page.$('[data-id="battle-speed"]');
