@@ -1,5 +1,5 @@
 {
-  "$commentWinBonusShare": "P2-09 (DEF-10, ECO-08, 2026-11-18): winBonusShare per league, a share of the Keep's lowest generated raid loot (Coins and Provisions), larger of it and winBonus, x stars/3. Fitted to the regular campaign: 6.8-18.7% of an average raid's banked loot at Keeps 5-15 (Obsidian, Ember and Storm 0.095 after the Phase 2 campaign put Keep 15 at 22.6% with 0.115) (was 22% at Keep 5 falling to 0.7% at Keep 15). Iron's flat winBonus 5000 -> 4000 each so Keep 5 stays under 20%.",
+  "$commentWinBonusShare": "P2-09 (DEF-10, ECO-08, 2026-11-18): winBonusShare per league, a share of the Keep's lowest generated raid loot (Coins and Provisions), larger of it and winBonus, x stars/3. Fitted to the regular campaign: 6.8-18.7% of an average raid's banked loot at Keeps 5-15 (Obsidian, Ember and Storm 0.095 after the Phase 2 campaign put Keep 15 at 22.6% with 0.115; Shadow 0.13 -> 0.11 after Phase 3 put the regular Keep 15 in Shadow at 20.2%) (was 22% at Keep 5 falling to 0.7% at Keep 15). Iron's flat winBonus 5000 -> 4000 each so Keep 5 stays under 20%.",
   "startingTrophies": 0,
   "attackWin": {
     "base": 24,
@@ -106,7 +106,7 @@
     },
     {
       "id": "shadow",
-      "winBonusShare": 0.13,
+      "winBonusShare": 0.11,
       "name": "Shadow League",
       "min": 4400,
       "chest": {

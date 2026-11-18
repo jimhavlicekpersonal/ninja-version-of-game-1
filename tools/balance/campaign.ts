@@ -48,6 +48,10 @@ export const CAMPAIGNS: CampaignSpec[] = [
   { id: 'casual_explorer', name: 'Casual (one visit a day, explorer: newest warrior of each family, Trials and tasks)', opts: { raidsPerSession: 2, policy: 'explorer', engaged: true }, casual: true, maxDays: 400 },
   // P2-04 (DEF-03): the campaign that sees defense: the fortress policy (keeps its counters within two levels of
   // the Keep's caps before raising the Keep) on a real, walled layout.
+  // P3-02 (PAC-02, PAC-08): the player the game allows, reported beside the conservative gated baseline: the casual
+  // player who hires the third artisan with the starting Jade, and one who also queues the next army.
+  { id: 'casual_hires', name: 'Casual who hires the third artisan with the starting Jade (one visit a day, suggested army, Trials and tasks)', opts: { raidsPerSession: 2, engaged: true, hireBuilders: true }, casual: true, maxDays: 400 },
+  { id: 'casual_queues', name: 'Casual who hires the third artisan and queues the next army (one visit a day, suggested army, Trials and tasks)', opts: { raidsPerSession: 2, engaged: true, hireBuilders: true, queueArmy: true }, casual: true, maxDays: 400 },
   { id: 'regular_fortress', name: 'Regular fortress (4 sessions a day, counters within 2 levels of the caps before the Keep, walled generated layout)', opts: { raidsPerSession: 2, policy: 'fortress', fortressGap: 2 }, casual: false, maxDays: 220, labLayout: true },
 ];
 

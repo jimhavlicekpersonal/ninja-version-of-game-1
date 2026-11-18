@@ -25,6 +25,17 @@ const byId = (id: string) => {
 /** Keeps with enough raids to mean something. */
 const rows = (id: string, minRaids = 5) => byId(id).byKeep.filter((k) => k.keep >= 3 && k.raids >= minRaids);
 
+describe('the casual pace (P3-02, PAC-02)', () => {
+  it('the casual player reaches Keep 6 by day 25', () => {
+    expect(byId('casual').reached[6]).toBeLessThanOrEqual(25);
+  });
+
+  it('no casual stretch between Keeps is longer than 21 days through Keep 10', () => {
+    const r = byId('casual').reached;
+    for (let k = 2; k <= 10; k++) expect(r[k] - r[k - 1], `Keep ${k - 1} -> ${k}`).toBeLessThanOrEqual(21);
+  });
+});
+
 describe('the fortress campaign\'s layout is a lab flag only (P2-04)', () => {
   it('live data sets neither raids.labAutoLayout nor raids.labWalls; only the labLayout campaign does', () => {
     expect(defaultData.raids.labAutoLayout).toBeUndefined();
