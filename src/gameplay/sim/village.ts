@@ -19,6 +19,7 @@ import { canPurchase, productGrantsFor, productInfo } from './monetization';
 import { addStipend, claimStipend, emptyStipend } from './stipend';
 import { activeGoalEvent, bountyBase, goalEventByKey, ladderReward, recordBountyResult } from './goalEvents';
 import { rematchBase, rematchReward, rematchStatus } from './rematch';
+import { matchedKeep } from './matchmaking';
 import { scatterObstacles } from './obstacles';
 import { offerCanStillShow, triggerOffer } from './offers';
 import { claimCalendarDay, emptyCalendar, setLocalTime } from './calendar';
@@ -1778,9 +1779,13 @@ export function scoutBattleSeed(scoutSeed: number): number {
   return mixSeed(scoutSeed, 0xba771e);
 }
 
+/**
+ * The Coin fee for "Next", priced by the Keep the player is matched against (`matchedKeep`), not its own (P2-11,
+ * DEF-13: at Keeps 5 and 15 the offers are a Keep lower, and the fee was 4.8% and 3.3% of the mean offer).
+ */
 export function scoutFee(state: VillageState, data: GameData): number {
   const fees = data.battle.scoutFeeByHall;
-  return fees[Math.min(fees.length, hallLevel(state, data)) - 1] ?? 0;
+  return fees[Math.min(fees.length, matchedKeep(state, data)) - 1] ?? 0;
 }
 
 /**

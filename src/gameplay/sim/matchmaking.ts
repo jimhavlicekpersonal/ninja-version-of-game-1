@@ -19,7 +19,7 @@ import { createRng, mixSeed, next, type Rng } from './rng';
 import type { GameData, ResourceKind, Temper, VillageState } from './types';
 import { dominantFamily, temperBase } from './battle/temper';
 import { rivalFor } from './rivals';
-import { hallLevel } from './village';
+import { hallLevel } from './keep';
 
 export interface MatchStrength {
   /** Keep level of the opponent. */
@@ -158,6 +158,21 @@ export function attackerStrength(state: VillageState, data: GameData): number {
 export function powerSlackAt(hall: number, data: GameData): number {
   const mm = data.ranks.matchmaking;
   return mm.powerSlackByKeep?.[hall - 1] ?? mm.powerSlack;
+}
+
+/**
+ * The Keep a player's next generated opponent will have, before the base is known (P2-11, DEF-13): the strength
+ * `opponentFor` asks for (honor, raised to the earned-strength floor `attackerStrength - powerSlackAt`, clamped to
+ * the hall window) without the random jitter, read as a Keep the way `matchStrength` does (`floor(s) + 1`).
+ */
+export function matchedKeep(state: VillageState, data: GameData): number {
+  const mm = data.ranks.matchmaking;
+  const own = hallLevel(state, data);
+  const hi = Math.min(maxHall(data), own + mm.hallsAbove) - 1e-6;
+  const floor = attackerStrength(state, data) - powerSlackAt(own, data);
+  const lo = Math.min(hi, Math.max(0, own - mm.hallsBelow - 1, floor));
+  const s = Math.max(lo, Math.min(hi, strengthFor(state.trophies, data)));
+  return Math.max(1, Math.min(own, Math.floor(s) + 1));
 }
 
 /**

@@ -1,10 +1,10 @@
 /** Scouting (#1, #2), trophy-based matchmaking (#3), trophy equilibrium (#4) and the loot penalty. */
 import { describe, expect, it } from 'vitest';
 import { totalLoot } from '../../../src/gameplay/sim/battle/basegen';
-import { attackerStrength, matchStrength, opponentFor, opponentForRank, strengthFor } from '../../../src/gameplay/sim/matchmaking';
+import { attackerStrength, matchedKeep, matchStrength, opponentFor, opponentForRank, powerSlackAt, strengthFor } from '../../../src/gameplay/sim/matchmaking';
 import { troopLevelCapAt } from '../../../src/gameplay/sim/research';
 import { lossTrophies, winTrophies } from '../../../src/gameplay/sim/ranks';
-import { createRng, next } from '../../../src/gameplay/sim/rng';
+import { createRng, mixSeed, next } from '../../../src/gameplay/sim/rng';
 import type { VillageState } from '../../../src/gameplay/sim/types';
 import { applyCommand, leagueWinBonus, scoutFee } from '../../../src/gameplay/sim/village';
 import { data, must, newGame } from './helpers';
@@ -53,11 +53,31 @@ describe('scouting (#1, #2)', () => {
   });
 
   it('the Next fee is a steady share of the loot on offer at every hall', () => {
+    // P2-11 (DEF-13, 2026-11-18): restated against the Keep the fee is priced by (the matched Keep), not the
+    // player's own; a fresh village's matched Keep is below its own once it climbs.
     const { state } = newGame();
     for (let h = 1; h <= data.hall.levels.length; h++) {
-      const share = scoutFee(atHall(state, h), data) / avgLoot(h);
+      const v = atHall(state, h);
+      const share = scoutFee(v, data) / avgLoot(matchedKeep(v, data));
       expect(share, `hall ${h}`).toBeGreaterThanOrEqual(0.02);
       expect(share, `hall ${h}`).toBeLessThanOrEqual(0.05);
+    }
+  });
+
+  it('P2-11: the fee is 1.5-2.5% of the mean offer at Keeps 5, 9, 12 and 15 (campaign honor and strength)', () => {
+    // The regular campaign's honor and army strength at those Keeps (docs/game-theory/campaign.json).
+    const cases: [number, number, number][] = [[5, 1042, 3.5], [9, 2215, 8.78], [12, 3217, 11.93], [15, 4308, 14.0]];
+    for (const [K, honor, strength] of cases) {
+      const floor = strength - powerSlackAt(K, data);
+      let sum = 0;
+      for (let i = 0; i < 200; i++) {
+        const t = totalLoot(opponentForRank(mixSeed(12345, i), honor, K, data, floor, []));
+        sum += (t.acorns ?? 0) + (t.dew ?? 0);
+      }
+      const keep = Math.floor(Math.max(K - data.ranks.matchmaking.hallsBelow - 1, floor, strengthFor(honor, data))) + 1;
+      const share = data.battle.scoutFeeByHall[Math.min(K, keep) - 1] / (sum / 200);
+      expect(share, `Keep ${K}`).toBeGreaterThanOrEqual(0.015);
+      expect(share, `Keep ${K}`).toBeLessThanOrEqual(0.025);
     }
   });
 });

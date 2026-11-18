@@ -4,7 +4,8 @@
  */
 import { describe, expect, it } from 'vitest';
 import { generateOpponent } from '../../../src/gameplay/sim/battle/basegen';
-import { raidVillage } from '../../../src/gameplay/sim/defense';
+import { raidVillage, simulateOfflineRaids } from '../../../src/gameplay/sim/defense';
+import { rematchReward } from '../../../src/gameplay/sim/rematch';
 import { attackerFor } from '../../../src/gameplay/sim/matchmaking';
 import { capacity } from '../../../src/gameplay/sim/resources';
 import { createRng } from '../../../src/gameplay/sim/rng';
@@ -79,8 +80,7 @@ describe('P2-02 (DEF-04): raiders come from the defender\'s Keep, not its honor'
 });
 
 describe('P2-05/P2-06 (DEF-06, DEF-11): a long absence cannot empty the treasury', () => {
-  it('a thirty-day absence meets at most maxRaidsPerCatchUp raids', async () => {
-    const { simulateOfflineRaids } = await import('../../../src/gameplay/sim/defense');
+  it('a thirty-day absence meets at most maxRaidsPerCatchUp raids', () => {
     expect(data.raids.maxRaidsPerCatchUp).toBe(3);
     const v = createNewVillage(0, data);
     const away = simulateOfflineRaids(v, 30 * 24 * 3_600_000, data);
@@ -94,8 +94,7 @@ describe('P2-05/P2-06 (DEF-06, DEF-11): a long absence cannot empty the treasury
 });
 
 describe('P2-07 (DEF-08, ECO-07): Settle the score pays back what the raid took', () => {
-  it('pays the larger of the fixed share and recoverShare x stars/3 of the raid\'s take, never more than it took', async () => {
-    const { rematchReward } = await import('../../../src/gameplay/sim/rematch');
+  it('pays the larger of the fixed share and recoverShare x stars/3 of the raid\'s take, never more than it took', () => {
     const share = data.raids.rematch!.recoverShare!;
     expect(share).toBeGreaterThan(0);
     expect(share).toBeLessThanOrEqual(1);
