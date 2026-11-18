@@ -153,13 +153,17 @@ describe('outcome gates: no composition dominates (audit F22, F23, F37)', () => 
     }
   });
 
-  // P4-01 (CMB-01): the light-support mix where support strikes add the most (Keeps 6 and 10) is gated too.
-  const light = runLab({ keeps: [6, 10], layouts: ['random', 'kunai_ring', 'mortar_core'], seeds: 4, compositions: COMPOSITIONS.filter((c) => c.id === 'support_light') });
-  it('the light-support mix does not flatten same-Keep bases at Keeps 6 and 10 either: under 92% and at most 60% three stars', () => {
-    for (const keep of [6, 10]) {
-      const r = light.filter((x) => x.keep === keep);
-      expect(r.reduce((s, x) => s + x.destruction, 0) / r.length, `Keep ${keep}`).toBeLessThan(92);
-      expect(r.reduce((s, x) => s + x.threeStar, 0) / r.length, `Keep ${keep}`).toBeLessThanOrEqual(0.6);
+  // P4-01 (CMB-01): the light-support mix where support strikes add the most (Keeps 6 and 10) is gated too, and (Phase 4
+  // review #2) the pure support family there, whose Keep 10 cell rose most with the strike share.
+  const light = runLab({ keeps: [6, 10], layouts: ['random', 'kunai_ring', 'mortar_core'], seeds: 4, compositions: COMPOSITIONS.filter((c) => c.id === 'support_light' || c.id === 'support') });
+  it('the support mixes do not flatten same-Keep bases at Keeps 6 and 10 either: under 92% and at most 60% three stars', () => {
+    for (const comp of ['support_light', 'support']) {
+      for (const keep of [6, 10]) {
+        const r = light.filter((x) => x.keep === keep && x.comp === comp);
+        expect(r.length, `${comp} @ Keep ${keep}`).toBeGreaterThan(0);
+        expect(r.reduce((s, x) => s + x.destruction, 0) / r.length, `${comp} @ Keep ${keep}`).toBeLessThan(92);
+        expect(r.reduce((s, x) => s + x.threeStar, 0) / r.length, `${comp} @ Keep ${keep}`).toBeLessThanOrEqual(0.6);
+      }
     }
   });
 

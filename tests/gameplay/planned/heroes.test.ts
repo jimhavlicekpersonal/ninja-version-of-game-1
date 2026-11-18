@@ -4,7 +4,7 @@
  */
 import { describe, expect, it } from 'vitest';
 import { createBattle, deploy, step, type BattleSim } from '../../../src/gameplay/sim/battle/battle';
-import { attackDamage } from '../../../src/gameplay/sim/battle/warriors';
+import { attackDamage, auraStrength } from '../../../src/gameplay/sim/battle/warriors';
 import { defaultData } from '../../../src/gameplay/sim/data';
 import { PREVIEW, previewHeroDef, previewHeroIds, withPreview } from '../../../src/gameplay/sim/plannedContent';
 import { HEROES } from '../../../src/gameplay/sim/progression';
@@ -151,6 +151,19 @@ describe('Rally: once per battle or on every target (RM-3 flag)', () => {
     data.battle.heroes!.shadow_captain.kit!.oncePerBattle = true;
     const r = rallies(data);
     expect(r.second).toBe(r.first);
+  });
+  it('a Rally lasts its 15 seconds even if the Captain falls (Phase 4 review #10, as the card says)', () => {
+    const s = createBattle({ seed: 3, base: { name: 'r', hallLevel: 15, buildings: [b('h', 'elder_toadstool', 40, 40), b('k', 'acorn_cannon', 20, 10)] }, army: { beetle_brute: 1 }, levels: {}, hero: { id: 'shadow_captain', level: 1 } }, defaultData);
+    const cap = place(s, 'shadow_captain', 19, 11);
+    const ally = place(s, 'beetle_brute', 18, 12);
+    attackDamage(s, s.troops[cap], s.buildings[1]);
+    const strength = defaultData.battle.heroes!.shadow_captain.kit!.strength!;
+    expect(auraStrength(s, s.troops[ally], 'rally')).toBe(strength);
+    s.troops[cap].dead = true;
+    s.troops[cap].hp = 0;
+    expect(auraStrength(s, s.troops[ally], 'rally')).toBe(strength);
+    s.tick = s.troops[cap].rallyUntil!;
+    expect(auraStrength(s, s.troops[ally], 'rally')).toBe(0);
   });
   it('the shipped data sets the flag (P4-02): once per battle, as the text says', () => {
     expect(defaultData.battle.heroes!.shadow_captain.kit!.oncePerBattle).toBe(true);

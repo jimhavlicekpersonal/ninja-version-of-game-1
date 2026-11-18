@@ -48,7 +48,7 @@ export function choosableHeroes(state: VillageState, data: GameData): string[] {
   if (!data.features?.heroChoice || hall <= 0) return [];
   const keep = hallLevel(state, data);
   const needs = data.economy.heroHallLevels ?? [];
-  const order = Object.entries(data.battle.heroes ?? {}).sort(([a, x], [b, y]) => x.unlockKeep - y.unlockKeep || a.localeCompare(b));
+  const order = Object.entries(data.battle.heroes ?? {}).sort(([a, x], [b, y]) => x.unlockKeep - y.unlockKeep || (a < b ? -1 : a > b ? 1 : 0)); // review #11: no locale-dependent sort
   return order.filter(([, d], i) => keep >= d.unlockKeep && hall >= (needs[i] ?? needs[needs.length - 1] ?? 1)).map(([id]) => id);
 }
 

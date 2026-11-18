@@ -201,6 +201,18 @@ describe('support and companions', () => {
     step(sim); advance(sim, 11);
     expect(target.hits).toBe(2); // hits on ticks 1 and 12: the 12-tick interval is 11 with haste (12 without)
   });
+  it('a 10-tick warrior attacks about 10% more often beside a Drum Monk (the overshoot carries, review #3)', () => {
+    const hits = (types: string[]) => {
+      const sim = arena(...types);
+      const t = sim.troops[sim.troops.length - 1];
+      step(sim); advance(sim, 219);
+      return t.hits;
+    };
+    const plain = hits(['iron_monk']);
+    const drummed = hits(['drum_monk', 'iron_monk']);
+    expect(plain).toBe(22);
+    expect(drummed).toBeGreaterThanOrEqual(24);
+  });
   it('Bell Warden takes targeting priority over a closer warrior', () => {
     const sim = arena('hedgehog_roller', 'bell_warden');
     sim.troops[1].x = 8;

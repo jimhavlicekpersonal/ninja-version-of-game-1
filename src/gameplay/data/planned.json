@@ -72,7 +72,7 @@
       "effect": { "capacity": 0.5, "returnPct": 1, "troops": ["thunder_kite", "storm_sovereign"] }
     },
     "hero_shrine": {
-      "$comment": "Hero Hall: built and priced like the Training Dojo. With heroChoice, the player picks one unlocked hero; the hero's level is capped by the Hall's.",
+      "$comment": "Hero Hall: built and priced like the Training Dojo. With heroChoice, the player picks one unlocked hero; the Hall's level decides which heroes can be chosen, never their level (BNL-11).",
       "ref": "burrow_barracks", "hpMult": 1, "costMult": 1, "size": 3, "count": 1
     }
   },

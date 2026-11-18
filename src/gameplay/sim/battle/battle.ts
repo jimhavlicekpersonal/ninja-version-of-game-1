@@ -501,7 +501,7 @@ function stepTroop(sim: BattleSim, ti: number): void {
     const c = center(target);
     t.facing = c.x - c.y >= t.x - t.y ? 1 : -1;
     if (t.cooldown <= 0) {
-      t.cooldown = def.attackIntervalTicks;
+      t.cooldown = def.attackIntervalTicks + Math.min(0, t.cooldown); // Phase 4 review #3: a hasted countdown's overshoot carries (0 exactly without haste)
       const damage = attackDamage(sim, t, target);
       if (def.projectile) {
         const d = dist(t.x, t.y, c.x, c.y);
@@ -556,7 +556,7 @@ function stepTroop(sim: BattleSim, ti: number): void {
     if (hi >= 0 && (!ignoresHedges || springBlocks(t, sim.buildings[hi]))) {
       t.attacking = true;
       if (t.cooldown <= 0) {
-        t.cooldown = def.attackIntervalTicks;
+        t.cooldown = def.attackIntervalTicks + Math.min(0, t.cooldown); // Phase 4 review #3: a hasted countdown's overshoot carries (0 exactly without haste)
         resolveWarriorHit(sim, t, hi, attackDamage(sim, t, sim.buildings[hi]), warriorActions);
       }
       return;

@@ -28,7 +28,8 @@ export function auraStrength(sim: BattleSim, target: SimTroop, aura: WarriorKit[
   let value = 0;
   for (const index of sources) {
     const source = sim.troops[index];
-    if (source.dead) continue;
+    // Phase 4 review #10: a Rally lasts its 15 seconds, as its card says, even if the Captain falls meanwhile.
+    if (source.dead && !(aura === 'rally' && (source.rallyUntil ?? 0) > sim.tick)) continue;
     const kit = kitOf(sim, source);
     if (aura === 'splash' && origin && source.id !== target.id) {
       const behind = (target.x - source.x) * (origin.x - source.x) + (target.y - source.y) * (origin.y - source.y) < 0;
@@ -176,7 +177,8 @@ function supportStrike(sim: BattleSim, t: SimTroop, range: number, interval: num
   let best = -1;
   let bestD = 0;
   sim.buildings.forEach((b, i) => {
-    if (b.destroyed || b.kind === 'hedge') return;
+    // Review #9: never a trap (normal targeting and splash never pick one either).
+    if (b.destroyed || b.kind === 'hedge' || b.kind === 'trap') return;
     const d = distToRect(t.x, t.y, shape(b));
     if (d <= range && (best < 0 || d < bestD)) {
       best = i;
@@ -184,7 +186,7 @@ function supportStrike(sim: BattleSim, t: SimTroop, range: number, interval: num
     }
   });
   if (best < 0) return;
-  t.cooldown = interval;
+  t.cooldown = interval + Math.min(0, t.cooldown); // review #3: haste's overshoot carries
   t.attacking = true;
   resolveWarriorHit(sim, t, best, attackDamage(sim, t, sim.buildings[best]) * share, actions);
 }
@@ -303,7 +305,7 @@ export function beforeWarriorAction(sim: BattleSim, t: SimTroop, actions: Action
     if (hi >= 0) {
       t.attacking = true;
       if (t.cooldown <= 0) {
-        t.cooldown = def.attackIntervalTicks;
+        t.cooldown = def.attackIntervalTicks + Math.min(0, t.cooldown); // review #3: haste's overshoot carries
         resolveWarriorHit(sim, t, hi, attackDamage(sim, t, sim.buildings[hi]), actions);
       }
       return true;
