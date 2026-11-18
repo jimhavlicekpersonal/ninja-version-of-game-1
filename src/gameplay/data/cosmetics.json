@@ -53,6 +53,54 @@
       "spots": "#9fb4ff"
     },
     {
+      "id": "cedar_dusk",
+      "name": "Cedar Dusk",
+      "moonstones": 450,
+      "minKeep": 6,
+      "cap": "#5b4636",
+      "spots": "#e9d3a6"
+    },
+    {
+      "id": "river_slate",
+      "name": "River Slate",
+      "moonstones": 450,
+      "minKeep": 7,
+      "cap": "#3e5c6b",
+      "spots": "#dbe8ef"
+    },
+    {
+      "id": "vermilion_gate",
+      "name": "Vermilion Gate",
+      "moonstones": 650,
+      "minKeep": 9,
+      "cap": "#b0362b",
+      "spots": "#1f1b18"
+    },
+    {
+      "id": "pine_shadow",
+      "name": "Pine Shadow",
+      "moonstones": 650,
+      "minKeep": 10,
+      "cap": "#1f3b2d",
+      "spots": "#c9b27c"
+    },
+    {
+      "id": "storm_iron",
+      "name": "Storm Iron",
+      "moonstones": 900,
+      "minKeep": 12,
+      "cap": "#4a4f57",
+      "spots": "#9fd3ff"
+    },
+    {
+      "id": "golden_crane",
+      "name": "Golden Crane",
+      "moonstones": 900,
+      "minKeep": 14,
+      "cap": "#f3efe4",
+      "spots": "#c4962c"
+    },
+    {
       "id": "moonlit_shrine",
       "name": "Moonlit Shrine",
       "moonstones": 0,
