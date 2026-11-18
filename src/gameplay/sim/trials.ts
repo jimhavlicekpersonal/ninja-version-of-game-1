@@ -129,8 +129,8 @@ export function canTryAlternate(trials: { best: number; alternate?: number; fail
 }
 
 /** The fortress variant a tier uses for this player (0 unless they switched it after failing it). */
-export function trialVariant(trials: { best: number; alternate?: number; failedTier?: number }, tier: number): number {
-  return tier === (trials.failedTier || nextTrialTier(trials.best)) ? trials.alternate ?? 0 : 0;
+export function trialVariant(trials: { best: number; alternate?: number; alternateTier?: number }, tier: number): number {
+  return tier === (trials.alternateTier ?? nextTrialTier(trials.best)) ? trials.alternate ?? 0 : 0;
 }
 
 /**

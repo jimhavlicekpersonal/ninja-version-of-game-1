@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { createBattle, deploy, runBattle } from '../../../src/gameplay/sim/battle/battle';
 import { LAYOUTS } from '../../../src/gameplay/sim/battle/basegen';
 import type { BaseLayout, Deployment } from '../../../src/gameplay/sim/battle/types';
-import { attemptTier, trialBase, trialCatchUpTier, trialInfo, trialReward, trialRewardsThrough } from '../../../src/gameplay/sim/trials';
+import { attemptTier, trialBase, trialCatchUpTier, trialInfo, trialReward, trialRewardsThrough, trialVariant } from '../../../src/gameplay/sim/trials';
 import { applyCommand } from '../../../src/gameplay/sim/village';
 import { migrate, SAVE_VERSION, serialize } from '../../../src/gameplay/sim/save';
 import type { VillageState } from '../../../src/gameplay/sim/types';
@@ -251,5 +251,20 @@ describe('P3-06 (PAC-09): a late starter catches up', () => {
     expect(mid.ok).toBe(false);
     const locked = applyCommand(s0, { type: 'trialEnd', tier: tier + 1, record: { at: clock.now(), opponentName: 'x', setup: { seed: 1, base: trialBase(tier + 1, data, 0), army: s0.army }, deployments: [] } }, clock.now(), data);
     expect(locked.ok).toBe(false);
+  });
+});
+
+describe('independent review 2026-11-18: the alternate fortress follows a failed catch-up tier', () => {
+  it('after failing the catch-up tier, "try a different fortress" switches that tier, not tier 1', () => {
+    const { state, clock } = newGame();
+    const s0: VillageState = { ...state, army: { hedgehog_roller: 5 }, buildings: state.buildings.map((b) => (data.buildings[b.type].category === 'hall' ? { ...b, level: 10 } : b)) };
+    const tier = trialCatchUpTier(s0.trials, 10, data)!;
+    const failed = applyCommand(s0, { type: 'trialEnd', tier, record: { at: clock.now(), opponentName: 'x', setup: { seed: 1, base: trialBase(tier, data, 0), army: s0.army }, deployments: [] } }, clock.now(), data);
+    if (!failed.ok) throw new Error(failed.message);
+    expect(failed.state.trials.failedTier).toBe(tier);
+    const alt = applyCommand(failed.state, { type: 'trialAlternate' }, clock.now(), data);
+    if (!alt.ok) throw new Error(alt.message);
+    expect(trialVariant(alt.state.trials, tier)).toBe(1);
+    expect(trialVariant(alt.state.trials, 1)).toBe(0);
   });
 });

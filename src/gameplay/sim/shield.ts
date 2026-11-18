@@ -23,5 +23,5 @@ export function shieldAfterAttack(shieldUntil: number, now: number, earlierAttac
  * trimmed log) show a won raid or any destruction.
  */
 export function hasAttacked(state: Pick<VillageState, 'battleLog' | 'stats'>): boolean {
-  return state.battleLog.some(isRaidRecord) || (state.stats.raidsWon ?? 0) > 0 || (state.stats.raidDestruction ?? 0) > 0;
+  return state.battleLog.some(isRaidRecord) || (state.stats.raidsWon ?? 0) > 0 || (state.stats.raidDestruction ?? 0) > 0 || (state.stats.raidsAbandoned ?? 0) > 0;
 }

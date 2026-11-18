@@ -702,8 +702,9 @@ export async function attack(ctx: ServerContext, me: Player, sub: BattleReport):
     const defLoss = delta > 0 ? Math.max(0, Math.min(defenseHonorLoss(delta, data), rdef.defenderDailyHonorLossCap - lostToday)) : -Math.min(-delta, Math.max(0, MAX_HONOR_FROM_ONE_ATTACKER - fromThisAttacker));
     const defPatch: { trophies: number; shieldUntil?: number; honorLoss?: { day: number; lost: number }; ratings?: { attack: Rating; base: Rating } } = { trophies: Math.max(0, (defender?.trophies ?? 0) - defLoss) };
     // P3-12: one rule with the game (sim/shield.ts): the player's first attack keeps its shield.
-    // Its attack history (pruned after months) or any honor (a shielded newcomer cannot be raided, so honor means raids).
-    const attackedBefore = (attacker.trophies ?? 0) > 0 || (await tx.recentTargets(me.id, 0)).length > 0;
+    // Independent review 2026-11-18: any earlier used pvp ticket (generated opponents too: they write no attack row),
+    // or any honor (a shielded newcomer cannot be raided, so honor means raids).
+    const attackedBefore = (attacker.trophies ?? 0) > 0 || (await tx.attackedBefore(me.id, ticket.id));
     const mePatch: { trophies: number; shieldUntil: number; ratings?: { attack: Rating; base: Rating } } = { trophies: playerTrophies, shieldUntil: shieldAfterAttack(attacker.shieldUntil, t, attackedBefore, data) };
     if (defender) {
       defPatch.honorLoss = { day, lost: lostToday + Math.max(0, defLoss) };

@@ -36,6 +36,11 @@ export class PgBattles extends PgBase implements BattleStore {
     return r[0] ? num(r[0].failures) : 0;
   }
 
+  async attackedBefore(attackerId: string, except: string): Promise<boolean> {
+    const r = await this.rows('select 1 from tickets where attacker_id = $1 and kind = $2 and used and id <> $3 limit 1', [attackerId, 'pvp', except]);
+    return r.length > 0;
+  }
+
   async openTickets(attackerId: string, kind: Ticket['kind']): Promise<Ticket[]> {
     const r = await this.rows('select t.*, b.base as stored_base from tickets t left join base_versions b on b.hash = t.base_hash where t.attacker_id = $1 and t.kind = $2 and not t.used order by t.created_at desc limit 50', [attackerId, kind]);
     return r.map(toTicket);

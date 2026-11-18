@@ -223,7 +223,8 @@ export interface VillageState {
    * alternate fortress chosen for the next tier, and the next tier if the last
    * attempt at it failed (which allows switching).
    */
-  trials: { best: number; alternate?: number; failedTier?: number };
+  /** `alternateTier` (save v24, P3-06 review fix): the tier the alternate fortress applies to (absent: the next tier). */
+  trials: { best: number; alternate?: number; failedTier?: number; alternateTier?: number };
   /**
    * A raid in progress (saved from the first deployment). If the app closes
    * mid-battle it is resolved on the next launch as if it had played out.
@@ -374,7 +375,7 @@ export interface GroveState {
  * Lifetime counters. `upgradesDone` and `troopsTrained` count finished work
  * (cancelled timers never count), so tasks cannot be farmed by start-and-cancel.
  */
-export type StatKey = 'collectedAcorns' | 'collectedDew' | 'upgradesStarted' | 'upgradesDone' | 'troopsTrained' | 'raidsWon' | 'starsEarned' | 'obstaclesCleared' | 'moonstonesSpent' | 'donations' | 'researchDone' | 'trialsCleared' | 'defensesFaced' | 'defensesWon' | 'rematchesWon' | 'raidDestruction' | 'timedUpgradesDone' | 'drillsDone';
+export type StatKey = 'collectedAcorns' | 'collectedDew' | 'upgradesStarted' | 'upgradesDone' | 'troopsTrained' | 'raidsWon' | 'starsEarned' | 'obstaclesCleared' | 'moonstonesSpent' | 'donations' | 'researchDone' | 'trialsCleared' | 'defensesFaced' | 'defensesWon' | 'rematchesWon' | 'raidDestruction' | 'timedUpgradesDone' | 'drillsDone' | 'raidsAbandoned';
 export type Stats = Record<StatKey, number>;
 /**
  * `defensesFaced`/`defensesWon`: raids against the village and the ones it held (no stars lost); `rematchesWon`: won
@@ -382,7 +383,7 @@ export type Stats = Record<StatKey, number>;
  * `timedUpgradesDone` (save v24, P1-08): finished upgrades that took a builder's time (instant wall levels do not).
  * A key added after v24 is filled on every load (`repairStats` in save.ts), so it needs no further bump.
  */
-export const STAT_KEYS: readonly StatKey[] = ['collectedAcorns', 'collectedDew', 'upgradesStarted', 'upgradesDone', 'troopsTrained', 'raidsWon', 'starsEarned', 'obstaclesCleared', 'moonstonesSpent', 'donations', 'researchDone', 'trialsCleared', 'defensesFaced', 'defensesWon', 'rematchesWon', 'raidDestruction', 'timedUpgradesDone', 'drillsDone'];
+export const STAT_KEYS: readonly StatKey[] = ['collectedAcorns', 'collectedDew', 'upgradesStarted', 'upgradesDone', 'troopsTrained', 'raidsWon', 'starsEarned', 'obstaclesCleared', 'moonstonesSpent', 'donations', 'researchDone', 'trialsCleared', 'defensesFaced', 'defensesWon', 'rematchesWon', 'raidDestruction', 'timedUpgradesDone', 'drillsDone', 'raidsAbandoned'];
 export function emptyStats(): Stats {
   return Object.fromEntries(STAT_KEYS.map((k) => [k, 0])) as Stats;
 }

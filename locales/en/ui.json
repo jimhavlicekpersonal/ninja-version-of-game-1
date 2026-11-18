@@ -19,7 +19,7 @@
   "tutorial.finishTrain.wait": "Training takes time too: your warriors are ready in {time}. Wait, or tap Finish training to use a little Jade.",
   "tutorial.finishTrain.done": "Your warriors are ready.",
   "tutorial.raid": "Your first raid. Tap Attack, look over the target, then Attack! On the battlefield I will show you one thing at a time: send your Shinobi in through a glowing point, then smoke them as they reach a tower: warriors inside the smoke can only be shot from close up.",
-  "tutorial.end": "Well fought. Upgrade the Training Dojo to unlock Saboteurs: they jam a defense for a few seconds. Jam first, then strike, and smoke your warriors where the fire is heaviest. Collect, upgrade, raid, and join an Alliance.",
+  "tutorial.end": "Well fought. Raids fill your storage fast: upgrade the Clan Keep (or a storage) next. Then upgrade the Training Dojo to unlock Saboteurs: they jam a defense for a few seconds. Jam first, then strike, and smoke your warriors where the fire is heaviest. Collect, upgrade, raid, and join an Alliance.",
   "tutorial.end.button": "Finish",
   "tutorial.skip": "Skip tutorial",
   "tutorial.step": "Step {n} of {total}",

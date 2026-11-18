@@ -150,7 +150,7 @@ export function recentRaidRates(state: VillageState, data: GameData): { stars: n
   const cfg = data.pass.adaptiveTasks;
   if (!cfg) return null;
   const raids = (state.battleLog ?? [])
-    .filter((r) => r.kind === 'attack' && !r.war && r.trial === undefined && !r.goalEvent && !r.rematch && r.settlement !== 'pending' && r.settlement !== 'rejected')
+    .filter((r) => r.kind === 'attack' && !r.war && r.trial === undefined && !r.goalEvent && !r.rematch && !r.drill && r.settlement !== 'pending' && r.settlement !== 'rejected')
     .slice(-cfg.recentRaids);
   if (raids.length < cfg.minRecent) return null;
   const stars = raids.reduce((a, r) => a + r.result.stars, 0) / raids.length;

@@ -67,3 +67,21 @@ describe('P3-07: the daily drill', () => {
     expect(BATTLE_COMMANDS.has('drillEnd')).toBe(true);
   });
 });
+
+describe('independent review 2026-11-18: drill days come from now', () => {
+  it('backdated records cannot pay past days', () => {
+    const { s, clock } = village();
+    const now = clock.now() + 3 * 86_400_000;
+    let st = s;
+    let paid = 0;
+    for (const back of [3, 2, 1, 0]) {
+      const r = drill(st, now - back * 86_400_000 + 1, {});
+      // The record's time is the client's word; the paid day is today's.
+      const at = applyCommand(st, { type: 'drillEnd', record: { ...(r.ok ? {} : {}), at: now - back * 86_400_000, opponentName: 'x', setup: { seed: 9, base: trialBase(1, data, 0), army: {} }, deployments: (r.ok ? r.state.battleLog.at(-1)!.deployments : []) } }, now, data);
+      if (!at.ok) continue;
+      if (at.events.some((e) => e.kind === 'drill_end' && e.paid)) paid++;
+      st = at.state;
+    }
+    expect(paid).toBe(1);
+  });
+});

@@ -150,6 +150,25 @@ for (const [label, makeRepo] of repoFactories) {
         expect((await a.me()).shieldUntil).toBeLessThanOrEqual(w.now());
       });
 
+      it('P3-12 review fix: repeated 0-star raids on generated bases at 0 honor end the shield from the second', async () => {
+        const w = await W();
+        const a = await w.player('Ann', baseAt(1));
+        w.pastShields();
+        const annId = (await a.me()).id;
+        const shield = w.now() + 10 * HOUR;
+        await w.repo.updatePlayer(annId, { shieldUntil: shield });
+        const raid = async () => {
+          const m = (await a.match())!;
+          const { army, deployments } = rush(1);
+          return a.submitAttack({ ticket: m.ticket, seed: await startSeed(a, m.ticket), army, deployments });
+        };
+        await raid();
+        expect((await a.me()).shieldUntil).toBe(shield);
+        await raid();
+        expect((await a.me()).trophies).toBe(0);
+        expect((await a.me()).shieldUntil).toBeLessThanOrEqual(w.now());
+      });
+
       it('issues the battle seed with each ticket and re-simulates with it, never with one the client picks', async () => {
         const w = await W();
         const a = await w.player('Ann', baseAt(1));

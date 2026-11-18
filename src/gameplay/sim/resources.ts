@@ -40,10 +40,10 @@ export function collectorAmount(b: Building, now: number, data: GameData): numbe
     const rate = collectorRatePerHour(b, lvl, data);
     return Math.min(rate * data.economy.collectorHoursCap, stored + (rate * Math.max(0, to - from)) / MS_PER_HOUR);
   };
-  // P3-03 (PAC-03): a collector keeps producing at its old level while it upgrades (`upgradeKeepsProducing`), then at
-  // the new level from the upgrade's end. A new building (level 0) produces nothing until it is built.
+  // P3-03 (PAC-03): a collector keeps producing at its old level while it upgrades, then at
+  // the new level from the upgrade's end (at `endsAt` itself too, where `effectiveLevel` already reads the new level). A new building (level 0) produces nothing until it is built.
   const u = b.upgrade;
-  if (u && b.level >= 1 && now > u.endsAt) return fill(fill(b.collector.stored, b.collector.accrueFrom, u.endsAt, b.level), Math.max(b.collector.accrueFrom, u.endsAt), now, u.toLevel);
+  if (u && b.level >= 1 && now >= u.endsAt) return fill(fill(b.collector.stored, b.collector.accrueFrom, u.endsAt, b.level), Math.max(b.collector.accrueFrom, u.endsAt), now, u.toLevel);
   return fill(b.collector.stored, b.collector.accrueFrom, now, level);
 }
 

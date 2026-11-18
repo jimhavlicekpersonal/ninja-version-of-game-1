@@ -729,7 +729,8 @@ function runCommand(s: VillageState, cmd: Command, now: number, data: GameData):
       return trialEnd(s, cmd.tier, cmd.record, now, data);
     case 'trialAlternate':
       if (!canTryAlternate(s.trials, data)) return fail('NOT_AVAILABLE', 'An alternate fortress opens after a failed attempt at your next tier.');
-      s.trials = { ...s.trials, alternate: (s.trials.alternate ?? 0) + 1, failedTier: 0 };
+      // Independent review 2026-11-18: the alternate stays on the tier that was failed (a catch-up tier too).
+      s.trials = { ...s.trials, alternate: (s.trials.alternate ?? 0) + 1, alternateTier: s.trials.failedTier, failedTier: 0 };
       return { ok: true, state: s, events: [] };
     case 'battleProgress':
       s.pendingBattle = cmd.pending ? structuredClone(cmd.pending) : null;
@@ -880,6 +881,7 @@ function runCommand(s: VillageState, cmd: Command, now: number, data: GameData):
         if (!cmd.record.ticket && s.scout !== null && (cmd.record.deployments?.length ?? 0) > 0) {
           s.trophies = Math.max(0, s.trophies - lossTrophies(s.trophies, s.trophies, data));
           s.shieldUntil = shieldAfterAttack(s.shieldUntil, now, hasAttacked(s), data);
+          s.stats.raidsAbandoned = (s.stats.raidsAbandoned ?? 0) + 1;
           s.scout = null;
         }
         return { ok: true, state: s, events: [] };
@@ -906,6 +908,8 @@ function runCommand(s: VillageState, cmd: Command, now: number, data: GameData):
         const opp = cmd.record.setup.base.trophies ?? s.trophies;
         s.trophies = Math.max(0, s.trophies - lossTrophies(s.trophies, opp, data));
         s.shieldUntil = shieldAfterAttack(s.shieldUntil, now, hasAttacked(s), data);
+        // Independent review 2026-11-18: an abandoned raid counts as an attack for the first-attack shield rule.
+        s.stats.raidsAbandoned = (s.stats.raidsAbandoned ?? 0) + 1;
         s.scout = null;
       }
       return { ok: true, state: s, events: [] };
@@ -2132,7 +2136,10 @@ function trialEnd(s: VillageState, tier: number, rec: Omit<BattleRecord, 'result
     s.trials = { best: tier, alternate: 0, failedTier: 0 };
     s.stats.trialsCleared++;
   } else if (!cleared && (tier === next || tier === catchUp)) {
-    if (s.trials.failedTier !== tier) s.trials.alternate = 0;
+    if ((s.trials.alternateTier ?? next) !== tier) {
+      s.trials.alternate = 0;
+      delete s.trials.alternateTier;
+    }
     s.trials.failedTier = tier;
   }
   const record: BattleRecord = { ...rec, setup, opponentName: setup.base.name, id: `r${s.nextSeed++}`, kind: 'attack', at: rec.at ?? now, result: { ...result, loot: { ...result.loot } }, trophies: 0, banked: reward, rules: SIM_RULES, trial: tier, ...(hasAny(overflow) ? { overflow } : {}) };
@@ -2236,7 +2243,8 @@ function drillEnd(s: VillageState, rec: Omit<BattleRecord, 'result' | 'id' | 'ki
   const hero = heroFor(s, data);
   const setup: BattleSetup = { seed: Number.isInteger(rec.setup?.seed) ? rec.setup.seed : 0, base: { ...trialBase(tier, data, trialVariant(s.trials, tier)), practice: 'Daily drill (practice: nothing spent)' }, army, levels: drillLevels(army, s), infiltration: true, ...(hero ? { hero } : {}) };
   const { result } = runBattle(setup, rec.deployments, data, rec.endTick);
-  const day = localDayIndex(s, at, data);
+  // Independent review 2026-11-18: the paid day is today's, never the record's (a backdated `at` paid past days).
+  const day = localDayIndex(s, now, data);
   const paid = foughtWithWarriors(result, setup) && (s.drill?.day ?? -1) < day;
   let reward: Cost = {};
   let overflow: Cost = {};
