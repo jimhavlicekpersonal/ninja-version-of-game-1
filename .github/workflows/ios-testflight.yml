@@ -56,6 +56,8 @@ jobs:
           VITE_SENTRY_DSN: ${{ vars.VITE_SENTRY_DSN }}
           VITE_GOOGLE_CLIENT_ID: ${{ vars.VITE_GOOGLE_CLIENT_ID }}
           VITE_APPLE_SERVICES_ID: ${{ vars.VITE_APPLE_SERVICES_ID }}
+          # P7-11 (PUB-14): local-day statistics; the owner's switch (repository variable VITE_STATS_TZ=1), off by default.
+          VITE_STATS_TZ: ${{ vars.VITE_STATS_TZ || '0' }}
       - run: npx cap sync ios
       - name: Use the newest installed Xcode (App Store Connect requires a current SDK)
         run: |

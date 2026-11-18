@@ -299,3 +299,13 @@ describe('P7-06 (PUB-09): the iPhone release runs on an image with the required 
     expect(y).toMatch(/::error::iOS SDK .* older than 26.*\n?.*exit 1|older than 26[^\n]*exit 1/);
   });
 });
+
+describe('P7-11 (PUB-14): local-day statistics stay the owner\'s switch', () => {
+  it('every client workflow passes VITE_STATS_TZ from a repository variable, off when unset', () => {
+    for (const f of ['deploy.yml', 'android.yml', 'ios-testflight.yml']) {
+      const y = read(`.github/workflows/${f}`);
+      expect(y, f).toMatch(/VITE_STATS_TZ: \$\{\{ vars\.VITE_STATS_TZ \|\| '0' \}\}/);
+      expect(y, f).not.toMatch(/VITE_STATS_TZ: ['"]?1/);
+    }
+  });
+});
