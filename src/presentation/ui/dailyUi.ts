@@ -185,7 +185,7 @@ export class DailyUi {
         });
         actions.append(btn);
       } else {
-        actions.append(h('p', { class: 'muted' }, t('daily.next', { time: formatDuration(nextChestAt(now, gd) - now) })));
+        actions.append(h('p', { class: 'muted' }, t('daily.next', { time: formatDuration(nextChestAt(s, now, gd) - now) })));
       }
       body.append(actions);
       body.append(this.calendarSection(render));

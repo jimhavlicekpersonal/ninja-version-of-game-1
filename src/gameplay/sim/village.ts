@@ -13,7 +13,7 @@ import { buildingDef, levelDef, maxDefinedLevel, troopLevel } from './data';
 import { mixSeed } from './rng';
 import { leagueFor, lossTrophies, rollSeasons, seasonOf, winTrophies, type SeasonReward } from './ranks';
 import { emptyResearch, finishResearch, researchQuote, startResearch, troopLevelOf } from './research';
-import { chestContents, chestOutcome, emptyDaily, streakAfterClaim, streakJade, streakJadeDue } from './daily';
+import { chestContents, chestDay, chestOutcome, emptyDaily, streakAfterClaim, streakJade, streakJadeDue } from './daily';
 import { eventEffect } from './events';
 import { achievementViews } from './achievements';
 import { scaleReward, skipCost, topUpCost, trainingSkipCost } from './economy';
@@ -1421,7 +1421,7 @@ export function rewardOverflow(state: VillageState, reward: Cost, data: GameData
 
 /** The most today's chest could hold that would not fit (the largest outcome at today's streak step). */
 export function dailyChestOverflowRisk(state: VillageState, now: number, data: GameData): Cost {
-  const day = dayIndex(now, data);
+  const day = chestDay(state, now, data);
   if (state.daily.lastDay >= day) return {};
   const step = streakAfterClaim(state.daily, day, data).step;
   const hall = hallLevel(state, data);
@@ -1708,8 +1708,9 @@ function discounted(cost: Cost, share: number): Cost {
 
 /** Open today's free chest. Never costs anything and cannot be reopened or rerolled. */
 function openDailyChest(s: VillageState, now: number, data: GameData, entropy?: number): CommandResult {
-  const day = dayIndex(now, data);
-  if (s.daily.lastDay >= day) return fail('ALREADY_CLAIMED', "You've opened today's chest. A new one is ready at the start of the next day (UTC).");
+  // P5-09 (RET-12): the player's own day once a claim has been made on it (`chestDay`).
+  const day = chestDay(s, now, data);
+  if (s.daily.lastDay >= day) return fail('ALREADY_CLAIMED', "You've opened today's chest. A new one is ready when your next day starts.");
   const st = streakAfterClaim(s.daily, day, data);
   // Economy E18 (save v22): the draw also takes the salt the previous claim rolled with fresh entropy.
   const salt = s.daily.salt ?? 0;
@@ -1722,7 +1723,8 @@ function openDailyChest(s: VillageState, now: number, data: GameData, entropy?: 
   const history = [...s.daily.history, { day, outcome, step: st.step, grants, ...lost, ...(sj ? { streakJade: sj } : {}) }].slice(-data.daily.streak.historyDays);
   // Without entropy (an older game, the model player) the salt stays: the draw is the seed's, as before v22.
   const nextSalt = Number.isFinite(entropy) ? mixSeed(salt, Math.floor(entropy!) >>> 0) : salt;
-  s.daily = { lastDay: day, step: st.step, skipsLeft: st.skipsLeft, skipWeek: st.skipWeek, history, salt: nextSalt };
+  // P5-09: from this claim on the chest counts in the player's own day.
+  s.daily = { lastDay: localDayIndex(s, now, data), local: true, step: st.step, skipsLeft: st.skipsLeft, skipWeek: s.daily.local ? st.skipWeek : Math.floor(localDayIndex(s, now, data) / 7), history, salt: nextSalt };
   // P5-06: lifetime chest milestones give looks (a count of chests opened: a missed day cannot touch it).
   s.stats.chestsOpened = (s.stats.chestsOpened ?? 0) + 1;
   const chestLook = data.daily.chestLooks?.find((l) => l.at === s.stats.chestsOpened)?.look;

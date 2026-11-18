@@ -4,7 +4,8 @@
  * Local days: task days and weeks used to roll at UTC midnight (19:00 in New York, 16:00 in Los Angeles),
  * mid-session for much of the world. They now roll at the player's own midnight (`localTime.offsetMinutes`,
  * set from the device by `setLocalTime`; changed at most once a week, so moving the clock cannot farm task
- * days). The free chest and the stipend keep the UTC day: the chest's draw depends on it.
+ * days). Since P5-09 the free chest, the streak's skip week and the stipend also roll on the player's own day
+ * (`daily.local`, `stipend.local`, set by the first claim after the switch).
  *
  * The calendar: a fixed list of 28 rewards (`daily.json` `calendar`), one claim per local day, nothing random,
  * never sold. A missed day loses nothing (the next claim is the next day on the list), like the streak. Day 28

@@ -273,8 +273,10 @@ export interface CalendarState {
 export interface StipendState {
   /** Daily payments still to claim (0 = no stipend). */
   left: number;
-  /** Day index (pass days) of the last claim; -1 = never. */
+  /** Day index (pass days) of the last claim; -1 = never. A local day when `local` (P5-09), else a UTC day. */
   lastDay: number;
+  /** P5-09 (save v24, optional): set by the first claim on the player's own day; absent = the old UTC day. */
+  local?: boolean;
   /**
    * Jade still owed by the payments left (save v18). A stipend keeps the Jade it was sold with when
    * the price list changes (report section 5 step 6 lowered it from 20 to 12 a payment).
@@ -299,8 +301,10 @@ export interface ArmyPreset {
 }
 
 export interface DailyState {
-  /** Day index (pass days) the chest was last opened; -1 = never. */
+  /** Day index (pass days) the chest was last opened; -1 = never. A local day when `local` (P5-09), else a UTC day. */
   lastDay: number;
+  /** P5-09 (save v24, optional): set by the first claim on the player's own day; absent = the old UTC day. */
+  local?: boolean;
   /** Current step on the streak ladder (0 before the first chest). */
   step: number;
   /** Free skips left this week, and the week they belong to. */

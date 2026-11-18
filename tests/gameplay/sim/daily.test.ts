@@ -52,7 +52,7 @@ describe('daily chest', () => {
     // Reloading (re-applying to the saved state from before) gives the same outcome.
     const replay = applyCommand(s0, { type: 'openDailyChest' }, clock.now() + 3_600_000, data);
     if (replay.ok && dayIndex(clock.now() + 3_600_000, data) === day) expect(replay.events[0]).toEqual(r.events[0]);
-    expect(chestReady(r.state, nextChestAt(clock.now(), data), data)).toBe(true);
+    expect(chestReady(r.state, nextChestAt(r.state, clock.now(), data), data)).toBe(true);
   });
 
   it('is never sold: no product, offer or pack opens a chest or grants streak skips', () => {

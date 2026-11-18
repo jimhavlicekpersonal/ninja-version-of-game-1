@@ -57,7 +57,7 @@ export function upcomingReminders(state: VillageState, now: number, data: GameDa
     if (p.phase !== 'live') out.push({ id: 'grove-raid', type: 'groveRaid', at: p.nextStart, title: 'The Alliance War has started!', body: 'Use both attacks to win the reward chest.' });
   }
   // Tomorrow's free chest, if today's is already open (otherwise it's ready now).
-  if (state.daily && !chestReady(state, now, data)) out.push({ id: 'daily-chest', type: 'dailyChest', at: nextChestAt(now, data), title: 'A new daily chest is ready', body: "It's free. See the odds before you open it." });
+  if (state.daily && !chestReady(state, now, data)) out.push({ id: 'daily-chest', type: 'dailyChest', at: nextChestAt(state, now, data), title: 'A new daily chest is ready', body: "It's free. See the odds before you open it." });
   for (const e of upcomingEvents(now, 2, data)) {
     if (e.start - now > 2 * 86_400_000) continue;
     out.push({ id: `event-${e.key}`, type: 'events', at: e.start, title: `${e.name} has started`, body: `${e.description} Ends ${new Date(e.end).toUTCString().slice(0, 22)} UTC.` });
