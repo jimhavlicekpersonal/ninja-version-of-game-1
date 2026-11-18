@@ -351,6 +351,8 @@ export class App {
       special: special ? { title: special.title } : undefined,
       // Declared stakes: raids only, offline or on a server that settles them (protocol 11).
       stakes: !replayOf && !grove && !duel && trialTier === undefined && !practice && !special && (!this.ticket || this.d.connection.canStakes),
+      // P6-13 (UIS-07): what this army would carry, shown at scouting when it is under 100%.
+      carryShare: !replayOf && !grove && !duel && trialTier === undefined && !practice && !special ? diversityShare(armyDiversity(session.setup.army, session.setup, c.data), c.data, trainableRoles(c.state, c.data)) : undefined,
       trial:
         trialTier !== undefined
           ? (() => {

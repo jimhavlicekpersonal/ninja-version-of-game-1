@@ -1172,3 +1172,7 @@ html[dir="rtl"] .training .actions.army-filters select { padding: 6px 8px 6px 20
 /* P6-09 (PLY-02): on a phone the sheet is as wide as the screen and the rail's fold toggle sat over its close
    button: the rail steps aside while a sheet is open (the sheet's close button brings it back). */
 @media (max-width: 600px) { #hud:has(.sheet:not([hidden])) .side-rail { visibility: hidden; } }
+/* P6-13: the declared stake's star wears a ring all fight; its downside sits right under the stake chips. */
+.b-stars .star.staked { border-radius: 50%; box-shadow: 0 0 0 2px var(--sun-dark), 0 0 8px rgba(233, 180, 76, .7); }
+.scout-report .stake-help { margin: 2px 0 4px; color: #8a4b12; font-weight: 700; }
+.carry-preview { color: #8a4b12; }

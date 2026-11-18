@@ -136,6 +136,7 @@
   "stake.met": { "en": "Stake reached: {stars}★ carried ×{mult} loot.", "text": "Sázka splněna: {stars}★ přineslo ×{mult} kořisti." },
   "stake.missed": { "en": "Stake missed: you declared {stars}★, so no loot came home.", "text": "Sázka nesplněna: vyhlášeno bylo {stars}★, takže se domů nevrátila žádná kořist." },
   "carry.diversity": { "en": "Your squad carried {pct} of the loot. Squads of more roles carry more.", "text": "Tvůj oddíl odnesl {pct} kořisti. Oddíly s více rolemi unesou víc." },
+  "carry.preview": { "en": "This army would carry {pct} of the loot. Squads of more roles carry more.", "text": "" },
   "pay.label": { "en": "Walls and traps", "text": "Hradby a pasti" },
   "pay.coins": { "en": "Pay with Coins", "text": "Zaplatit mincemi" },
   "pay.provisions": { "en": "Pay with Provisions", "text": "Zaplatit proviantem" },

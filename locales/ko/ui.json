@@ -136,6 +136,7 @@
   "stake.met": { "en": "Stake reached: {stars}★ carried ×{mult} loot.", "text": "내기 달성: {stars}★, 전리품 ×{mult}." },
   "stake.missed": { "en": "Stake missed: you declared {stars}★, so no loot came home.", "text": "내기 실패: 별 {stars}개를 선언해서 전리품을 하나도 가져오지 못했어요." },
   "carry.diversity": { "en": "Your squad carried {pct} of the loot. Squads of more roles carry more.", "text": "부대가 전리품을 {pct}만큼 가져왔어요. 역할이 다양한 부대일수록 더 많이 가져와요." },
+  "carry.preview": { "en": "This army would carry {pct} of the loot. Squads of more roles carry more.", "text": "" },
   "pay.label": { "en": "Walls and traps", "text": "성벽과 함정" },
   "pay.coins": { "en": "Pay with Coins", "text": "코인으로 지불" },
   "pay.provisions": { "en": "Pay with Provisions", "text": "군량으로 지불" },

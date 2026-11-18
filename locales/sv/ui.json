@@ -136,6 +136,7 @@
   "stake.met": { "en": "Stake reached: {stars}★ carried ×{mult} loot.", "text": "Insatsen nådd: {stars}★ gav ×{mult} byte." },
   "stake.missed": { "en": "Stake missed: you declared {stars}★, so no loot came home.", "text": "Insatsen missad: du utlyste {stars}★, så inget byte kom hem." },
   "carry.diversity": { "en": "Your squad carried {pct} of the loot. Squads of more roles carry more.", "text": "Din trupp bar {pct} av bytet. Trupper med fler roller bär mer." },
+  "carry.preview": { "en": "This army would carry {pct} of the loot. Squads of more roles carry more.", "text": "" },
   "pay.label": { "en": "Walls and traps", "text": "Murar och fällor" },
   "pay.coins": { "en": "Pay with Coins", "text": "Betala med Mynt" },
   "pay.provisions": { "en": "Pay with Provisions", "text": "Betala med Proviant" },

@@ -136,6 +136,7 @@
   "stake.met": { "en": "Stake reached: {stars}★ carried ×{mult} loot.", "text": "赌注达成：{stars}★，带回 ×{mult} 的战利品。" },
   "stake.missed": { "en": "Stake missed: you declared {stars}★, so no loot came home.", "text": "赌注未达成：你宣布了 {stars}★，所以没有带回任何战利品。" },
   "carry.diversity": { "en": "Your squad carried {pct} of the loot. Squads of more roles carry more.", "text": "你的小队带回了 {pct} 的战利品。职能越多样的小队带回的越多。" },
+  "carry.preview": { "en": "This army would carry {pct} of the loot. Squads of more roles carry more.", "text": "" },
   "pay.label": { "en": "Walls and traps", "text": "城墙和陷阱" },
   "pay.coins": { "en": "Pay with Coins", "text": "用金币支付" },
   "pay.provisions": { "en": "Pay with Provisions", "text": "用粮草支付" },

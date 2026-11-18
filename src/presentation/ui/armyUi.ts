@@ -10,8 +10,9 @@ import { t as i18nText } from './i18n';
  * rebuilt only when what it shows has changed, never while a finger is down, and
  * the scroll position stays where the player left it.
  */
-import { t } from './i18n';
+import { fmtPercent, t } from './i18n';
 import { suggestedArmy } from '../../gameplay/sim/suggest';
+import { armyDiversity, diversityShare, trainableRoles } from '../../gameplay/sim/carry';
 import { troopLevelOf, researchLanes } from '../../gameplay/sim/research';
 import { troopLevel } from '../../gameplay/sim/data';
 import { MODEL as CANONICAL_MODEL, WARRIORS as CANONICAL_WARRIORS } from '../../gameplay/sim/progression';
@@ -391,6 +392,11 @@ export class ArmyUi {
     if (!ready.childElementCount) ready.append(h('span', { class: 'muted' }, i18nText("ui.no_warriors_ready_yet_0132a774ac")));
     const units = Object.values(s.army).reduce((a, b) => a + b, 0);
     wrap.append(h('h3', {}, units ? t('army.readyN', { n: units }) : t('army.ready')), ready);
+    // P6-13 (UIS-07): the share of the loot this ready army would carry, before the raid (only when under 100%).
+    if (units) {
+      const share = diversityShare(armyDiversity(s.army, { hero: undefined }, gd), gd, trainableRoles(s, gd));
+      if (share < 1) wrap.append(h('p', { class: 'small carry-preview', 'data-id': 'carry-preview' }, t('carry.preview', { pct: fmtPercent(share * 100) })));
+    }
     const lodge = Object.entries(lodgeTroops(s));
     if (lodge.length) {
       wrap.append(

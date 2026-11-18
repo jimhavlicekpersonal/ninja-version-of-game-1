@@ -60,6 +60,8 @@ interface BattleHudDeps {
   onFinished(): { result: BattleResult; banked: Cost; trophies: number; bonus?: Cost; eventBonus?: Cost; overflow?: Cost; note?: string; pending?: boolean; stake?: number; /** The diversity share the raid carried (sim/carry.ts; absent = 1). */ diversity?: number; /** P5-03: the daily contract it met (its name). */ contract?: string; /** P6-07: what the battle moved. */ progress?: ProgressLine[] } | null;
   /** A raid that may declare a stake (sim/carry.ts): offline, or on a server with the `stakes` feature. */
   stakes?: boolean;
+  /** P6-13 (UIS-07): the share of the loot this army would carry (sim/carry.ts; raids only, absent or 1 = all). */
+  carryShare?: number;
   onReplay(): void;
   /**
    * P6-07 (UIS-01): what to do next from the result screen (Refill, Next, the next Trial tier, a different fortress),
@@ -108,6 +110,7 @@ export class BattleHud {
   private interval = 0;
   private finished = false;
   private lastStars = -1;
+  private lastStake: number | undefined = undefined;
   private lootSig = '';
   /** The map, once the scene is up: point positions for the chevrons, path highlight, refit. */
   private view: BattleView | null = null;
@@ -397,7 +400,9 @@ export class BattleHud {
         ? h('p', { class: 'small temper-profile' }, t('scout.profile', { reach: fmtPercent(r.profile.reach * 100), blast: fmtPercent(r.profile.blast * 100), watch: fmtPercent(r.profile.watch * 100) }))
         : null,
       ...r.tips.map((t) => h('p', { class: 'small' }, ownedText(t))),
-      this.deps.stakes && stakeOptions(this.s.data).length ? h('p', { class: 'small muted' }, t('stake.help')) : null,
+      this.deps.stakes && stakeOptions(this.s.data).length && this.s.stake === undefined ? h('p', { class: 'small muted' }, t('stake.help')) : null,
+      // P6-13 (UIS-07): the diversity share before the raid, not only after it.
+      this.deps.carryShare !== undefined && this.deps.carryShare < 1 ? h('p', { class: 'small carry-preview', 'data-id': 'carry-preview' }, t('carry.preview', { pct: fmtPercent(this.deps.carryShare * 100) })) : null,
       ...(() => {
         // Report section 5 step 8: who holds this outpost (a computer rival clan).
         const clan = rivalById(this.s.setup.base.rival, localizedData(this.s.data));
@@ -436,12 +441,24 @@ export class BattleHud {
       const b = h('button', { type: 'button', class: `chip${on ? ' on' : ''}`, 'aria-pressed': String(on), 'data-id': `stake-${stake ?? 0}` }, label);
       b.addEventListener('click', () => {
         this.s.setStake(stake);
+        // P6-13 (UIS-05): the first stake on this device opens the drawer once, so the rules are read before Attack.
+        if (stake !== undefined) {
+          try {
+            if (!localStorage.getItem('tk.stakeHelpSeen')) {
+              localStorage.setItem('tk.stakeHelpSeen', '1');
+              this.scoutOpen = true;
+            }
+          } catch {
+            /* storage blocked: the help line below the chips still shows */
+          }
+        }
         this.renderScout();
       });
       return b;
     };
-    // Always in view (one chip row); what a stake means is in the drawer.
-    return [h('div', { class: 'chips stake-row', role: 'group', 'aria-label': t('stake.label') }, h('span', { class: 'muted small' }, t('stake.label')), chip(undefined, t('stake.none')), ...opts.map((n) => chip(n, t('stake.option', { stars: n, mult: mult(gd.raids.stakes!.byStars[String(n)]) }))))];
+    // Always in view (one chip row); with a stake chosen, its downside is the line right under it.
+    const row = h('div', { class: 'chips stake-row', role: 'group', 'aria-label': t('stake.label') }, h('span', { class: 'muted small' }, t('stake.label')), chip(undefined, t('stake.none')), ...opts.map((n) => chip(n, t('stake.option', { stars: n, mult: mult(gd.raids.stakes!.byStars[String(n)]) }))));
+    return this.s.stake !== undefined ? [row, h('p', { class: 'small stake-help', 'data-id': 'stake-help' }, t('stake.help'))] : [row];
   }
 
   /** One chip per Infiltration Point: letter and how many defenses cover its path (tap: highlight the path). */
@@ -609,9 +626,12 @@ export class BattleHud {
     this.pctEl.textContent = `${pct}%`;
     const t = localizedData(this.s.data).battle.starThresholds;
     const stars = (pct >= t.destruction ? 1 : 0) + (sim.hallDestroyed ? 1 : 0) + (pct >= t.full ? 1 : 0);
-    if (stars !== this.lastStars) {
+    if (stars !== this.lastStars || this.s.stake !== this.lastStake) {
+      this.lastStake = this.s.stake;
       clear(this.starsEl);
-      for (let i = 0; i < 3; i++) this.starsEl.append(h('span', { class: `star${i < stars ? ' on' : ''}` }, '★'));
+      // P6-13: the declared stake's star is marked for the whole fight.
+      const staked = this.s.stake;
+      for (let i = 0; i < 3; i++) this.starsEl.append(h('span', { class: `star${i < stars ? ' on' : ''}${staked === i + 1 ? ' staked' : ''}`, ...(staked === i + 1 ? { 'data-id': 'staked-star', title: i18nText('stake.option', { stars: staked, mult: fmtDecimal(this.s.data.raids.stakes?.byStars[String(staked)] ?? 1, 2) }) } : {}) }, '★'));
       if (this.lastStars >= 0 && stars > this.lastStars) {
         this.starsEl.classList.add('bump');
         sound.play('star');

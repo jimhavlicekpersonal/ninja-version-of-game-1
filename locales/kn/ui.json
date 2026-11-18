@@ -136,6 +136,7 @@
   "stake.met": { "en": "Stake reached: {stars}★ carried ×{mult} loot.", "text": "ಪಣ ತಲುಪಲಾಗಿದೆ: {stars}★, ಲೂಟಿ ×{mult}." },
   "stake.missed": { "en": "Stake missed: you declared {stars}★, so no loot came home.", "text": "ಪಣ ತಪ್ಪಿತು: ನೀವು {stars}★ ಘೋಷಿಸಿದ್ದಿರಿ, ಆದ್ದರಿಂದ ಯಾವ ಲೂಟಿಯೂ ಮನೆಗೆ ಬರಲಿಲ್ಲ." },
   "carry.diversity": { "en": "Your squad carried {pct} of the loot. Squads of more roles carry more.", "text": "ನಿಮ್ಮ ದಳ ಲೂಟಿಯ {pct} ಹೊತ್ತು ತಂದಿತು. ಹೆಚ್ಚು ಪಾತ್ರಗಳ ದಳಗಳು ಹೆಚ್ಚು ಹೊರುತ್ತವೆ." },
+  "carry.preview": { "en": "This army would carry {pct} of the loot. Squads of more roles carry more.", "text": "" },
   "pay.label": { "en": "Walls and traps", "text": "ಗೋಡೆಗಳು ಮತ್ತು ಬಲೆಗಳು" },
   "pay.coins": { "en": "Pay with Coins", "text": "ನಾಣ್ಯಗಳಿಂದ ಪಾವತಿಸಿ" },
   "pay.provisions": { "en": "Pay with Provisions", "text": "ಪಡಿತರದಿಂದ ಪಾವತಿಸಿ" },

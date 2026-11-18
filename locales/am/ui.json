@@ -136,6 +136,7 @@
   "stake.met": { "en": "Stake reached: {stars}★ carried ×{mult} loot.", "text": "ውርርዱ ተሳክቷል፦ {stars}★ ×{mult} ምርኮ አስገኝቷል።" },
   "stake.missed": { "en": "Stake missed: you declared {stars}★, so no loot came home.", "text": "ውርርዱ አልተሳካም፦ {stars}★ አሳውቀው ነበር፣ ስለዚህ ምንም ምርኮ ወደ ቤት አልመጣም።" },
   "carry.diversity": { "en": "Your squad carried {pct} of the loot. Squads of more roles carry more.", "text": "ቡድንዎ ከምርኮው {pct} ተሸክሟል። ብዙ ሚናዎች ያሉት ቡድን የበለጠ ይሸከማል።" },
+  "carry.preview": { "en": "This army would carry {pct} of the loot. Squads of more roles carry more.", "text": "" },
   "pay.label": { "en": "Walls and traps", "text": "ግንቦችና ወጥመዶች" },
   "pay.coins": { "en": "Pay with Coins", "text": "በሳንቲም ይክፈሉ" },
   "pay.provisions": { "en": "Pay with Provisions", "text": "በስንቅ ይክፈሉ" },

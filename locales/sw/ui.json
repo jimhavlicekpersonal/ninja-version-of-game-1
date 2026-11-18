@@ -136,6 +136,7 @@
   "stake.met": { "en": "Stake reached: {stars}★ carried ×{mult} loot.", "text": "Dau limefikiwa: {stars}★ zimebeba nyara ×{mult}." },
   "stake.missed": { "en": "Stake missed: you declared {stars}★, so no loot came home.", "text": "Dau limekosekana: ulitangaza {stars}★, kwa hiyo hakuna nyara zilizofika nyumbani." },
   "carry.diversity": { "en": "Your squad carried {pct} of the loot. Squads of more roles carry more.", "text": "Kikosi chako kilibeba {pct} ya nyara. Vikosi vyenye kazi nyingi tofauti hubeba zaidi." },
+  "carry.preview": { "en": "This army would carry {pct} of the loot. Squads of more roles carry more.", "text": "" },
   "pay.label": { "en": "Walls and traps", "text": "Kuta na mitego" },
   "pay.coins": { "en": "Pay with Coins", "text": "Lipa kwa Sarafu" },
   "pay.provisions": { "en": "Pay with Provisions", "text": "Lipa kwa Chakula" },

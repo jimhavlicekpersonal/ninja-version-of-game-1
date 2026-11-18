@@ -136,6 +136,7 @@
   "stake.met": { "en": "Stake reached: {stars}★ carried ×{mult} loot.", "text": "Ulog ostvaren: {stars}★ donosi ×{mult} plijena." },
   "stake.missed": { "en": "Stake missed: you declared {stars}★, so no loot came home.", "text": "Ulog promašen: najava je bila {stars}★, pa kući nije stigao plijen." },
   "carry.diversity": { "en": "Your squad carried {pct} of the loot. Squads of more roles carry more.", "text": "Tvoj je odred odnio {pct} plijena. Odredi s više uloga nose više." },
+  "carry.preview": { "en": "This army would carry {pct} of the loot. Squads of more roles carry more.", "text": "" },
   "pay.label": { "en": "Walls and traps", "text": "Zidovi i zamke" },
   "pay.coins": { "en": "Pay with Coins", "text": "Plati novčićima" },
   "pay.provisions": { "en": "Pay with Provisions", "text": "Plati namirnicama" },

@@ -136,6 +136,7 @@
   "stake.met": "Stake reached: {stars}★ carried ×{mult} loot.",
   "stake.missed": "Stake missed: you declared {stars}★, so no loot came home.",
   "carry.diversity": "Your squad carried {pct} of the loot. Squads of more roles carry more.",
+  "carry.preview": "This army would carry {pct} of the loot. Squads of more roles carry more.",
   "pay.label": "Walls and traps",
   "pay.coins": "Pay with Coins",
   "pay.provisions": "Pay with Provisions",

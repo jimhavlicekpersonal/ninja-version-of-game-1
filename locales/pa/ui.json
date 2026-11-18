@@ -136,6 +136,7 @@
   "stake.met": { "en": "Stake reached: {stars}★ carried ×{mult} loot.", "text": "ਦਾਅ ਪੂਰਾ: {stars}★ ਨਾਲ ×{mult} ਲੁੱਟ ਘਰ ਆਈ।" },
   "stake.missed": { "en": "Stake missed: you declared {stars}★, so no loot came home.", "text": "ਦਾਅ ਖੁੰਝਿਆ: ਤੁਸੀਂ {stars}★ ਐਲਾਨੇ ਸਨ, ਇਸ ਲਈ ਕੋਈ ਲੁੱਟ ਘਰ ਨਹੀਂ ਆਈ।" },
   "carry.diversity": { "en": "Your squad carried {pct} of the loot. Squads of more roles carry more.", "text": "ਤੁਹਾਡਾ ਦਸਤਾ {pct} ਲੁੱਟ ਚੁੱਕ ਕੇ ਲਿਆਇਆ। ਵੱਧ ਕਿਸਮਾਂ ਵਾਲੇ ਦਸਤੇ ਵੱਧ ਚੁੱਕਦੇ ਹਨ।" },
+  "carry.preview": { "en": "This army would carry {pct} of the loot. Squads of more roles carry more.", "text": "" },
   "pay.label": { "en": "Walls and traps", "text": "ਕੰਧਾਂ ਅਤੇ ਫੰਦੇ" },
   "pay.coins": { "en": "Pay with Coins", "text": "ਸਿੱਕਿਆਂ ਨਾਲ ਭੁਗਤਾਨ" },
   "pay.provisions": { "en": "Pay with Provisions", "text": "ਰਸਦ ਨਾਲ ਭੁਗਤਾਨ" },

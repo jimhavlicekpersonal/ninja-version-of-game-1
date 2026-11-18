@@ -136,6 +136,7 @@
   "stake.met": { "en": "Stake reached: {stars}★ carried ×{mult} loot.", "text": "పందెం నెగ్గారు: {stars}★, దోపిడీ ×{mult} ఇంటికి వచ్చింది." },
   "stake.missed": { "en": "Stake missed: you declared {stars}★, so no loot came home.", "text": "పందెం తప్పింది: మీరు {stars}★ ప్రకటించారు, కాబట్టి దోపిడీ ఏదీ ఇంటికి రాలేదు." },
   "carry.diversity": { "en": "Your squad carried {pct} of the loot. Squads of more roles carry more.", "text": "మీ దళం దోపిడీలో {pct} మోసుకొచ్చింది. ఎక్కువ పాత్రలున్న దళాలు ఎక్కువ మోస్తాయి." },
+  "carry.preview": { "en": "This army would carry {pct} of the loot. Squads of more roles carry more.", "text": "" },
   "pay.label": { "en": "Walls and traps", "text": "గోడలు మరియు ఉచ్చులు" },
   "pay.coins": { "en": "Pay with Coins", "text": "నాణేలతో చెల్లించు" },
   "pay.provisions": { "en": "Pay with Provisions", "text": "సరుకులతో చెల్లించు" },

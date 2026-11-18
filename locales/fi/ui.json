@@ -136,6 +136,7 @@
   "stake.met": { "en": "Stake reached: {stars}★ carried ×{mult} loot.", "text": "Panos saavutettu: {stars}★ toi saalista ×{mult}." },
   "stake.missed": { "en": "Stake missed: you declared {stars}★, so no loot came home.", "text": "Panos jäi saavuttamatta: ilmoitit {stars}★, joten saalista ei tullut kotiin." },
   "carry.diversity": { "en": "Your squad carried {pct} of the loot. Squads of more roles carry more.", "text": "Joukkosi kantoi saaliista {pct}. Monipuolisemmat joukot kantavat enemmän." },
+  "carry.preview": { "en": "This army would carry {pct} of the loot. Squads of more roles carry more.", "text": "" },
   "pay.label": { "en": "Walls and traps", "text": "Muurit ja ansat" },
   "pay.coins": { "en": "Pay with Coins", "text": "Maksa kolikoilla" },
   "pay.provisions": { "en": "Pay with Provisions", "text": "Maksa muonalla" },

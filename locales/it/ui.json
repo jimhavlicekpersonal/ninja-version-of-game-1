@@ -136,6 +136,7 @@
   "stake.met": { "en": "Stake reached: {stars}★ carried ×{mult} loot.", "text": "Posta riuscita: {stars}★ hanno portato ×{mult} di bottino." },
   "stake.missed": { "en": "Stake missed: you declared {stars}★, so no loot came home.", "text": "Posta mancata: avevi dichiarato {stars}★, quindi nessun bottino è tornato a casa." },
   "carry.diversity": { "en": "Your squad carried {pct} of the loot. Squads of more roles carry more.", "text": "La tua squadra ha portato {pct} del bottino. Le squadre con più ruoli portano di più." },
+  "carry.preview": { "en": "This army would carry {pct} of the loot. Squads of more roles carry more.", "text": "" },
   "pay.label": { "en": "Walls and traps", "text": "Mura e trappole" },
   "pay.coins": { "en": "Pay with Coins", "text": "Paga con Monete" },
   "pay.provisions": { "en": "Pay with Provisions", "text": "Paga con Provviste" },

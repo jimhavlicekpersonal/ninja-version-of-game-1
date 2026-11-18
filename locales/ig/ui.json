@@ -136,6 +136,7 @@
   "stake.met": { "en": "Stake reached: {stars}★ carried ×{mult} loot.", "text": "E ruru nkwa: {stars}★ buru ihe nkwata ×{mult}." },
   "stake.missed": { "en": "Stake missed: you declared {stars}★, so no loot came home.", "text": "E ruteghị nkwa: i kwupụtara {stars}★, ya mere ọ dịghị ihe nkwata lọtara." },
   "carry.diversity": { "en": "Your squad carried {pct} of the loot. Squads of more roles carry more.", "text": "Otu gị buru {pct} nke ihe nkwata. Otu nwere ọrụ dị iche iche na-ebu karịa." },
+  "carry.preview": { "en": "This army would carry {pct} of the loot. Squads of more roles carry more.", "text": "" },
   "pay.label": { "en": "Walls and traps", "text": "Mgbidi na ọnya" },
   "pay.coins": { "en": "Pay with Coins", "text": "Jiri Ego kwụọ" },
   "pay.provisions": { "en": "Pay with Provisions", "text": "Jiri Nri kwụọ" },
