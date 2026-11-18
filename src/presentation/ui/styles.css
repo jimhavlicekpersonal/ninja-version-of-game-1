@@ -1019,6 +1019,10 @@ html[dir="rtl"] .b-left.collapsed .b-caret::before { content: '◂'; }
 .b-left.collapsed .b-more { display: none; }
 /* P6-09: the opponent's kind stays visible on the folded line. */
 .b-name .b-kind { flex: none; font-size: 0.75rem; padding: 1px 6px; min-height: 0; margin-inline-start: 4px; }
+/* P6-09/P6-11: with the kind tag on the line, the level and tag wrap under the name instead of squeezing it into
+   "Thund er Gate"; a single word longer than the card still breaks. */
+.b-left .b-name { flex-wrap: wrap; row-gap: 2px; }
+.b-left .b-name bdi { overflow-wrap: break-word; flex: 0 1 auto; }
 .b-left.collapsed { padding-top: 4px; padding-bottom: 4px; }
 /* Art audit F12: battle cards show the warrior's badge (role disc and tier ring) instead of the dark field sprite. */
 .troop-card.badge-art img { height: 46px; padding: 2px 6px 0; filter: drop-shadow(0 1px 1px rgba(38, 48, 61, .3)); }

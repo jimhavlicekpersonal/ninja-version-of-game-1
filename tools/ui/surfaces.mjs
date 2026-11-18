@@ -50,6 +50,8 @@ if (KEEP > 0) {
   }
 }
 
+/** --battle: a practice raid from the showcase village (camera action frame and speed button, P6-11). */
+const BATTLE = process.argv.includes('--battle');
 /** --tutorial: a new village on the Keep step (index 2) with the Keep's sheet open. */
 const TUTORIAL = process.argv.includes('--tutorial');
 const TUTORIAL_CHECK = () => {
@@ -130,6 +132,46 @@ for (const lang of LANGS) {
       document.querySelectorAll('.modal-backdrop').forEach((m) => m.remove());
     });
     await page.waitForTimeout(800);
+    if (BATTLE) {
+      // P6-11: a practice raid with the showcase army sent in by squad order; zoom over time and the speed button.
+      await page.evaluate(() => window.tk.app.practice({ ...window.tk.controller.state.army }));
+      await page.waitForSelector('.big-attack', { timeout: 30000 });
+      await page.waitForTimeout(2500);
+      await page.locator('.big-attack').tap();
+      await page.waitForTimeout(600);
+      const zooms = await page.evaluate(async () => {
+        const sc = window.tk.game.scene.getScene('battle');
+        const z0 = sc.cam.userZoom;
+        const left = () => Object.values(sc.session.sim.remaining).reduce((a, b) => a + b, 0);
+        // Through each point in turn until the army is in (a squad drops what a full point refuses).
+        for (let p = 0; p < (sc.session.sim.entry?.points.length ?? 1) && left() > 0; p++) {
+          sc.session.orderSquad({ point: p, formation: 'together', order: 'tanks' });
+          for (let k = 0; k < 40 && sc.session.squadWaiting > 0; k++) await new Promise((r) => setTimeout(r, 250));
+        }
+        const out = [z0];
+        for (let i = 0; i < 12; i++) {
+          await new Promise((r) => setTimeout(r, 1000));
+          out.push(Math.round(sc.cam.userZoom * 1000) / 1000);
+        }
+        return { zooms: out, speed: Boolean(document.querySelector('[data-id="battle-speed"]')), left: Object.values(sc.session.sim.remaining).reduce((a, b) => a + b, 0) };
+      });
+      const problems = [];
+      if (Math.max(...zooms.zooms.slice(1)) < zooms.zooms[0] * 1.5) problems.push({ problem: `camera stayed near the entry fit: ${zooms.zooms.join(' ')}` });
+      if (zooms.left === 0 && !zooms.speed) problems.push({ problem: 'no speed button with every warrior in' });
+      const sp = await page.$('[data-id="battle-speed"]');
+      if (sp) {
+        const hitOk = await sp.evaluate((el) => {
+          const r = el.getBoundingClientRect();
+          const h = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+          return Boolean(h && (h === el || el.contains(h))) && r.right <= innerWidth && r.bottom <= innerHeight;
+        });
+        if (!hitOk) problems.push({ problem: 'speed button covered or off screen' });
+      }
+      report.push({ key: `${lang} ${w}x${hgt} battle (zoom ${zooms.zooms[0]} -> ${Math.max(...zooms.zooms.slice(1))}, speed ${zooms.speed})`, problems });
+      if (SHOTS) await page.screenshot({ path: join(SHOTS, `${lang}-${w}x${hgt}-battle.png`) });
+      await ctx.close();
+      continue;
+    }
     for (const s of SURFACES) {
       if (ONLY.length && !ONLY.includes(s.id)) continue;
       await page.evaluate(() => {

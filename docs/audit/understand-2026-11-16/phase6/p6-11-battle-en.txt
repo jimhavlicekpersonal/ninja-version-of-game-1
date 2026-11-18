@@ -1,0 +1,4 @@
+✓ en 320x568 battle (zoom 0.14 -> 0.248, speed true)
+✓ en 360x640 battle (zoom 0.14 -> 0.25, speed true)
+✓ en 390x844 battle (zoom 0.14 -> 0.285, speed true)
+✓ en 844x390 battle (zoom 0.14 -> 0.356, speed true)

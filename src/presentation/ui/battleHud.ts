@@ -350,11 +350,20 @@ export class BattleHud {
         if (this.selected && isAbility(localizedData(this.s.data), this.selected)) this.selected = this.lastTroop ?? this.firstTroop();
         else if ((this.s.sim.remaining[this.selected ?? ''] ?? 0) <= 0) this.selected = this.firstTroop();
         if (this.s.mode === 'live') this.renderTroops();
+        if (this.s.mode === 'live' && !this.speedShown && this.allDeployed()) this.renderBottom();
       },
+      cardArmed: () => this.cardArmed(),
     };
   }
 
   private scoutEl: HTMLElement | null = null;
+
+  /** P6-11: a selected card can still drop something (the camera stays on the entry points while it can). */
+  cardArmed(): boolean {
+    const sel = this.selected;
+    if (!sel) return false;
+    return isAbility(localizedData(this.s.data), sel) ? (this.s.sim.charges[sel] ?? 0) > 0 : (this.s.sim.remaining[sel] ?? 0) > 0;
+  }
 
   /**
    * What scouting reveals, as a drawer (re-audit design item 2): one chip row by default ("6 points · 12 defenses ▸"
@@ -487,15 +496,29 @@ export class BattleHud {
         ),
       );
     } else if (mode === 'live') {
-      this.bottomEl.append(h('button', { class: 'btn danger', type: 'button', onclick: () => this.confirmEnd() }, t('battle.end')));
+      // P6-11 (PLY-05): once every warrior is in, the fight can be watched faster. Speed scales real time only
+      // (deployments keep their tick), so the result and the replay are the same at any speed.
+      this.speedShown = this.allDeployed();
+      this.bottomEl.append(this.speedShown ? this.speedButton() : '', h('button', { class: 'btn danger', type: 'button', onclick: () => this.confirmEnd() }, t('battle.end')));
     } else {
-      const speed = h('button', { class: 'btn ghost', type: 'button' }, i18nText("ui.speed_48c409f269", { arg1: this.s.speed }));
-      speed.addEventListener('click', () => {
-        this.s.speed = this.s.speed === 1 ? 2 : this.s.speed === 2 ? 4 : 1;
-        speed.textContent = i18nText("ui.speed_48c409f269", { arg1: this.s.speed });
-      });
-      this.bottomEl.append(speed, h('button', { class: 'btn primary', type: 'button', onclick: () => this.deps.onHome() }, i18nText("ui.exit_replay_0a858020f8")));
+      this.bottomEl.append(this.speedButton(), h('button', { class: 'btn primary', type: 'button', onclick: () => this.deps.onHome() }, i18nText("ui.exit_replay_0a858020f8")));
     }
+  }
+
+  private speedShown = false;
+
+  /** Every warrior of the army is on the field (abilities may still have charges). */
+  allDeployed(): boolean {
+    return Object.values(this.s.sim.remaining).every((n) => n <= 0);
+  }
+
+  private speedButton(): HTMLElement {
+    const speed = h('button', { class: 'btn ghost b-speed', type: 'button', 'data-id': 'battle-speed' }, i18nText("ui.speed_48c409f269", { arg1: this.s.speed }));
+    speed.addEventListener('click', () => {
+      this.s.speed = this.s.speed === 1 ? 2 : this.s.speed === 2 ? 4 : 1;
+      speed.textContent = i18nText("ui.speed_48c409f269", { arg1: this.s.speed });
+    });
+    return speed;
   }
 
   private lastTroop: string | null = null;
@@ -548,6 +571,13 @@ export class BattleHud {
       );
       card.addEventListener('click', () => {
         if (this.left(type) <= 0) return;
+        // P6-11: once warriors are in, a second tap on the selected card puts it down, and the camera follows the fight.
+        if (this.selected === type && this.s.mode === 'live' && this.s.deployments.length) {
+          this.selected = null;
+          uiArt.haptic('selection');
+          this.renderTroops();
+          return;
+        }
         this.selected = type;
         this.lastTroop = type;
         uiArt.haptic('selection');
@@ -560,6 +590,12 @@ export class BattleHud {
   private tick(): void {
     const sim = this.s.sim;
     this.drawChevrons();
+    // P6-11: a squad order deploys over many ticks without a tap; the speed button follows the last warrior in.
+    if (this.s.mode === 'live' && !sim.ended && !this.speedShown && this.allDeployed()) {
+      if ((this.s.sim.remaining[this.selected ?? ''] ?? 0) <= 0 && this.selected && !isAbility(localizedData(this.s.data), this.selected)) this.selected = this.firstTroop();
+      this.renderBottom();
+      this.renderTroops();
+    }
     if (this.deps.coach) this.coach();
     const secs = this.s.mode === 'scout' ? sim.duration / localizedData(this.s.data).battle.ticksPerSecond : this.s.secondsLeft();
     this.timerEl.textContent = `${Math.floor(secs / 60)}:${String(secs % 60).padStart(2, '0')}`;
