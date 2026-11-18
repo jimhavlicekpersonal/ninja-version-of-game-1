@@ -55,6 +55,17 @@ The audit measured a 13-hour serial refill for a Keep 15 army and 6.7 years of s
 | Whole roster to the Keep 15 caps | under a year of research (about 268 days) | research curve, lanes |
 | One warrior to level 20 | about 26 days | research curve |
 
+**Days per Keep, from the generated campaign (P3-10, rewritten 2026-11-18 from `docs/game-theory/campaign.json` after Phases 2 and 3 of the replayability pass; model players, one seed, ±2 days at the low Keeps and about ±2 weeks late for the casual player):**
+
+| Keep | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| Regular (4 sessions a day) | 0.6 | 3.6 | 8.6 | 14 | 19.4 | 26.7 | 32.2 | 42 | 51.6 | 65 | 82.4 | **101** |
+| Casual (one visit a day) | 1.7 | 6.7 | 16.7 | 40.4 | 49.4 | 62.4 | 75.4 | 92.4 | 109.4 | 129.4 | 153.4 | **174.4** |
+
+The regular player's gate is Keep 15 between day 100 and 140 (the owner's target; P3-03's four-day cap on the economy buildings was chosen to stay above 100). The casual player is gated to Keep 6 by day 25 and no stretch over 21 days through Keep 10 (`campaign-gates.test.ts`; the Keep 6 → 7 stretch, 23.7 days, is a recorded open gap). A casual player who hires the third artisan with the starting Jade reaches Keep 15 on day 134, and one who also queues the next army on day 111 (`casual_hires`, `casual_queues`).
+
+**Builder-day horizon:** every building to the Keep 15 caps takes 1,267 builder-days (1,771 before P3-03), of which the Coin Mints, Terraced Farms, Treasuries and Storehouses are 789 (they keep producing while they upgrade). **Where the Trial ladder ends:** a fully researched Keep 15 army with the bot plan clears to about tier 58 (P1-06; the maxed Keep 15 fortress is the wall, not growth); a late starter may begin at the first tier of the Keep two below their own (P3-06).
+
 Tasks are chosen when a day or week begins, only from ones the village can still do (`taskEligible`): no obstacle challenge without obstacles, no upgrade task when nothing fits in the period, research and Shadow Trial tasks as alternatives.
 
 The pacing model player (`tests/gameplay/balance/progression.test.ts`) reaches Keep 6 in 9–17 days (about 10.4 since the design re-audit smoothed Keep 5 → 6). `policies.test.ts` checks the same pace for a defensive planner that builds the counters and an explorer that fields the newer warriors of every family and plays Trials, tasks and the pass.
