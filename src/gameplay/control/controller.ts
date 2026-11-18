@@ -202,6 +202,11 @@ export class GameController {
    * own times. Anything the replay refuses is simply dropped (the server will
    * refuse it too).
    */
+  /** P1-16: a server-held village's next daily chest is the server's (`setChestSalt`, device-only). */
+  adoptChestSalt(salt: number): void {
+    this.dispatch({ type: 'setChestSalt', salt });
+  }
+
   adoptEconomy(economy: Economy, replay: { command: Command; t: number }[]): void {
     let s = withEconomy(this.state, economy);
     for (const r of replay) {

@@ -5,6 +5,7 @@
 import { describe, expect, it } from 'vitest';
 import { defaultData } from '../../../src/gameplay/sim/data';
 import { baseAt, HOUR, rush, sumLoot, world } from './harness';
+import { MAX_HONOR_FROM_ONE_ATTACKER } from '../../../server/core/pvp';
 
 /** A base with no defences (raids win) and loot on every building. */
 function openBase(seed: number, loot = 0) {
@@ -48,6 +49,34 @@ describe('declared stakes', () => {
     expect(r.stake).toBe(3);
     const d = (await dot.defenses(0)).defenses[0];
     expect(d.result.loot).toEqual({});
+    // XPL-12 (P1-20): nothing was taken, so no shield for the defender (and no exhausted stores).
+    expect((await dot.me()).shieldUntil).toBeLessThanOrEqual(w.now());
+  });
+
+  it("one attacker's lost raids give one defender at most MAX_HONOR_FROM_ONE_ATTACKER honor a day (P1-20)", async () => {
+    const w = world();
+    const dot = await w.player('Dot', baseAt(1, 21, 500));
+    const ann = await w.player('Ann', baseAt(1, 5));
+    w.pastShields();
+    await w.repo.updatePlayer(dot.id, { trophies: 1000 });
+    await w.repo.updatePlayer(ann.id, { trophies: 1000 });
+    let gained = 0;
+    let raids = 0;
+    for (let i = 0; i < 6; i++) {
+      await w.repo.updatePlayer(dot.id, { shieldUntil: 0 });
+      const m = (await ann.match())!;
+      if (m.opponent.name !== 'Dot') break;
+      const before = (await dot.me()).trophies;
+      const r = await ann.submitAttack({ ticket: m.ticket, seed: (await ann.startAttack!(m.ticket)).seed!, ...rush(1) });
+      expect(r.result.stars).toBe(0);
+      gained += (await dot.me()).trophies - before;
+      raids++;
+      // A target attacked in the last hour is not offered again.
+      w.advance(HOUR + 60_000);
+    }
+    expect(raids).toBeGreaterThanOrEqual(3);
+    expect(gained).toBeGreaterThan(0);
+    expect(gained).toBeLessThanOrEqual(MAX_HONOR_FROM_ONE_ATTACKER);
   });
 });
 

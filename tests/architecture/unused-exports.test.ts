@@ -77,7 +77,6 @@ const ALLOWED = new Set<string>([
   'src/gameplay/sim/defense.ts#shieldThreshold',
   'src/gameplay/sim/economy.ts#interpolate',
   'src/gameplay/sim/economy.ts#rewardScale',
-  'src/gameplay/sim/goalEvents.ts#goalEventByKey',
   'src/gameplay/sim/goalEvents.ts#goalProgress',
   'src/gameplay/sim/goalEvents.ts#reachesStep',
   'src/gameplay/sim/heroes.ts#heroHallLevel',

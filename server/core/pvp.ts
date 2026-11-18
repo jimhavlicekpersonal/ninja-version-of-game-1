@@ -375,7 +375,8 @@ export async function match(ctx: ServerContext, me: Player, client?: ClientInfo)
 /** Raids against a player in the last `hours` (newest last), as `exhaustionFactor` reads them. */
 async function recentDefenses(ctx: ServerContext, id: string, t: number, hours: number): Promise<{ at: number; result: { stars: number } }[]> {
   if (!(hours > 0)) return [];
-  return (await ctx.repo.defensesFor(id, t - hours * HOUR, 50)).map((a) => ({ at: a.at, result: { stars: a.result.stars } }));
+  // XPL-12 (P1-20): a raid that took nothing (a missed stake) does not exhaust the stores.
+  return (await ctx.repo.defensesFor(id, t - hours * HOUR, 50)).map((a) => ({ at: a.at, result: { stars: Object.values(a.result.loot ?? {}).some((v) => (v ?? 0) > 0) ? a.result.stars : 0 } }));
 }
 
 /**
@@ -633,6 +634,9 @@ export function battleSeed(ticket: Ticket, sub: BattleReport): number {
  * with ledger lines. An attacker whose server-held village lacks the troops is
  * refused (nothing changes and the ticket stays unused).
  */
+/** XPL-12 (P1-20): the most honor one attacker's lost attacks give one defender in a UTC day. */
+export const MAX_HONOR_FROM_ONE_ATTACKER = 40;
+
 export async function attack(ctx: ServerContext, me: Player, sub: BattleReport): Promise<AttackResponse> {
   const { data, repo } = ctx;
   const { ticket, answered } = await takeTicket(ctx, me, sub?.ticket, 'pvp');
@@ -688,7 +692,10 @@ export async function attack(ctx: ServerContext, me: Player, sub: BattleReport):
     // Staked honor (balance audit 2026-11-08): a lost defence costs `defenseHonorLossShare` of the raider's gain
     // (none by default); step 30's daily cap still applies. A held raid pays the defender as before.
     const lostToday = defender?.honorLoss?.day === day ? defender.honorLoss.lost : 0;
-    const defLoss = delta > 0 ? Math.max(0, Math.min(defenseHonorLoss(delta, data), rdef.defenderDailyHonorLossCap - lostToday)) : delta;
+    // XPL-12 (P1-20): a lost attack pays the defender honor, but one attacker gives one defender at most
+    // MAX_HONOR_FROM_ONE_ATTACKER a day (an alternate account feeding a main with 0-star raids had no limit).
+    const fromThisAttacker = delta < 0 && defender ? (await tx.defensesFor(defender.id, day * 86_400_000, 200)).filter((a) => a.attackerId === me.id).reduce((n, a) => n + Math.max(0, a.defenderTrophies ?? 0), 0) : 0;
+    const defLoss = delta > 0 ? Math.max(0, Math.min(defenseHonorLoss(delta, data), rdef.defenderDailyHonorLossCap - lostToday)) : -Math.min(-delta, Math.max(0, MAX_HONOR_FROM_ONE_ATTACKER - fromThisAttacker));
     const defPatch: { trophies: number; shieldUntil?: number; honorLoss?: { day: number; lost: number }; ratings?: { attack: Rating; base: Rating } } = { trophies: Math.max(0, (defender?.trophies ?? 0) - defLoss) };
     const mePatch: { trophies: number; shieldUntil: number; ratings?: { attack: Rating; base: Rating } } = { trophies: playerTrophies, shieldUntil: Math.min(attacker.shieldUntil, t) };
     if (defender) {
@@ -698,7 +705,9 @@ export async function attack(ctx: ServerContext, me: Player, sub: BattleReport):
       mePatch.ratings = { attack: rated.attack, base: ratingsOf(attacker, t, ctx).base };
       defPatch.ratings = { attack: ratingsOf(defender, t, ctx).attack, base: rated.base };
     }
-    const shield = shieldHoursFor(result.destruction, data);
+    // XPL-12 (P1-20): a raid that took nothing (a missed stake) gives no shield: an alternate account declaring
+    // three stars and stopping at two used to shield a main for 14 to 16 hours at no cost.
+    const shield = kept ? 0 : shieldHoursFor(result.destruction, data);
     if (defender && shield > 0) defPatch.shieldUntil = Math.max(defender.shieldUntil, t + shield * HOUR);
     // Marking the ticket used and storing the answer comes first: only the first report applies anything.
     if (!(await tx.useTicket(ticket.id, response))) return 'used' as const;

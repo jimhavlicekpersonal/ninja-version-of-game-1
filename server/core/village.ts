@@ -43,6 +43,13 @@ export const CLOCK_SKEW_MS = 2 * MIN;
  * correction the answer carries.
  */
 export const MAX_BACKDATE_MS = 12 * HOUR;
+/**
+ * Exploit audit XPL-10 (P1-19, 2026-11-18, a backend decision; docs/PROTOCOL.md): a command that starts a timer
+ * (place, upgrade, research, train, trainArmy, topUp) may be dated at most this far back. The conservative
+ * choice: an upgrade started offline counts from when the server hears of it (minus this), so offline play
+ * still syncs, but its timer is never credited with hours nobody can prove.
+ */
+export const MAX_TIMER_BACKDATE_MS = 10 * MIN;
 /** Largest command, as JSON bytes; a larger one is refused (`TOO_LARGE`) and only its type is logged. */
 export const MAX_COMMAND_BYTES = 8 * 1024;
 /** Battle commands carry a battle record (a Keep 15 base and up to 2,000 deployments: ~120 KB). */
@@ -183,6 +190,7 @@ export async function applyCommands(ctx: ServerContext, me: Player, body: Partia
   // Battle-budget hits this request took; given back when the batch ends without being written (a 409 after
   // repeated conflicts, a busy pool), so the game's retry is not charged again (2026-11-14 verification fix).
   let charged = 0;
+  const replayed = new Map<number, Command>();
   const plan = async (repo: Repo, row: VillageRow) => {
     if (!device && row.deviceSeqs && Object.keys(row.deviceSeqs).length) {
       ctx.metrics.count('tk_refused_total', { reason: 'commands_without_device', rules: '?' });
@@ -211,10 +219,12 @@ export async function applyCommands(ctx: ServerContext, me: Player, body: Partia
         decided.set(c.seq, error);
       }
       let command = error ? c.command as Command : await realTicketsOnly(repo, c.command as Command);
+      // XPL-06 (P1-16): the server draws the chest entropy; the log keeps the command as it was replayed.
       if (!error && command.type === 'openDailyChest') command = { ...command, entropy: randomBytes(4).readUInt32LE(0) };
+      replayed.set(c.seq, command);
       steps.push({ seq: c.seq, clientAt: Number(c.t), command, error });
     }
-    const job: VillageReplayJob = { file: row.file, at: row.at, now, earliest: now - MAX_BACKDATE_MS, skewMs: CLOCK_SKEW_MS, steps };
+    const job: VillageReplayJob = { file: row.file, at: row.at, now, earliest: now - MAX_BACKDATE_MS, earliestTimer: now - MAX_TIMER_BACKDATE_MS, skewMs: CLOCK_SKEW_MS, steps };
     return { job, battles: steps.some((s) => !s.error && BATTLE_COMMANDS.has(s.command.type)) };
   };
 
@@ -283,12 +293,16 @@ export async function applyCommands(ctx: ServerContext, me: Player, body: Partia
     const log: CommandLogRow[] = [];
     const results: CommandOutcome[] = [];
     const byNumber = new Map(sorted.map((c) => [c.seq, c]));
+    // P1-16: the chest salt the server's replay ended with, for every applied chest (read once).
+    let salt: number | undefined;
+    const chestSalt = () => (salt ??= out.file ? (deserialize(out.file, ctx.data).daily.salt ?? 0) : undefined);
     for (const o of out.outcomes) {
       const c = byNumber.get(o.seq)!;
       const type = c.command.type;
       if (o.ok && type === 'setProfile' && (c.command as { under18?: unknown }).under18 === true) await tx.setAgeGroup(me.id, true, now);
       ctx.metrics.count('tk_village_commands_total', { result: o.error ? 'refused' : 'ok' });
-      results.push(o.error ? { seq: o.seq, ok: false, error: o.error, type: type.slice(0, MAX_LOGGED_TYPE), at: o.when } : { seq: o.seq, ok: true });
+      const chest = !o.error && type === 'openDailyChest' ? chestSalt() : undefined;
+      results.push(o.error ? { seq: o.seq, ok: false, error: o.error, type: type.slice(0, MAX_LOGGED_TYPE), at: o.when } : { seq: o.seq, ok: true, ...(chest !== undefined ? { chestSalt: chest } : {}) });
       if (device) {
         seq += 1;
         deviceSeq = o.seq;
@@ -297,7 +311,7 @@ export async function applyCommands(ctx: ServerContext, me: Player, body: Partia
         // Type and reason only: a refused command's body is never stored (it can be anything up to the body limit).
         const shortType = type.slice(0, MAX_LOGGED_TYPE);
         log.push({ playerId: me.id, seq, at: o.when, clientAt: Number(c.t), type: shortType, command: { type: shortType }, ok: false, error: o.error });
-      } else log.push({ playerId: me.id, seq, at: o.when, clientAt: Number(c.t), type, command: c.command, ok: true, error: null });
+      } else log.push({ playerId: me.id, seq, at: o.when, clientAt: Number(c.t), type, command: replayed.get(o.seq) ?? c.command, ok: true, error: null });
     }
     const { stateHash, at } = out;
     if (results.length) {

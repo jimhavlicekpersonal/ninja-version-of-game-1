@@ -24,7 +24,7 @@ import { claimCalendarDay, emptyCalendar, setLocalTime } from './calendar';
 import { buildTimeFactor, currentTasks, dayIndex, passSeason, rollPeriods, unlockedTier } from './pass';
 import { emptyStats, type OfferTrigger } from './types';
 import { advanceGrove, canRequest, donate as donateTroops, emptyGrove, joinGrove, requestTroops, sendChat } from './social/grove';
-import { attacksLeft, ensureRaid, raidPhase, settleRaids } from './social/groveRaid';
+import { attacksLeft, enemyGrove, ensureRaid, raidPhase, settleRaids } from './social/groveRaid';
 import { bindPlayer, claimGangChest, claimRaidChest, emptyNet, receiveDonations, spendDonation, type ServerDonation } from './net';
 import { canPlace } from './grid';
 import { addCapped, canAfford, capacity, collectorAmount, effectiveLevel, missingFor, subtractCost } from './resources';
@@ -150,6 +150,12 @@ export type Command =
   | { type: 'claimStipend' }
   /** Report section 5 step 8: the device's offset from UTC (task days roll at local midnight). */
   | { type: 'setLocalTime'; minutes: number }
+  /**
+   * Device-only (never a player command, P1-16 / XPL-06): a server-held village's daily chest rolls its next salt
+   * from the server's entropy, and the server returns the salt it rolled (`CommandOutcome.chestSalt`); the game
+   * puts it in place so its next chest is the server's.
+   */
+  | { type: 'setChestSalt'; salt: number }
   /** Report section 5 step 8: today's 28-day calendar reward. */
   | { type: 'claimCalendar' }
   /** An attack on the running goal event's bounty fortress (`eventKey`, sim/goalEvents.ts); the base is rebuilt, never taken from the client. */
@@ -682,6 +688,9 @@ function runCommand(s: VillageState, cmd: Command, now: number, data: GameData):
       }
       return { ok: true, state: s, events: [] };
     case 'setProfile':
+      // XPL-13 (P1-21): only a yes or a no. `null` used to turn a stated minor back to "unknown", after which
+      // "18 or older" passed the lock below (a server-held village was still blocked by the server's age table).
+      if (cmd.ageBand === undefined && typeof cmd.under18 !== 'boolean') return fail('NOT_FOUND', 'Unknown age group.');
       // GLOBAL-006: the spending protection only gets stricter in the game. Under 18 is
       // not switched back by the player (support resets it on the server after a check).
       if (s.profile.under18 === true && cmd.under18 === false) return fail('LOCKED', 'Only our support team can change the age group back to 18 or older.');
@@ -816,6 +825,11 @@ function runCommand(s: VillageState, cmd: Command, now: number, data: GameData):
       const jade = claimStipend(s, now, data);
       if (jade === null) return fail('NOT_AVAILABLE', s.stipend?.left > 0 ? "Today's stipend is already claimed. Come back tomorrow." : 'No Clan Stipend payments left.');
       return { ok: true, state: s, events: [{ kind: 'stipend_claimed', moonstones: jade, left: s.stipend.left }] };
+    }
+    case 'setChestSalt': {
+      if (!Number.isInteger(cmd.salt) || cmd.salt < 0 || cmd.salt > 0xffffffff) return fail('NOT_AVAILABLE', 'That command could not be read.');
+      s.daily = { ...s.daily, salt: cmd.salt };
+      return { ok: true, state: s, events: [] };
     }
     case 'setLocalTime': {
       const why = setLocalTime(s, cmd.minutes, now);
@@ -1721,7 +1735,7 @@ function scout(s: VillageState, paid: boolean, data: GameData): CommandResult {
  * the server's Gang War path builds relay damage). A command whose hero the village does not bring is refused.
  * Old records are never passed through this: they replay with the setup they were recorded with.
  */
-export function sanitizeBattleSetup(s: VillageState, setup: BattleSetup, data: GameData): { setup: BattleSetup } | { error: string } {
+function sanitizeBattleSetup(s: VillageState, setup: BattleSetup, data: GameData): { setup: BattleSetup } | { error: string } {
   if (!setup || typeof setup !== 'object' || !setup.army || typeof setup.army !== 'object') return { error: 'Unknown warriors in battle.' };
   const clean: BattleSetup = { seed: setup.seed, base: setup.base, army: { ...setup.army }, infiltration: true };
   if (setup.levels) clean.levels = { ...setup.levels };
@@ -2143,7 +2157,14 @@ function groveBattleEnd(s: VillageState, target: number, rec: Omit<BattleRecord,
   if (at === null || !phase || !s.grove.joined || phase.phase !== 'live') return fail('NOT_AVAILABLE', 'The Alliance War is not running.');
   const raid = ensureRaid(s, at, data)!;
   if (attacksLeft(s, phase.week, data) <= 0) return fail('NOT_AVAILABLE', 'You have used both Alliance War attacks.');
-  const clean = sanitizeBattleSetup(s, rec.setup, data);
+  // XPL-13 (P1-21): the base is the war's own (rebuilt for the target, never the client's), at the Keep the
+  // attack began with (this one, or the one below if a Keep upgrade finished mid-battle).
+  const keep = hallLevel(s, data);
+  const wantKeep = rec.setup?.base?.hallLevel;
+  const enemy = enemyGrove(s.grove.seed, phase.week, wantKeep !== undefined && wantKeep < keep && keep > 1 ? keep - 1 : keep, data);
+  const warBase = Number.isInteger(target) ? enemy.bases[target] : undefined;
+  if (!warBase) return fail('NOT_FOUND', 'No such enemy base.');
+  const clean = sanitizeBattleSetup(s, { ...rec.setup, base: warBase }, data);
   if ('error' in clean) return fail('INVALID_BATTLE', clean.error);
   const setup = clean.setup;
   const { result } = runBattle(setup, rec.deployments, data, rec.endTick);

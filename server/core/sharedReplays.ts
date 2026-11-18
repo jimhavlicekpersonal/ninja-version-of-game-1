@@ -28,6 +28,9 @@
 import { FRIEND_CODE_ALPHABET } from '../../src/backend/net/names';
 import { SHARE_CODE, SHARED_REPLAY_DAYS, SHARED_REPLAYS_PER_DAY, type ShareReplayRequest, type ShareReplayResponse, type SharedOpponent, type SharedReplayView } from '../../src/backend/net/growth';
 import type { BaseBuilding, BaseLayout, BattleSetup, Deployment } from '../../src/gameplay/sim/battle/types';
+import type { GameData } from '../../src/gameplay/sim/types';
+import { masteryOn } from '../../src/gameplay/sim/mastery';
+import { masteryBonus } from '../../src/gameplay/sim/progression';
 import { DELETED_PLAYER, type Player } from '../repo';
 import { ResimBusyError } from '../resim/resim';
 import { HOUR, type ServerContext } from './context';
@@ -79,10 +82,32 @@ export function pickBase(raw: Record<string, unknown>): BaseLayout {
   return { ...(pick<BaseLayout>(raw, BASE_KEYS) as BaseLayout), name: '', buildings };
 }
 
-/** The battle setup with only the fields a battle reads (and the cleaned base). */
-export function pickSetup(raw: Record<string, unknown>, base: BaseLayout): BattleSetup {
-  return { ...(pick<BattleSetup>(raw, SETUP_KEYS) as BattleSetup), base };
+/**
+ * The battle setup with only the fields a battle reads (and the cleaned base). BNL-07 (P1-22): Warrior Mastery
+ * multiplies health and damage, so `mastery` is dropped unless the feature is on in the engine's data, and then
+ * keeps only known warriors with a bonus between 0 and the cap; `hero` must be a known hero at a level it has.
+ */
+export function pickSetup(raw: Record<string, unknown>, base: BaseLayout, data: GameData): BattleSetup {
+  const setup = { ...(pick<BattleSetup>(raw, SETUP_KEYS) as BattleSetup), base };
+  const mastery = setup.mastery && typeof setup.mastery === 'object' ? setup.mastery : undefined;
+  delete setup.mastery;
+  if (mastery && masteryOn(data)) {
+    const cap = masteryBonus(MASTERY_LEVEL_CEILING);
+    const kept = Object.fromEntries(Object.entries(mastery).filter(([t, b]) => data.troops[t] && typeof b === 'number' && Number.isFinite(b) && b >= 0 && b <= cap));
+    if (Object.keys(kept).length) setup.mastery = kept;
+  }
+  const hero = setup.hero as { id?: unknown; level?: unknown } | undefined;
+  if (hero !== undefined) {
+    const def = typeof hero?.id === 'string' ? data.battle.heroes?.[hero.id] : undefined;
+    const level = Number(hero?.level);
+    if (!def || !Number.isInteger(level) || level < 1 || level > def.levels.length) throw fail(400, 'bad_request', 'replay.bad');
+    setup.hero = { id: hero.id as string, level };
+  }
+  return setup;
 }
+
+/** A mastery level past any a village can reach: its bonus is the curve's ceiling (BNL-07). */
+const MASTERY_LEVEL_CEILING = 1000;
 
 /** Whether a real defender's base may appear in a shared replay: adults who did not opt out. */
 export async function baseShareable(ctx: ServerContext, defenderId: string): Promise<boolean> {
@@ -115,7 +140,7 @@ export async function share(ctx: ServerContext, me: Player, body: Partial<ShareR
   const s = body.setup;
   const army = s.army && typeof s.army === 'object' ? s.army : null;
   if (!army || Object.keys(army).length > 80 || !Number.isInteger(s.seed)) throw fail(400, 'bad_request', 'replay.bad');
-  const setup = pickSetup(s as unknown as Record<string, unknown>, base);
+  const setup = pickSetup(s as unknown as Record<string, unknown>, base, engine.data);
   // 8c: a raid the server recorded names its real defender (kept, never shown): an under-18 defender's base, or one
   // whose owner opted out, is never shared, whatever the request says the opponent was.
   const defenderId = typeof s.seed === 'number' ? await g.attackDefenderBySeed(me.id, s.seed, now - RAID_LOOKBACK_MS) : null;

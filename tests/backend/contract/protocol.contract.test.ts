@@ -490,7 +490,7 @@ describe('protocol contract', () => {
 
   it('growth batch 2026-11-14: event schedule in hello, friend invites, shared replays by code without a token', async () => {
     const hello = await client().hello();
-    expect(hello.features).toEqual(expect.arrayContaining(['event-schedule', 'referrals', 'shared-replays']));
+    expect(hello.features).toEqual(expect.arrayContaining(['event-schedule', 'referrals', 'shared-replays', 'chest-entropy']));
     if (hello.events) expect(checkEventSchedule(hello.events, data.events)).toEqual(hello.events);
     const p = await player('Sharer');
     const g = new GrowthClient({ online: true, server: hello, port: p });

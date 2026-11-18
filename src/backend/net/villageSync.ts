@@ -40,6 +40,8 @@ export interface SyncGame {
   onCommand(fn: (cmd: Command, at: number) => void): () => void;
   adoptEconomy(economy: Economy, replay: { command: Command; t: number }[]): void;
   adoptVillage(state: VillageState): Promise<void>;
+  /** P1-16: put the server's daily-chest salt in place (`CommandOutcome.chestSalt`). Optional for older hosts. */
+  adoptChestSalt?(salt: number): void;
 }
 
 export interface SyncStore {
@@ -271,7 +273,10 @@ export class VillageSync {
         }
         throw e;
       }
-      for (const x of r.results) if (!x.ok) this.noteRefused(x, batch.find((q) => q.seq === x.seq));
+      for (const x of r.results) {
+        if (!x.ok) this.noteRefused(x, batch.find((q) => q.seq === x.seq));
+        else if (typeof x.chestSalt === 'number') this.game.adoptChestSalt?.(x.chestSalt);
+      }
       this.stored.queue = this.stored.queue.filter((q) => q.seq > r.ackSeq);
       if (r.corrections) this.adopt(r.corrections.economy);
       this.persist();

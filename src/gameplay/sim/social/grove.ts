@@ -258,7 +258,8 @@ export function donate(state: VillageState, requestId: string, troop: string, co
   const req = g.requests.find((r) => r.id === requestId);
   const def = data.troops[troop];
   if (!req || !def) return { ok: false, message: 'That request is gone.' };
-  if ((state.army[troop] ?? 0) < count || count <= 0) return { ok: false, message: 'Not enough of that warrior.' };
+  // XPL-13 (P1-21): a whole number of warriors (a fraction left an army the next load called damaged).
+  if (!Number.isInteger(count) || (state.army[troop] ?? 0) < count || count <= 0) return { ok: false, message: 'Not enough of that warrior.' };
   const room = req.size - req.donated;
   const n = Math.min(count, Math.floor(room / def.housing));
   if (n <= 0) return { ok: false, message: 'That request is full.' };

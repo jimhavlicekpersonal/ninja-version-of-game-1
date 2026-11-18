@@ -34,8 +34,19 @@ export interface VillageReplayJob {
   earliest: number;
   /** Times later than now + this count as now. */
   skewMs: number;
+  /**
+   * Exploit audit XPL-10 (P1-19): commands that start a timer (`TIMER_COMMANDS`) are dated no earlier than this
+   * (MAX_TIMER_BACKDATE_MS before now). Absent: `earliest`, as before.
+   */
+  earliestTimer?: number;
   steps: ReplayStep[];
 }
+
+/**
+ * XPL-10 (P1-19): commands whose time starts a timer. Dated 12 hours back they finished upgrades, research and
+ * training early for free every morning (about 650 Jade of skips a day); they keep only a short window.
+ */
+export const TIMER_COMMANDS: ReadonlySet<string> = new Set(['place', 'upgrade', 'research', 'train', 'trainArmy', 'topUp']);
 
 export interface ReplayLedgerLine {
   at: number;
@@ -80,7 +91,8 @@ export function replayVillage(job: VillageReplayJob, data: GameData): VillageRep
   const ledger: ReplayLedgerLine[] = [];
   const outcomes: VillageReplayOutcome['outcomes'] = [];
   for (const s of job.steps) {
-    const when = Math.max(at, job.earliest, s.clientAt > job.now + job.skewMs ? job.now : s.clientAt);
+    const floor = job.earliestTimer !== undefined && TIMER_COMMANDS.has(s.command?.type) ? Math.max(job.earliest, job.earliestTimer) : job.earliest;
+    const when = Math.max(at, floor, s.clientAt > job.now + job.skewMs ? job.now : s.clientAt);
     let error = s.error;
     if (!error) {
       let r: ReturnType<typeof applyCommand>;
