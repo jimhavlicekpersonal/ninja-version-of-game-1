@@ -7,6 +7,8 @@
   "seasonSkins": ["lantern_elder", "crimson_maple", "snow_pine", "indigo_tide", "jade_bamboo", "plum_blossom", "golden_harvest", "storm_cloud"],
   "repeatJade": 60,
   "$commentBonus": "Retention audit RET-02 / ECO-03 (P1-03): after the last tier, every everyPoints task points pay reward (resources only, Keep-scaled, never Jade), at most maxPerSeason times. A full season's bonus (17 x 3,000 of each at scale 1) stays under the free track's own supply (90,000 of each).",
+  "$commentEstimate": "Economy ECO-06 (P1-05): the value estimate counts the tiers this player can still reach at their own pace this season (points against days elapsed, never above all tasks every day; defaultPace in the first minDaysForPace days), and if it would exceed guardPackMultiple x the Jade of the same-price pack it shows only the Jade and lists the supplies by amount.",
+  "estimate": { "defaultPace": 0.6, "minDaysForPace": 3, "guardPackMultiple": 6 },
   "bonus": { "everyPoints": 300, "reward": { "acorns": 3000, "dew": 3000 }, "maxPerSeason": 17 },
   "productId": "lantern_pass",
   "usd": 4.99,

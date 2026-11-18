@@ -422,7 +422,8 @@ export class EconomyUi {
     const sale = passSaleOpen(now, d, this.c.state);
     const check = canPurchase(this.c.state, d.pass.productId, now, d);
     const closed = !sale.open && !check.ok && check.code === 'SEASON_ENDING';
-    const value = h('div', { class: 'small pass-value' }, t('pass.value', { jade: v.total, tiers: v.tiers, total: v.tiersTotal, days: v.daysLeft }));
+    // P1-05: past the guard the line shows the Jade alone, with the supplies listed by amount.
+    const value = h('div', { class: 'small pass-value' }, t('pass.value', { jade: v.total, tiers: v.tiers, total: v.tiersTotal, days: v.daysLeft }), v.guarded ? h('span', {}, ' ', rewardChips(v.supplies)) : null);
     const buy = closed ? h('span', { class: 'claim-flat' }, i18nText("ui.not_on_sale_51a77c4bdf")) : this.buyButton(d.pass.productId, 'gold', redraw);
     return h(
       'div',

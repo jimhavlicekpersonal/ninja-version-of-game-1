@@ -82,6 +82,14 @@ export interface PassValue {
   skins: string[];
   /** Jade the cheapest pack of about the same price gives, for comparison. */
   packJade: number;
+  /** P1-05: the player's own pace this season (share of all points a day earns), used for `tiers`. */
+  pace: number;
+  /**
+   * P1-05: the estimate passed `guardPackMultiple` times the same-price pack, so `total` is the Jade alone and the
+   * premium tiers' Coins and Provisions are listed by amount (`supplies`) instead of priced as top-ups.
+   */
+  guarded: boolean;
+  supplies: Cost;
 }
 
 /**
@@ -95,10 +103,15 @@ export function passPremiumValue(state: VillageState, now: number, data: GameDat
   const season = passSeason(now, data);
   const points = state.pass.season === season ? state.pass.points : 0;
   const daysLeft = Math.max(0, (passSeasonEndsAt(now, data) - now) / DAY);
-  const reach = Math.min(p.tiers.length, Math.floor((points + daysLeft * passPointsPerDay(data)) / p.pointsPerTier));
+  // P1-05: at the player's own pace this season (it used to assume every task every day), never above 100%.
+  const est = p.estimate;
+  const elapsed = Math.max(0, (now - (passSeasonEndsAt(now, data) - p.seasonDays * DAY)) / DAY);
+  const pace = !est ? 1 : elapsed < est.minDaysForPace ? est.defaultPace : Math.min(1, points / (elapsed * passPointsPerDay(data)));
+  const reach = Math.min(p.tiers.length, Math.max(Math.floor(points / p.pointsPerTier), Math.floor((points + daysLeft * passPointsPerDay(data) * pace) / p.pointsPerTier)));
   const keep = hallOf(state, data);
   let jade = 0;
   let resourceJade = 0;
+  const supplies: Cost = {};
   const skins: string[] = [];
   for (const t of p.tiers) {
     if (t.tier > reach) continue;
@@ -114,11 +127,17 @@ export function passPremiumValue(state: VillageState, now: number, data: GameDat
     for (const [k, v] of Object.entries(scaled) as [ResourceKind, number][]) {
       if (!(v > 0)) continue;
       if (k === 'moonstones') jade += v;
-      else resourceJade += topUpOne(v, data, tierKeep);
+      else {
+        resourceJade += topUpOne(v, data, tierKeep);
+        supplies[k] = (supplies[k] ?? 0) + v;
+      }
     }
   }
   const pack = [...data.store.packs].sort((a, b) => Math.abs(a.usd - p.usd) - Math.abs(b.usd - p.usd))[0];
-  return { tiers: reach, tiersTotal: p.tiers.length, daysLeft: Math.ceil(daysLeft), jade, resourceJade, total: jade + resourceJade, skins, packJade: pack?.moonstones ?? 0 };
+  const packJade = pack?.moonstones ?? 0;
+  // P1-05: top-ups are the dearest rate in the game; past the guard the estimate shows only the Jade.
+  const guarded = !!est && packJade > 0 && jade + resourceJade > est.guardPackMultiple * packJade;
+  return { tiers: reach, tiersTotal: p.tiers.length, daysLeft: Math.ceil(daysLeft), jade, resourceJade, total: guarded ? jade : jade + resourceJade, skins, packJade, pace, guarded, supplies };
 }
 
 /**

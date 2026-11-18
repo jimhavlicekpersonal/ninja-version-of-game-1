@@ -3,7 +3,7 @@
  * each as a test that failed on the code it describes.
  */
 import { describe, expect, it } from 'vitest';
-import { currentTasks, passBonusCount, passPremiumValue, passSeason, passSeasonEndsAt, unlockedTier } from '../../../src/gameplay/sim/pass';
+import { currentTasks, passBonusCount, passPointsPerDay, passPremiumValue, passSeason, passSeasonEndsAt, unlockedTier } from '../../../src/gameplay/sim/pass';
 import { advance, applyCommand, canHireArtisan, passTierReward } from '../../../src/gameplay/sim/village';
 import { migrate, SAVE_VERSION, serialize, deserialize } from '../../../src/gameplay/sim/save';
 import { data, newGame } from './helpers';
@@ -149,5 +149,41 @@ describe('ECO-05 (P1-04): the Artisan\'s Bundle only while it can do what it say
     expect(canHireArtisan(withHuts(2), data)).toBe(true);
     expect(canHireArtisan(withHuts(3), data)).toBe(true);
     expect(canHireArtisan(withHuts(4), data)).toBe(false);
+  });
+});
+
+describe('ECO-06 (P1-05): the Scroll value estimate stays honest', () => {
+  const atKeep = (keep: number) => {
+    const { state, clock } = newGame();
+    state.buildings = state.buildings.map((b) => (data.buildings[b.type].category === 'hall' ? { ...b, level: keep } : b));
+    state.pass.season = passSeason(clock.now(), data);
+    return { state, now: clock.now() };
+  };
+
+  it('never shows more than the guard multiple of the same-price pack, at Keeps 3, 5, 10 and 15', () => {
+    for (const keep of [3, 5, 10, 15]) {
+      const { state, now } = atKeep(keep);
+      const v = passPremiumValue(state, now, data);
+      expect(v.total, `Keep ${keep}`).toBeLessThanOrEqual(data.pass.estimate!.guardPackMultiple * v.packJade + v.jade);
+      if (v.guarded) expect(v.total).toBe(v.jade);
+    }
+  });
+
+  it('a player who completes half the tasks sees about half the remaining tiers counted', () => {
+    const { state } = atKeep(5);
+    const start = passSeasonEndsAt(Date.UTC(2026, 3, 10), data) - data.pass.seasonDays * 86_400_000;
+    const now = start + 10 * 86_400_000;
+    state.pass.season = passSeason(now, data);
+    const full = 10 * passPointsPerDay(data);
+    state.pass.points = Math.round(full);
+    const all = passPremiumValue(state, now, data);
+    state.pass.points = Math.round(full / 2);
+    const half = passPremiumValue(state, now, data);
+    expect(all.pace).toBeCloseTo(1, 1);
+    expect(half.pace).toBeCloseTo(0.5, 1);
+    // The half-pace player's projection: half of every remaining day's points (it used to assume all of them).
+    const projected = Math.floor((state.pass.points + 20 * passPointsPerDay(data) * 0.5) / data.pass.pointsPerTier);
+    expect(Math.abs(half.tiers - Math.min(data.pass.tiers.length, projected))).toBeLessThanOrEqual(1);
+    expect(half.tiers).toBeLessThan(all.tiers);
   });
 });
