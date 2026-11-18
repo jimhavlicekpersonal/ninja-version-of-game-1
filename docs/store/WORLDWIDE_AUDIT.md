@@ -1166,3 +1166,19 @@ No battle rule changed (speed scales real time only; squad orders and the review
 | P6-16 | dead ends and keyboards | partial | no-army Attack and unaffordable Next explain; long press; dialog focus, Tab, Escape; hotkeys 1-9, S, Esc | DOM | the other ~24 `title` attributes in village panels not reviewed one by one |
 | P6-17 | nothing to play while training | done | empty-camp choices on Attack and the result screen | DOM | — |
 | P6-18 | rules no one can read | partial | Codex page; numbers from data; counter pairs only where confirmed in battle | 5 of 18 live pairs confirmed (`p6-18-counters.md`) | 13 pairs unconfirmed with one-warrior armies; a mixed-army check is open |
+
+**Browser checks** (`tools/ui/surfaces.mjs`; `phase6/p6-09-surfaces-en.txt`, `p6-11-battle-en.txt`, `p6-01-p6-11-battle-en.txt`, `p6-surfaces-ar-de.txt`): the village and its panels (Army, Store, Daily, News, the builder panel, the Keep sheet), the tutorial's Keep step and a battle with squad orders, at 320×568, 360×640, 390×844 and 844×390, in English, Arabic and German, with touch and hit tests at element centres. Everything passes after two German fixes (the objective chip's arrow; the squad row wraps). Low end (`p6-02-lowend-quality.json`): one review point at CPU ×6 took 284-817 ms, the longest main-thread task 129 ms on the low profile. Chromium emulation, not devices.
+
+**Independent review (section 0.5), 2026-11-18**, of `83c139a^..HEAD` (src, tools, tests); fixes `f0ad1d4` and the reserve commit:
+
+| # | Finding | Outcome |
+|---|---|---|
+| M1 | an offer could beat a Keep card a dialog delayed | fixed: offers wait while a milestone is due; test |
+| M2 | the reserve measurement counted ties, so any order passed | fixed: decided on bases where an order is best alone (1/3/0 of 10): the reserve is not offered |
+| M3 | the test-raid replay header read "loot taken" | fixed: practice header and tag; test |
+| M4 | the objective chip offered a Trial with empty camps | fixed: only with warriors standing; test |
+| M5 | P6-09 marked done before Arabic and German | fixed: run, two German fixes, all pass |
+| L6-L10 | speed button waited for the hero; entry point every second; entry point under older rules; practice dropped hero and reinforcements; long press also selected | fixed |
+| L11 | ledger test counts | fixed |
+
+Translations (section 13): `907db45`, the phase's 52 new and changed strings into 49 languages by eleven script-group translators; `i18n:check` passes for every language and `i18n:status` reports all complete. "Garrison crew" and "Tanks first" are new terms in most languages. Machine translation checked for structure, not reviewed by native speakers.
