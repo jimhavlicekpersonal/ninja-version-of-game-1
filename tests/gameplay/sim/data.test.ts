@@ -36,12 +36,21 @@ describe('balance data', () => {
     }
   });
 
+  it('no level takes longer than its building\'s cap (P3-03)', () => {
+    for (const [type, def] of Object.entries(data.buildings)) {
+      const cap = def.buildCapSeconds ?? data.economy.buildSecondsCap!;
+      for (const l of def.levels) expect(l.buildSeconds ?? 0, type).toBeLessThanOrEqual(cap);
+    }
+    for (const t of ['acorn_orchard', 'dewdrop_well', 'acorn_silo', 'dew_cistern']) expect(data.buildings[t].buildCapSeconds).toBe(4 * 86400);
+  });
+
   it('timed buildings get ~2.2x longer each level', () => {
     for (const def of Object.values(data.buildings)) {
       if (!def.inShop || def.levels[0].buildSeconds === 0 || def.levels.length < 3) continue;
       const ratios: number[] = [];
       for (let i = 1; i < def.levels.length; i++) {
-        if (def.levels[i].buildSeconds === 7 * 86400) {
+        // P3-03 (2026-11-18, authorised): a level at its building's cap (a named data value), not "exactly seven days".
+        if (def.levels[i].buildSeconds === (def.buildCapSeconds ?? data.economy.buildSecondsCap)) {
           expect(def.levels[i].buildSeconds).toBeGreaterThanOrEqual(def.levels[i - 1].buildSeconds);
           continue;
         }

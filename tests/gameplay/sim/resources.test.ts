@@ -76,16 +76,34 @@ describe('collectors', () => {
     if (!r.ok) expect(r.code).toBe('STORAGE_FULL');
   });
 
-  it('keep what they hold during an upgrade but do not produce more', () => {
+  // P3-03 (PAC-03, 2026-11-18, restated): a collector keeps producing at its old level while it upgrades.
+  it('keep what they hold during an upgrade and keep producing at the old level', () => {
     const { state, clock, id } = withOrchard();
     clock.advanceHours(2); // 400 waiting
     let s = must(state, { type: 'upgrade', id }, clock.now());
     clock.advanceSeconds(10);
-    expect(collectorAmount(find(s, 'acorn_orchard')[0], clock.now(), data)).toBeCloseTo(400);
-    // After the 22 s upgrade, it produces at the level 2 rate (400/h).
+    // 400 plus ten seconds at the level 1 rate (200/h).
+    expect(collectorAmount(find(s, 'acorn_orchard')[0], clock.now(), data)).toBeCloseTo(400 + (200 * 10) / 3600, 6);
+    // After the 22 s upgrade, it produces at the level 2 rate (400/h): 22 s at 200/h, then an hour at 400/h.
     clock.advanceSeconds(12);
     s = advance(s, clock.now(), data).state;
     clock.advanceHours(1);
-    expect(collectorAmount(find(s, 'acorn_orchard')[0], clock.now(), data)).toBeCloseTo(800);
+    expect(collectorAmount(find(s, 'acorn_orchard')[0], clock.now(), data)).toBeCloseTo(400 + (200 * 22) / 3600 + 400, 6);
+  });
+
+  it('the same amount whether or not advance ran at the upgrade\'s end, and a cancel keeps what was made', () => {
+    const { state, clock, id } = withOrchard();
+    clock.advanceHours(2);
+    const s = must(state, { type: 'upgrade', id }, clock.now());
+    clock.advanceSeconds(22 + 1800);
+    const lazy = collectorAmount(find(s, 'acorn_orchard')[0], clock.now(), data);
+    const settled = collectorAmount(find(advance(s, clock.now(), data).state, 'acorn_orchard')[0], clock.now(), data);
+    expect(lazy).toBeCloseTo(settled, 6);
+    const { state: s2, clock: c2, id: id2 } = withOrchard();
+    c2.advanceHours(2);
+    const up = must(s2, { type: 'upgrade', id: id2 }, c2.now());
+    c2.advanceSeconds(10);
+    const cancelled = must(up, { type: 'cancel', id: id2 }, c2.now());
+    expect(collectorAmount(find(cancelled, 'acorn_orchard')[0], c2.now(), data)).toBeCloseTo(400 + (200 * 10) / 3600, 6);
   });
 });

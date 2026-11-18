@@ -11,7 +11,7 @@ import { buildingDef, levelDef, troopDef, troopLevel } from './data';
 import { attackerFor, lootPenalty } from './matchmaking';
 import { generateOpponent } from './battle/basegen';
 import { defenseHonorLoss, lossTrophies, winTrophies } from './ranks';
-import { collectorAmount } from './resources';
+import { accrueRestart, collectorAmount } from './resources';
 import { createRng, int, mixSeed, next, pick, type Rng } from './rng';
 import type { Cost, GameData, ResourceKind, VillageState } from './types';
 import { advance, hallLevel } from './village';
@@ -220,7 +220,7 @@ export function raidVillage(s: VillageState, t: number, rng: Rng, data: GameData
       if (def.produces === k && vb.collector) {
         const have = collectorAmount(vb, t, data);
         const take = Math.min(have, v);
-        vb.collector = { stored: have - take, accrueFrom: vb.upgrade && vb.upgrade.endsAt > t ? vb.upgrade.endsAt : t };
+        vb.collector = { stored: have - take, accrueFrom: accrueRestart(vb, t) };
         fromCollectors[k] = (fromCollectors[k] ?? 0) + Math.floor(take);
       } else {
         // Never negative: a village in debt (ledger audit A5) has nothing in storage to lose.

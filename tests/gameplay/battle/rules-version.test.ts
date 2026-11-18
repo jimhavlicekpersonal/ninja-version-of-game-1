@@ -10,7 +10,7 @@ import { SIM_RULES } from '../../../src/gameplay/sim/battle/battle';
 import { defaultData as data } from '../../../src/gameplay/sim/data';
 
 // Text, prices and timers never change how a recorded battle plays out.
-const TEXT = new Set(['name', 'description', 'text', 'summary', 'look', 'tip', '$comment', 'research', 'cost', 'trainSeconds', 'buildSeconds', 'unlockKeep', 'barracksLevel', 'levelCapOffset', 'ratePerHour', 'storage', 'trainingSpeed', 'reinforcement', 'inShop', 'clear', 'scoutFeeByHall', 'generatedLootByHall', 'maxReplays']);
+const TEXT = new Set(['name', 'description', 'text', 'summary', 'look', 'tip', '$comment', 'research', 'cost', 'trainSeconds', 'buildSeconds', 'buildCapSeconds', 'unlockKeep', 'barracksLevel', 'levelCapOffset', 'ratePerHour', 'storage', 'trainingSpeed', 'reinforcement', 'inShop', 'clear', 'scoutFeeByHall', 'generatedLootByHall', 'maxReplays']);
 
 function strip(v: unknown): unknown {
   if (Array.isArray(v)) return v.map(strip);

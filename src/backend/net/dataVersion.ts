@@ -55,7 +55,7 @@ export function dataVersionOf(data: object): string {
 }
 
 // Same rules as tests/gameplay/battle/rules-version.test.ts: text, prices and timers never change a battle.
-const NOT_COMBAT = new Set(['name', 'description', 'text', 'summary', 'look', 'tip', '$comment', 'research', 'cost', 'trainSeconds', 'buildSeconds', 'unlockKeep', 'barracksLevel', 'levelCapOffset', 'ratePerHour', 'storage', 'trainingSpeed', 'reinforcement', 'inShop', 'clear', 'scoutFeeByHall', 'generatedLootByHall', 'maxReplays']);
+const NOT_COMBAT = new Set(['name', 'description', 'text', 'summary', 'look', 'tip', '$comment', 'research', 'cost', 'trainSeconds', 'buildSeconds', 'buildCapSeconds', 'unlockKeep', 'barracksLevel', 'levelCapOffset', 'ratePerHour', 'storage', 'trainingSpeed', 'reinforcement', 'inShop', 'clear', 'scoutFeeByHall', 'generatedLootByHall', 'maxReplays']);
 
 function stripNonCombat(v: unknown): unknown {
   if (Array.isArray(v)) return v.map(stripNonCombat);

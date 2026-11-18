@@ -29,7 +29,7 @@ import { advanceGrove, canRequest, donate as donateTroops, emptyGrove, joinGrove
 import { attacksLeft, enemyGrove, ensureRaid, raidPhase, settleRaids } from './social/groveRaid';
 import { bindPlayer, claimGangChest, claimRaidChest, emptyNet, receiveDonations, spendDonation, type ServerDonation } from './net';
 import { canPlace } from './grid';
-import { addCapped, canAfford, capacity, collectorAmount, effectiveLevel, missingFor, subtractCost } from './resources';
+import { accrueRestart, addCapped, canAfford, capacity, collectorAmount, effectiveLevel, missingFor, subtractCost } from './resources';
 import type { Building, BuildingLimit, BuildingType, Cost, GameData, LeagueDef, PurchaseRecord, PurchaseRefund, ResourceKind, Temper, TopUpPaid, TrainingItem, VillageState, PendingBattle } from './types';
 import { normalizeTemper, sameTemper, temperable, temperDef, validTemper } from './battle/temper';
 import { carriedLoot, raidCarry, trainableRoles, validStake } from './carry';
@@ -361,6 +361,8 @@ export function advance(state: VillageState, now: number, data: GameData): { sta
     } else {
       finished.push({ id: b.id, type: b.type, level: u.toLevel, at: u.endsAt });
       timeline.push({ at: u.endsAt, seq: seq++, run: () => {
+        // P3-03: bank what it made at the old level, then produce at the new one from the end.
+        if (b.collector && b.level >= 1) b.collector = { stored: collectorAmount({ ...b, upgrade: null }, u.endsAt, data), accrueFrom: u.endsAt };
         b.level = u.toLevel;
         b.upgrade = null;
         // Tasks count finished upgrades only, so start-and-cancel earns nothing.
@@ -991,7 +993,7 @@ function skip(s: VillageState, id: string, now: number, data: GameData): Command
   s.resources.moonstones -= q.moonstones;
   const b = s.buildings.find((v) => v.id === id)!;
   const finishedAt = now;
-  if (b.collector && b.upgrade) b.collector = { stored: b.collector.stored, accrueFrom: finishedAt };
+  if (b.collector && b.upgrade) b.collector = { stored: b.level >= 1 ? collectorAmount({ ...b, upgrade: null }, finishedAt, data) : b.collector.stored, accrueFrom: finishedAt };
   b.upgrade!.endsAt = finishedAt;
   const adv = advance(s, now, data).state;
   return { ok: true, state: adv, events: [{ kind: 'skip_used', what: b.type, seconds: q.seconds, moonstones: q.moonstones }] };
@@ -1908,7 +1910,7 @@ function applyDefenseLosses(s: VillageState, record: BattleRecord, lost: Cost, n
       const have = collectorAmount(c.b, now, data);
       const take = Math.floor(Math.min(have, c.amount, left));
       if (take <= 0) continue;
-      c.b.collector = { stored: have - take, accrueFrom: c.b.upgrade && c.b.upgrade.endsAt > now ? c.b.upgrade.endsAt : now };
+      c.b.collector = { stored: have - take, accrueFrom: accrueRestart(c.b, now) };
       left -= take;
     }
     // Collected since the raid (or not traceable): it is in storage now. A debt (negative balance,
@@ -2368,8 +2370,9 @@ function upgrade(s: VillageState, id: string, now: number, data: GameData, pay?:
     b.level = toLevel;
   } else {
     if (b.collector) {
-      // Bank what it holds; production pauses until the upgrade ends.
-      b.collector = { stored: collectorAmount(b, now, data), accrueFrom: endsAt };
+      // Bank what it holds. P3-03 (PAC-03): it keeps producing at its old level while it upgrades (a level 15 Mint
+      // used to forfeit 1.59 M Coins on top of its price).
+      b.collector = { stored: collectorAmount(b, now, data), accrueFrom: now };
     }
     b.upgrade = { toLevel, startedAt: now, endsAt, cost };
   }
@@ -2388,8 +2391,9 @@ function cancel(s: VillageState, id: string, now: number, data: GameData): Comma
   } else if (b.level < 1) {
     s.buildings = s.buildings.filter((v) => v.id !== id);
   } else {
+    // P3-03: what it made at its own level while the upgrade ran stays.
+    if (b.collector) b.collector = { stored: collectorAmount(b, now, data), accrueFrom: now };
     b.upgrade = null;
-    if (b.collector) b.collector = { stored: b.collector.stored, accrueFrom: now };
   }
   void cost;
   const refund = payRefund(s, back.refund, data);
@@ -2414,7 +2418,7 @@ function collect(s: VillageState, id: string, now: number, data: GameData): Comm
   // Limited-time event: collecting gives extra, as far as storage allows.
   const extra = Math.min(room - take, Math.floor(take * eventEffect(now, data).collectBonus));
   s.resources[resource] += take + extra;
-  // While an upgrade runs, production stays paused until it ends.
-  b.collector = { stored: amount - take, accrueFrom: b.upgrade ? b.upgrade.endsAt : now };
+  // A new building's production starts when it is built; an upgrading one keeps producing (P3-03).
+  b.collector = { stored: amount - take, accrueFrom: accrueRestart(b, now) };
   return { ok: true, state: s, events: [{ kind: 'collect', buildingType: b.type, id, resource, amount: take + extra, ...(extra > 0 ? { eventBonus: extra } : {}) }] };
 }

@@ -187,6 +187,7 @@
     ]
   },
   "acorn_orchard": {
+    "buildCapSeconds": 345600,
     "name": "Coin Mint",
     "description": "Artisans stamp fresh Coins every hour. Holds a full day of output, so collect once a day or more.",
     "size": 3,
@@ -325,7 +326,7 @@
         "cost": {
           "dew": 530461
         },
-        "buildSeconds": 604800,
+        "buildSeconds": 345600,
         "hp": 5585,
         "ratePerHour": 12899
       },
@@ -334,7 +335,7 @@
         "cost": {
           "dew": 769168
         },
-        "buildSeconds": 604800,
+        "buildSeconds": 345600,
         "hp": 7450,
         "ratePerHour": 17813
       },
@@ -343,7 +344,7 @@
         "cost": {
           "dew": 1115294
         },
-        "buildSeconds": 604800,
+        "buildSeconds": 345600,
         "hp": 8641,
         "ratePerHour": 24879
       },
@@ -352,7 +353,7 @@
         "cost": {
           "dew": 1617176
         },
-        "buildSeconds": 604800,
+        "buildSeconds": 345600,
         "hp": 11528,
         "ratePerHour": 35041
       },
@@ -361,7 +362,7 @@
         "cost": {
           "dew": 2344905
         },
-        "buildSeconds": 604800,
+        "buildSeconds": 345600,
         "hp": 15378,
         "ratePerHour": 49655
       },
@@ -370,7 +371,7 @@
         "cost": {
           "dew": 3400112
         },
-        "buildSeconds": 604800,
+        "buildSeconds": 345600,
         "hp": 17840,
         "ratePerHour": 70674
       },
@@ -379,7 +380,7 @@
         "cost": {
           "dew": 4930163
         },
-        "buildSeconds": 604800,
+        "buildSeconds": 345600,
         "hp": 23798,
         "ratePerHour": 100907
       },
@@ -388,7 +389,7 @@
         "cost": {
           "dew": 7148736
         },
-        "buildSeconds": 604800,
+        "buildSeconds": 345600,
         "hp": 31745,
         "ratePerHour": 144395
       },
@@ -397,7 +398,7 @@
         "cost": {
           "dew": 10365667
         },
-        "buildSeconds": 604800,
+        "buildSeconds": 345600,
         "hp": 36826,
         "ratePerHour": 206955
       },
@@ -406,13 +407,14 @@
         "cost": {
           "dew": 15030218
         },
-        "buildSeconds": 604800,
+        "buildSeconds": 345600,
         "hp": 49128,
         "ratePerHour": 296957
       }
     ]
   },
   "dewdrop_well": {
+    "buildCapSeconds": 345600,
     "name": "Terraced Farm",
     "description": "Terraced fields that grow Provisions for your warriors. Holds a full day of output.",
     "size": 3,
@@ -551,7 +553,7 @@
         "cost": {
           "acorns": 530461
         },
-        "buildSeconds": 604800,
+        "buildSeconds": 345600,
         "hp": 5585,
         "ratePerHour": 12899
       },
@@ -560,7 +562,7 @@
         "cost": {
           "acorns": 769168
         },
-        "buildSeconds": 604800,
+        "buildSeconds": 345600,
         "hp": 7450,
         "ratePerHour": 17813
       },
@@ -569,7 +571,7 @@
         "cost": {
           "acorns": 1115294
         },
-        "buildSeconds": 604800,
+        "buildSeconds": 345600,
         "hp": 8641,
         "ratePerHour": 24879
       },
@@ -578,7 +580,7 @@
         "cost": {
           "acorns": 1617176
         },
-        "buildSeconds": 604800,
+        "buildSeconds": 345600,
         "hp": 11528,
         "ratePerHour": 35041
       },
@@ -587,7 +589,7 @@
         "cost": {
           "acorns": 2344905
         },
-        "buildSeconds": 604800,
+        "buildSeconds": 345600,
         "hp": 15378,
         "ratePerHour": 49655
       },
@@ -596,7 +598,7 @@
         "cost": {
           "acorns": 3400112
         },
-        "buildSeconds": 604800,
+        "buildSeconds": 345600,
         "hp": 17840,
         "ratePerHour": 70674
       },
@@ -605,7 +607,7 @@
         "cost": {
           "acorns": 4930163
         },
-        "buildSeconds": 604800,
+        "buildSeconds": 345600,
         "hp": 23798,
         "ratePerHour": 100907
       },
@@ -614,7 +616,7 @@
         "cost": {
           "acorns": 7148736
         },
-        "buildSeconds": 604800,
+        "buildSeconds": 345600,
         "hp": 31745,
         "ratePerHour": 144395
       },
@@ -623,7 +625,7 @@
         "cost": {
           "acorns": 10365667
         },
-        "buildSeconds": 604800,
+        "buildSeconds": 345600,
         "hp": 36826,
         "ratePerHour": 206955
       },
@@ -632,13 +634,14 @@
         "cost": {
           "acorns": 15030218
         },
-        "buildSeconds": 604800,
+        "buildSeconds": 345600,
         "hp": 49128,
         "ratePerHour": 296957
       }
     ]
   },
   "acorn_silo": {
+    "buildCapSeconds": 345600,
     "name": "Treasury",
     "description": "A locked vault for your Coins. Bigger treasuries let you save for bigger upgrades.",
     "size": 3,
@@ -804,7 +807,7 @@
         "cost": {
           "dew": 1602434
         },
-        "buildSeconds": 604800,
+        "buildSeconds": 345600,
         "hp": 16333,
         "storage": {
           "acorns": 7604618
@@ -815,7 +818,7 @@
         "cost": {
           "dew": 2323529
         },
-        "buildSeconds": 604800,
+        "buildSeconds": 345600,
         "hp": 21788,
         "storage": {
           "acorns": 11787158
@@ -826,7 +829,7 @@
         "cost": {
           "dew": 3369116
         },
-        "buildSeconds": 604800,
+        "buildSeconds": 345600,
         "hp": 25273,
         "storage": {
           "acorns": 18270095
@@ -837,7 +840,7 @@
         "cost": {
           "dew": 4885219
         },
-        "buildSeconds": 604800,
+        "buildSeconds": 345600,
         "hp": 33713,
         "storage": {
           "acorns": 28318648
@@ -848,7 +851,7 @@
         "cost": {
           "dew": 7083567
         },
-        "buildSeconds": 604800,
+        "buildSeconds": 345600,
         "hp": 44974,
         "storage": {
           "acorns": 43893904
@@ -859,7 +862,7 @@
         "cost": {
           "dew": 10271173
         },
-        "buildSeconds": 604800,
+        "buildSeconds": 345600,
         "hp": 59999,
         "storage": {
           "acorns": 68035551
@@ -870,7 +873,7 @@
         "cost": {
           "dew": 14893200
         },
-        "buildSeconds": 604800,
+        "buildSeconds": 345600,
         "hp": 69596,
         "storage": {
           "acorns": 105455104
@@ -881,7 +884,7 @@
         "cost": {
           "dew": 21595141
         },
-        "buildSeconds": 604800,
+        "buildSeconds": 345600,
         "hp": 92844,
         "storage": {
           "acorns": 163455412
@@ -890,6 +893,7 @@
     ]
   },
   "dew_cistern": {
+    "buildCapSeconds": 345600,
     "name": "Provision Storehouse",
     "description": "Stores Provisions for your warriors. Raiders can only carry off part of what is inside.",
     "size": 3,
@@ -1055,7 +1059,7 @@
         "cost": {
           "acorns": 1602434
         },
-        "buildSeconds": 604800,
+        "buildSeconds": 345600,
         "hp": 16333,
         "storage": {
           "dew": 7604618
@@ -1066,7 +1070,7 @@
         "cost": {
           "acorns": 2323529
         },
-        "buildSeconds": 604800,
+        "buildSeconds": 345600,
         "hp": 21788,
         "storage": {
           "dew": 11787158
@@ -1077,7 +1081,7 @@
         "cost": {
           "acorns": 3369116
         },
-        "buildSeconds": 604800,
+        "buildSeconds": 345600,
         "hp": 25273,
         "storage": {
           "dew": 18270095
@@ -1088,7 +1092,7 @@
         "cost": {
           "acorns": 4885219
         },
-        "buildSeconds": 604800,
+        "buildSeconds": 345600,
         "hp": 33713,
         "storage": {
           "dew": 28318648
@@ -1099,7 +1103,7 @@
         "cost": {
           "acorns": 7083567
         },
-        "buildSeconds": 604800,
+        "buildSeconds": 345600,
         "hp": 44974,
         "storage": {
           "dew": 43893904
@@ -1110,7 +1114,7 @@
         "cost": {
           "acorns": 10271173
         },
-        "buildSeconds": 604800,
+        "buildSeconds": 345600,
         "hp": 59999,
         "storage": {
           "dew": 68035551
@@ -1121,7 +1125,7 @@
         "cost": {
           "acorns": 14893200
         },
-        "buildSeconds": 604800,
+        "buildSeconds": 345600,
         "hp": 69596,
         "storage": {
           "dew": 105455104
@@ -1132,7 +1136,7 @@
         "cost": {
           "acorns": 21595141
         },
-        "buildSeconds": 604800,
+        "buildSeconds": 345600,
         "hp": 92844,
         "storage": {
           "dew": 163455412

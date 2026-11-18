@@ -730,6 +730,8 @@ export interface BuildingDef {
   effect?: BuildingEffect;
   /** Forest obstacles: what clearing costs and the Moonstones it gives. */
   clear?: { cost: Cost; seconds: number; moonstones: number };
+  /** P3-03: the longest one of its levels takes to build (else `economy.buildSecondsCap`). */
+  buildCapSeconds?: number;
   levels: LevelDef[];
 }
 
@@ -762,6 +764,8 @@ export interface EconomyDef {
    * instead of Coins, one for one (`place`/`upgrade` with `pay: 'dew'`), so a defender's idle Provisions build walls.
    */
   provisionsPayable?: string[];
+  /** P3-03: the longest any level takes to build, unless the building names its own `buildCapSeconds`. */
+  buildSecondsCap?: number;
   /**
    * P2-14 (built-not-live opportunity 4): the garrison crew. That many builds at a time of the `garrisonCategories`
    * (defense, trap and support: every counter) take no Village Artisan. Free and never sold. Absent or 0: as before.
