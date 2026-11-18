@@ -23,6 +23,7 @@
   "tutorial.end.button": { "en": "Finish", "text": "Maliza" },
   "tutorial.skip": { "en": "Skip tutorial", "text": "Ruka mafunzo" },
   "kind.practice": { "en": "Practice", "text": "" },
+  "battle.scoutAnyway": { "en": "Scout anyway", "text": "" },
   "review.button": { "en": "What if…", "text": "" },
   "review.title": { "en": "Another point, the same army", "text": "" },
   "review.about": { "en": "Simulated: the same warriors and orders sent through another point. A review of this raid, not what it should have earned.", "text": "" },

@@ -310,6 +310,8 @@ export class App {
       });
     }
     if (Object.values(c.state.army).some((n) => n > 0)) out.push({ label: i18nText('battle.next'), primary: true, onClick: () => { this.home(); void this.scout(); } });
+    // P6-17: with the camps empty, what needs no standing army (the drill, a Try battle) or what waits for the retrain.
+    else for (const ch of this.d.hud.emptyCampChoices().slice(0, 2)) out.push({ label: ch.label, primary: ch.primary, onClick: () => { this.home(); ch.onClick(); } });
     return out;
   }
 

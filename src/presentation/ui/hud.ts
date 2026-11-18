@@ -35,7 +35,8 @@ import { bandFromProfile } from '../../gameplay/sim/age';
 import { armyBehindKeep, nextObjective } from '../../gameplay/sim/objective';
 import { sealProgress } from '../../gameplay/sim/seals';
 import { calendarView } from '../../gameplay/sim/calendar';
-import { advance, leagueBonusOf } from '../../gameplay/sim/village';
+import { advance, lastAttackArmy, leagueBonusOf, practiceArmy } from '../../gameplay/sim/village';
+import { goalEventViews } from '../../gameplay/sim/goalEvents';
 import { EconomyUi } from './economyUi';
 import { DailyUi } from './dailyUi';
 import { chestReady } from '../../gameplay/sim/daily';
@@ -252,6 +253,48 @@ export class Hud {
     }
   }
 
+  /**
+   * P6-17 (playthrough opportunity 1): with the camps empty, Attack offers what needs no standing army or pays
+   * without one (the daily drill, a "Try" practice battle) and, beside the retrain countdown, the next Trial tier and a
+   * running Bounty or Gauntlet. "Scout anyway" still scouts. Existing labels only.
+   */
+  private attackTapped(): void {
+    const s = this.c.state;
+    const empty = Object.values(s.army).every((n) => n <= 0);
+    const choices = empty && s.tutorial.done ? this.emptyCampChoices() : [];
+    if (!choices.length) return void this.deps.onAttack();
+    const body = h('div', { class: 'empty-camp' }, h('p', {}, i18nText("ui.no_warriors_ready_yet_0132a774ac")));
+    const ready = this.armyReadyAt();
+    if (ready) body.append(h('p', { class: 'muted small' }, h('span', { class: 'chip' }, icon(icons.clock), formatDuration(ready - this.c.now()))));
+    const close = this.modal(t('hud.attack'), body, [
+      ...choices.map((ch) => ({ label: ch.label, primary: ch.primary, onClick: () => { close(); ch.onClick(); } })),
+      { label: t('battle.scoutAnyway'), onClick: () => { close(); this.deps.onAttack(); } },
+    ]);
+  }
+
+  /** When the training queue fills the camps again (null: nothing training). */
+  private armyReadyAt(): number | null {
+    const q = this.c.state.training;
+    return q.length ? Math.max(...q.map((x) => x.endsAt)) : null;
+  }
+
+  /** P6-17: what to do with empty camps (shared by the Attack button and the result screen). */
+  emptyCampChoices(): { label: string; primary?: boolean; onClick(): void }[] {
+    const s = this.c.state;
+    const gd = localizedData(this.c.data);
+    const now = this.c.now();
+    const out: { label: string; primary?: boolean; onClick(): void }[] = [];
+    if (this.deps.onDrill && gd.daily.drill && Object.keys(drillArmy(s, gd)).length && drillAvailable(s, now, gd)) out.push({ label: t('drill.button'), primary: true, onClick: () => this.deps.onDrill?.() });
+    const tryTroop = Object.keys(lastAttackArmy(s) ?? {}).find((tt) => gd.troops[tt]) ?? Object.keys(gd.troops).find((tt) => troopUnlock(s, tt, gd).unlocked);
+    if (tryTroop && housingCapacity(s, gd) > 0) out.push({ label: i18nText("ui.try_85d6c0718c"), onClick: () => this.deps.onPractice(practiceArmy(s, tryTroop, gd)) });
+    if (this.armyReadyAt()) {
+      const next = attemptTier(s.trials, hallLevel(s, gd), gd);
+      out.push({ label: i18nText("ui.scout_tier_8fde370df8", { arg1: next }), onClick: () => this.openTrials() });
+      if (goalEventViews(s, now, gd).some((v) => v.ladder.some((l) => !l.paid))) out.push({ label: i18nText("ui.attack_the_bounty_fortress_0d8fd46d63"), onClick: () => this.daily.openEvents() });
+    }
+    return out;
+  }
+
   /** Open a panel named by a home-screen shortcut or an app link (after the tutorial; never during a battle). */
   openShortcut(name: string): void {
     if (!this.c.state.tutorial.done || document.getElementById('battle-hud')?.hidden === false) return;
@@ -327,7 +370,7 @@ export class Hud {
       h(
         'div',
         { class: 'group' },
-        h('button', { class: 'round-btn big attack', type: 'button', 'data-id': 'attack', 'aria-label': t('hud.attack'), onclick: () => this.deps.onAttack() }, icon(icons.swords), h('span', {}, t('hud.attack'))),
+        h('button', { class: 'round-btn big attack', type: 'button', 'data-id': 'attack', 'aria-label': t('hud.attack'), onclick: () => this.attackTapped() }, icon(icons.swords), h('span', {}, t('hud.attack'))),
         h('button', { class: 'round-btn big build', type: 'button', 'data-id': 'build', 'aria-label': t('hud.build'), onclick: () => this.openShop() }, icon(icons.hammer), h('span', {}, t('hud.build'))),
       ),
     );

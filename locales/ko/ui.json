@@ -23,6 +23,7 @@
   "tutorial.end.button": { "en": "Finish", "text": "마치기" },
   "tutorial.skip": { "en": "Skip tutorial", "text": "튜토리얼 건너뛰기" },
   "kind.practice": { "en": "Practice", "text": "" },
+  "battle.scoutAnyway": { "en": "Scout anyway", "text": "" },
   "review.button": { "en": "What if…", "text": "" },
   "review.title": { "en": "Another point, the same army", "text": "" },
   "review.about": { "en": "Simulated: the same warriors and orders sent through another point. A review of this raid, not what it should have earned.", "text": "" },
