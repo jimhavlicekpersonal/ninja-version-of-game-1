@@ -33,7 +33,7 @@ interface BattleHudDeps {
   session: BattleSession;
   myTrophies: number;
   /** Set when watching a replay. */
-  replayOf?: { kind: 'attack' | 'defense'; opponentName: string };
+  replayOf?: { kind: 'attack' | 'defense'; opponentName: string; /** P6-04: a "Test my defenses" raid (nothing taken). */ test?: boolean };
   /** Set for Grove Raid attacks (no loot, no Next). */
   /** Alliance War, or a Gang War strike (`title`, step 67). */
   grove?: { enemyName: string; title?: string };
@@ -177,7 +177,9 @@ export class BattleHud {
         { class: 'muted small b-more', id: 'b-left-more' },
         this.s.mode === 'replay'
           ? deps.replayOf?.kind === 'defense'
-            ? i18nText("ui.replay_attacks_loot_taken_cfa170965c", { arg1: isolateName(deps.replayOf.opponentName) })
+            ? deps.replayOf.test
+              ? i18nText("ui.practice_battle_nothing_is_spent_or_wo_c68624fd43")
+              : i18nText("ui.replay_attacks_loot_taken_cfa170965c", { arg1: isolateName(deps.replayOf.opponentName) })
             : i18nText("ui.replay_loot_won_db27073d59")
           : deps.grove
             ? i18nText("ui.vs_2d68ca8191", { arg1: deps.grove.title ?? i18nText("ui.alliance_war_fe9355cdf5"), arg2: isolateName(deps.grove.enemyName) })
@@ -229,6 +231,7 @@ export class BattleHud {
   private kindTag(): HTMLElement | null {
     const d = this.deps;
     const base = this.s.setup.base;
+    if (d.replayOf?.test) return h('span', { class: 'chip b-kind', 'data-id': 'opponent-kind' }, t('kind.practice'));
     if (this.s.mode === 'replay' || d.grove) return null;
     const key = d.practice ? 'kind.practice' : d.trial ? 'kind.trial' : base.rival ? 'kind.rival' : d.special || base.practice ? 'kind.generated' : null;
     return key ? h('span', { class: 'chip b-kind', 'data-id': 'opponent-kind' }, t(key)) : null;
@@ -575,7 +578,8 @@ export class BattleHud {
 
   /** Every warrior of the army is on the field (abilities may still have charges). */
   allDeployed(): boolean {
-    return Object.values(this.s.sim.remaining).every((n) => n <= 0);
+    // Review L6: the hero is placed by hand (squad orders leave him out), so he does not hold back the speed button.
+    return Object.entries(this.s.sim.remaining).every(([t, n]) => n <= 0 || this.s.data.troops[t] === undefined);
   }
 
   private speedButton(): HTMLElement {
@@ -1086,12 +1090,27 @@ export class BattleHud {
   /** P6-16: a long press on a card shows its name and line from data (a title never shows on touch). */
   private longPress(el: HTMLElement, text: () => string): void {
     let timer = 0;
+    let fired = false;
     const cancel = () => window.clearTimeout(timer);
     el.addEventListener('pointerdown', () => {
       cancel();
-      timer = window.setTimeout(() => this.toast(text()), 550);
+      fired = false;
+      timer = window.setTimeout(() => {
+        fired = true;
+        this.toast(text());
+      }, 550);
     });
     for (const ev of ['pointerup', 'pointerleave', 'pointercancel']) el.addEventListener(ev, cancel);
+    // Review L10: a long press explains the card; it does not also select it.
+    el.addEventListener(
+      'click',
+      (e) => {
+        if (!fired) return;
+        fired = false;
+        e.stopImmediatePropagation();
+      },
+      true,
+    );
   }
 }
 

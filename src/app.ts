@@ -249,7 +249,8 @@ export class App {
     const c = this.d.controller;
     const record = testDefense(c.state, c.now(), mixSeed(c.state.seed, 0x7e57 + Math.floor(c.now() / 1000)), c.data);
     record.opponentName = i18nText('defense.testName', { name: record.opponentName });
-    this.replay(record);
+    // Review M3: the replay header and tag say practice (nothing is taken), never "loot taken".
+    this.open(new BattleSession(record.setup, c.data, 'replay', record), record, undefined, undefined, false, undefined, undefined, true);
   }
 
   /**
@@ -260,7 +261,7 @@ export class App {
     const c = this.d.controller;
     const base = villageToBase(c.state, c.now(), c.data, i18nText('defense.yourVillage'));
     base.practice = 'Practice battle (nothing spent or won)';
-    const setup: BattleSetup = { seed: mixSeed(c.state.seed, 0x5eed + Math.floor(c.now() / 1000)), base, army: { ...r.setup.army }, levels: { ...r.setup.levels }, infiltration: true };
+    const setup: BattleSetup = { seed: mixSeed(c.state.seed, 0x5eed + Math.floor(c.now() / 1000)), base, army: { ...r.setup.army }, levels: { ...r.setup.levels }, ...(r.setup.hero ? { hero: { ...r.setup.hero } } : {}), ...(r.setup.reinforcements ? { reinforcements: structuredClone(r.setup.reinforcements) } : {}), infiltration: true };
     this.open(new BattleSession(setup, c.data, 'scout'), undefined, undefined, undefined, true);
   }
 
@@ -360,6 +361,7 @@ export class App {
     practice = false,
     duel?: { ticket: string; friendName: string },
     special?: { kind: 'bounty'; eventKey: string; title: string } | { kind: 'rematch'; defenseId: string; title: string } | { kind: 'drill'; title: string },
+    testRaid = false,
   ): void {
     const c = this.d.controller;
     this.battleHud?.destroy();
@@ -372,7 +374,7 @@ export class App {
       myTrophies: c.state.trophies,
       // The tutorial bubble hides in battle: the first raid gets a one-line coach instead (re-audit design item 3).
       coach: !replayOf && !c.state.tutorial.done,
-      replayOf: replayOf ? { kind: replayOf.kind, opponentName: replayOf.opponentName } : undefined,
+      replayOf: replayOf ? { kind: replayOf.kind, opponentName: replayOf.opponentName, ...(testRaid ? { test: true } : {}) } : undefined,
       grove: grove ? { enemyName: grove.enemyName, ...(grove.channel === 'gangwar' ? { title: grove.setup.startDamage ? i18nText("ui.gang_war_relay_9376500e38") : i18nText("ui.gang_war_d4e65acc95") } : {}) } : undefined,
       practice,
       special: special ? { title: special.title } : undefined,

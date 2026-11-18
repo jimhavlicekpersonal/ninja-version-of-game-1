@@ -190,6 +190,7 @@ function freeToPlay(state: VillageState, now: number, data: GameData): Objective
   if (data.daily.drill && Object.keys(drillArmy(state, data)).length && drillAvailable(state, now, data)) return { kind: 'drill' };
   const keep = hallLevel(state, data);
   const tier = attemptTier(state.trials, keep, data);
-  if (housingCapacity(state, data) > 0 && trialInfo(tier, data).hall <= keep) return { kind: 'trial', tier };
+  // Review M4: only with warriors standing (an empty camp would meet "train first" behind the chip).
+  if (armyHousing(state.army, data) > 0 && trialInfo(tier, data).hall <= keep) return { kind: 'trial', tier };
   return null;
 }

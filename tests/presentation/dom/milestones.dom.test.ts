@@ -49,3 +49,26 @@ describe('milestones (P6-08)', () => {
     expect(document.querySelector('[data-id="hero-card"]')?.textContent).toContain('Rally');
   });
 });
+
+describe('the Keep card still comes first when a dialog is open (review M1)', () => {
+  it('an offer waits while a dialog delays the due card, then follows it', async () => {
+    const { hud, controller } = await buildHud();
+    controller.dispatch({ type: 'tutorial', step: 9, done: true });
+    const hall = controller.state.buildings.find((b) => controller.data.buildings[b.type].category === 'hall')!;
+    saveMarks({ league: 'unranked', keep: 1, hero: false, temper: false });
+    hall.level = 2;
+    hud.openShortcut('army');
+    let offered = 0;
+    (hud as unknown as { afterMilestones(fn: () => void): void }).afterMilestones(() => void offered++);
+    expect(document.querySelector('[data-id="milestone"]')).toBeNull();
+    expect(offered).toBe(0);
+    (hud as unknown as { closeAllModals(): void }).closeAllModals();
+    await new Promise((r) => setTimeout(r, 300));
+    (hud as unknown as { refresh(): void }).refresh();
+    for (let i = 0; i < 4 && document.querySelector('[data-id="milestone"]'); i++) {
+      (document.querySelector('[data-id="milestone"]') as HTMLElement).click();
+      await new Promise((r) => setTimeout(r, 400));
+    }
+    expect(offered).toBe(1);
+  });
+});

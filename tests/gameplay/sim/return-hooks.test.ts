@@ -165,6 +165,9 @@ describe('P6-05 (RET-10, UIS-04): the objective chip reaches what is already ear
     s.buildings.push({ id: 'camp-y', type: 'army_camp', level: 1, x: at.x + 8, y: at.y + 8, upgrade: null, collector: null } as never);
     s.resources = { ...s.resources, acorns: 0, dew: 0 };
     for (const b of s.buildings) b.upgrade = { startedAt: T, endsAt: T + HOUR, toLevel: b.level + 1 } as never;
+    // With empty camps the chip never sends the player to a Trial they cannot fight (review M4).
+    expect(nextObjective(s, T, data).kind).not.toBe('trial');
+    s.army = { hedgehog_roller: 5 };
     const o = nextObjective(s, T, data);
     expect(['trial', 'drill']).toContain(o.kind);
     if (o.kind === 'trial') expect(o.tier).toBeGreaterThanOrEqual(1);

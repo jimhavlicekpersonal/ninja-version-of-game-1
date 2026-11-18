@@ -33,8 +33,21 @@ export function defenseKept(r: BattleRecord): DefenseKept {
 }
 
 /** The Infiltration Point the raider's first warrior went in through (its letter), or null without points. */
+const entryCache = new Map<string, string | null>();
+
 export function raidEntry(r: BattleRecord, data: GameData): string | null {
-  if (!r.setup.infiltration) return null;
+  // Review L8: points come from today's rules; a record fought under other rules may have had other points.
+  if (!r.setup.infiltration || !replayable(r)) return null;
+  // Review L7: the objective chip asks every second; one battle set-up per record is enough.
+  const key = `${r.id}:${r.at}`;
+  if (entryCache.has(key)) return entryCache.get(key)!;
+  const out = raidEntryUncached(r, data);
+  if (entryCache.size > 64) entryCache.clear();
+  entryCache.set(key, out);
+  return out;
+}
+
+function raidEntryUncached(r: BattleRecord, data: GameData): string | null {
   const first = r.deployments.find((d) => !isAbility(data, d.troop));
   if (!first) return null;
   const entry = createBattle(structuredClone(r.setup), data).entry;

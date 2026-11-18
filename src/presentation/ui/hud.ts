@@ -623,7 +623,9 @@ export class Hud {
   /** Run `fn` now, or once the milestone cards that are due have been shown. */
   private afterMilestones(fn: () => void): void {
     this.checkMilestones();
-    if (this.ceremonyBusy) this.milestoneWaiters.push(fn);
+    // Review M1: cards that are due but waiting for a dialog or a battle to close still go first.
+    const due = this.c.state.tutorial.done && milestonesDue(loadMarks(), this.milestoneMarks()).length > 0;
+    if (this.ceremonyBusy || due) this.milestoneWaiters.push(fn);
     else fn();
   }
 

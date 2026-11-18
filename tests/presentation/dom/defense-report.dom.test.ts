@@ -67,3 +67,17 @@ describe('test my defenses on screen (P6-04)', () => {
     expect(tested).toBe(1);
   });
 });
+
+describe('the test raid replay is labelled practice (review M3)', () => {
+  it('its header never says loot was taken', async () => {
+    const { BattleHud } = await import('../../../src/presentation/ui/battleHud');
+    document.body.innerHTML = '<div id="battle-hud"></div>';
+    const r = record(Date.now(), SIM_RULES);
+    const session = new BattleSession(structuredClone(r.setup), data, 'replay', r);
+    const bh = new BattleHud({ root: document.getElementById('battle-hud')!, session, myTrophies: 0, replayOf: { kind: 'defense', opponentName: 'Test raid', test: true }, troopThumb: () => null, scoutFee: 0, canPayFee: () => true, onHome: () => undefined, onNext: () => undefined, onAttack: () => true, onReplay: () => undefined, onFinished: () => null });
+    const text = document.getElementById('battle-hud')!.textContent ?? '';
+    expect(text).not.toMatch(/loot taken/i);
+    expect(document.querySelector('[data-id="opponent-kind"]')?.textContent).toBe('Practice');
+    bh.destroy();
+  });
+});
