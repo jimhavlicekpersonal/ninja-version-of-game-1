@@ -504,6 +504,7 @@
         "weapon": "lightning rod",
         "mount": "storm-blue kite"
       },
+      "dpsScale": 0.9,
       "liveTroop": "thunder_kite"
     },
     {
@@ -522,6 +523,7 @@
         "weapon": "bomb racks",
         "mount": "long dragon kite"
       },
+      "dpsScale": 0.85,
       "liveTroop": "dragon_kite_armada"
     },
     {
@@ -870,6 +872,7 @@
         "accent": "#e9b44c",
         "weapon": "eclipse ring blade"
       },
+      "hpScale": 0.9,
       "liveTroop": "eclipse_ninja"
     }
   ],

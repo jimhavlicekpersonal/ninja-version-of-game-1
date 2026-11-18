@@ -8,10 +8,10 @@
  * Ten-battle cells move 4+ points with any data change; a change that moves a cell either way fails here on purpose.
  */
 import { describe, expect, it } from 'vitest';
-import { troopEarliestKeep } from '../../../src/gameplay/sim/army';
+import { maxHousingAtHall, troopEarliestKeep } from '../../../src/gameplay/sim/army';
 import { defaultData as data } from '../../../src/gameplay/sim/data';
 import roster from '../../../src/gameplay/data/roster.json';
-import { kitValue } from '../../../tools/balance/kitValue';
+import { armyScore, kitValue } from '../../../tools/balance/kitValue';
 
 const KIT_FLOOR = 2;
 /** Kits worth under +2 at both their unlock Keep and Keep 15 (P4-01's support kits among them). */
@@ -48,4 +48,17 @@ describe('P4-05 lab gates (known gaps listed, not hidden)', () => {
       }
     }
   });
+});
+
+describe('P4-06 (CMB-03): no single-warrior army flattens Keep 15', () => {
+  it('every one-warrior army stays under 85% on untempered Keep 15 bases', { timeout: 900_000 }, () => {
+    for (const x of ids) {
+      const n = Math.floor(maxHousingAtHall(15, data) / data.troops[x].housing);
+      expect(armyScore({ [x]: n }, 15, data), x).toBeLessThan(85);
+    }
+  });
+
+  // Listed so it stays visible until a later pass closes it (the audit: at Keep 12 one searched mix is the best answer
+  // to every temper profile; no measurement in this pass changed that).
+  it.todo('KNOWN GAP (P4-06): one army is best on all four temper profiles at Keep 12');
 });

@@ -287,7 +287,7 @@
     "offers": {
       "$comment": "Generated rivals answer the player: with probability counterShare (seeded) an outpost is tempered against the role family that made up most of the player`s last recentRaids raids; otherwise it keeps its clan`s home temper.",
       "recentRaids": 10,
-      "counterShare": 0.5,
+      "counterShare": 0.75,
       "counters": {
         "ranged": {
           "acorn_cannon": {

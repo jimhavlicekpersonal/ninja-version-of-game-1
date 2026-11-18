@@ -49,6 +49,11 @@ export interface WarriorEntry {
    * every defense). Absent = 1. The role budget stays the baseline.
    */
   dpsScale?: number;
+  /**
+   * P4-06 (CMB-03): a warrior's health against its role budget (absent = 1), the model's lever for a warrior whose
+   * strength is arriving unseen at full health (the Eclipse Ninja), instead of hand-editing troops.json.
+   */
+  hpScale?: number;
 }
 
 export interface HeroEntry {
@@ -99,7 +104,7 @@ export function warriorStats(w: WarriorEntry, level: number): { hp: number; dps:
   const r = role(w.role);
   const p = warriorPower(w, level);
   const k = Math.sqrt(r.hpPerDps);
-  return { hp: p * k, dps: (p / k) * (w.dpsScale ?? 1), power: p, housing: r.housing, range: r.range, speed: r.speed };
+  return { hp: p * k * (w.hpScale ?? 1), dps: (p / k) * (w.dpsScale ?? 1), power: p, housing: r.housing, range: r.range, speed: r.speed };
 }
 
 /**
