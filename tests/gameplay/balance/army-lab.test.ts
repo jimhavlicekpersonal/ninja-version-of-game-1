@@ -138,7 +138,8 @@ describe('outcome gates: no composition dominates (audit F22, F23, F37)', () => 
   // remove it from the list) and a new failure is never absorbed silently. The floor is not lowered for them.
   const FAMILY_FLOOR = 30;
   // P4-01 (2026-11-18, SIM_RULES 8): support warriors strike (warriorRules.supportStrike): support@7 and @8 left the list.
-  const KNOWN_BELOW = new Set(['siege@8']);
+  // P4-04 (2026-11-18, SIM_RULES 8): faster siege warriors: siege@8 left the list too. Empty: every family reaches the floor.
+  const KNOWN_BELOW = new Set<string>([]);
   it(`every family reaches ${FAMILY_FLOOR}% destruction at every Keep (known gaps listed, not hidden)`, () => {
     for (const keep of keeps) {
       for (const c of COMPOSITIONS) {
