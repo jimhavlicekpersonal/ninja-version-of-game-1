@@ -63,21 +63,21 @@ server's own row). The prompt's baseline (205 files, 1,934 tests) predates `0c5e
 | P2-13 | skipped | bee66b1 | regular and casual Keep days unchanged (0%) with towers/support payable in Provisions |  | optional; reverted: the model player never pays in Provisions, so the pace could not be measured (review #6) |
 | P2-14 | done | 5371905 | fortress Keep 12 day 66 (1.34x rusher) without crew → 57.6-59 (1.15-1.17x) with crew 2; Keep 15 222.6 → 137.6-140.6. Regular Keep 15 day 114 |  | support joins the crew; second builder queue is P6-12 |
 | P2-15 | done | 5364aed | first raid (Dojo 1, one role) carried 85% → 100%; one-role army at Keep 5 still 85% |  | result screen reads record.carry; showing the share before the raid is P6-13 |
-| P3-01 | done | 5e40d90 | casual K5→6 26→10.0 days; longest casual stretch ≤K10 18.7 d; casual K15 246→184; regular K15 113.2 |  | economy keys landed in bee66b1 by mistake; 2 data strings to translate |
+| P3-01 | partial | 5e40d90 | casual K5→6 26→10.0 days; longest casual stretch ≤K10 18.7 d; casual K15 246→184; regular K15 113.2 |  | final campaign: casual K5→6 10.0 d (at the floor), K6→7 23.7 d > 21: not met with Phases 2+3 together (review #5) |
 | P3-02 | partial | 7b180b3 | casual K6 day 16.7 (gate 25) ✓; longest casual stretch ≤K10 23.7 d (gate 21) ✗; casual_hires K15 134.4, casual_queues 111.4 |  | CARRIED RED into Phase 4: casual K6→7 23.7 d, regular K15 1.15★, casual K10 3★ 54.5%, defender K3 0.83★ |
 | P3-03 | done | 294182b | regular K15 113.2→101 (4-day cap; 3-day would go under 100); casual K15 184→174.4 |  | collector keeps producing while upgrading |
 | P3-04 | done | 00cc1ef | first hour 5→7 raids, Keep 3 at minute 58→44 (firsthour.mjs); browser 360×640 fresh sandbox village: raid step at 163 s, 0 Jade, no page errors (scripts/pacing/tutorial-browser.cjs) |  | browser run sends the commands the taps send (controller.dispatch), not real taps; 10 Shinobi as the +1 ring suggests; 'Nothing to collect yet' cannot occur by construction (bubble and collect share minCollectAmount during the tutorial) |
-| P3-05 | done |  | re-measured after P3-04: regular K3 0.83→2.00★ avg, first K3 raid 1★ (firsthour), casual K3 1.25★ |  | no extra lever needed; three-star farming gate re-checked at the phase campaign |
-| P3-06 | done | 5b12be4 | Keep 10 village with nothing cleared: next attemptable tier 1 → 29 (first of Keep 8), pays tiers 1-29 once | trials.caughtUp | no test clears a catch-up tier end to end (reward and lock tested) |
-| P3-07 | done | ae7b59f | a village with camps but no warriors: no paying action → the drill (full camp, nothing spent) pays once per local day | drill.* | 5 strings; the 'within two minutes' is the battle's own length (not measured in a browser) |
+| P3-05 | partial |  | re-measured after P3-04: regular K3 0.83→2.00★ avg, first K3 raid 1★ (firsthour), casual K3 1.25★ |  | regular K3 2.00★, first K3 raid wins; casual K10 3★ 54.5% > 50%: the farming gate fails (review #5) |
+| P3-06 | done | 5b12be4 | Keep 10 village with nothing cleared: next attemptable tier 1 → 29 (first of Keep 8), pays tiers 1-29 once | trials.caughtUp | review fix c3488c8: alternates follow the failed (catch-up) tier |
+| P3-07 | done | ae7b59f | a village with camps but no warriors: no paying action → the drill (full camp, nothing spent) pays once per local day | drill.* | review fix c3488c8: paid day from now (backdated records paid past days); no task template uses drillsDone |
 | P3-08 | done | 452e090 | 1h income K5-15 92-207 J (K15 550→171); rush 1→15 27,204 J; Keep Celebration 1.0-2.4 h (K15 0.34→1.23 h); Starter Pack 5k→15k each (~1 h at K3-5) |  | P1-05 second half still to finish |
 | P3-09 | done | b63a8ce | objective chip skipped the rushed Keep; tested | keep.armyBehind | 1 string |
 | P3-10 | done | 033b03e | PROGRESSION_MODEL.md pacing targets from the campaign |  |  |
 | P3-11 | partial | b63a8ce | objective: storage ≥90% → Keep/storage upgrade before chest (tested); scout line; tutorial end points at Keep | scout.lootWontFit | NOT done: the scripted three-raid first session with zero overflow was not run; Keep 1-2 storage not raised |
-| P3-12 | done | f40c0de | first attack ended the 24 h new-player shield → keeps it (sim + server, tested) | scout.shieldEnds | 1 string |
-| P4-01 | todo | | | | |
-| P4-02 | todo | | | | |
-| P4-03 | todo | | | | |
+| P3-12 | done | f40c0de | first attack ended the 24 h new-player shield → keeps it (sim + server, tested) | scout.shieldEnds | review fix c3488c8: server rule uses any earlier used pvp ticket; abandons count |
+| P4-01 | partial | bc96431 | support family 27.2/22.0/37.8 → 36.8/34.8/51.8 (K7/8/15); light support K6 85.7/50%, K10 83.2/50% | Drum Monk text 25%→12% | support kits still negative vs kit-off in t7 (−0.2..−8.2): known gap |
+| P4-02 | done | bc96431 | Rally vs 0: −0.7/−1.0/+4.1 → +7.9/+3.8/+5.9; main vs first +1.6/+3.2/+8.0 (mean 4.3) | battle.json/roster.json shadow_captain text | B shipped; REQUESTS Rally question closed by this |
+| P4-03 | open |  | smoke gain under Rally B (bot mix 86% baseline): live +4.3/+2.2, r4 +3.7/+0.9, r5 +7.2/+3.0 at K10/15 (before Rally B r4 was +6.2/+7.8) |  | not shipped: no measured gain once Rally B lifts the baseline; radius unchanged |
 | P4-04 | todo | | | | |
 | P4-05 | todo | | | | |
 | P4-06 | todo | | | | |
