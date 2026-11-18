@@ -309,3 +309,16 @@ describe('P7-11 (PUB-14): local-day statistics stay the owner\'s switch', () => 
     }
   });
 });
+
+describe('P7-15: plain-text native settings that cannot be compiled here', () => {
+  it("the Xcode project's marketing version is package.json's (the workflow sets it too)", () => {
+    const version = JSON.parse(read('package.json')).version as string;
+    const pbx = read('ios/App/App.xcodeproj/project.pbxproj');
+    const found = [...pbx.matchAll(/MARKETING_VERSION = ([^;]+);/g)].map((m) => m[1]);
+    expect(found.length).toBeGreaterThan(0);
+    for (const v of found) expect(v).toBe(version);
+  });
+  it('game sound is ambient on iOS (respects the silent switch, mixes with other audio)', () => {
+    expect(read('ios/App/App/AppDelegate.swift')).toMatch(/setCategory\(\.ambient/);
+  });
+});
