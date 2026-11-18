@@ -59,6 +59,8 @@ export interface SeasonReward {
   trophiesAfter: number;
   /** Chest contents that did not fit in storage. */
   overflow?: Cost;
+  /** P5-06: the league look this season gave (the first season finished in that league). */
+  look?: string;
 }
 
 /** A league's monthly chest for a player at this Keep level. */

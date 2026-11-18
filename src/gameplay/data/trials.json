@@ -1,6 +1,8 @@
 {
   "$comment": "Shadow Trials: an endless ladder of practice fortresses. Tier t uses Keep min(15, 1 + floor((t-1)/tiersPerHall)) (the last Keep level in hall.json); past it (tier 60), defenses grow by powerGrowthPerTier per tier. Rewards are paid once, on the first clear of the next tier. taskMaxGrowth (economy E27, 2026-11-13): a 'clear N Trial tiers' task is offered only while the next N tiers are at or below the player's Keep and their growth past tier 60 is at most this (1.0404 = the first two tiers past the Keep ladder at 2% a tier; 1.1236 at the old 6%); a judgement, not measured against players. 2026-11-16 pass (P1-06, P1-07, P1-17): growth is applied by repeated multiplication (no Math.pow), rewards past the Keep ladder grow by rewardGrowthPerTierBeyond a tier, and modifiers carry an offset so walls double only on Walled Keep tiers and no tier carries two.",
   "tiersPerHall": 4,
+  "$commentLooks": "P5-06 (RET-09): looks given once when the best cleared tier first reaches 20, 40 and 55 (the item asked for 60; tier 58 is the measured ceiling of the raid bots' mix, achievements-reachable.test.ts TRIAL_CAP, so the last is 55).",
+  "looks": [{ "tier": 20, "look": "trial_20" }, { "tier": 40, "look": "trial_40" }, { "tier": 55, "look": "trial_55" }],
   "$commentCatchUp": "P3-06 (PAC-09, 2026-11-18): a village may attempt the first tier of the Keep catchUpKeepsBelow below its own even with lower tiers uncleared; clearing it pays every skipped tier once (a late starter faced dozens of trivial tiers, each a full army for little).",
   "catchUpKeepsBelow": 2,
   "powerGrowthPerTier": 0.02,

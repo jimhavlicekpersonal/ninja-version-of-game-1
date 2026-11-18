@@ -86,7 +86,7 @@ export class DailyUi {
   openDaily(): void {
     const c = this.kit.c;
     const body = h('div', { class: 'daily' });
-    let opened: { outcome: string; grants: Record<string, number>; overflow?: Cost; skipped: number; steppedBack: number } | null = null;
+    let opened: { outcome: string; grants: Record<string, number>; overflow?: Cost; skipped: number; steppedBack: number; looks?: string[] } | null = null;
     /** Play the reveal once, right after the chest is opened (re-audit design item 15). */
     let revealNext = false;
     const render = () => {
@@ -142,6 +142,8 @@ export class DailyUi {
         const notes: string[] = [];
         if (opened.skipped) notes.push(i18nText("ui.a_free_skip_covered_you_missed_d762c066c0", { arg1: opened.skipped === 1 ? i18nText("ui.the_day_9f7fd2ef42") : i18nText("ui.days_d7f711040e", { arg1: opened.skipped }) }));
         if (opened.steppedBack) notes.push(t('daily.missed', { n: opened.steppedBack }));
+        // P5-06: a lifetime chest milestone's look.
+        for (const id of opened.looks ?? []) notes.push(t('events.lookEarned', { name: gd.cosmetics.hallSkins.find((k) => k.id === id)?.name ?? id }));
         // Only what was really added is shown as received; anything that did not fit is listed as such.
         const lost = opened.overflow && Object.values(opened.overflow).some((v) => (v ?? 0) > 0) ? h('p', { class: 'note' }, i18nText("ui.did_not_fit_in_your_storage_e281ba747c"), rewardChips(opened.overflow)) : null;
         body.append(h('div', { class: 'chest-result' }, h('b', {}, i18nText("ui.you_got_16558d9a7d", { arg1: label })), rewardChips(opened.grants), lost, ...notes.map((n) => h('p', { class: 'muted small' }, n))));
@@ -177,7 +179,7 @@ export class DailyUi {
             return;
           }
           const e = r.events.find((x) => x.kind === 'daily_chest');
-          if (e && e.kind === 'daily_chest') opened = { outcome: e.outcome, grants: e.grants as Record<string, number>, overflow: e.overflow, skipped: e.skipped, steppedBack: e.steppedBack };
+          if (e && e.kind === 'daily_chest') opened = { outcome: e.outcome, grants: e.grants as Record<string, number>, overflow: e.overflow, skipped: e.skipped, steppedBack: e.steppedBack, looks: e.looks };
           revealNext = true;
           render();
         });

@@ -219,6 +219,7 @@
   "events.gauntlet.generated": "Gauntlet fortress (generated).",
   "events.gauntlet.about": "A computer-made fortress, the same base for everyone at your Keep this week. No loot inside; each star mark on the ladder pays once.",
   "store.earnedLook": "Earned in play",
+  "store.looksCollected": "Looks collected: {n} of {total}",
   "growth.invite.title": "Invite friends",
   "growth.invite.rule": "When a friend who started with your friend code reaches Keep {keep} with their village on the server, you each get a fixed reward. Nothing random and nothing to buy.",
   "growth.invite.reward": "Reward for each of you: {jade} Jade",

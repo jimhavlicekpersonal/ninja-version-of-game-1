@@ -163,6 +163,126 @@
       "earned": true,
       "cap": "#9fb6c8",
       "spots": "#ffffff"
+    },
+    {
+      "id": "league_obsidian",
+      "name": "Obsidian Crown",
+      "moonstones": 0,
+      "earned": true,
+      "cap": "#1d1b22",
+      "spots": "#9b8cff"
+    },
+    {
+      "id": "league_storm",
+      "name": "Storm Banner",
+      "moonstones": 0,
+      "earned": true,
+      "cap": "#2c4a6e",
+      "spots": "#cfe8ff"
+    },
+    {
+      "id": "league_kage",
+      "name": "Kage Mantle",
+      "moonstones": 0,
+      "earned": true,
+      "cap": "#111111",
+      "spots": "#d4af37"
+    },
+    {
+      "id": "trial_20",
+      "name": "Trial Walker's Red",
+      "moonstones": 0,
+      "earned": true,
+      "cap": "#7a1f2b",
+      "spots": "#f3c9a8"
+    },
+    {
+      "id": "trial_40",
+      "name": "Trial Master's Iron",
+      "moonstones": 0,
+      "earned": true,
+      "cap": "#3b3f45",
+      "spots": "#e07a3a"
+    },
+    {
+      "id": "trial_55",
+      "name": "Endless Trial Ash",
+      "moonstones": 0,
+      "earned": true,
+      "cap": "#5d5650",
+      "spots": "#f5f1e6"
+    },
+    {
+      "id": "cycle_2",
+      "name": "Second Moon",
+      "moonstones": 0,
+      "earned": true,
+      "cap": "#46557a",
+      "spots": "#e8e3d0"
+    },
+    {
+      "id": "cycle_3",
+      "name": "Cedar Shade",
+      "moonstones": 0,
+      "earned": true,
+      "cap": "#2f4a36",
+      "spots": "#d8c79a"
+    },
+    {
+      "id": "cycle_4",
+      "name": "Ember Roof",
+      "moonstones": 0,
+      "earned": true,
+      "cap": "#8c3b1c",
+      "spots": "#ffd9a0"
+    },
+    {
+      "id": "cycle_5",
+      "name": "Mist Grey",
+      "moonstones": 0,
+      "earned": true,
+      "cap": "#7d8790",
+      "spots": "#f0f4f7"
+    },
+    {
+      "id": "cycle_6",
+      "name": "Night Lotus",
+      "moonstones": 0,
+      "earned": true,
+      "cap": "#3a2346",
+      "spots": "#f2b8d0"
+    },
+    {
+      "id": "chest_30",
+      "name": "Chest Keeper's Teal",
+      "moonstones": 0,
+      "earned": true,
+      "cap": "#1f6f6b",
+      "spots": "#f6e7b0"
+    },
+    {
+      "id": "chest_100",
+      "name": "Hundred Chests Bronze",
+      "moonstones": 0,
+      "earned": true,
+      "cap": "#8a5a2b",
+      "spots": "#fbe6c2"
+    },
+    {
+      "id": "chest_200",
+      "name": "Two Hundred Plum",
+      "moonstones": 0,
+      "earned": true,
+      "cap": "#5b2a4f",
+      "spots": "#f7d6e8"
+    },
+    {
+      "id": "chest_365",
+      "name": "Year of Chests Gold",
+      "moonstones": 0,
+      "earned": true,
+      "cap": "#9c7a1b",
+      "spots": "#fff8dc"
     }
   ]
 }

@@ -409,7 +409,9 @@ export class App {
             : t.cleared
               ? i18nText("ui.cleared_again_the_reward_for_this_tier_1b8920c6c4")
               : i18nText("ui.not_cleared_you_need_stars_27ca57d98e", { arg1: c.data.trials.starsToClear });
-          return { result: t.record.result, banked: t.reward, overflow: t.record.overflow, trophies: 0, note };
+          // P5-06: a Trial milestone's look.
+          const trialLooks = (t.looks ?? []).map((id) => localizedData(c.data).cosmetics.hallSkins.find((k) => k.id === id)?.name ?? id);
+          return { result: t.record.result, banked: t.reward, overflow: t.record.overflow, trophies: 0, note: trialLooks.length ? `${note} ${i18nText('events.lookEarned', { name: i18nList(trialLooks) })}` : note };
         }
         const ticket = this.ticket ?? undefined;
         // Online: recorded as pending; loot and honor arrive with the server's confirmation.

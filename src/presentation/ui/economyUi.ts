@@ -269,7 +269,12 @@ export class EconomyUi {
       }
       else if (current === 'offers') body.append(this.offersList());
       else if (current === 'pass') body.append(this.passProduct(draw));
-      else body.append(this.looksGrid(draw));
+      else {
+        // P5-06: the collection count.
+        const all = this.c.data.cosmetics.hallSkins;
+        const owned = all.filter((k) => this.c.state.cosmetics.owned.includes(k.id)).length;
+        body.append(h('p', { class: 'muted small' }, t('store.looksCollected', { n: owned, total: all.length })), this.looksGrid(draw));
+      }
       this.loadPrices(draw);
       if (this.c.payments.name === 'mock') body.append(h('p', { class: 'muted small store-note' }, i18nText("ui.sandbox_test_store_purchases_complete__c4b42410c2")));
       else if (!this.c.payments.available()) body.append(h('p', { class: 'muted small store-note' }, i18nText("ui.purchases_are_not_available_in_this_ve_15307f1254")));

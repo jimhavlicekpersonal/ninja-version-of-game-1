@@ -61,6 +61,7 @@
     },
     {
       "id": "elder",
+      "look": "league_obsidian",
       "winBonusShare": 0.095,
       "name": "Obsidian League",
       "min": 2000,
@@ -91,6 +92,7 @@
     },
     {
       "id": "storm",
+      "look": "league_storm",
       "winBonusShare": 0.095,
       "name": "Storm League",
       "min": 3600,
@@ -121,6 +123,7 @@
     },
     {
       "id": "kage",
+      "look": "league_kage",
       "winBonusShare": 0.15,
       "name": "Kage League",
       "min": 5200,

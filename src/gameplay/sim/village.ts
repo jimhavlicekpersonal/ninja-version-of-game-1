@@ -218,10 +218,10 @@ export type SimEvent =
   | { kind: 'research_start'; troop: string; toLevel: number; seconds: number; cost: Cost }
   | { kind: 'research_cancel'; troop: string; toLevel: number; refund: Cost }
   /** `grants` is what was really added; `overflow` is what did not fit in storage. */
-  | { kind: 'daily_chest'; outcome: string; step: number; grants: Cost; skipped: number; steppedBack: number; overflow?: Cost }
+  | { kind: 'daily_chest'; outcome: string; step: number; grants: Cost; skipped: number; steppedBack: number; overflow?: Cost; /** P5-06: a chest milestone's look. */ looks?: string[] }
   | { kind: 'scout'; seed: number; fee: number }
   | { kind: 'raid_end'; record: BattleRecord }
-  | { kind: 'trial_end'; record: BattleRecord; tier: number; cleared: boolean; firstClear: boolean; reward: Cost; /** P3-06: tiers counted as cleared by a catch-up clear, first and last. */ skipped?: [number, number] }
+  | { kind: 'trial_end'; record: BattleRecord; tier: number; cleared: boolean; firstClear: boolean; reward: Cost; /** P3-06: tiers counted as cleared by a catch-up clear, first and last. */ skipped?: [number, number]; /** P5-06: Trial looks this clear gave. */ looks?: string[] }
   /** A bounty attack: the ladder steps it newly reached and what they paid (`reward`, really added; `overflow` did not fit). */
   | { kind: 'bounty_end'; record: BattleRecord; eventKey: string; steps: number[]; reward: Cost; looks?: string[]; overflow?: Cost }
   | { kind: 'rematch_end'; record: BattleRecord; defenseId: string; won: boolean; reward: Cost; overflow?: Cost }
@@ -446,7 +446,10 @@ const SEASON_LOG = 6;
 export function settleSeasons(s: VillageState, at: number, data: GameData): void {
   for (const sr of rollSeasons(s, at, data)) {
     const { granted, overflow } = grantResources(s, sr.chest, data);
-    const entry: SeasonReward = { ...sr, chest: granted, ...(hasAny(overflow) ? { overflow } : {}) };
+    // P5-06: the first season finished in Obsidian, Storm or Kage gives that league's look.
+    const look = data.ranks.leagues.find((l) => l.id === sr.league)?.look;
+    const newLook = grantLook(s, look, data);
+    const entry: SeasonReward = { ...sr, chest: granted, ...(hasAny(overflow) ? { overflow } : {}), ...(newLook ? { look } : {}) };
     s.seasonLog = [...(s.seasonLog ?? []), entry].slice(-SEASON_LOG);
   }
 }
@@ -1377,6 +1380,13 @@ function grantResources(s: VillageState, res: Cost, data: GameData): { granted: 
  * Returns what was actually received, and what did not fit, so a message never
  * claims resources the player did not get.
  */
+/** P5-06: give an earned look once; true when it was new. */
+function grantLook(s: VillageState, look: string | undefined, data: GameData): boolean {
+  if (!look || s.cosmetics.owned.includes(look) || !data.cosmetics.hallSkins.some((k) => k.id === look)) return false;
+  s.cosmetics.owned.push(look);
+  return true;
+}
+
 function grantReward(s: VillageState, reward: Cost & { skin?: string }, data: GameData): { granted: Cost; overflow: Cost } {
   const { skin, ...res } = reward;
   if (skin && !s.cosmetics.owned.includes(skin)) s.cosmetics.owned.push(skin);
@@ -1702,11 +1712,15 @@ function openDailyChest(s: VillageState, now: number, data: GameData, entropy?: 
   // Without entropy (an older game, the model player) the salt stays: the draw is the seed's, as before v22.
   const nextSalt = Number.isFinite(entropy) ? mixSeed(salt, Math.floor(entropy!) >>> 0) : salt;
   s.daily = { lastDay: day, step: st.step, skipsLeft: st.skipsLeft, skipWeek: st.skipWeek, history, salt: nextSalt };
+  // P5-06: lifetime chest milestones give looks (a count of chests opened: a missed day cannot touch it).
+  s.stats.chestsOpened = (s.stats.chestsOpened ?? 0) + 1;
+  const chestLook = data.daily.chestLooks?.find((l) => l.at === s.stats.chestsOpened)?.look;
+  const looks = grantLook(s, chestLook, data) ? [chestLook!] : [];
   return {
     ok: true,
     state: s,
     events: [
-      { kind: 'daily_chest', outcome, step: st.step, grants, skipped: st.skipped, steppedBack: st.steppedBack, ...lost },
+      { kind: 'daily_chest', outcome, step: st.step, grants, skipped: st.skipped, steppedBack: st.steppedBack, ...lost, ...(looks.length ? { looks } : {}) },
       { kind: 'reward', source: `daily_chest:${outcome}`, grants, ...lost },
     ],
   };
@@ -2148,6 +2162,7 @@ function trialEnd(s: VillageState, tier: number, rec: Omit<BattleRecord, 'result
   // XPL-01: a clear needs warriors; the free hero alone clears nothing.
   const cleared = result.stars >= data.trials.starsToClear && foughtWithWarriors(result, setup);
   const firstClear = cleared && (tier === next || tier === catchUp);
+  const looks: string[] = [];
   let reward: Cost = {};
   let overflow: Cost = {};
   let skipped: [number, number] | undefined;
@@ -2155,6 +2170,8 @@ function trialEnd(s: VillageState, tier: number, rec: Omit<BattleRecord, 'result
     // P3-06: a catch-up clear pays every skipped tier's reward once, with its own.
     if (tier > next) skipped = [next, tier - 1];
     ({ granted: reward, overflow } = grantResources(s, trialRewardsThrough(s.trials.best, tier, data), data));
+    // P5-06: Trial looks for every milestone this clear passes.
+    for (const l of data.trials.looks ?? []) if (l.tier > s.trials.best && l.tier <= tier && grantLook(s, l.look, data)) looks.push(l.look);
     s.trials = { best: tier, alternate: 0, failedTier: 0 };
     s.stats.trialsCleared++;
   } else if (!cleared && (tier === next || tier === catchUp)) {
@@ -2167,7 +2184,7 @@ function trialEnd(s: VillageState, tier: number, rec: Omit<BattleRecord, 'result
   const record: BattleRecord = { ...rec, setup, opponentName: setup.base.name, id: `r${s.nextSeed++}`, kind: 'attack', at: rec.at ?? now, result: { ...result, loot: { ...result.loot } }, trophies: 0, banked: reward, rules: SIM_RULES, trial: tier, ...(hasAny(overflow) ? { overflow } : {}) };
   s.battleLog.push(record);
   trimLog(s.battleLog, data.battle.maxReplays);
-  return { ok: true, state: s, events: [{ kind: 'trial_end', record, tier, cleared, firstClear, reward, ...(skipped ? { skipped } : {}) }] };
+  return { ok: true, state: s, events: [{ kind: 'trial_end', record, tier, cleared, firstClear, reward, ...(skipped ? { skipped } : {}), ...(looks.length ? { looks } : {}) }] };
 }
 
 /**

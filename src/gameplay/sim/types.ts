@@ -381,7 +381,7 @@ export interface GroveState {
  * Lifetime counters. `upgradesDone` and `troopsTrained` count finished work
  * (cancelled timers never count), so tasks cannot be farmed by start-and-cancel.
  */
-export type StatKey = 'collectedAcorns' | 'collectedDew' | 'upgradesStarted' | 'upgradesDone' | 'troopsTrained' | 'raidsWon' | 'starsEarned' | 'obstaclesCleared' | 'moonstonesSpent' | 'donations' | 'researchDone' | 'trialsCleared' | 'defensesFaced' | 'defensesWon' | 'rematchesWon' | 'raidDestruction' | 'timedUpgradesDone' | 'drillsDone' | 'raidsAbandoned' | 'raidsThreeStar' | 'stakesWon' | 'goalSteps' | 'gauntletLadders';
+export type StatKey = 'collectedAcorns' | 'collectedDew' | 'upgradesStarted' | 'upgradesDone' | 'troopsTrained' | 'raidsWon' | 'starsEarned' | 'obstaclesCleared' | 'moonstonesSpent' | 'donations' | 'researchDone' | 'trialsCleared' | 'defensesFaced' | 'defensesWon' | 'rematchesWon' | 'raidDestruction' | 'timedUpgradesDone' | 'drillsDone' | 'raidsAbandoned' | 'raidsThreeStar' | 'stakesWon' | 'goalSteps' | 'gauntletLadders' | 'chestsOpened';
 export type Stats = Record<StatKey, number>;
 /**
  * `defensesFaced`/`defensesWon`: raids against the village and the ones it held (no stars lost); `rematchesWon`: won
@@ -389,7 +389,7 @@ export type Stats = Record<StatKey, number>;
  * `timedUpgradesDone` (save v24, P1-08): finished upgrades that took a builder's time (instant wall levels do not).
  * A key added after v24 is filled on every load (`repairStats` in save.ts), so it needs no further bump.
  */
-export const STAT_KEYS: readonly StatKey[] = ['collectedAcorns', 'collectedDew', 'upgradesStarted', 'upgradesDone', 'troopsTrained', 'raidsWon', 'starsEarned', 'obstaclesCleared', 'moonstonesSpent', 'donations', 'researchDone', 'trialsCleared', 'defensesFaced', 'defensesWon', 'rematchesWon', 'raidDestruction', 'timedUpgradesDone', 'drillsDone', 'raidsAbandoned', 'raidsThreeStar', 'stakesWon', 'goalSteps', 'gauntletLadders'];
+export const STAT_KEYS: readonly StatKey[] = ['collectedAcorns', 'collectedDew', 'upgradesStarted', 'upgradesDone', 'troopsTrained', 'raidsWon', 'starsEarned', 'obstaclesCleared', 'moonstonesSpent', 'donations', 'researchDone', 'trialsCleared', 'defensesFaced', 'defensesWon', 'rematchesWon', 'raidDestruction', 'timedUpgradesDone', 'drillsDone', 'raidsAbandoned', 'raidsThreeStar', 'stakesWon', 'goalSteps', 'gauntletLadders', 'chestsOpened'];
 export function emptyStats(): Stats {
   return Object.fromEntries(STAT_KEYS.map((k) => [k, 0])) as Stats;
 }
@@ -822,6 +822,8 @@ export interface LeagueDef {
   id: string;
   name: string;
   min: number;
+  /** P5-06: the look the first season finished in this league gives (`cosmetics.json`, earned), once. */
+  look?: string;
   /** Monthly chest; Coins and Provisions are scaled by `rewardScaleByHall`. */
   chest: Cost;
   /** Extra loot for a won attack in this league (paid in full at 3 stars, a third per star). */
@@ -1196,8 +1198,13 @@ export interface DailyDef {
   chest: { outcomes: { id: string; label: string; weight: number; reward: Cost }[] };
   /** `jadeEveryDays`: a step's own Jade is paid at most once in this many days (report section 5 step 6, economy E05). */
   streak: { steps: { bonus: number; moonstones?: number }[]; skipsPerWeek: number; stepsLostPerMissedDay: number; historyDays: number; jadeEveryDays?: number };
-  /** The 28-day calendar (report section 5 step 8): fixed rewards; a `skin` day gives `repeatJade` once owned. */
-  calendar?: { days: { reward?: Cost; skin?: string }[]; repeatJade: number };
+  /**
+   * The 28-day calendar (report section 5 step 8): fixed rewards; a `skin` day gives `repeatJade` once owned. P5-06:
+   * `skins[n - 2]` is cycle n's look on that day (cycles 2 to 6), before `repeatJade`.
+   */
+  calendar?: { days: { reward?: Cost; skin?: string }[]; repeatJade: number; skins?: string[] };
+  /** P5-06: looks given once when the lifetime count of chests opened reaches `at` (a missed day cannot touch them). */
+  chestLooks?: { at: number; look: string }[];
   /** P3-07: the daily drill's reward (written at the Keep 5 economy, Keep-scaled like the chest), once per local day. */
   drill?: { reward: Cost };
 }
@@ -1321,6 +1328,8 @@ export interface TrialModifierDef {
 
 export interface TrialsDef {
   tiersPerHall: number;
+  /** P5-06: looks given once when the best cleared tier first reaches `tier`. */
+  looks?: { tier: number; look: string }[];
   /** P3-06: a village may attempt the first tier of the Keep this many below its own (`trialCatchUpTier`). */
   catchUpKeepsBelow?: number;
   powerGrowthPerTier: number;
