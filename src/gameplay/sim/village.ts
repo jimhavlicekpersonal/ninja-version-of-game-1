@@ -2207,6 +2207,8 @@ function bountyEnd(s: VillageState, key: string, rec: Omit<BattleRecord, 'result
   // XPL-01: ladder steps need warriors; a hero-only attack reaches none.
   const steps = foughtWithWarriors(result, setup) ? recordBountyResult(s, key, ev.goal, result.stars, result.destruction) : [];
   s.stats.goalSteps = (s.stats.goalSteps ?? 0) + steps.length; // P5-04
+  // P5-05: a Gauntlet ladder completed by this result.
+  if (ev.goal.kind === 'gauntlet' && steps.length && s.goalEvents.find((g) => g.key === key)?.claimed.length === ev.goal.ladder.length) s.stats.gauntletLadders = (s.stats.gauntletLadders ?? 0) + 1;
   let wanted: Cost = {};
   for (const i of steps) wanted = sumCost(wanted, ladderReward(ev.goal.ladder[i], baseKeep, data));
   const { granted: reward, overflow } = grantResources(s, wanted, data);

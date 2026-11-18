@@ -16,9 +16,13 @@ const TRIAL_CAP = 58;
 const TRIAL_MARGIN = 5;
 
 /** Counters that only repeat play moves, with no ceiling in the data. */
-const UNBOUNDED = new Set<string>(['collectedAcorns', 'collectedDew', 'raidsWon', 'starsEarned', 'troopsTrained', 'donations', 'moonstonesSpent', 'rematchesWon', 'raidDestruction', 'defensesFaced', 'upgradesStarted']);
+const UNBOUNDED = new Set<string>(['collectedAcorns', 'collectedDew', 'raidsWon', 'starsEarned', 'troopsTrained', 'donations', 'moonstonesSpent', 'rematchesWon', 'raidDestruction', 'defensesFaced', 'upgradesStarted', 'raidsThreeStar', 'stakesWon', 'gauntletLadders', 'defensesWon', 'calendarDays']);
 
 function ceiling(stat: string): number {
+  // P5-05: values read from the village.
+  if (stat === 'warriorsUnlocked') return Object.keys(data.troops).length;
+  if (stat === 'looksOwned') return data.cosmetics.hallSkins.length;
+  if (stat === 'towerTypesTempered') return Object.keys(data.battle.temper?.types ?? {}).length;
   const top = data.hall.levels[data.hall.levels.length - 1].limits as Record<string, { count: number; maxLevel?: number }>;
   switch (stat as StatKey | 'hallLevel') {
     case 'hallLevel':

@@ -110,7 +110,7 @@ export function checkProvenance(s: VillageState, now: number, data: GameData, cr
   // reached counts as claimed, so forged stats, pass points or task progress pay out nothing more
   // (real players lose only rewards they had not collected yet before the move).
   for (const def of data.achievements) {
-    const value = achievementValue(state, def, hallLevel(state, data));
+    const value = achievementValue(state, def, hallLevel(state, data), data);
     const reached = def.tiers.filter((tier) => value >= tier[0]).length;
     state.achievements[def.id] = Math.max(state.achievements[def.id] ?? 0, reached);
   }

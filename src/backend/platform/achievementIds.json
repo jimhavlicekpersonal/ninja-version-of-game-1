@@ -62,6 +62,69 @@
       "kagemura.trial_walker.2",
       "kagemura.trial_walker.3",
       "kagemura.trial_walker.4"
+    ],
+    "generous": [
+      "kagemura.generous.1",
+      "kagemura.generous.2",
+      "kagemura.generous.3",
+      "kagemura.generous.4"
+    ],
+    "avenger": [
+      "kagemura.avenger.1",
+      "kagemura.avenger.2",
+      "kagemura.avenger.3"
+    ],
+    "drill_sergeant": [
+      "kagemura.drill_sergeant.1",
+      "kagemura.drill_sergeant.2",
+      "kagemura.drill_sergeant.3",
+      "kagemura.drill_sergeant.4"
+    ],
+    "wrecker": [
+      "kagemura.wrecker.1",
+      "kagemura.wrecker.2",
+      "kagemura.wrecker.3",
+      "kagemura.wrecker.4"
+    ],
+    "calendar_keeper": [
+      "kagemura.calendar_keeper.1",
+      "kagemura.calendar_keeper.2",
+      "kagemura.calendar_keeper.3"
+    ],
+    "full_roster": [
+      "kagemura.full_roster.1",
+      "kagemura.full_roster.2",
+      "kagemura.full_roster.3"
+    ],
+    "wardrobe": [
+      "kagemura.wardrobe.1",
+      "kagemura.wardrobe.2",
+      "kagemura.wardrobe.3"
+    ],
+    "tempered": [
+      "kagemura.tempered.1",
+      "kagemura.tempered.2"
+    ],
+    "clean_sweeps": [
+      "kagemura.clean_sweeps.1",
+      "kagemura.clean_sweeps.2",
+      "kagemura.clean_sweeps.3",
+      "kagemura.clean_sweeps.4"
+    ],
+    "bold_words": [
+      "kagemura.bold_words.1",
+      "kagemura.bold_words.2",
+      "kagemura.bold_words.3"
+    ],
+    "gauntlet_runner": [
+      "kagemura.gauntlet_runner.1",
+      "kagemura.gauntlet_runner.2",
+      "kagemura.gauntlet_runner.3"
+    ],
+    "unbroken": [
+      "kagemura.unbroken.1",
+      "kagemura.unbroken.2",
+      "kagemura.unbroken.3"
     ]
   },
   "playGames": {
@@ -123,6 +186,69 @@
     ],
     "trial_walker": [
       "",
+      "",
+      "",
+      ""
+    ],
+    "generous": [
+      "",
+      "",
+      "",
+      ""
+    ],
+    "avenger": [
+      "",
+      "",
+      ""
+    ],
+    "drill_sergeant": [
+      "",
+      "",
+      "",
+      ""
+    ],
+    "wrecker": [
+      "",
+      "",
+      "",
+      ""
+    ],
+    "calendar_keeper": [
+      "",
+      "",
+      ""
+    ],
+    "full_roster": [
+      "",
+      "",
+      ""
+    ],
+    "wardrobe": [
+      "",
+      "",
+      ""
+    ],
+    "tempered": [
+      "",
+      ""
+    ],
+    "clean_sweeps": [
+      "",
+      "",
+      "",
+      ""
+    ],
+    "bold_words": [
+      "",
+      "",
+      ""
+    ],
+    "gauntlet_runner": [
+      "",
+      "",
+      ""
+    ],
+    "unbroken": [
       "",
       "",
       ""

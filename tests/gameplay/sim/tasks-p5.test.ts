@@ -16,7 +16,7 @@ const raid = (stars: number, i: number, stake?: number): BattleRecord =>
 
 const typeWith = (f: (id: string) => boolean) => Object.keys(data.buildings).find(f)!;
 const campType = typeWith((id) => (data.buildings[id].levels[0]?.housing ?? 0) > 0);
-const withCamp = (s: VillageState): VillageState => ({ ...s, buildings: [...s.buildings, { id: 'camp_t', type: campType, level: 1, x: 0, y: 0 }] });
+const withCamp = (s: VillageState): VillageState => ({ ...s, buildings: [...s.buildings, { id: 'camp_t', type: campType, level: 1, x: 0, y: 0, upgrade: null, collector: null }] });
 
 describe('the new templates are offered only when they can be finished (P5-04)', () => {
   const state = withCamp(newGame().state);
@@ -72,7 +72,7 @@ describe('no collect task is finished by a single collect (P5-04 done-when)', ()
       const kind = t.stat === 'collectedAcorns' ? 'acorns' : 'dew';
       for (let level = 1; level <= 10; level++) {
         for (const copies of [1, 2, 4]) {
-          const proto = { id: 'col', type: typeWith((x) => data.buildings[x].produces === kind), level, x: 0, y: 0 };
+          const proto = { id: 'col', type: typeWith((x) => data.buildings[x].produces === kind), level, x: 0, y: 0, upgrade: null, collector: null };
           const others = state.buildings.filter((b) => data.buildings[b.type].produces !== kind);
           const v: VillageState = { ...state, buildings: [...others, ...Array.from({ length: copies }, (_, i) => ({ ...proto, id: `${proto.id}_${i}`, level }))] };
           const target = taskTarget(t, v, data)!;
