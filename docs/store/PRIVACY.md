@@ -103,12 +103,14 @@ Apple's age ratings values page (developer.apple.com/help/app-store-connect/refe
 | Realistic violence, prolonged graphic violence, guns | None (no blood or gore; shuriken and blades are stylised) |
 | Profanity or crude humour | None in the game's own text; player chat is covered by the UGC/messaging answers |
 | Horror, mature/suggestive, sexual content, alcohol/drugs, medical | None |
-| Simulated gambling, contests | None; daily chest is free (not a loot box: nothing random is sold) |
+| Simulated gambling | None; daily chest is free (not a loot box: nothing random is sold) |
+| Contests | **Frequent** (P7-04, rechecked 2026-11-18 against the age ratings values and definitions page: "Contests: Events that allow users to compete with one another for rankings, rewards, or the achievement of personal goals. May include: skill-based competitions…"). Kagemura has honor leagues with monthly reward chests, leaderboards, Alliance and Gang Wars, Bounty Hunts and other events every week: users compete for rankings and rewards in nearly every session, so the answer is not None, and the frequency is high |
 | Loot boxes ("randomized virtual items for purchase") | **No** |
 | Messaging and chat | **Yes** (Alliance and Gang chat) |
 | User-generated content | **Yes** (names, chat) |
 | Social media features (feeds that amplify UGC) | No (no public feed; chat is inside Alliances/Gangs of the player's choosing) |
-| Parental controls / age assurance | Age band screen is self-declared (not age assurance); answer **No** for age assurance [recheck the wording of the in-app controls questions] |
+| Parental controls | **No** (P7-04): the game has no settings for a parent or guardian to monitor or restrict a child (the under-18 spending cap and the age-band limits are automatic, not parental tools) |
+| Age assurance | **Yes / present** (P7-04, rechecked 2026-11-18: "Age Assurance: Mechanism to confirm an individual's age meets the age requirement… May include: declared age range API; age estimation…"). The iPhone app calls Apple's Declared Age Range API and the Android app Google Play's Age Signals API (`src/backend/platform/auth.ts` `storeAgeBand`, `TkAge`); the self-declared age screen is only the fallback. The old answer "No" predated those calls |
 | Unrestricted web access | No (legal pages are shipped with the app; external `https://` links open the browser) |
 
 Expected result: **13+**. In-app purchases are not a rating question; App Store Connect shows them on the listing automatically. Brazil and Korea have their own rating values in the same page; check the regional results Apple shows.

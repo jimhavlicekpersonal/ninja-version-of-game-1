@@ -139,3 +139,25 @@ describe('the listing names the Season Scroll look as the data has it (P1-02)', 
     for (const id of pass.seasonSkins) expect(description).not.toContain(cosmetics.hallSkins.find((s) => s.id === id)!.name);
   });
 });
+
+describe('the privacy page date follows its text (PUB-11, P7-08)', () => {
+  it("policyUpdated changes whenever the English privacy strings do", async () => {
+    const { createHash } = await import('node:crypto');
+    const pages = JSON.parse(readFileSync(resolve('locales/en/pages.json'), 'utf8')) as Record<string, string>;
+    const text = Object.keys(pages).filter((k) => k.startsWith('pages.privacy.')).sort().map((k) => `${k}=${pages[k]}`).join('\n');
+    const hash = createHash('sha256').update(text).digest('hex').slice(0, 16);
+    const date = /policyUpdated:\s*'([^']*)'/.exec(readFileSync(resolve('public/legal-config.js'), 'utf8'))?.[1];
+    // When the privacy text changes: set policyUpdated to that day in public/legal-config.js and both values here.
+    expect({ hash, date }).toEqual({ hash: '818a60cc8d64d2b4', date: '2026-11-14' });
+  });
+});
+
+describe('Apple age-rating answers match what the game does (C05, P7-04)', () => {
+  it('answers Contests Frequent and Age assurance present, with the reasoning beside each', () => {
+    const privacy = readFileSync(resolve('docs/store/PRIVACY.md'), 'utf8');
+    const row = (q: string) => privacy.split('\n').find((l) => l.startsWith(`| ${q} |`)) ?? '';
+    expect(row('Contests')).toMatch(/\*\*Frequent\*\*.*leagues/);
+    expect(row('Age assurance')).toMatch(/\*\*Yes \/ present\*\*.*Declared Age Range/);
+    expect(row('Parental controls')).toMatch(/\*\*No\*\*/);
+  });
+});
