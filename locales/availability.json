@@ -2,7 +2,7 @@
   "en": {
     "coverage": 1,
     "ready": true,
-    "hash": "c83ccd92f050748b",
+    "hash": "f7f7085c19083456",
     "keys": 3084,
     "namespaces": {
       "boot": {
@@ -28,11 +28,11 @@
     }
   },
   "es": {
-    "coverage": 0.9964902018133958,
+    "coverage": 0.9941503363556595,
     "ready": false,
-    "hash": "c2b424d1ca92186d",
-    "keys": 3072,
-    "path": "lang/es-c2b424d1ca92186d.json",
+    "hash": "c7064ace96e65327",
+    "keys": 3064,
+    "path": "lang/es-c7064ace96e65327.json",
     "namespaces": {
       "boot": {
         "total": 17,
@@ -40,7 +40,7 @@
       },
       "data": {
         "total": 682,
-        "translated": 680
+        "translated": 672
       },
       "messages": {
         "total": 2102,
@@ -57,11 +57,11 @@
     }
   },
   "pt": {
-    "coverage": 0.9964902018133958,
+    "coverage": 0.9941503363556595,
     "ready": false,
-    "hash": "d04a61f3bf02b6bc",
-    "keys": 3072,
-    "path": "lang/pt-d04a61f3bf02b6bc.json",
+    "hash": "f03ac104436bd206",
+    "keys": 3064,
+    "path": "lang/pt-f03ac104436bd206.json",
     "namespaces": {
       "boot": {
         "total": 17,
@@ -69,7 +69,7 @@
       },
       "data": {
         "total": 682,
-        "translated": 680
+        "translated": 672
       },
       "messages": {
         "total": 2102,
@@ -86,11 +86,11 @@
     }
   },
   "fr": {
-    "coverage": 0.9964902018133958,
+    "coverage": 0.9941503363556595,
     "ready": false,
-    "hash": "059ff0f176c1a7b0",
-    "keys": 3072,
-    "path": "lang/fr-059ff0f176c1a7b0.json",
+    "hash": "ef9733dcad3ef39c",
+    "keys": 3064,
+    "path": "lang/fr-ef9733dcad3ef39c.json",
     "namespaces": {
       "boot": {
         "total": 17,
@@ -98,7 +98,7 @@
       },
       "data": {
         "total": 682,
-        "translated": 680
+        "translated": 672
       },
       "messages": {
         "total": 2102,
@@ -115,11 +115,11 @@
     }
   },
   "de": {
-    "coverage": 0.9964902018133958,
+    "coverage": 0.9941503363556595,
     "ready": false,
-    "hash": "37478b74c8150443",
-    "keys": 3072,
-    "path": "lang/de-37478b74c8150443.json",
+    "hash": "8216b086f6b111eb",
+    "keys": 3064,
+    "path": "lang/de-8216b086f6b111eb.json",
     "namespaces": {
       "boot": {
         "total": 17,
@@ -127,7 +127,7 @@
       },
       "data": {
         "total": 682,
-        "translated": 680
+        "translated": 672
       },
       "messages": {
         "total": 2102,
@@ -144,11 +144,11 @@
     }
   },
   "ar": {
-    "coverage": 0.9964902018133958,
+    "coverage": 0.9941503363556595,
     "ready": false,
-    "hash": "ff6eed3534f8822e",
-    "keys": 3072,
-    "path": "lang/ar-ff6eed3534f8822e.json",
+    "hash": "c983f8449e1e611e",
+    "keys": 3064,
+    "path": "lang/ar-c983f8449e1e611e.json",
     "namespaces": {
       "boot": {
         "total": 17,
@@ -156,7 +156,7 @@
       },
       "data": {
         "total": 682,
-        "translated": 680
+        "translated": 672
       },
       "messages": {
         "total": 2102,
@@ -173,11 +173,11 @@
     }
   },
   "zh-Hans": {
-    "coverage": 0.9964902018133958,
+    "coverage": 0.9941503363556595,
     "ready": false,
-    "hash": "a5affa0bc4bfaab9",
-    "keys": 3072,
-    "path": "lang/zh-Hans-a5affa0bc4bfaab9.json",
+    "hash": "0e997b421d2c5301",
+    "keys": 3064,
+    "path": "lang/zh-Hans-0e997b421d2c5301.json",
     "namespaces": {
       "boot": {
         "total": 17,
@@ -185,7 +185,7 @@
       },
       "data": {
         "total": 682,
-        "translated": 680
+        "translated": 672
       },
       "messages": {
         "total": 2102,
@@ -202,11 +202,11 @@
     }
   },
   "zh-Hant": {
-    "coverage": 0.9964902018133958,
+    "coverage": 0.9941503363556595,
     "ready": false,
-    "hash": "bc7dfd3c135a0511",
-    "keys": 3072,
-    "path": "lang/zh-Hant-bc7dfd3c135a0511.json",
+    "hash": "79cc63e0f3a74c03",
+    "keys": 3064,
+    "path": "lang/zh-Hant-79cc63e0f3a74c03.json",
     "namespaces": {
       "boot": {
         "total": 17,
@@ -214,7 +214,7 @@
       },
       "data": {
         "total": 682,
-        "translated": 680
+        "translated": 672
       },
       "messages": {
         "total": 2102,
@@ -231,11 +231,11 @@
     }
   },
   "ja": {
-    "coverage": 0.9964902018133958,
+    "coverage": 0.9941503363556595,
     "ready": false,
-    "hash": "ba4df75352c13937",
-    "keys": 3072,
-    "path": "lang/ja-ba4df75352c13937.json",
+    "hash": "43d7dd4907f4af01",
+    "keys": 3064,
+    "path": "lang/ja-43d7dd4907f4af01.json",
     "namespaces": {
       "boot": {
         "total": 17,
@@ -243,7 +243,7 @@
       },
       "data": {
         "total": 682,
-        "translated": 680
+        "translated": 672
       },
       "messages": {
         "total": 2102,
@@ -260,11 +260,11 @@
     }
   },
   "ko": {
-    "coverage": 0.9964902018133958,
+    "coverage": 0.9941503363556595,
     "ready": false,
-    "hash": "20336613d42eb405",
-    "keys": 3072,
-    "path": "lang/ko-20336613d42eb405.json",
+    "hash": "ccaac948ddcf505f",
+    "keys": 3064,
+    "path": "lang/ko-ccaac948ddcf505f.json",
     "namespaces": {
       "boot": {
         "total": 17,
@@ -272,7 +272,7 @@
       },
       "data": {
         "total": 682,
-        "translated": 680
+        "translated": 672
       },
       "messages": {
         "total": 2102,
@@ -289,11 +289,11 @@
     }
   },
   "id": {
-    "coverage": 0.9964902018133958,
+    "coverage": 0.9941503363556595,
     "ready": false,
-    "hash": "1f026a7e9a3297e3",
-    "keys": 3072,
-    "path": "lang/id-1f026a7e9a3297e3.json",
+    "hash": "0246557a6ff52f81",
+    "keys": 3064,
+    "path": "lang/id-0246557a6ff52f81.json",
     "namespaces": {
       "boot": {
         "total": 17,
@@ -301,7 +301,7 @@
       },
       "data": {
         "total": 682,
-        "translated": 680
+        "translated": 672
       },
       "messages": {
         "total": 2102,
@@ -318,11 +318,11 @@
     }
   },
   "ru": {
-    "coverage": 0.9964902018133958,
+    "coverage": 0.9941503363556595,
     "ready": false,
-    "hash": "ceb97d76b2509ff3",
-    "keys": 3072,
-    "path": "lang/ru-ceb97d76b2509ff3.json",
+    "hash": "991de650ec198ede",
+    "keys": 3064,
+    "path": "lang/ru-991de650ec198ede.json",
     "namespaces": {
       "boot": {
         "total": 17,
@@ -330,7 +330,7 @@
       },
       "data": {
         "total": 682,
-        "translated": 680
+        "translated": 672
       },
       "messages": {
         "total": 2102,
@@ -347,11 +347,11 @@
     }
   },
   "hi": {
-    "coverage": 0.9964902018133958,
+    "coverage": 0.9941503363556595,
     "ready": false,
-    "hash": "44764dad7b7f9d5f",
-    "keys": 3072,
-    "path": "lang/hi-44764dad7b7f9d5f.json",
+    "hash": "ce105e57203ced52",
+    "keys": 3064,
+    "path": "lang/hi-ce105e57203ced52.json",
     "namespaces": {
       "boot": {
         "total": 17,
@@ -359,7 +359,7 @@
       },
       "data": {
         "total": 682,
-        "translated": 680
+        "translated": 672
       },
       "messages": {
         "total": 2102,
@@ -376,11 +376,11 @@
     }
   },
   "tr": {
-    "coverage": 0.9964902018133958,
+    "coverage": 0.9941503363556595,
     "ready": false,
-    "hash": "446f9ea62e0dacfa",
-    "keys": 3072,
-    "path": "lang/tr-446f9ea62e0dacfa.json",
+    "hash": "74dad6737047d95c",
+    "keys": 3064,
+    "path": "lang/tr-74dad6737047d95c.json",
     "namespaces": {
       "boot": {
         "total": 17,
@@ -388,7 +388,7 @@
       },
       "data": {
         "total": 682,
-        "translated": 680
+        "translated": 672
       },
       "messages": {
         "total": 2102,
@@ -405,11 +405,11 @@
     }
   },
   "vi": {
-    "coverage": 0.9964902018133958,
+    "coverage": 0.9941503363556595,
     "ready": false,
-    "hash": "0e61a24c860018c9",
-    "keys": 3072,
-    "path": "lang/vi-0e61a24c860018c9.json",
+    "hash": "5f8e381eed98eec3",
+    "keys": 3064,
+    "path": "lang/vi-5f8e381eed98eec3.json",
     "namespaces": {
       "boot": {
         "total": 17,
@@ -417,7 +417,7 @@
       },
       "data": {
         "total": 682,
-        "translated": 680
+        "translated": 672
       },
       "messages": {
         "total": 2102,
@@ -434,11 +434,11 @@
     }
   },
   "th": {
-    "coverage": 0.9964902018133958,
+    "coverage": 0.9941503363556595,
     "ready": false,
-    "hash": "df0d751425cc2042",
-    "keys": 3072,
-    "path": "lang/th-df0d751425cc2042.json",
+    "hash": "88b71a37b09510a5",
+    "keys": 3064,
+    "path": "lang/th-88b71a37b09510a5.json",
     "namespaces": {
       "boot": {
         "total": 17,
@@ -446,7 +446,7 @@
       },
       "data": {
         "total": 682,
-        "translated": 680
+        "translated": 672
       },
       "messages": {
         "total": 2102,
@@ -463,11 +463,11 @@
     }
   },
   "it": {
-    "coverage": 0.9964902018133958,
+    "coverage": 0.9941503363556595,
     "ready": false,
-    "hash": "fea3dd4e50d62c98",
-    "keys": 3072,
-    "path": "lang/it-fea3dd4e50d62c98.json",
+    "hash": "e7d145e582f6f1c4",
+    "keys": 3064,
+    "path": "lang/it-e7d145e582f6f1c4.json",
     "namespaces": {
       "boot": {
         "total": 17,
@@ -475,7 +475,7 @@
       },
       "data": {
         "total": 682,
-        "translated": 680
+        "translated": 672
       },
       "messages": {
         "total": 2102,
@@ -492,11 +492,11 @@
     }
   },
   "pl": {
-    "coverage": 0.9964902018133958,
+    "coverage": 0.9941503363556595,
     "ready": false,
-    "hash": "150127a59ce9afb5",
-    "keys": 3072,
-    "path": "lang/pl-150127a59ce9afb5.json",
+    "hash": "0d3ceae09962e6ea",
+    "keys": 3064,
+    "path": "lang/pl-0d3ceae09962e6ea.json",
     "namespaces": {
       "boot": {
         "total": 17,
@@ -504,7 +504,7 @@
       },
       "data": {
         "total": 682,
-        "translated": 680
+        "translated": 672
       },
       "messages": {
         "total": 2102,
@@ -521,11 +521,11 @@
     }
   },
   "uk": {
-    "coverage": 0.9964902018133958,
+    "coverage": 0.9941503363556595,
     "ready": false,
-    "hash": "548201f24015f580",
-    "keys": 3072,
-    "path": "lang/uk-548201f24015f580.json",
+    "hash": "eecd13e1a10c7308",
+    "keys": 3064,
+    "path": "lang/uk-eecd13e1a10c7308.json",
     "namespaces": {
       "boot": {
         "total": 17,
@@ -533,7 +533,7 @@
       },
       "data": {
         "total": 682,
-        "translated": 680
+        "translated": 672
       },
       "messages": {
         "total": 2102,
@@ -550,11 +550,11 @@
     }
   },
   "nl": {
-    "coverage": 0.9964902018133958,
+    "coverage": 0.9941503363556595,
     "ready": false,
-    "hash": "f0bac280a35d5476",
-    "keys": 3072,
-    "path": "lang/nl-f0bac280a35d5476.json",
+    "hash": "3ac2c50d9e99e9c5",
+    "keys": 3064,
+    "path": "lang/nl-3ac2c50d9e99e9c5.json",
     "namespaces": {
       "boot": {
         "total": 17,
@@ -562,7 +562,7 @@
       },
       "data": {
         "total": 682,
-        "translated": 680
+        "translated": 672
       },
       "messages": {
         "total": 2102,
@@ -579,11 +579,11 @@
     }
   },
   "ms": {
-    "coverage": 0.9964902018133958,
+    "coverage": 0.9941503363556595,
     "ready": false,
-    "hash": "086939b1dc174118",
-    "keys": 3072,
-    "path": "lang/ms-086939b1dc174118.json",
+    "hash": "48e75c83a3260249",
+    "keys": 3064,
+    "path": "lang/ms-48e75c83a3260249.json",
     "namespaces": {
       "boot": {
         "total": 17,
@@ -591,7 +591,7 @@
       },
       "data": {
         "total": 682,
-        "translated": 680
+        "translated": 672
       },
       "messages": {
         "total": 2102,
@@ -608,11 +608,11 @@
     }
   },
   "bn": {
-    "coverage": 0.9964902018133958,
+    "coverage": 0.9941503363556595,
     "ready": false,
-    "hash": "dea7e2aa67e97112",
-    "keys": 3072,
-    "path": "lang/bn-dea7e2aa67e97112.json",
+    "hash": "48dc58ace06a3633",
+    "keys": 3064,
+    "path": "lang/bn-48dc58ace06a3633.json",
     "namespaces": {
       "boot": {
         "total": 17,
@@ -620,7 +620,7 @@
       },
       "data": {
         "total": 682,
-        "translated": 680
+        "translated": 672
       },
       "messages": {
         "total": 2102,
@@ -637,11 +637,11 @@
     }
   },
   "ur": {
-    "coverage": 0.9964902018133958,
+    "coverage": 0.9941503363556595,
     "ready": false,
-    "hash": "beed9fa414fb4e34",
-    "keys": 3072,
-    "path": "lang/ur-beed9fa414fb4e34.json",
+    "hash": "3c8a3d34fbc3a5f9",
+    "keys": 3064,
+    "path": "lang/ur-3c8a3d34fbc3a5f9.json",
     "namespaces": {
       "boot": {
         "total": 17,
@@ -649,7 +649,7 @@
       },
       "data": {
         "total": 682,
-        "translated": 680
+        "translated": 672
       },
       "messages": {
         "total": 2102,
@@ -666,11 +666,11 @@
     }
   },
   "sw": {
-    "coverage": 0.9964902018133958,
+    "coverage": 0.9941503363556595,
     "ready": false,
-    "hash": "72f3dbe402a23e46",
-    "keys": 3072,
-    "path": "lang/sw-72f3dbe402a23e46.json",
+    "hash": "2452a9263a4a9d2f",
+    "keys": 3064,
+    "path": "lang/sw-2452a9263a4a9d2f.json",
     "namespaces": {
       "boot": {
         "total": 17,
@@ -678,7 +678,7 @@
       },
       "data": {
         "total": 682,
-        "translated": 680
+        "translated": 672
       },
       "messages": {
         "total": 2102,
@@ -695,11 +695,11 @@
     }
   },
   "ha": {
-    "coverage": 0.9964902018133958,
+    "coverage": 0.9941503363556595,
     "ready": false,
-    "hash": "4d720cd8c38928ee",
-    "keys": 3072,
-    "path": "lang/ha-4d720cd8c38928ee.json",
+    "hash": "b942a0fd9be1737c",
+    "keys": 3064,
+    "path": "lang/ha-b942a0fd9be1737c.json",
     "namespaces": {
       "boot": {
         "total": 17,
@@ -707,7 +707,7 @@
       },
       "data": {
         "total": 682,
-        "translated": 680
+        "translated": 672
       },
       "messages": {
         "total": 2102,
@@ -724,11 +724,11 @@
     }
   },
   "yo": {
-    "coverage": 0.9964902018133958,
+    "coverage": 0.9941503363556595,
     "ready": false,
-    "hash": "c0ffb74736d9e860",
-    "keys": 3072,
-    "path": "lang/yo-c0ffb74736d9e860.json",
+    "hash": "a1d309dd24362552",
+    "keys": 3064,
+    "path": "lang/yo-a1d309dd24362552.json",
     "namespaces": {
       "boot": {
         "total": 17,
@@ -736,7 +736,7 @@
       },
       "data": {
         "total": 682,
-        "translated": 680
+        "translated": 672
       },
       "messages": {
         "total": 2102,
@@ -753,11 +753,11 @@
     }
   },
   "am": {
-    "coverage": 0.9964902018133958,
+    "coverage": 0.9941503363556595,
     "ready": false,
-    "hash": "422a4b7258687bbc",
-    "keys": 3072,
-    "path": "lang/am-422a4b7258687bbc.json",
+    "hash": "f37379cebe427828",
+    "keys": 3064,
+    "path": "lang/am-f37379cebe427828.json",
     "namespaces": {
       "boot": {
         "total": 17,
@@ -765,7 +765,7 @@
       },
       "data": {
         "total": 682,
-        "translated": 680
+        "translated": 672
       },
       "messages": {
         "total": 2102,
@@ -782,11 +782,11 @@
     }
   },
   "zu": {
-    "coverage": 0.9964902018133958,
+    "coverage": 0.9941503363556595,
     "ready": false,
-    "hash": "9f21f28ed386ac4d",
-    "keys": 3072,
-    "path": "lang/zu-9f21f28ed386ac4d.json",
+    "hash": "c553a8a7a0b7c13c",
+    "keys": 3064,
+    "path": "lang/zu-c553a8a7a0b7c13c.json",
     "namespaces": {
       "boot": {
         "total": 17,
@@ -794,7 +794,7 @@
       },
       "data": {
         "total": 682,
-        "translated": 680
+        "translated": 672
       },
       "messages": {
         "total": 2102,
@@ -811,11 +811,11 @@
     }
   },
   "ig": {
-    "coverage": 0.9964902018133958,
+    "coverage": 0.9941503363556595,
     "ready": false,
-    "hash": "f5e9995018f1fac4",
-    "keys": 3072,
-    "path": "lang/ig-f5e9995018f1fac4.json",
+    "hash": "15901d677dc57e60",
+    "keys": 3064,
+    "path": "lang/ig-15901d677dc57e60.json",
     "namespaces": {
       "boot": {
         "total": 17,
@@ -823,7 +823,7 @@
       },
       "data": {
         "total": 682,
-        "translated": 680
+        "translated": 672
       },
       "messages": {
         "total": 2102,
@@ -840,11 +840,11 @@
     }
   },
   "mr": {
-    "coverage": 0.9964902018133958,
+    "coverage": 0.9941503363556595,
     "ready": false,
-    "hash": "20d9ced52e524f65",
-    "keys": 3072,
-    "path": "lang/mr-20d9ced52e524f65.json",
+    "hash": "1f9ca03a88595c33",
+    "keys": 3064,
+    "path": "lang/mr-1f9ca03a88595c33.json",
     "namespaces": {
       "boot": {
         "total": 17,
@@ -852,7 +852,7 @@
       },
       "data": {
         "total": 682,
-        "translated": 680
+        "translated": 672
       },
       "messages": {
         "total": 2102,
@@ -869,11 +869,11 @@
     }
   },
   "te": {
-    "coverage": 0.9964902018133958,
+    "coverage": 0.9941503363556595,
     "ready": false,
-    "hash": "c45d13ea9590a08c",
-    "keys": 3072,
-    "path": "lang/te-c45d13ea9590a08c.json",
+    "hash": "7d2fa17781b79a2d",
+    "keys": 3064,
+    "path": "lang/te-7d2fa17781b79a2d.json",
     "namespaces": {
       "boot": {
         "total": 17,
@@ -881,7 +881,7 @@
       },
       "data": {
         "total": 682,
-        "translated": 680
+        "translated": 672
       },
       "messages": {
         "total": 2102,
@@ -898,11 +898,11 @@
     }
   },
   "ta": {
-    "coverage": 0.9964902018133958,
+    "coverage": 0.9941503363556595,
     "ready": false,
-    "hash": "0bdf752aacc83591",
-    "keys": 3072,
-    "path": "lang/ta-0bdf752aacc83591.json",
+    "hash": "a023845081456e6d",
+    "keys": 3064,
+    "path": "lang/ta-a023845081456e6d.json",
     "namespaces": {
       "boot": {
         "total": 17,
@@ -910,7 +910,7 @@
       },
       "data": {
         "total": 682,
-        "translated": 680
+        "translated": 672
       },
       "messages": {
         "total": 2102,
@@ -927,11 +927,11 @@
     }
   },
   "gu": {
-    "coverage": 0.9964902018133958,
+    "coverage": 0.9941503363556595,
     "ready": false,
-    "hash": "3c6913ac3016271f",
-    "keys": 3072,
-    "path": "lang/gu-3c6913ac3016271f.json",
+    "hash": "7bdbbd2e7e192ef9",
+    "keys": 3064,
+    "path": "lang/gu-7bdbbd2e7e192ef9.json",
     "namespaces": {
       "boot": {
         "total": 17,
@@ -939,7 +939,7 @@
       },
       "data": {
         "total": 682,
-        "translated": 680
+        "translated": 672
       },
       "messages": {
         "total": 2102,
@@ -956,11 +956,11 @@
     }
   },
   "kn": {
-    "coverage": 0.9964902018133958,
+    "coverage": 0.9941503363556595,
     "ready": false,
-    "hash": "bc2aeddf68143e05",
-    "keys": 3072,
-    "path": "lang/kn-bc2aeddf68143e05.json",
+    "hash": "7b8d42556358e767",
+    "keys": 3064,
+    "path": "lang/kn-7b8d42556358e767.json",
     "namespaces": {
       "boot": {
         "total": 17,
@@ -968,7 +968,7 @@
       },
       "data": {
         "total": 682,
-        "translated": 680
+        "translated": 672
       },
       "messages": {
         "total": 2102,
@@ -985,11 +985,11 @@
     }
   },
   "ml": {
-    "coverage": 0.9964902018133958,
+    "coverage": 0.9941503363556595,
     "ready": false,
-    "hash": "a8f154213784769f",
-    "keys": 3072,
-    "path": "lang/ml-a8f154213784769f.json",
+    "hash": "d42804ed2cd73d2f",
+    "keys": 3064,
+    "path": "lang/ml-d42804ed2cd73d2f.json",
     "namespaces": {
       "boot": {
         "total": 17,
@@ -997,7 +997,7 @@
       },
       "data": {
         "total": 682,
-        "translated": 680
+        "translated": 672
       },
       "messages": {
         "total": 2102,
@@ -1014,11 +1014,11 @@
     }
   },
   "pa": {
-    "coverage": 0.9964902018133958,
+    "coverage": 0.9941503363556595,
     "ready": false,
-    "hash": "b63e0527f2b1043d",
-    "keys": 3072,
-    "path": "lang/pa-b63e0527f2b1043d.json",
+    "hash": "8a23c15b65851f23",
+    "keys": 3064,
+    "path": "lang/pa-8a23c15b65851f23.json",
     "namespaces": {
       "boot": {
         "total": 17,
@@ -1026,7 +1026,7 @@
       },
       "data": {
         "total": 682,
-        "translated": 680
+        "translated": 672
       },
       "messages": {
         "total": 2102,
@@ -1043,11 +1043,11 @@
     }
   },
   "ro": {
-    "coverage": 0.9964902018133958,
+    "coverage": 0.9941503363556595,
     "ready": false,
-    "hash": "85a2e51e581801dc",
-    "keys": 3072,
-    "path": "lang/ro-85a2e51e581801dc.json",
+    "hash": "0dcc9ec3064a8c45",
+    "keys": 3064,
+    "path": "lang/ro-0dcc9ec3064a8c45.json",
     "namespaces": {
       "boot": {
         "total": 17,
@@ -1055,7 +1055,7 @@
       },
       "data": {
         "total": 682,
-        "translated": 680
+        "translated": 672
       },
       "messages": {
         "total": 2102,
@@ -1072,11 +1072,11 @@
     }
   },
   "cs": {
-    "coverage": 0.9964902018133958,
+    "coverage": 0.9941503363556595,
     "ready": false,
-    "hash": "2cacbe29a0458eb4",
-    "keys": 3072,
-    "path": "lang/cs-2cacbe29a0458eb4.json",
+    "hash": "0679d3efdb2455a9",
+    "keys": 3064,
+    "path": "lang/cs-0679d3efdb2455a9.json",
     "namespaces": {
       "boot": {
         "total": 17,
@@ -1084,7 +1084,7 @@
       },
       "data": {
         "total": 682,
-        "translated": 680
+        "translated": 672
       },
       "messages": {
         "total": 2102,
@@ -1101,11 +1101,11 @@
     }
   },
   "el": {
-    "coverage": 0.9964902018133958,
+    "coverage": 0.9941503363556595,
     "ready": false,
-    "hash": "00a1a9542e67fe57",
-    "keys": 3072,
-    "path": "lang/el-00a1a9542e67fe57.json",
+    "hash": "11b59887ed62a3d9",
+    "keys": 3064,
+    "path": "lang/el-11b59887ed62a3d9.json",
     "namespaces": {
       "boot": {
         "total": 17,
@@ -1113,7 +1113,7 @@
       },
       "data": {
         "total": 682,
-        "translated": 680
+        "translated": 672
       },
       "messages": {
         "total": 2102,
@@ -1130,11 +1130,11 @@
     }
   },
   "he": {
-    "coverage": 0.9964902018133958,
+    "coverage": 0.9941503363556595,
     "ready": false,
-    "hash": "bddc52508eea49cd",
-    "keys": 3072,
-    "path": "lang/he-bddc52508eea49cd.json",
+    "hash": "2ba3d0648c95fd69",
+    "keys": 3064,
+    "path": "lang/he-2ba3d0648c95fd69.json",
     "namespaces": {
       "boot": {
         "total": 17,
@@ -1142,7 +1142,7 @@
       },
       "data": {
         "total": 682,
-        "translated": 680
+        "translated": 672
       },
       "messages": {
         "total": 2102,
@@ -1159,11 +1159,11 @@
     }
   },
   "hu": {
-    "coverage": 0.9964902018133958,
+    "coverage": 0.9941503363556595,
     "ready": false,
-    "hash": "b3a76ed9c8410799",
-    "keys": 3072,
-    "path": "lang/hu-b3a76ed9c8410799.json",
+    "hash": "b6dedf99111f0a57",
+    "keys": 3064,
+    "path": "lang/hu-b6dedf99111f0a57.json",
     "namespaces": {
       "boot": {
         "total": 17,
@@ -1171,7 +1171,7 @@
       },
       "data": {
         "total": 682,
-        "translated": 680
+        "translated": 672
       },
       "messages": {
         "total": 2102,
@@ -1188,11 +1188,11 @@
     }
   },
   "sv": {
-    "coverage": 0.9964902018133958,
+    "coverage": 0.9941503363556595,
     "ready": false,
-    "hash": "c9e782a338b6031d",
-    "keys": 3072,
-    "path": "lang/sv-c9e782a338b6031d.json",
+    "hash": "d81a519751f58c15",
+    "keys": 3064,
+    "path": "lang/sv-d81a519751f58c15.json",
     "namespaces": {
       "boot": {
         "total": 17,
@@ -1200,7 +1200,7 @@
       },
       "data": {
         "total": 682,
-        "translated": 680
+        "translated": 672
       },
       "messages": {
         "total": 2102,
@@ -1217,11 +1217,11 @@
     }
   },
   "ca": {
-    "coverage": 0.9964902018133958,
+    "coverage": 0.9941503363556595,
     "ready": false,
-    "hash": "401fed2ad65cc6e7",
-    "keys": 3072,
-    "path": "lang/ca-401fed2ad65cc6e7.json",
+    "hash": "a018914b198ccd06",
+    "keys": 3064,
+    "path": "lang/ca-a018914b198ccd06.json",
     "namespaces": {
       "boot": {
         "total": 17,
@@ -1229,7 +1229,7 @@
       },
       "data": {
         "total": 682,
-        "translated": 680
+        "translated": 672
       },
       "messages": {
         "total": 2102,
@@ -1246,11 +1246,11 @@
     }
   },
   "hr": {
-    "coverage": 0.9964902018133958,
+    "coverage": 0.9941503363556595,
     "ready": false,
-    "hash": "3b376b5348ffa440",
-    "keys": 3072,
-    "path": "lang/hr-3b376b5348ffa440.json",
+    "hash": "ebb55d62f9cfb835",
+    "keys": 3064,
+    "path": "lang/hr-ebb55d62f9cfb835.json",
     "namespaces": {
       "boot": {
         "total": 17,
@@ -1258,7 +1258,7 @@
       },
       "data": {
         "total": 682,
-        "translated": 680
+        "translated": 672
       },
       "messages": {
         "total": 2102,
@@ -1275,11 +1275,11 @@
     }
   },
   "da": {
-    "coverage": 0.9964902018133958,
+    "coverage": 0.9941503363556595,
     "ready": false,
-    "hash": "de0361e273f1e813",
-    "keys": 3072,
-    "path": "lang/da-de0361e273f1e813.json",
+    "hash": "2cfdba4071fff95d",
+    "keys": 3064,
+    "path": "lang/da-2cfdba4071fff95d.json",
     "namespaces": {
       "boot": {
         "total": 17,
@@ -1287,7 +1287,7 @@
       },
       "data": {
         "total": 682,
-        "translated": 680
+        "translated": 672
       },
       "messages": {
         "total": 2102,
@@ -1304,11 +1304,11 @@
     }
   },
   "fi": {
-    "coverage": 0.9964902018133958,
+    "coverage": 0.9941503363556595,
     "ready": false,
-    "hash": "14d117a92f824abc",
-    "keys": 3072,
-    "path": "lang/fi-14d117a92f824abc.json",
+    "hash": "8f15964b80f59bf7",
+    "keys": 3064,
+    "path": "lang/fi-8f15964b80f59bf7.json",
     "namespaces": {
       "boot": {
         "total": 17,
@@ -1316,7 +1316,7 @@
       },
       "data": {
         "total": 682,
-        "translated": 680
+        "translated": 672
       },
       "messages": {
         "total": 2102,
@@ -1333,11 +1333,11 @@
     }
   },
   "nb": {
-    "coverage": 0.9964902018133958,
+    "coverage": 0.9941503363556595,
     "ready": false,
-    "hash": "a11ce2b73d27106b",
-    "keys": 3072,
-    "path": "lang/nb-a11ce2b73d27106b.json",
+    "hash": "d94eb2fcc88a400e",
+    "keys": 3064,
+    "path": "lang/nb-d94eb2fcc88a400e.json",
     "namespaces": {
       "boot": {
         "total": 17,
@@ -1345,7 +1345,7 @@
       },
       "data": {
         "total": 682,
-        "translated": 680
+        "translated": 672
       },
       "messages": {
         "total": 2102,
@@ -1362,11 +1362,11 @@
     }
   },
   "sk": {
-    "coverage": 0.9964902018133958,
+    "coverage": 0.9941503363556595,
     "ready": false,
-    "hash": "07f14cbb2e109a27",
-    "keys": 3072,
-    "path": "lang/sk-07f14cbb2e109a27.json",
+    "hash": "0b99ae1a8530d6c4",
+    "keys": 3064,
+    "path": "lang/sk-0b99ae1a8530d6c4.json",
     "namespaces": {
       "boot": {
         "total": 17,
@@ -1374,7 +1374,7 @@
       },
       "data": {
         "total": 682,
-        "translated": 680
+        "translated": 672
       },
       "messages": {
         "total": 2102,
@@ -1391,11 +1391,11 @@
     }
   },
   "sl": {
-    "coverage": 0.9964902018133958,
+    "coverage": 0.9941503363556595,
     "ready": false,
-    "hash": "2d580e10158a557c",
-    "keys": 3072,
-    "path": "lang/sl-2d580e10158a557c.json",
+    "hash": "bca625f0c6492aeb",
+    "keys": 3064,
+    "path": "lang/sl-bca625f0c6492aeb.json",
     "namespaces": {
       "boot": {
         "total": 17,
@@ -1403,7 +1403,7 @@
       },
       "data": {
         "total": 682,
-        "translated": 680
+        "translated": 672
       },
       "messages": {
         "total": 2102,
@@ -1420,11 +1420,11 @@
     }
   },
   "or": {
-    "coverage": 0.9964902018133958,
+    "coverage": 0.9941503363556595,
     "ready": false,
-    "hash": "dbff02ae3180121a",
-    "keys": 3072,
-    "path": "lang/or-dbff02ae3180121a.json",
+    "hash": "243612f734941bff",
+    "keys": 3064,
+    "path": "lang/or-243612f734941bff.json",
     "namespaces": {
       "boot": {
         "total": 17,
@@ -1432,7 +1432,7 @@
       },
       "data": {
         "total": 682,
-        "translated": 680
+        "translated": 672
       },
       "messages": {
         "total": 2102,

@@ -84,7 +84,8 @@ describe('Iron Matriarch: Bulwark', () => {
 });
 
 describe('Sky Admiral: Squall', () => {
-  it('pushes every flyer toward its target and halves the damage defenses do to them', () => {
+  // P4-10 step 5 (restated): the cut is the kit's strength (0.5 -> 0.7, BNL-03).
+  it('pushes every flyer toward its target and cuts the damage defenses do to them by the kit\'s strength', () => {
     const s = sim('sky_admiral', [b('k', 'firefly_tower', 20, 10)], { sky_admiral: 1, owl_bomber: 1, beetle_brute: 1 });
     s.buildings[1].combat = null;
     const admiral = place(s, 'sky_admiral', 19, 11);
@@ -99,7 +100,7 @@ describe('Sky Admiral: Squall', () => {
     const hp = t.hp;
     shot(s, kite, 21, 11);
     step(s);
-    expect(hp - t.hp).toBeCloseTo(10 * 0.5, 6);
+    expect(hp - t.hp).toBeCloseTo(10 * (1 - withPreview(defaultData).battle.heroes!.sky_admiral.kit!.strength!), 6);
   });
 });
 

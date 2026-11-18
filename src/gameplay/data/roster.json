@@ -904,7 +904,7 @@
       "ability": {
         "id": "bulwark",
         "name": "Bulwark",
-        "text": "Raises a wall of shields that blocks defense fire in a cone for 6 seconds."
+        "text": "Raises a wall of shields that blocks defense fire in a cone for 12 seconds."
       },
       "look": {
         "gi": "#3d4a5c",
@@ -922,7 +922,7 @@
       "ability": {
         "id": "squall",
         "name": "Squall",
-        "text": "Pushes all flyers forward and shields them from anti-air for 5 seconds."
+        "text": "Pushes all flyers forward and shields them from anti-air for 10 seconds."
       },
       "look": {
         "gi": "#3a3f6a",
