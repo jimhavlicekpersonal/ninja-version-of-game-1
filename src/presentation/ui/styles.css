@@ -1219,3 +1219,5 @@ button.res.res-trophies { border: none; font: inherit; color: inherit; cursor: p
 .btn.gold.unaffordable { filter: grayscale(.7); opacity: .7; }
 /* The objective chip's arrow never shrinks (in German the two-line text squeezed it to 3-5 px). */
 .objective-chip > span[aria-hidden] { flex: none; overflow: visible; }
+/* German at 320-390 px: the squad chips wrap to a second line instead of scrolling (the row's height is in the safe area). */
+.squad-row { flex-wrap: wrap; justify-content: center; border-radius: 18px; row-gap: 4px; }
