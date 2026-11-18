@@ -193,7 +193,7 @@
   "unlock.title": { "en": "{n, plural, one {New warrior unlocked!} other {New warriors unlocked!}}", "text": "{n, plural, one {Uusi soturi avattu!} other {Uusia sotureita avattu!}}" },
   "unlock.train": { "en": "Train", "text": "Kouluta" },
   "unlock.later": { "en": "Later", "text": "Myöhemmin" },
-  "keep.armyBehind": { "en": "Your warriors' training is more than a Keep behind your village: a higher Keep meets stronger rivals and raiders. Research or train first?", "text": "Sotureidesi koulutus on yli Linnan tason jäljessä kylästäsi: korkeampi Linna kohtaa vahvempia kilpailijoita ja ryöstäjiä. Tutkitaanko tai koulutetaanko ensin?" },
+  "keep.armyBehind": { "en": "Your warriors' training is more than a Keep behind your village: a higher Keep meets stronger rivals and raiders. Research or train first?", "text": "Sotureidesi koulutus on yli Linnan tason jäljessä kylästäsi: korkeampi Linna kohtaa vahvempia kilpailijoita ja ryöstäjiä. Tutkitaanko vai koulutetaanko ensin?" },
   "scout.lootWontFit": { "en": "Your storage cannot hold all the loot on offer: what does not fit is lost.", "text": "Varastoihisi ei mahdu kaikki tarjolla oleva saalis: se, mikä ei mahdu, menetetään." },
   "trials.caughtUp": { "en": "Tiers {from} to {to} are counted as cleared too, each paid once.", "text": "Myös tasot {from}–{to} lasketaan läpäistyiksi, ja kustakin maksetaan palkinto kerran." },
   "drill.button": { "en": "Daily drill", "text": "Päivän harjoitus" },

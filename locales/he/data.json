@@ -26,7 +26,7 @@
   "buildings.acorn_orchard.name": { "en": "Coin Mint", "text": "מטבעה" },
   "buildings.acorn_orchard.description": { "en": "Artisans stamp fresh Coins every hour. Holds a full day of output, so collect once a day or more.", "text": "אומנים טובעים מטבעות חדשים בכל שעה. מחזיקה תפוקה של יום שלם, אז מספיק לאסוף פעם ביום או יותר." },
   "buildings.dewdrop_well.name": { "en": "Terraced Farm", "text": "חוות טרסות" },
-  "buildings.dewdrop_well.description": { "en": "Terraced fields that grow Provisions for your warriors. Holds a full day of output.", "text": "שדות מדורגים שמגדלים אספקה ללוחמים שלך. מחזיקה תפוקה של יום שלם." },
+  "buildings.dewdrop_well.description": { "en": "Terraced fields that grow Provisions for your warriors. Holds a full day of output.", "text": "שדות מדורגים שמגדלים אספקה ללוחמים שלך. מחזיקים תפוקה של יום שלם." },
   "buildings.acorn_silo.name": { "en": "Treasury", "text": "אוצר" },
   "buildings.acorn_silo.description": { "en": "A locked vault for your Coins. Bigger treasuries let you save for bigger upgrades.", "text": "כספת נעולה למטבעות שלך. אוצרות גדולים יותר מאפשרים לחסוך לשדרוגים גדולים יותר." },
   "buildings.dew_cistern.name": { "en": "Provision Storehouse", "text": "מחסן אספקה" },

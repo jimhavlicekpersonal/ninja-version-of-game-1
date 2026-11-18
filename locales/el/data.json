@@ -497,7 +497,7 @@
   "roster.heroes.sky_admiral.ability.text": { "en": "Pushes all flyers forward and shields them from anti-air for 10 seconds.", "text": "Σπρώχνει όλους τους ιπτάμενους μπροστά και τους προστατεύει από την αντιαεροπορική άμυνα για 10 δευτερόλεπτα." },
   "roster.heroes.grand_sensei.name": { "en": "Grand Sensei", "text": "Μέγας Σενσέι" },
   "roster.heroes.grand_sensei.ability.name": { "en": "Inner Calm", "text": "Εσωτερική Γαλήνη" },
-  "roster.heroes.grand_sensei.ability.text": { "en": "Every warrior on the field heals 40% and ignores the next stun, trap or splash.", "text": "Κάθε πολεμιστής στο πεδίο θεραπεύεται κατά 40% και αγνοεί την επόμενη ζαλάδα, παγίδα ή ζημιά περιοχής." },
+  "roster.heroes.grand_sensei.ability.text": { "en": "Every warrior on the field heals 40% and ignores the next stun, trap or splash.", "text": "Κάθε πολεμιστής στο πεδίο θεραπεύεται κατά 40% και αγνοεί την επόμενη ζάλη, παγίδα ή ζημιά περιοχής." },
   "social.groveNames.first.0": { "en": "Silent", "text": "της Σιωπής" },
   "social.groveNames.first.1": { "en": "Crimson", "text": "της Πορφύρας" },
   "social.groveNames.first.2": { "en": "Iron", "text": "του Σιδήρου" },

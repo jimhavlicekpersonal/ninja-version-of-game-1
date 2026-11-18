@@ -271,7 +271,7 @@
   "progression.buildingCatalog.sky_net.name": { "en": "Sky Net", "text": "Inetha Lesibhakabhaka" },
   "progression.buildingCatalog.sky_net.description": { "en": "Hidden net that snares flyers for a few seconds.", "text": "Inetha elifihlekile elibamba abandizayo imizuzwana embalwa." },
   "progression.buildingCatalog.hero_shrine.name": { "en": "Hero Hall", "text": "Ihholo Lompetha" },
-  "progression.buildingCatalog.hero_shrine.description": { "en": "Home of your clan heroes: its level decides which hero you can choose.", "text": "Ikhaya lompetha wesizwe sakho: izinga lalo linquma ukuthi yimuphi umpetha ongamkhetha." },
+  "progression.buildingCatalog.hero_shrine.description": { "en": "Home of your clan heroes: its level decides which hero you can choose.", "text": "Ikhaya labapetha besizwe sakho: izinga lalo linquma ukuthi yimuphi umpetha ongamkhetha." },
   "progression.buildingCatalog.temple_bell_tower.name": { "en": "Alarm Bell Tower", "text": "Umbhoshongo Wensimbi Yesixwayiso" },
   "progression.buildingCatalog.temple_bell_tower.description": { "en": "Rings when warriors approach: reveals Shadow warriors and halves smoke duration nearby.", "text": "Iyakhala lapho amaqhawe esondela: idalula amaqhawe esiThunzi futhi inciphise isikhathi sentuthu sibe yingxenye eduze." },
   "progression.buildingCatalog.clan_forge.name": { "en": "Clan Forge", "text": "Isithando Sesizwe" },

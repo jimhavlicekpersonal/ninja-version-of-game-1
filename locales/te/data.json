@@ -497,7 +497,7 @@
   "roster.heroes.sky_admiral.ability.text": { "en": "Pushes all flyers forward and shields them from anti-air for 10 seconds.", "text": "ఎగిరే యోధులందరినీ ముందుకు నెట్టి 10 సెకన్ల పాటు వాయు రక్షణ నుంచి కాపాడుతుంది." },
   "roster.heroes.grand_sensei.name": { "en": "Grand Sensei", "text": "మహా గురువు" },
   "roster.heroes.grand_sensei.ability.name": { "en": "Inner Calm", "text": "అంతర్గత ప్రశాంతత" },
-  "roster.heroes.grand_sensei.ability.text": { "en": "Every warrior on the field heals 40% and ignores the next stun, trap or splash.", "text": "మైదానంలోని ప్రతి యోధుడూ 40% నయమై, తదుపరి దిగ్భ్రమ, ఉచ్చు లేదా విస్తార దెబ్బను పట్టించుకోరు." },
+  "roster.heroes.grand_sensei.ability.text": { "en": "Every warrior on the field heals 40% and ignores the next stun, trap or splash.", "text": "మైదానంలోని ప్రతి యోధుడూ 40% నయమై, తదుపరి దిగ్భ్రమ, ఉచ్చు లేదా విస్తార దెబ్బను పట్టించుకోడు." },
   "social.groveNames.first.0": { "en": "Silent", "text": "నిశ్శబ్ద" },
   "social.groveNames.first.1": { "en": "Crimson", "text": "ఎర్రని" },
   "social.groveNames.first.2": { "en": "Iron", "text": "ఇనుప" },

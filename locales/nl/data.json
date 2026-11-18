@@ -323,7 +323,7 @@
   "progression.buildingCatalog.moonlit_gravel.name": { "en": "Moonlit Gravel Garden", "text": "Maanverlichte grindtuin" },
   "progression.buildingCatalog.moonlit_gravel.description": { "en": "Raked gravel that crunches: anything that teleports, lands or rushes onto it is stunned for 1.5 seconds.", "text": "Geharkt grind dat knerpt: alles wat erop teleporteert, landt of stormt, wordt 1,5 seconde verdoofd." },
   "progression.buildingCatalog.ink_seal_post.name": { "en": "Ink Seal Post", "text": "Inktzegelpost" },
-  "progression.buildingCatalog.ink_seal_post.description": { "en": "Warriors who fall within 3 tiles are sealed in ink: they cannot be revived.", "text": "Krijgers die binnen 3 vakjes vallen, worden in inkt verzegeld: ze kunnen niet worden herrezen." },
+  "progression.buildingCatalog.ink_seal_post.description": { "en": "Warriors who fall within 3 tiles are sealed in ink: they cannot be revived.", "text": "Krijgers die binnen 3 vakjes vallen, worden in inkt verzegeld: ze kunnen niet herrijzen." },
   "progression.buildingCatalog.longbow_yagura.name": { "en": "Longbow Yagura", "text": "Langboog-yagura" },
   "progression.buildingCatalog.longbow_yagura.description": { "en": "A tall archery tower with range 13 that outranges every siege warrior. It prefers warriors attacking from 3.5 tiles or more (throwers and artillery), but cannot hit anything closer than 2 tiles.", "text": "Een hoge boogschuttertoren met bereik 13 die verder reikt dan elke belegeringskrijger. Hij kiest bij voorkeur krijgers die van 3,5 vakjes of verder aanvallen (werpers en artillerie), maar kan niets raken dat dichter dan 2 vakjes is." },
   "progression.buildingCatalog.lightning_rod_pagoda.name": { "en": "Lightning Rod Tower", "text": "Bliksemafleidertoren" },

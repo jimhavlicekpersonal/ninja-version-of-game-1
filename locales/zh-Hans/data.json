@@ -305,7 +305,7 @@
   "progression.buildingCatalog.straw_scarecrow.name": { "en": "Straw Scarecrow", "text": "稻草人" },
   "progression.buildingCatalog.straw_scarecrow.description": { "en": "Animals cannot resist it, and birds are terrified of it. Beasts, their companions and charging mounts within 3 tiles must attack it first, and crane gliders swerve away from it. Lots of health, no damage, very flammable.", "text": "动物无法抗拒它，鸟类则怕得要命。3 格内的野兽、它们的伙伴和冲锋坐骑必须先攻击它，鹤形滑翔者会绕开它。生命值很高，没有伤害，极易着火。" },
   "progression.buildingCatalog.mirror_screen.name": { "en": "Bronze Mirror Screen", "text": "铜镜屏风" },
-  "progression.buildingCatalog.mirror_screen.description": { "en": "Polished bronze panels: every third projectile that hits the screen flies back at whoever threw it.", "text": "抛光的铜板：每第三发击中屏风的飞弹都会反弹回投掷者。" },
+  "progression.buildingCatalog.mirror_screen.description": { "en": "Polished bronze panels: every third projectile that hits the screen flies back at whoever threw it.", "text": "抛光的青铜板：击中屏风的飞弹每三发就有一发反弹回投掷者。" },
   "progression.buildingCatalog.sand_bucket_post.name": { "en": "Sand Bucket Post", "text": "沙桶站" },
   "progression.buildingCatalog.sand_bucket_post.description": { "en": "A bucket crew that smothers explosions and embers: splash damage within 3 tiles is 30% smaller, and they defuse up to two planted charges per battle.", "text": "扑灭爆炸和余烬的沙桶队：3 格内的溅射伤害降低 30%，每场战斗最多拆除两枚安放的炸药。" },
   "progression.buildingCatalog.kite_cutter_ballista.name": { "en": "Kite-Cutter Ballista", "text": "断鸢弩车" },

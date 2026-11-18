@@ -175,9 +175,9 @@
   "zh-Hans": {
     "coverage": 1,
     "ready": true,
-    "hash": "02d47de3b8b0283e",
+    "hash": "90a6fff5ffb34e25",
     "keys": 3084,
-    "path": "lang/zh-Hans-02d47de3b8b0283e.json",
+    "path": "lang/zh-Hans-90a6fff5ffb34e25.json",
     "namespaces": {
       "boot": {
         "total": 17,
@@ -291,9 +291,9 @@
   "id": {
     "coverage": 1,
     "ready": true,
-    "hash": "b87a2d18ead053a5",
+    "hash": "ac52fc03acfb73bd",
     "keys": 3084,
-    "path": "lang/id-b87a2d18ead053a5.json",
+    "path": "lang/id-ac52fc03acfb73bd.json",
     "namespaces": {
       "boot": {
         "total": 17,
@@ -552,9 +552,9 @@
   "nl": {
     "coverage": 1,
     "ready": true,
-    "hash": "8da873005cd7ea28",
+    "hash": "d910b1854a94ad95",
     "keys": 3084,
-    "path": "lang/nl-8da873005cd7ea28.json",
+    "path": "lang/nl-d910b1854a94ad95.json",
     "namespaces": {
       "boot": {
         "total": 17,
@@ -581,9 +581,9 @@
   "ms": {
     "coverage": 1,
     "ready": true,
-    "hash": "de039597a0670e44",
+    "hash": "929a2cec55755a5a",
     "keys": 3084,
-    "path": "lang/ms-de039597a0670e44.json",
+    "path": "lang/ms-929a2cec55755a5a.json",
     "namespaces": {
       "boot": {
         "total": 17,
@@ -755,9 +755,9 @@
   "am": {
     "coverage": 1,
     "ready": true,
-    "hash": "3332ab0528352813",
+    "hash": "366841cad1f3138e",
     "keys": 3084,
-    "path": "lang/am-3332ab0528352813.json",
+    "path": "lang/am-366841cad1f3138e.json",
     "namespaces": {
       "boot": {
         "total": 17,
@@ -784,9 +784,9 @@
   "zu": {
     "coverage": 1,
     "ready": true,
-    "hash": "40bdeed4517d2a95",
+    "hash": "321a884db8daed3d",
     "keys": 3084,
-    "path": "lang/zu-40bdeed4517d2a95.json",
+    "path": "lang/zu-321a884db8daed3d.json",
     "namespaces": {
       "boot": {
         "total": 17,
@@ -871,9 +871,9 @@
   "te": {
     "coverage": 1,
     "ready": true,
-    "hash": "44ad46fb59ab7cef",
+    "hash": "7c9e7eb1e407ed21",
     "keys": 3084,
-    "path": "lang/te-44ad46fb59ab7cef.json",
+    "path": "lang/te-7c9e7eb1e407ed21.json",
     "namespaces": {
       "boot": {
         "total": 17,
@@ -1103,9 +1103,9 @@
   "el": {
     "coverage": 1,
     "ready": true,
-    "hash": "f970c577e3d3fab2",
+    "hash": "1b1d5751c85cb15c",
     "keys": 3084,
-    "path": "lang/el-f970c577e3d3fab2.json",
+    "path": "lang/el-1b1d5751c85cb15c.json",
     "namespaces": {
       "boot": {
         "total": 17,
@@ -1132,9 +1132,9 @@
   "he": {
     "coverage": 1,
     "ready": true,
-    "hash": "0a47ec2acc42554c",
+    "hash": "c7f381edbc8e508b",
     "keys": 3084,
-    "path": "lang/he-0a47ec2acc42554c.json",
+    "path": "lang/he-c7f381edbc8e508b.json",
     "namespaces": {
       "boot": {
         "total": 17,
@@ -1306,9 +1306,9 @@
   "fi": {
     "coverage": 1,
     "ready": true,
-    "hash": "584395161abf9896",
+    "hash": "7121d869c246317d",
     "keys": 3084,
-    "path": "lang/fi-584395161abf9896.json",
+    "path": "lang/fi-7121d869c246317d.json",
     "namespaces": {
       "boot": {
         "total": 17,
@@ -1335,9 +1335,9 @@
   "nb": {
     "coverage": 1,
     "ready": true,
-    "hash": "807958f3c07d47a8",
+    "hash": "312b18eb9d7b2c5d",
     "keys": 3084,
-    "path": "lang/nb-807958f3c07d47a8.json",
+    "path": "lang/nb-312b18eb9d7b2c5d.json",
     "namespaces": {
       "boot": {
         "total": 17,
