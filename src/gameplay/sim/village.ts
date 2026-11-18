@@ -661,6 +661,7 @@ function afterCommand(s: VillageState, events: SimEvent[], cmd: Command, moonBef
       if (e.record.result.stars >= 1) s.stats.raidsWon++;
       s.stats.starsEarned += e.record.result.stars;
       s.stats.raidDestruction = (s.stats.raidDestruction ?? 0) + e.record.result.destruction;
+      countRaidStats(s, e.record, data);
     }
   }
   const spent = moonBefore - s.resources.moonstones;
@@ -2026,6 +2027,12 @@ function battleEnd(s: VillageState, rec0: Omit<BattleRecord, 'result' | 'id' | '
   return { ok: true, state: s, events: [{ kind: 'raid_end', record }] };
 }
 
+/** P5-04: the counters a settled raid adds beyond wins, stars and destruction (three-star raids, stakes reached). */
+function countRaidStats(s: VillageState, rec: BattleRecord, data: GameData): void {
+  if (rec.result.stars >= 3) s.stats.raidsThreeStar = (s.stats.raidsThreeStar ?? 0) + 1;
+  if (validStake(rec.stake, data) && rec.result.stars >= rec.stake) s.stats.stakesWon = (s.stats.stakesWon ?? 0) + 1;
+}
+
 /** Whether any warrior (not just the free hero) was deployed: a battle without one is practice. */
 export function foughtWithWarriors(result: Pick<BattleResult, 'used'>, setup: Pick<BattleSetup, 'hero'>): boolean {
   return Object.entries(result.used).some(([t, n]) => n > 0 && t !== setup.hero?.id);
@@ -2097,6 +2104,7 @@ function settleOnlineAttack(s: VillageState, cmd: Extract<Command, { type: 'sett
   if (result.stars >= 1) s.stats.raidsWon++;
   s.stats.starsEarned += result.stars;
   s.stats.raidDestruction = (s.stats.raidDestruction ?? 0) + result.destruction;
+  countRaidStats(s, rec, data);
   void now;
   return { ok: true, state: s, events: [{ kind: 'raid_settled', record: structuredClone(rec), outcome: 'confirmed' }] };
 }
@@ -2198,6 +2206,7 @@ function bountyEnd(s: VillageState, key: string, rec: Omit<BattleRecord, 'result
   spendTroops(s, result.used, setup);
   // XPL-01: ladder steps need warriors; a hero-only attack reaches none.
   const steps = foughtWithWarriors(result, setup) ? recordBountyResult(s, key, ev.goal, result.stars, result.destruction) : [];
+  s.stats.goalSteps = (s.stats.goalSteps ?? 0) + steps.length; // P5-04
   let wanted: Cost = {};
   for (const i of steps) wanted = sumCost(wanted, ladderReward(ev.goal.ladder[i], baseKeep, data));
   const { granted: reward, overflow } = grantResources(s, wanted, data);
