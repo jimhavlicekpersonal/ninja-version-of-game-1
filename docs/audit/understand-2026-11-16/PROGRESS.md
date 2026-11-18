@@ -78,38 +78,38 @@ server's own row). The prompt's baseline (205 files, 1,934 tests) predates `0c5e
 | P4-01 | partial | bc96431 | support family 27.2/22.0/37.8 → 36.8/34.8/51.8 (K7/8/15); light support K6 85.7/50%, K10 83.2/50% | Drum Monk text 25%→12% | support kits still negative vs kit-off in t7 (−0.2..−8.2): known gap |
 | P4-02 | done | bc96431 | Rally vs 0: −0.7/−1.0/+4.1 → +7.9/+3.8/+5.9; main vs first +1.6/+3.2/+8.0 (mean 4.3) | battle.json/roster.json shadow_captain text | B shipped; REQUESTS Rally question closed by this |
 | P4-03 | open |  | smoke gain under Rally B (bot mix 86% baseline): live +4.3/+2.2, r4 +3.7/+0.9, r5 +7.2/+3.0 at K10/15 (before Rally B r4 was +6.2/+7.8) |  | not shipped: no measured gain once Rally B lifts the baseline; radius unchanged |
-| P4-04 | todo | | | | |
-| P4-05 | todo | | | | |
-| P4-06 | todo | | | | |
-| P4-07 | todo | | | | |
-| P4-08 | todo | | | | |
-| P4-09 | todo | | | | |
-| P4-10 | todo | | | | |
-| P4-11 | todo | | | | |
-| P5-01 | todo | | | | |
-| P5-02 | todo | | | | |
-| P5-03 | todo | | | | |
-| P5-04 | todo | | | | |
-| P5-05 | todo | | | | |
-| P5-06 | todo | | | | |
-| P5-07 | todo | | | | |
-| P5-08 | todo | | | | |
-| P5-09 | todo | | | | |
-| P5-10 | todo | | | | |
-| P5-11 | todo | | | | |
+| P4-04 | done | 2a31490 | siege@8 25.5→40.7, @7 38.5→42.5, @15 33.8→38.8; KNOWN_BELOW empty; K4/K6 home-ground gates pass |  |  |
+| P4-05 | partial | 6e81fe0 | Shuriken kit +0.9→+4.2 (K15); Thousand Needle 73.4→89.5; Bombardier 0.5→0.4, Volcano 1.1 |  | gates added (slow test) with 17 kits and 13 tier pairs listed as known gaps; tier-5 mystic not changed |
+| P4-06 | done | 597b86a | Eclipse ×180 96.8→76.4%, Dragon Kite ×90 83.2→67.3%, Thunder Kite 88.7→83.3%; answering offers 50-66→74-83%, Next presses 1.0-1.9→2.9-4.7 |  | Keep 12 one-army-best gap listed (it.todo) |
+| P4-07 | done | a029142 | layout gap via opponentForRank: K8 11.8, K12 13.4, K15 7.2 (unbalanced layouts 35/23/16) |  | matched-raid and campaign gates checked at the bump |
+| P4-08 | done | effa676 | lab outcome cells 6→12 battles; campaign per-Keep bounds on adjacent pairs | Drum Monk card 12%→10% | melee@8 27.3 and support@8 27.6 listed KNOWN_BELOW |
+| P4-09 | partial | 8f36d57 | explorer gate 0.55/0.75 (K12/15 wins per raid; target 0.9 not met: 0.80 measured) | - | slack K8 0.5, K9-10 0.25, K12 0.5, K7 0; economy buildCap 5 days; fees K9 16000 K12 59000; campaign 18/18 gates pass (fac1ceb) |
+| P4-10 | done | 1eb5747,70044d7 | golive gate + PREVIEW_BALANCE on rules 8: only the Lightning Rod passes; nothing made live | - | golive-gate slow test 2/2 (2191 s) |
+| P4-11 | open | 887a612 |  |  | stretch: design in docs/game-theory/REQUESTS.md, not built |
+| P5-01 | done | a52a64c | 28-day loop: 13 windows / 10 names + 5 festivals; a year: 18 names (>=12), no two weeks alike, 45.8% of hours with an event (<=50%) | events.json names/descriptions (~30), events.fixed/look/lookEarned, festival 3 | progress per occurrence (save v24 goalEvents, repaired on every load d7cc5d7); goal events settle at most a battle + 30 min after they end (review M5); festival review is an owner step (SHIPPING 3k) |
+| P5-02 | done | a52a64c | Gauntlet weekly (Sat-Sun), base from key + Keep only: identical for two seeds at one Keep, different next week (tested) | events.gauntlet.* 3 | board between friends: design in backend REQUESTS, not built |
+| P5-03 | done | 96f90c9,d7cc5d7,fac1ceb | carry cap 2.2 over two years of events; campaign effect 102.6 vs 103.6 regular K15 day (1.0%) | 6 contracts + contract.* 3 | online contract time is the server's (contractAt) |
+| P5-04 | done | 5eeb444 | r1: same 3 daily tasks as the day before 0.3% (gate <1%), 2 of 3 10.8% (gate <15%, was 28%); weekly 0.8% / 18.5% | 8 templates | r1 assumes every template eligible (review): with taskEligible filtering repeats rise; stars-denied template left out (P2-12) |
+| P5-05 | done | a10cff6 | 12 achievements, +575 Jade once (2,540 -> 3,115); every tier reachable | 24 data strings | raids held added: fortress holds 42.7% (>=40%) |
+| P5-06 | done | bbd6ed8 | 15 earned looks (3 league, 3 Trial, 5 calendar cycles, 4 chest milestones); calendar Jade -200 over cycles 2-6 | 15 names + store.looksCollected | Trial 60 -> 55 (ceiling 58); chestsOpened starts at 0 for old villages |
+| P5-07 | done | d8d606b | ranks, maxBonus 0, xpBase 1500: rank 5 ~40 raids (quarter of a Keep 12 army), ~10 after a month, <40 after a year; no setup carries mastery (tested) | mastery.rank, mastery.gained | stat bonus open (DECISIONS); XP for raids and first Trial clears only |
+| P5-08 | done | fba4856 | seal when every allowed building (builders excluded, review H1) is at the Keep cap; 30k/30k at Keep 5, scaled; once per Keep | seal.* 4 |  |
+| P5-09 | done | af1cea6 | chest, skip week, stipend on the local day; the switch never gives a second chest in a UTC day (UTC+10, UTC-8 tested) | 1 sim message | west of UTC the switch may wait up to one more local day (review M2 fix d7cc5d7) |
+| P5-10 | done | c81e9f6 | 12 season names; recap at every Scroll rollover (league at season end, raids, stars, tiers) with a Share button | 12 names + season.* 4 |  |
+| P5-11 | done | 403372d | 6 Jade looks at 450/650/900 (Keeps 6-14): 13 looks for Jade, 3,900 Jade more | 6 names | open ideas recorded (queuedArmies 2, raider forecast, real-player revenge) |
 | P6-01 | todo | | | | |
 | P6-02 | todo | | | | |
 | P6-03 | todo | | | | |
 | P6-04 | todo | | | | |
 | P6-05 | todo | | | | |
 | P6-06 | todo | | | | |
-| P6-07 | todo | | | | |
+| P6-07 | done | 7a3268d | Watch replay / Return home only; missed stake 'no loot' under loot; 85% on 0 carried -> progress block + next actions; contradictions gone | result.leagueBonus | result-progress 2/2; result-screen DOM 3/3 |
 | P6-08 | todo | | | | |
-| P6-09 | todo | | | | |
+| P6-09 | done | 83c139a,ab4be0e | skip w/o confirm; ring through sheet; Upgrade off-box; raw ids; folded kind; stale Build; empty collect in News; 8 N/A cards -> fixed; all 4 sizes pass in en | kind.*,tutorial.skipAsk,sheet.unlocksWarriors | DOM 10/10; ui:surfaces en 4 sizes pass (objective chip cut at 320: P6-05); Keep-level moment: P6-08; ar/de after translation |
 | P6-10 | todo | | | | |
-| P6-11 | todo | | | | |
+| P6-11 | done | 1f9fc30 | zoom 0.14 whole fight; no speed live -> 0.25-0.36 action frame; speed after all deployed | - | speed.test 2/2 same hash; action-frame 3/3; surfaces --battle 4 sizes |
 | P6-12 | todo | | | | |
-| P6-13 | todo | | | | |
+| P6-13 | done | 0e57e25 | stake downside in closed drawer, star not marked, share only after raid -> help under chips, drawer once, ring, preview | carry.preview | stake.dom 3/3 |
 | P6-14 | todo | | | | |
 | P6-15 | todo | | | | |
 | P6-16 | todo | | | | |
