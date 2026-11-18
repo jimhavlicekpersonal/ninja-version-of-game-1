@@ -14,6 +14,7 @@ import { mixSeed } from './gameplay/sim/rng';
 import { battleArmy, battleLoadout, scoutFee } from './gameplay/sim/village';
 import { nextTrialTier, trialBase, trialInfo, trialReward, trialVariant } from './gameplay/sim/trials';
 import { rematchBase, rematchStatus } from './gameplay/sim/rematch';
+import { armyDiversity, diversityPartOf, diversityShare, trainableRoles } from './gameplay/sim/carry';
 import { BattleHud } from './presentation/ui/battleHud';
 import { sound } from './presentation/audio/sound';
 import type { Hud } from './presentation/ui/hud';
@@ -373,8 +374,9 @@ export class App {
           void this.d.connection.report('attack', { ticket, seed: session.setup.seed, army: session.setup.army, levels: session.setup.levels, reinforcements: session.setup.reinforcements, ...(session.setup.hero ? { hero: session.setup.hero } : {}), deployments: session.deployments, endTick: session.endTick, clientHash: out.record.result.hash, rules: SIM_RULES });
         }
         lastRecord = out.record;
-        if (out.record.settlement === 'pending') return { result: out.record.result, banked: {}, trophies: 0, pending: true };
-        return { result: out.record.result, banked: out.banked, overflow: out.record.overflow, trophies: out.record.trophies ?? 0, bonus: out.record.leagueBonus, eventBonus: out.record.eventBonus, stake: out.record.stake };
+        // P2-15: the share the raid carries comes from the sim (the record's `carry`; pending: what it will settle with).
+        if (out.record.settlement === 'pending') return { result: out.record.result, banked: {}, trophies: 0, pending: true, diversity: diversityShare(armyDiversity(out.record.result.used, session.setup, c.data), c.data, trainableRoles(c.state, c.data)) };
+        return { result: out.record.result, banked: out.banked, overflow: out.record.overflow, trophies: out.record.trophies ?? 0, bonus: out.record.leagueBonus, eventBonus: out.record.eventBonus, stake: out.record.stake, diversity: diversityPartOf(out.record.carry, out.record.stake, out.record.result.stars, c.data) };
       },
       onReplay: () => {
         if (lastRecord) this.replay(lastRecord);

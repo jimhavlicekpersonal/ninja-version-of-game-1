@@ -939,7 +939,7 @@ export interface RaidsDef {
    * `minShare + (1 - minShare) x min(1, D / fullAt)`, D the Gini-Simpson diversity of the warriors fought by role
    * (housing shares; 0 for one role, 0.9 for ten equal ones).
    */
-  diversity?: { minShare: number; fullAt: number };
+  diversity?: { minShare: number; fullAt: number; /** P2-15: the carry is full while the village can train fewer roles than this (absent: always applies). */ fullBelowRoles?: number };
   /**
    * Declared stakes (balance audit 2026-11-08, opt-in): before a raid the attacker may declare a star count from
    * `byStars`; reaching it carries the loot times its multiplier, missing it carries nothing and a real defender keeps

@@ -32,7 +32,7 @@ import { canPlace } from './grid';
 import { addCapped, canAfford, capacity, collectorAmount, effectiveLevel, missingFor, subtractCost } from './resources';
 import type { Building, BuildingLimit, BuildingType, Cost, GameData, PurchaseRecord, PurchaseRefund, ResourceKind, Temper, TopUpPaid, TrainingItem, VillageState, PendingBattle } from './types';
 import { normalizeTemper, sameTemper, temperable, temperDef, validTemper } from './battle/temper';
-import { carriedLoot, raidCarry, validStake } from './carry';
+import { carriedLoot, raidCarry, trainableRoles, validStake } from './carry';
 import { RESOURCE_KINDS } from './types';
 import { bandChangeAllowed, isAgeBand, type AgeBand } from './age';
 
@@ -1955,7 +1955,7 @@ function battleEnd(s: VillageState, rec0: Omit<BattleRecord, 'result' | 'id' | '
   // really reached storage. Whatever was won but did not fit is kept as
   // `overflow`, so the results screen can say so precisely.
   const stake = validStake(rec.stake, data) ? rec.stake : undefined;
-  const carry = raidCarry(result, rec.setup, stake, data);
+  const carry = raidCarry(result, rec.setup, stake, data, trainableRoles(s, data));
   const { banked, overflow, bonus, eventBonus } = bankRaidLoot(s, result, now, data, carry);
   awardMastery(s, result, rec.setup, data);
   const opp = rec.setup.base.trophies ?? s.trophies;
@@ -2022,7 +2022,7 @@ function settleOnlineAttack(s: VillageState, cmd: Extract<Command, { type: 'sett
   // Only the stake the server settled with counts (it was fixed when the raid started); a server without
   // stakes settles with none, whatever this game recorded.
   const stake = validStake(cmd.stake, data) ? cmd.stake : undefined;
-  const carry = raidCarry(result, rec.setup, stake, data);
+  const carry = raidCarry(result, rec.setup, stake, data, trainableRoles(s, data));
   const { banked, overflow, bonus, eventBonus } = bankRaidLoot(s, result, rec.at, data, carry);
   awardMastery(s, result, rec.setup, data);
   rec.result = { ...result, loot: { ...result.loot } };

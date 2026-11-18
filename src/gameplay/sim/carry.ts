@@ -11,8 +11,9 @@
  * Uses only + − × ÷.
  */
 import roster from '../data/roster.json';
+import { troopUnlock } from './army';
 import type { BattleResult, BattleSetup } from './battle/types';
-import type { Cost, GameData, ResourceKind } from './types';
+import type { Cost, GameData, ResourceKind, VillageState } from './types';
 
 const ROLE_OF: Record<string, string> = Object.fromEntries(
   (roster.warriors as { role: string; liveTroop?: string }[]).filter((w) => w.liveTroop).map((w) => [w.liveTroop!, w.role]),
@@ -40,10 +41,21 @@ export function armyDiversity(used: Record<string, number>, setup: Pick<BattleSe
   return 1 - sum;
 }
 
-/** The share of loot an army of diversity `d` carries (1 without the rule). */
-export function diversityShare(d: number, data: GameData): number {
+/** How many roster roles the village can train now (P2-15: a choice the player does not have yet costs nothing). */
+export function trainableRoles(state: VillageState, data: GameData): number {
+  const roles = new Set<string>();
+  for (const t of Object.keys(data.troops)) if (troopUnlock(state, t, data).unlocked) roles.add(ROLE_OF[t] ?? t);
+  return roles.size;
+}
+
+/**
+ * The share of loot an army of diversity `d` carries (1 without the rule, and 1 while the village can train fewer
+ * than `fullBelowRoles` roles: pass `roles` from `trainableRoles`).
+ */
+export function diversityShare(d: number, data: GameData, roles = Infinity): number {
   const def = data.raids.diversity;
   if (!def) return 1;
+  if (def.fullBelowRoles !== undefined && roles < def.fullBelowRoles) return 1;
   return def.minShare + (1 - def.minShare) * Math.min(1, def.fullAt > 0 ? d / def.fullAt : 1);
 }
 
@@ -68,9 +80,15 @@ export function stakeMultiplier(stake: number | undefined, stars: number, data: 
   return stars >= stake ? data.raids.stakes!.byStars[String(stake)] : 0;
 }
 
-/** The share of a raid's loot the attacker carries home: diversity times stake. */
-export function raidCarry(result: Pick<BattleResult, 'used' | 'stars'>, setup: Pick<BattleSetup, 'hero'>, stake: number | undefined, data: GameData): number {
-  return diversityShare(armyDiversity(result.used, setup, data), data) * stakeMultiplier(stake, result.stars, data);
+/** The share of a raid's loot the attacker carries home: diversity times stake (`roles`: `trainableRoles`). */
+export function raidCarry(result: Pick<BattleResult, 'used' | 'stars'>, setup: Pick<BattleSetup, 'hero'>, stake: number | undefined, data: GameData, roles = Infinity): number {
+  return diversityShare(armyDiversity(result.used, setup, data), data, roles) * stakeMultiplier(stake, result.stars, data);
+}
+
+/** The diversity part of a record's `carry` (absent = 1), for the result screen: the stake's multiplier taken out. */
+export function diversityPartOf(carry: number | undefined, stake: number | undefined, stars: number, data: GameData): number {
+  const m = stakeMultiplier(stake, stars, data);
+  return carry === undefined || m <= 0 ? 1 : carry / m;
 }
 
 /** `loot` times `share`, rounded down per resource. */

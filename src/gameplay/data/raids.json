@@ -30,7 +30,9 @@
   "diversity": {
     "$comment": "Balance audit 2026-11-08 (diversity carries more): a won raid carries minShare + (1 - minShare) x min(1, D / fullAt) of its loot, D = 1 - sum of squared housing shares by role of the warriors that fought (the hero not counted).",
     "minShare": 0.85,
-    "fullAt": 0.6
+    "fullAt": 0.6,
+    "$commentRoles": "P2-15 (UIS-07, 2026-11-18): full carry while the village can train fewer than fullBelowRoles roles (at Dojo 1 only Shinobi: the first raid used to say 85%).",
+    "fullBelowRoles": 2
   },
   "stakes": {
     "$comment": "Balance audit 2026-11-08 (declared stakes, opt-in): before a raid the attacker may declare 2 or 3 stars; reaching it carries the loot x byStars[stake], missing it carries nothing and a real defender keeps it. Without a declaration a raid carries its loot as before.",

@@ -5,7 +5,7 @@
  */
 import { describe, expect, it } from 'vitest';
 import { generateOpponent } from '../../../src/gameplay/sim/battle/basegen';
-import { armyDiversity, carriedLoot, diversityShare, raidCarry, stakeMet, stakeMultiplier, stakeOptions, validStake } from '../../../src/gameplay/sim/carry';
+import { armyDiversity, carriedLoot, diversityShare, raidCarry, stakeMet, stakeMultiplier, stakeOptions, trainableRoles, validStake } from '../../../src/gameplay/sim/carry';
 import { exhaustionFactor, scaleBaseLoot } from '../../../src/gameplay/sim/defense';
 import { lootPenalty } from '../../../src/gameplay/sim/matchmaking';
 import { defenseHonorLoss, winTrophies } from '../../../src/gameplay/sim/ranks';
@@ -119,7 +119,9 @@ describe('declared stakes', () => {
     const rec = win.state.battleLog.at(-1)!;
     expect(rec.result.stars).toBe(3);
     expect(rec.stake).toBe(3);
-    expect(rec.carry).toBeCloseTo(data.raids.diversity!.minShare * data.raids.stakes!.byStars['3'], 9);
+    // P2-15 (2026-11-18, restated as the item says): a new village trains one role, so the one-role army carries in full.
+    expect(trainableRoles(s0, data)).toBeLessThan(2);
+    expect(rec.carry).toBeCloseTo(data.raids.stakes!.byStars['3'], 9);
     expect(win.state.resources.dew).toBe(Math.floor(100 * rec.carry!));
     // The same raid stopped after one tick (no star): the declared 2 stars are missed.
     const miss = applyCommand(s0, { type: 'battleEnd', record: { at: clock.now(), opponentName: 'Dummy', setup: { seed: 4, base, army: s0.army }, deployments: deployments.slice(0, 1), endTick: 1, stake: 2 } }, clock.now(), data);

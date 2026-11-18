@@ -4,6 +4,7 @@
  */
 import { describe, expect, it } from 'vitest';
 import { generateOpponent } from '../../../src/gameplay/sim/battle/basegen';
+import { diversityPartOf, raidCarry, trainableRoles } from '../../../src/gameplay/sim/carry';
 import { raidVillage, simulateOfflineRaids } from '../../../src/gameplay/sim/defense';
 import { rematchReward } from '../../../src/gameplay/sim/rematch';
 import { attackerFor } from '../../../src/gameplay/sim/matchmaking';
@@ -119,5 +120,22 @@ describe('P2-08 (DEF-09): a declared stake is a skill bet a good player can win'
     // Four hits in five at two stars gains; the bot plan's 60% does not.
     expect(0.8 * by['2']).toBeGreaterThan(1);
     expect(0.6 * by['2']).toBeLessThan(1);
+  });
+});
+
+describe('P2-15 (UIS-07): the diversity carry waits until the village has a choice', () => {
+  it('the tutorial army carries 100%; a one-role army at Keep 5 still carries 85%', () => {
+    const v0 = createNewVillage(0, data);
+    // The tutorial's Dojo at level 1: Shinobi only.
+    const v: VillageState = { ...v0, buildings: [...v0.buildings, { id: 'dojo', type: 'burrow_barracks', level: 1, x: 2, y: 2, upgrade: null, collector: null } as VillageState['buildings'][number]] };
+    const used = { hedgehog_roller: 10 };
+    expect(trainableRoles(v, data)).toBe(1);
+    expect(raidCarry({ used, stars: 2 }, {}, undefined, data, trainableRoles(v, data))).toBe(1);
+    const k5: VillageState = { ...v, buildings: v.buildings.map((b) => (b.type === 'elder_toadstool' ? { ...b, level: 5 } : b.type === 'burrow_barracks' ? { ...b, level: 5 } : b)) };
+    expect(trainableRoles(k5, data)).toBeGreaterThanOrEqual(2);
+    expect(raidCarry({ used, stars: 2 }, {}, undefined, data, trainableRoles(k5, data))).toBe(data.raids.diversity!.minShare);
+    // The result screen reads the record's carry with the stake taken out.
+    expect(diversityPartOf(1.3 * 0.85, 2, 2, data)).toBeCloseTo(0.85, 9);
+    expect(diversityPartOf(undefined, undefined, 3, data)).toBe(1);
   });
 });

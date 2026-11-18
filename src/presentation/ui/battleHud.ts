@@ -3,7 +3,7 @@ import { messageText as i18nMessage, listText as i18nList } from './i18n';
 import { labelText as i18nLabel } from './i18n';
 import { t as i18nText } from './i18n';
 import { fmtDecimal, fmtPercent, pointLabel, t } from './i18n';
-import { armyDiversity, diversityShare, stakeOptions } from '../../gameplay/sim/carry';
+import { stakeOptions } from '../../gameplay/sim/carry';
 import { rivalById } from '../../gameplay/sim/rivals';
 import { isolateName } from '../../gameplay/sim/social/names';
 import type { BattleSession } from '../../gameplay/control/battleSession';
@@ -51,7 +51,7 @@ interface BattleHudDeps {
   onAttack(): boolean | Promise<boolean>;
   /** Called once when a live battle ends; returns the loot actually banked. */
   /** `banked` is what reached storage (bonuses included); `overflow` is what was won but did not fit. */
-  onFinished(): { result: BattleResult; banked: Cost; trophies: number; bonus?: Cost; eventBonus?: Cost; overflow?: Cost; note?: string; pending?: boolean; stake?: number } | null;
+  onFinished(): { result: BattleResult; banked: Cost; trophies: number; bonus?: Cost; eventBonus?: Cost; overflow?: Cost; note?: string; pending?: boolean; stake?: number; /** The diversity share the raid carried (sim/carry.ts; absent = 1). */ diversity?: number } | null;
   /** A raid that may declare a stake (sim/carry.ts): offline, or on a server with the `stakes` feature. */
   stakes?: boolean;
   onReplay(): void;
@@ -581,7 +581,7 @@ export class BattleHud {
       this.finished = true;
       if (this.s.mode === 'live') {
         const out = this.deps.onFinished();
-        if (out) this.showResults(out.result, out.banked, out.trophies, out.bonus, out.eventBonus, out.note, out.overflow, out.pending, out.stake);
+        if (out) this.showResults(out.result, out.banked, out.trophies, out.bonus, out.eventBonus, out.note, out.overflow, out.pending, out.stake, out.diversity);
       } else {
         this.toast(i18nText("ui.replay_finished_c807fbe581"));
       }
@@ -624,7 +624,7 @@ export class BattleHud {
     );
   }
 
-  private showResults(r: BattleResult, banked: Cost, trophies: number, bonus?: Cost, eventBonus?: Cost, note?: string, overflow?: Cost, pending = false, stake?: number): void {
+  private showResults(r: BattleResult, banked: Cost, trophies: number, bonus?: Cost, eventBonus?: Cost, note?: string, overflow?: Cost, pending = false, stake?: number, diversity?: number): void {
     // Result feel (re-audit design item 11): stars slam in one by one with a sound and haptic each, a banner for a
     // flawless raid, and the loot counts up. Reduced motion shows the end state at once.
     celebrate(r.stars > 0 ? 'victory' : 'defeat');
@@ -654,7 +654,7 @@ export class BattleHud {
           ? h('p', {}, i18nText("ui.loot_won_5491665d1d"), lootChips(r.loot), h('span', { class: 'muted small' }, i18nText("ui.confirming_with_the_server_it_arrives__667ceaec28")))
           : h('p', {}, this.deps.trial || this.deps.special ? i18nLabel('Reward: ') : i18nLabel('Loot: '), countingChips(banked, still ? 0 : 250 + r.stars * STAR_GAP * 1000)),
       this.deps.grove || this.deps.trial || this.deps.practice || this.deps.special || pending ? '' : h('p', {}, i18nLabel('Honor: '), h('span', { class: `chip ${trophies >= 0 ? 'good' : 'short'}` }, icon(icons.leaf), `${trophies >= 0 ? '+' : ''}${trophies}`)),
-      ...this.carryNotes(r, stake, pending),
+      ...this.carryNotes(r, stake, pending, diversity),
       bonus && Object.keys(bonus).length ? h('p', { class: 'muted small' }, i18nText("ui.includes_your_league_bonus_b40d9ae1a0"), lootChips(bonus)) : null,
       eventBonus && Object.keys(eventBonus).length ? h('p', { class: 'muted small' }, i18nText("ui.includes_the_event_bonus_8c87bb2bac"), lootChips(eventBonus)) : null,
       ...closeCalls(this.s.sim, localizedData(this.s.data)).map((cc) => h('p', { class: 'close-call' }, i18nMessage(cc.text))),
@@ -677,7 +677,7 @@ export class BattleHud {
   }
 
   /** What the raid carried home (sim/carry.ts): the stake's outcome and, for a one-role squad, the share it carried. */
-  private carryNotes(r: BattleResult, stake: number | undefined, pending: boolean): HTMLElement[] {
+  private carryNotes(r: BattleResult, stake: number | undefined, pending: boolean, share = 1): HTMLElement[] {
     if (this.deps.grove || this.deps.trial || this.deps.practice || this.deps.special || this.deps.replayOf) return [];
     const gd = this.s.data;
     const out: HTMLElement[] = [];
@@ -686,7 +686,6 @@ export class BattleHud {
     if (!pending && m !== undefined) {
       out.push(h('p', { class: `note ${r.stars >= stake! ? 'good' : 'short'}` }, r.stars >= stake! ? t('stake.met', { stars: stake, mult: fmtDecimal(m, Math.round(m * 10) === m * 10 ? 1 : 2) }) : t('stake.missed', { stars: stake })));
     }
-    const share = diversityShare(armyDiversity(r.used, this.s.setup, gd), gd);
     if (share < 1 && (pending || m === undefined || r.stars >= stake!)) out.push(h('p', { class: 'muted small' }, t('carry.diversity', { pct: fmtPercent(share * 100) })));
     return out;
   }
