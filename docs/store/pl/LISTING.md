@@ -26,8 +26,15 @@ Poprowadź klan ninja: zbuduj ukrytą wioskę w górach, wyszkol pięćdziesiąt
 **Planuj i atakuj**
 
 - Wojownicy wchodzą tylko przez Punkty Infiltracji. Zbadaj ścieżki i wieże, które ich pilnują.
-- Rzucaj Bomby Dymne, gdy wojownicy wchodzą w zasięg wież, i wysyłaj Sabotażystów, by unieruchomili obronę.
+- Wyślij oddział jednym rozkazem (razem, w kleszcze lub gęsiego; tanki przodem lub szturm) albo rozstaw każdego wojownika ręcznie.
+- Rzucaj Bomby Dymne, gdy wojownicy wchodzą w zasięg wież, i wysyłaj Sabotażystów, by unieruchomili obronę. Od poziomu 7 Twierdzy Klanu Kapitan Cienia raz na bitwę mobilizuje cały twój oddział.
+- Po najeździe sprawdź, co ta sama armia osiągnęłaby przez inny punkt.
 - Przemyślany atak pokonuje większą armię.
+
+**Broń swojej wioski**
+
+- Każdy najazd na twoją wioskę ma raport: co ocalało, ile gwiazdek udało się obronić i którędy wszedł najeźdźca.
+- Przetestuj obronę przeciw symulowanemu najeźdźcy i ćwicz przeciw armii, która cię pokonała.
 
 **Wspólna gra** (online)
 
@@ -38,7 +45,12 @@ Poprowadź klan ninja: zbuduj ukrytą wioskę w górach, wyszkol pięćdziesiąt
 
 **Próby Cienia**
 
-- Niekończąca się seria twierdz: każdy poziom jest trudniejszy od poprzedniego i daje nagrodę tylko raz.
+- Niekończąca się seria twierdz: każdy poziom jest trudniejszy od poprzedniego i daje nagrodę tylko raz. Codzienny trening pozwala ćwiczyć, gdy twoja armia się szkoli.
+
+**Codziennie coś nowego**
+
+- Wydarzenia w stałym czterotygodniowym kalendarzu, pięć dorocznych świąt z fortecą i wyglądem Twierdzy do zdobycia, cotygodniowa Rękawica i codzienny kontrakt.
+- Osiągnięcia, pieczęcie Twierdzy, rangi mistrzostwa wojowników i wyglądy zdobywane w grze.
 
 **Uczciwa gra**
 

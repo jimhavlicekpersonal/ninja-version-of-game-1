@@ -23,7 +23,7 @@
   "tutorial.end.button": { "en": "Finish", "text": "Dokončiť" },
   "tutorial.skip": { "en": "Skip tutorial", "text": "Preskočiť návod" },
   "kind.practice": { "en": "Practice", "text": "Cvičenie" },
-  "whatsNew.0_1_0": { "en": "What's new: send your squad in with one order, watch the fight up close or faster, and see what another entry point would have done. Every raid on your village now has a report, and you can test your defenses. New: a four-week event calendar with festivals, a weekly Gauntlet, daily contracts, achievements, Keep seals and looks to earn.", "text": "" },
+  "whatsNew.0_1_0": { "en": "What's new: send your squad in with one order, watch the fight up close or faster, and see what another entry point would have done. Every raid on your village now has a report, and you can test your defenses. New: a four-week event calendar with festivals, a weekly Gauntlet, daily contracts, achievements, Keep seals and looks to earn.", "text": "Čo je nové: pošli oddiel do boja jedným rozkazom, sleduj boj zblízka alebo rýchlejšie a pozri sa, čo by priniesol iný vstupný bod. Každý nájazd na tvoju dedinu má teraz hlásenie a svoju obranu si môžeš otestovať. Novinky: štvortýždňový kalendár udalostí so sviatkami, týždenná Ohňová skúška, denné kontrakty, úspechy, pečate Pevnosti a vzhľady na získanie." },
   "trials.ladder": { "en": "The ladder ahead", "text": "Stupne pred tebou" },
   "trials.cleared": { "en": "Cleared: tiers 1 to {best}", "text": "Splnené: stupne 1–{best}" },
   "milestone.keep": { "en": "Clan Keep Lv {level}!", "text": "Pevnosť klanu, úroveň {level}!" },

@@ -26,8 +26,15 @@ Veď klan nindžov, postav skrytú dedinu v horách, vycvič päťdesiat druhov 
 **Naplánuj nájazd**
 
 - Bojovníci vstupujú len cez Body infiltrácie. Preskúmaj cesty a veže, ktoré ich strážia.
-- Hoď Dymovnicu, keď bojovníci vojdú do dosahu veží, a pošli sabotérov vyradiť obranu.
+- Pošli oddiel do boja jedným rozkazom (spolu, do klieští alebo v zástupe; tanky vpred alebo náporom), alebo rozmiestni každého bojovníka ručne.
+- Hoď Dymovnicu, keď bojovníci vojdú do dosahu veží, a pošli sabotérov vyradiť obranu. Od úrovne 7 Pevnosti klanu zhromaždí Kapitán tieňa raz za bitku celý tvoj oddiel.
+- Po nájazde sa pozri, čo by rovnaká armáda dokázala iným bodom.
 - Premyslený útok porazí aj väčšiu armádu.
+
+**Ubráň svoju dedinu**
+
+- Ku každému nájazdu na tvoju dedinu dostaneš hlásenie: čo sa uchránilo, koľko hviezd sa ubránilo a kadiaľ sa nájazdník dostal dnu.
+- Otestuj obranu proti simulovanému nájazdníkovi a cvič proti armáde, ktorá ťa porazila.
 
 **Hraj s ostatnými** (online)
 
@@ -38,7 +45,12 @@ Veď klan nindžov, postav skrytú dedinu v horách, vycvič päťdesiat druhov 
 
 **Skúšky tieňa**
 
-- Nekonečný rad pevností: každý stupeň je ťažší a odmenu dáva len raz.
+- Nekonečný rad pevností: každý stupeň je ťažší a odmenu dáva len raz. Denný tréning ti umožní cvičiť, kým tvoja armáda prechádza výcvikom.
+
+**Každý deň niečo nové**
+
+- Udalosti v pevnom štvortýždňovom kalendári, päť každoročných sviatkov s vlastnou pevnosťou a vzhľadom Pevnosti na získanie, týždenná Ohňová skúška a denný kontrakt.
+- Úspechy, pečate Pevnosti, hodnosti majstrovstva bojovníkov a vzhľady, ktoré získaš hraním.
 
 **Férová hra**
 

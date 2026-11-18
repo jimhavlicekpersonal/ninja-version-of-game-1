@@ -23,7 +23,7 @@
   "tutorial.end.button": { "en": "Finish", "text": "Končaj" },
   "tutorial.skip": { "en": "Skip tutorial", "text": "Preskoči vodič" },
   "kind.practice": { "en": "Practice", "text": "Vadba" },
-  "whatsNew.0_1_0": { "en": "What's new: send your squad in with one order, watch the fight up close or faster, and see what another entry point would have done. Every raid on your village now has a report, and you can test your defenses. New: a four-week event calendar with festivals, a weekly Gauntlet, daily contracts, achievements, Keep seals and looks to earn.", "text": "" },
+  "whatsNew.0_1_0": { "en": "What's new: send your squad in with one order, watch the fight up close or faster, and see what another entry point would have done. Every raid on your village now has a report, and you can test your defenses. New: a four-week event calendar with festivals, a weekly Gauntlet, daily contracts, achievements, Keep seals and looks to earn.", "text": "Novosti: pošlji odred v boj z enim ukazom, spremljaj boj od blizu ali hitreje in poglej, kaj bi dosegla druga vstopna točka. Vsak vpad v tvojo vas ima zdaj poročilo, obrambo pa lahko preizkusiš. Novo je tudi: štiritedenski koledar dogodkov s prazniki, tedenska Bojna steza, dnevne pogodbe, dosežki, pečati trdnjave in videzi, ki si jih prislužiš." },
   "trials.ladder": { "en": "The ladder ahead", "text": "Stopnje pred tabo" },
   "trials.cleared": { "en": "Cleared: tiers 1 to {best}", "text": "Opravljeno: stopnje 1–{best}" },
   "milestone.keep": { "en": "Clan Keep Lv {level}!", "text": "Klanska trdnjava, raven {level}!" },

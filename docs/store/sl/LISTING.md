@@ -26,8 +26,15 @@ Vodi klan nindž, zgradi skrito vas v gorah, izuri petdeset vrst bojevnikov, raz
 **Načrtuj vpad**
 
 - Bojevniki vstopijo le skozi točke vdora. Razišči poti in stolpe, ki jih varujejo.
-- Vrzi dimno bombo, ko bojevniki stopijo v doseg stolpov, in pošlji saboterje, da onesposobijo obrambo.
+- Pošlji odred v boj z enim ukazom (skupaj, v klešče ali v koloni; tanki naprej ali v naskok) ali pa ročno postavi vsakega bojevnika.
+- Vrzi dimno bombo, ko bojevniki stopijo v doseg stolpov, in pošlji saboterje, da onesposobijo obrambo. Od ravni 7 Klanske trdnjave Senčni kapitan enkrat na bitko zbere ves tvoj odred.
+- Po vpadu poglej, kaj bi ista vojska dosegla skozi drugo točko.
 - Premišljen napad premaga tudi večjo vojsko.
+
+**Ubrani svojo vas**
+
+- Za vsak vpad v tvojo vas dobiš poročilo: kaj je ostalo ohranjeno, koliko zvezdic je bilo ubranjenih in kje je napadalec vdrl.
+- Preizkusi obrambo proti simuliranemu napadalcu in vadi proti vojski, ki te je premagala.
 
 **Igraj z drugimi** (prek spleta)
 
@@ -38,7 +45,12 @@ Vodi klan nindž, zgradi skrito vas v gorah, izuri petdeset vrst bojevnikov, raz
 
 **Senčne preizkušnje**
 
-- Neskončen niz trdnjav: vsaka stopnja je težja in nagrado da samo enkrat.
+- Neskončen niz trdnjav: vsaka stopnja je težja in nagrado da samo enkrat. Dnevna vaja ti omogoča vadbo, medtem ko se tvoja vojska uri.
+
+**Vsak dan nekaj novega**
+
+- Dogodki po stalnem štiritedenskem koledarju, pet vsakoletnih praznikov z lastno trdnjavo in videzom trdnjave, ki si ga lahko prislužiš, tedenska Bojna steza in dnevna pogodba.
+- Dosežki, pečati trdnjave, čini mojstrstva bojevnikov in videzi, ki si jih prislužiš z igranjem.
 
 **Poštena igra**
 
