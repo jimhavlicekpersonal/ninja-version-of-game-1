@@ -980,3 +980,49 @@ A dated reassessment, not an edit of the rows above. Where an earlier row and th
 | Built-not-live content | "when the designer makes them live" | measured not ready (heroes lose to the live hero, ten of fifteen counters change nothing): gated in Phase 4 (P4-10), not switched on | — |
 
 The request files now separate open asks from answered ones (`docs/backend/REQUESTS.md`, `docs/game-theory/REQUESTS.md`: "Done" sections with where each was done).
+
+### 2026-11-18 replayability pass, Phase 2: defense (integration session; agent prompt `docs/prompts/BEAST_MODE_2026-11-16.md` section 7, evidence `docs/audit/understand-2026-11-16/defense-raids.md`, ledger `docs/audit/understand-2026-11-16/PROGRESS.md`), commits `8b072ca` to `bee66b1` on `claude/magical-cray-wkpcl1`
+
+**Read first: online, defense does nothing yet.** With a server configured the game never raids a village with bots (`src/main.ts`, `botRaids: !serverUrl`), so every rule below acts only offline and in the campaigns until P2-12 ships. P2-12 is **not built**; its full design is in `docs/backend/REQUESTS.md`. Same release rule as Phases 0-1: no build of this branch ships yet, and the server deploys before the game (the server replays `rematchEnd`, `battleEnd`/`settleOnlineAttack`, `scout` and `applyDefense` with the new rules). No battle rule changed (`SIM_RULES` unchanged), no save change, no protocol change (`applyDefense` gains an optional server-set `holdReward`).
+
+| Item | Finding | Status | What changed | Evidence | Remaining limitations |
+|---|---|---|---|---|---|
+| P2-01 | DEF-01/02 defense worthless; fractional loot | partial | stars decide what a raider carries (`carryByStars` 0.2/0.5/0.8/1); each star denied pays a third of the hold reward; whole units only; real raids pay too (once per attacker per defender per day) | per-raid nets by Keep and base quality in the ledger | criterion 3 (a caps base within ±10% of a hold) is not met: depends on storage fill, −38% to +28% |
+| P2-02 | DEF-04 raiders summoned by honor | done | raiders from the defender's Keep (a Keep − 1 raider), never above it | `raider_dist` measure | — |
+| P2-03 | DEF-05 one raider army | done | `raiderMixes`: an air raid and a shadow-siege raid beside the line, raider Keeps 7-15 | all mixes 20-85% destruction vs caps − 1 bases; air raid without anti-air K8 29→47%, K12 32→57%, K15 38→97% | defender Keep 7 meets no alternate (raiders are Keep − 1) |
+| P2-04 | DEF-03 campaign cannot see defense; PS-1 known failure | done | `regular_fortress` campaign on a walled lab layout (clone only); three real gates replace KNOWN FAILING PS-1; the model keeps its last 10 raid records | fortress held 45% at Keeps 9-15 (gate 37%), stolen/looted 0.55× the rusher's (gate 0.62×), Keep 12 1.15× the rusher's days (gate 1.25×) | keeping the log changes every campaign's opponents (Tempering counters, losing streak): gate history before 2026-11-18 is not comparable |
+| P2-05/06 | DEF-06/11 a month away empties storage | done | catch-up cap 24 → 3 raids, exhaustion window 24 → 36 h | 30 days away, 30% full: Keep 9 96.6% → 24.9% lost, Keep 12 93.7% → 15.9% | — |
+| P2-07 | DEF-08 Settle the score loses at three stars | partial | pays back `recoverShare` 1.0 × stars/3 of what the raid took (Coins and Provisions, capped) | 3★ vs a normal raid: K10-15 0.81-1.96× | Keep 5 0.76-0.81× (not "a little more"); a lost bot raid answered at 3★ now breaks even minus the army |
+| P2-08 | DEF-09 stakes never worth declaring | done | 1.3 / 1.75 | bot plan EV 0.78 (a loss), 80% hitter 1.04 | — |
+| P2-09 | DEF-10 league bonus fades to 0.7% | done | `winBonusShare` per league | regular 6.8-18.7% of a raid at Keeps 5-15 | casual model at Keep 5 (Cedar) 4% |
+| P2-10 | DEF-12 struggling player's opponents never ease | done | `lossStreakSlack` (camp-housing deployments only), device matchmaking | lose-four-then-raid 0.51-0.62× loot per army of playing straight | server fallback keeps its own floor (decision in REQUESTS); not re-measured per hour |
+| P2-11 | DEF-13 Next priced a Keep too high | done | fee by the earned-strength Keep (state both sides hold) | fee ÷ mean offer K5 4.82 → 1.93%, K15 3.32 → 1.88% | — |
+| P2-12 | DEF-07 no raids with a server | **open** | design only (`docs/backend/REQUESTS.md`) | — | **online, defense does nothing until it ships** |
+| P2-13 | optional: towers in Provisions | skipped | reverted | the model never pays in Provisions, so its pace cannot show the effect | needs a policy that pays towers in Provisions |
+| P2-14 | the garrison crew | done | `economy.garrisonCrew` 2 (defense, trap, support); top-up, objective chip and offer trigger see it | fortress Keep 12 1.34× → 1.15-1.17× the rusher's days with the crew | second builder queue on screen is P6-12 |
+| P2-15 | UIS-07 the first raid carries 85% | done | full carry under two trainable roles; the result screen reads the record | tests | the pending screen reads the roles at battle end, the settlement at settling |
+
+**E26 and PS-1, corrected (dated record; the 2026-11-13 statements above stay as written).** E26 ("is defense worth building? measured: no") is now answered by the fortress campaign: a fortress layout holds 45% of raids at Keeps 9-15 against 0% for the rusher, loses 0.55× the rusher's share of its loot and reaches Keep 12 1.15× slower, with the garrison crew. PS-1's "rusher ≥ 1.1× the defender's days" assertion measured the wrong thing (defense was asked to slow the rusher down); it is replaced by the three gates above. Both answers hold for bot raids only, offline (P2-12).
+
+**Carried red (gates unchanged, to be fixed in Phase 3, which moves the same quantities):** on the final Phase 2 campaign, regular Keep 3 0.83★ (gate 0.9) and the Keep 3 cliff gate (1.2), casual Keep 4 0.86★, regular_defender Keep 7 0.88★, casual Keep 8 59% three-stars (gate 50%), and `test:slow`'s Keep 3 check. One-at-a-time ablations (crew, first-raid carry, losing streak, league share) leave Keep 3 unchanged; the casual Keep 8 rate swings 13-59% across them.
+
+Translations: none needed (no player-visible text changed in this phase; `npm run i18n:extract` unchanged at 682 data strings).
+
+**Independent review (section 0.5), 2026-11-18**, of `8b072ca^..37cebf3`:
+
+| # | Finding | Outcome |
+|---|---|---|
+| 1 | high: a forged defense record made Settle the score pay unlimited Jade (any resource, no expiry for future dates) | fixed `e3faea0`: Coins and Provisions only, ≤ 2× the storage loot cap, future-dated records refused; test |
+| 2 | high: the per-star hold reward for real raids could be minted by an alt's 0-star raids | fixed `e3faea0`: once per attacker per defender per UTC day (server-set `holdReward`); test |
+| 3 | medium: two of the phase's tests failed at the reviewed commit (P2-13 tower test; P2-09 at Keep 15, 22.6%) and five campaign gates are red | fixed `8296584` (shares 0.095; test restated, then reverted with P2-13); the five gates are the carried red above |
+| 4 | medium: the losing streak counted a one-warrior army | fixed `e3faea0`: against camp housing; test |
+| 5 | medium: the Next fee read honor and the battle log, which server and device do not always share | fixed `e3faea0` |
+| 6 | medium: P2-13 measured by a model that never pays in Provisions | P2-13 reverted, skipped `bee66b1` |
+| 7 | medium: keeping 10 battle records changes every campaign's opponents | kept (the model now plays the live rules), recorded above: earlier gate history is not comparable |
+| 8 | medium: items marked done whose "Done when" is not met (P2-01 criterion 3, P2-07 Keep 5, P2-09 casual Keep 5, P2-04 numbers from two runs) | ledger and this record corrected (P2-01 and P2-07 partial) |
+| 9 | low: a lost bot raid plus a 3★ rematch breaks even minus the army | recorded (P2-07 row) |
+| 10 | low: "Keep-1 to Keep" comments; alternates start at defender Keep 8 | comment corrected with Phase 3's first commit; recorded (P2-03 row) |
+| 11 | low: the crew suppressed the artisan offer for overflow builds | fixed `e3faea0` |
+| 12 | low: pending result screen and settlement read roles at different times | recorded (P2-15 row) |
+
+Checks on the phase's last commit: the touched suites (`tests/gameplay/sim`, `control`, `backend/server`, `architecture`) pass except the carried campaign gates and the status file (regenerated with Phase 3); `npm run typecheck:server` and lint on touched files clean. Not run for this phase alone: a full `npm run build` and the Postgres suites (run at the end of Phase 3, which follows directly and shares the campaign).
