@@ -23,7 +23,7 @@
   "tutorial.end.button": { "en": "Finish", "text": "പൂർത്തിയാക്കുക" },
   "tutorial.skip": { "en": "Skip tutorial", "text": "ട്യൂട്ടോറിയൽ ഒഴിവാക്കുക" },
   "kind.practice": { "en": "Practice", "text": "പരിശീലനം" },
-  "whatsNew.0_1_0": { "en": "What's new: send your squad in with one order, watch the fight up close or faster, and see what another entry point would have done. Every raid on your village now has a report, and you can test your defenses. New: a four-week event calendar with festivals, a weekly Gauntlet, daily contracts, achievements, Keep seals and looks to earn.", "text": "" },
+  "whatsNew.0_1_0": { "en": "What's new: send your squad in with one order, watch the fight up close or faster, and see what another entry point would have done. Every raid on your village now has a report, and you can test your defenses. New: a four-week event calendar with festivals, a weekly Gauntlet, daily contracts, achievements, Keep seals and looks to earn.", "text": "പുതിയതെന്ത്: ഒറ്റ ഉത്തരവിൽ നിങ്ങളുടെ സംഘത്തെ അയയ്ക്കുക, പോരാട്ടം അടുത്തുനിന്നോ വേഗത്തിലോ കാണുക, മറ്റൊരു കേന്ദ്രത്തിലൂടെ പോയിരുന്നെങ്കിൽ എന്ത് സംഭവിക്കുമായിരുന്നു എന്ന് നോക്കുക. നിങ്ങളുടെ ഗ്രാമത്തിനു നേരെയുള്ള ഓരോ റെയ്ഡിനും ഇപ്പോൾ ഒരു റിപ്പോർട്ടുണ്ട്, നിങ്ങളുടെ പ്രതിരോധം പരീക്ഷിക്കുകയും ചെയ്യാം. പുതിയത്: ഉത്സവങ്ങളുള്ള നാലാഴ്ചത്തെ ഇവന്റ് കലണ്ടർ, ആഴ്ചതോറുമുള്ള കടമ്പപ്പാത, ദിവസ കരാറുകൾ, നേട്ടങ്ങൾ, കോട്ട മുദ്രകൾ, നേടാനുള്ള രൂപങ്ങൾ." },
   "trials.ladder": { "en": "The ladder ahead", "text": "മുന്നിലുള്ള ഏണി" },
   "trials.cleared": { "en": "Cleared: tiers 1 to {best}", "text": "കടന്ന ഘട്ടങ്ങൾ: 1–{best}" },
   "milestone.keep": { "en": "Clan Keep Lv {level}!", "text": "കുലക്കോട്ട Lv {level}!" },

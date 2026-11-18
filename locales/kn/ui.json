@@ -23,7 +23,7 @@
   "tutorial.end.button": { "en": "Finish", "text": "ಮುಗಿಸಿ" },
   "tutorial.skip": { "en": "Skip tutorial", "text": "ಟ್ಯುಟೋರಿಯಲ್ ಬಿಡಿ" },
   "kind.practice": { "en": "Practice", "text": "ಅಭ್ಯಾಸ" },
-  "whatsNew.0_1_0": { "en": "What's new: send your squad in with one order, watch the fight up close or faster, and see what another entry point would have done. Every raid on your village now has a report, and you can test your defenses. New: a four-week event calendar with festivals, a weekly Gauntlet, daily contracts, achievements, Keep seals and looks to earn.", "text": "" },
+  "whatsNew.0_1_0": { "en": "What's new: send your squad in with one order, watch the fight up close or faster, and see what another entry point would have done. Every raid on your village now has a report, and you can test your defenses. New: a four-week event calendar with festivals, a weekly Gauntlet, daily contracts, achievements, Keep seals and looks to earn.", "text": "ಹೊಸದೇನು: ಒಂದೇ ಆದೇಶದಲ್ಲಿ ನಿಮ್ಮ ದಳವನ್ನು ಒಳಗೆ ಕಳುಹಿಸಿ, ಕದನವನ್ನು ಹತ್ತಿರದಿಂದ ಅಥವಾ ವೇಗವಾಗಿ ನೋಡಿ, ಮತ್ತು ಬೇರೆ ತಾಣದ ಮೂಲಕ ಹೋಗಿದ್ದರೆ ಏನಾಗುತ್ತಿತ್ತು ಎಂದು ತಿಳಿಯಿರಿ. ನಿಮ್ಮ ಗ್ರಾಮದ ಮೇಲಿನ ಪ್ರತಿ ದಾಳಿಗೂ ಈಗ ವರದಿ ಇದೆ, ಮತ್ತು ನಿಮ್ಮ ರಕ್ಷಣೆಯನ್ನು ಪರೀಕ್ಷಿಸಬಹುದು. ಹೊಸದಾಗಿ: ಹಬ್ಬಗಳಿರುವ ನಾಲ್ಕು ವಾರಗಳ ಘಟನೆ ಕ್ಯಾಲೆಂಡರ್, ವಾರದ ಮಹಾ ಸವಾಲು, ದೈನಂದಿನ ಒಪ್ಪಂದಗಳು, ಸಾಧನೆಗಳು, ಕೋಟೆಯ ಮುದ್ರೆಗಳು ಮತ್ತು ಗಳಿಸಬಹುದಾದ ರೂಪಗಳು." },
   "trials.ladder": { "en": "The ladder ahead", "text": "ಮುಂದಿನ ಏಣಿ" },
   "trials.cleared": { "en": "Cleared: tiers 1 to {best}", "text": "ಗೆದ್ದ ಹಂತಗಳು: 1–{best}" },
   "milestone.keep": { "en": "Clan Keep Lv {level}!", "text": "ಕುಲದ ಕೋಟೆ ಮಟ್ಟ {level}!" },
