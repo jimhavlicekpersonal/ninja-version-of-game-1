@@ -45,6 +45,8 @@ jobs:
         env:
           # Set this repository variable to your PvP server's URL to turn on online play.
           VITE_SERVER_URL: ${{ vars.VITE_SERVER_URL }}
+          # P7-09: the game's public address (https://...): absolute og:image, twitter:image and og:url for link previews.
+          VITE_PUBLIC_URL: ${{ vars.VITE_PUBLIC_URL }}
           # Store listings for "Update Kagemura" (roadmap step 75); set once the listings exist.
           VITE_APP_STORE_URL: ${{ vars.VITE_APP_STORE_URL }}
           VITE_PLAY_STORE_URL: ${{ vars.VITE_PLAY_STORE_URL }}

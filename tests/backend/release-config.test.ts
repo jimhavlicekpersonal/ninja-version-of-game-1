@@ -322,3 +322,22 @@ describe('P7-15: plain-text native settings that cannot be compiled here', () =>
     expect(read('ios/App/App/AppDelegate.swift')).toMatch(/setCategory\(\.ambient/);
   });
 });
+
+describe('P7-09 (PUB-12): link previews and install screenshots', () => {
+  it('the manifest lists two screenshots that exist, narrow and wide, kept out of the precache', () => {
+    const m = JSON.parse(read('public/manifest.webmanifest')) as { screenshots: { src: string; form_factor: string; sizes: string }[] };
+    expect(m.screenshots.map((s) => s.form_factor).sort()).toEqual(['narrow', 'wide']);
+    const cfg = read('vite.config.ts');
+    for (const s of m.screenshots) {
+      expect(readFileSync(new URL(`../../public/${s.src}`, import.meta.url)).length).toBeLessThan(150_000);
+      expect(cfg).toContain(`'${s.src}'`);
+    }
+    expect(read('tools/i18n/build.mjs')).toMatch(/screenshots: manifest\.screenshots\.map/);
+  });
+  it('a build with VITE_PUBLIC_URL writes absolute og:image, twitter:image and og:url; deploy passes it', () => {
+    const cfg = read('vite.config.ts');
+    expect(cfg).toMatch(/absoluteLinkPreview\(process\.env\.VITE_PUBLIC_URL\)/);
+    expect(cfg).toMatch(/og:url/);
+    expect(read('.github/workflows/deploy.yml')).toMatch(/VITE_PUBLIC_URL: \$\{\{ vars\.VITE_PUBLIC_URL \}\}/);
+  });
+});
