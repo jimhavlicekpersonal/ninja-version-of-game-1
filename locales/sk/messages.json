@@ -697,7 +697,6 @@
   "sim.you_have_all_the_village_artisans_you__ca4070d4a7": { "en": "You have all the Village Artisans you can hire.", "text": "Máš všetkých Remeselníkov, ktorých môžeš najať." },
   "sim.you_have_used_both_alliance_war_attack_d6ede0593a": { "en": "You have used both Alliance War attacks.", "text": "Oba útoky vo Vojne aliancií sú vyčerpané." },
   "sim.you_joined_829a54399a": { "en": "You joined {arg1}!", "text": "Členstvo potvrdené: {arg1}!" },
-  "sim.you_ve_opened_today_s_chest_a_new_one__55f50ec652": { "en": "You've opened today's chest. A new one is ready at the start of the next day (UTC).", "text": "Dnešná truhlica je už otvorená. Nová bude pripravená na začiatku ďalšieho dňa (UTC)." },
   "sim.your_alliance_lodge_is_full_6f3ca3b404": { "en": "Your Alliance Lodge is full.", "text": "Tvoje Sídlo aliancie je plné." },
   "sim.your_army_is_ready_f50ad8c7f1": { "en": "Your army is ready", "text": "Tvoja armáda je pripravená" },
   "sim.your_clan_stipend_still_has_payments_t_d997968533": { "en": "Your Clan Stipend still has payments to claim. You can buy another when they are all claimed.", "text": "Tvoj Klanový žold má ešte nevyzdvihnuté platby. Ďalší môžeš kúpiť, keď budú všetky vyzdvihnuté." },
@@ -2100,5 +2099,19 @@
   "srv.import.refused": { "en": "This village cannot move to the server: {detail}", "text": "Túto dedinu nemožno presunúť na server: {detail}" },
   "srv.import.too_new": { "en": "A village at Keep {keep} can move to the server once this online account is {days} days old (in {wait, plural, one {# day} other {# days}}). It stays on this device meanwhile: keep playing, and the game tries again each day.", "text": "Dedina s Pevnosťou {keep} sa môže presunúť na server, keď bude tento online účet starý {days} dní (o {wait, plural, one {# deň} few {# dni} many {# dňa} other {# dní}}). Medzitým zostáva v tomto zariadení: hraj ďalej a hra to skúsi znova každý deň." },
   "common.buyNext": { "en": "Buy & Next {n} ", "text": "Kúpiť: Ďalšie {n} " },
-  "common.buyFill": { "en": "Buy & Fill {n} ", "text": "Kúpiť: Doplniť {n} " }
+  "common.buyFill": { "en": "Buy & Fill {n} ", "text": "Kúpiť: Doplniť {n} " },
+  "sim.only_walls_and_traps_can_be_paid_in_prov_e809aeabdf": { "en": "Only walls and traps can be paid in Provisions.", "text": "Zásobami možno zaplatiť len hradby a pasce." },
+  "sim.choosing_a_hero_is_not_available_yet_27abc790aa": { "en": "Choosing a hero is not available yet.", "text": "Výber hrdinu zatiaľ nie je dostupný." },
+  "sim.unknown_hero_6cc0c367da": { "en": "Unknown hero.", "text": "Neznámy hrdina." },
+  "sim.this_hero_joins_from_keep_arg1_b12afb3aa8": { "en": "This hero joins from Keep {arg1}.", "text": "Tento hrdina sa pridá od Pevnosti {arg1}." },
+  "sim.build_a_hero_hall_first_a589773dbb": { "en": "Build a Hero Hall first.", "text": "Najprv postav Sieň hrdinu." },
+  "sim.this_keep_is_already_sealed_051c6a8626": { "en": "This Keep is already sealed.", "text": "Táto Pevnosť je už zapečatená." },
+  "sim.build_every_building_this_keep_allows_to_93eea11b5b": { "en": "Build every building this Keep allows to its cap first ({arg1} of {arg2}).", "text": "Najprv vylepši každú budovu, ktorú táto Pevnosť povoľuje, na maximum ({arg1} z {arg2})." },
+  "sim.this_purchase_was_already_refunded_05408e619d": { "en": "This purchase was already refunded.", "text": "Za tento nákup už boli peniaze vrátené." },
+  "sim.this_look_is_earned_in_play_never_sold_9025163fca": { "en": "This look is earned in play, never sold.", "text": "Tento vzhľad sa získava hraním, nikdy sa nepredáva." },
+  "sim.you_ve_opened_today_s_chest_a_new_one_is_b4753d2b3f": { "en": "You've opened today's chest. A new one is ready when your next day starts.", "text": "Dnešná truhlica je už otvorená. Nová bude pripravená, keď sa začne tvoj ďalší deň." },
+  "sim.trial_fortress_damage_is_not_allowed_05759d6468": { "en": "Trial fortress damage is not allowed.", "text": "Poškodenie pevnosti skúšky nie je povolené." },
+  "sim.there_is_no_daily_drill_49086be800": { "en": "There is no daily drill.", "text": "Denný tréning nie je k dispozícii." },
+  "sim.too_long_ago_146e28a63e": { "en": "Too long ago.", "text": "Príliš dávno." },
+  "sim.build_a_training_dojo_and_a_squad_courty_ad04d756ab": { "en": "Build a Training Dojo and a Squad Courtyard first.", "text": "Najprv postav Výcvikové dojo a Nádvorie oddielov." }
 }

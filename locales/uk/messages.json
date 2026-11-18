@@ -697,7 +697,6 @@
   "sim.you_have_all_the_village_artisans_you__ca4070d4a7": { "en": "You have all the Village Artisans you can hire.", "text": "У тебе вже всі Сільські майстри, яких можна найняти." },
   "sim.you_have_used_both_alliance_war_attack_d6ede0593a": { "en": "You have used both Alliance War attacks.", "text": "Обидві атаки у Війні альянсів використано." },
   "sim.you_joined_829a54399a": { "en": "You joined {arg1}!", "text": "Вітаємо в «{arg1}»!" },
-  "sim.you_ve_opened_today_s_chest_a_new_one__55f50ec652": { "en": "You've opened today's chest. A new one is ready at the start of the next day (UTC).", "text": "Сьогоднішню скриню відкрито. Нова буде готова на початку наступного дня (UTC)." },
   "sim.your_alliance_lodge_is_full_6f3ca3b404": { "en": "Your Alliance Lodge is full.", "text": "Твоя Зала альянсу заповнена." },
   "sim.your_army_is_ready_f50ad8c7f1": { "en": "Your army is ready", "text": "Твоя армія готова" },
   "sim.your_clan_stipend_still_has_payments_t_d997968533": { "en": "Your Clan Stipend still has payments to claim. You can buy another when they are all claimed.", "text": "У твоїй Платні клану ще є виплати, які можна забрати. Купити нову можна, коли їх усі буде забрано." },
@@ -2100,5 +2099,19 @@
   "srv.import.refused": { "en": "This village cannot move to the server: {detail}", "text": "Це село не можна перенести на сервер: {detail}" },
   "srv.import.too_new": { "en": "A village at Keep {keep} can move to the server once this online account is {days} days old (in {wait, plural, one {# day} other {# days}}). It stays on this device meanwhile: keep playing, and the game tries again each day.", "text": "Село з Твердинею рів. {keep} можна перенести на сервер, коли цьому онлайн-обліковому запису виповниться {days} дн. (через {wait, plural, one {# день} few {# дні} many {# днів} other {# дня}}). Доти воно лишається на цьому пристрої: грай далі, а гра пробуватиме знову щодня." },
   "common.buyNext": { "en": "Buy & Next {n} ", "text": "Купити: Далі {n} " },
-  "common.buyFill": { "en": "Buy & Fill {n} ", "text": "Купити: Заповнити {n} " }
+  "common.buyFill": { "en": "Buy & Fill {n} ", "text": "Купити: Заповнити {n} " },
+  "sim.only_walls_and_traps_can_be_paid_in_prov_e809aeabdf": { "en": "Only walls and traps can be paid in Provisions.", "text": "Провіантом можна платити лише за мури й пастки." },
+  "sim.choosing_a_hero_is_not_available_yet_27abc790aa": { "en": "Choosing a hero is not available yet.", "text": "Вибір героя поки недоступний." },
+  "sim.unknown_hero_6cc0c367da": { "en": "Unknown hero.", "text": "Невідомий герой." },
+  "sim.this_hero_joins_from_keep_arg1_b12afb3aa8": { "en": "This hero joins from Keep {arg1}.", "text": "Цей герой приєднується з Твердині рів. {arg1}." },
+  "sim.build_a_hero_hall_first_a589773dbb": { "en": "Build a Hero Hall first.", "text": "Спершу збудуй Залу героя." },
+  "sim.this_keep_is_already_sealed_051c6a8626": { "en": "This Keep is already sealed.", "text": "Цю Твердиню вже запечатано." },
+  "sim.build_every_building_this_keep_allows_to_93eea11b5b": { "en": "Build every building this Keep allows to its cap first ({arg1} of {arg2}).", "text": "Спершу покращ кожну будівлю, яку дозволяє ця Твердиня, до максимального рівня ({arg1} з {arg2})." },
+  "sim.this_purchase_was_already_refunded_05408e619d": { "en": "This purchase was already refunded.", "text": "Кошти за цю покупку вже повернуто." },
+  "sim.this_look_is_earned_in_play_never_sold_9025163fca": { "en": "This look is earned in play, never sold.", "text": "Цей вигляд здобувається в грі й ніколи не продається." },
+  "sim.you_ve_opened_today_s_chest_a_new_one_is_b4753d2b3f": { "en": "You've opened today's chest. A new one is ready when your next day starts.", "text": "Сьогоднішню скриню вже відкрито. Нова буде готова, коли почнеться твій наступний день." },
+  "sim.trial_fortress_damage_is_not_allowed_05759d6468": { "en": "Trial fortress damage is not allowed.", "text": "Пошкодження фортеці випробувань не дозволено." },
+  "sim.there_is_no_daily_drill_49086be800": { "en": "There is no daily drill.", "text": "Щоденного вишколу немає." },
+  "sim.too_long_ago_146e28a63e": { "en": "Too long ago.", "text": "Надто давно." },
+  "sim.build_a_training_dojo_and_a_squad_courty_ad04d756ab": { "en": "Build a Training Dojo and a Squad Courtyard first.", "text": "Спершу збудуй Тренувальне додзьо і Двір загону." }
 }

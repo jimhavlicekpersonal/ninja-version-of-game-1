@@ -697,7 +697,6 @@
   "sim.you_have_all_the_village_artisans_you__ca4070d4a7": { "en": "You have all the Village Artisans you can hire.", "text": "Tutabileceğin tüm Köy Zanaatkârlarına sahipsin." },
   "sim.you_have_used_both_alliance_war_attack_d6ede0593a": { "en": "You have used both Alliance War attacks.", "text": "İki İttifak Savaşı saldırını da kullandın." },
   "sim.you_joined_829a54399a": { "en": "You joined {arg1}!", "text": "Katıldın: {arg1}!" },
-  "sim.you_ve_opened_today_s_chest_a_new_one__55f50ec652": { "en": "You've opened today's chest. A new one is ready at the start of the next day (UTC).", "text": "Bugünün sandığını açtın. Yenisi sonraki günün başında (UTC) hazır olur." },
   "sim.your_alliance_lodge_is_full_6f3ca3b404": { "en": "Your Alliance Lodge is full.", "text": "İttifak Konağın dolu." },
   "sim.your_army_is_ready_f50ad8c7f1": { "en": "Your army is ready", "text": "Ordun hazır" },
   "sim.your_clan_stipend_still_has_payments_t_d997968533": { "en": "Your Clan Stipend still has payments to claim. You can buy another when they are all claimed.", "text": "Klan Maaşında hâlâ alınacak ödemeler var. Hepsi alınınca yenisini satın alabilirsin." },
@@ -2100,5 +2099,19 @@
   "srv.import.refused": { "en": "This village cannot move to the server: {detail}", "text": "Bu köy sunucuya taşınamaz: {detail}" },
   "srv.import.too_new": { "en": "A village at Keep {keep} can move to the server once this online account is {days} days old (in {wait, plural, one {# day} other {# days}}). It stays on this device meanwhile: keep playing, and the game tries again each day.", "text": "Kale seviyesi {keep} olan bir köy, bu çevrim içi hesap {days} günlük olduğunda sunucuya taşınabilir (kalan: {wait, plural, one {# gün} other {# gün}}). Bu arada köy bu cihazda kalır: oynamaya devam et, oyun her gün yeniden dener." },
   "common.buyNext": { "en": "Buy & Next {n} ", "text": "Satın al ve Sonraki: {n} " },
-  "common.buyFill": { "en": "Buy & Fill {n} ", "text": "Satın al ve Doldur: {n} " }
+  "common.buyFill": { "en": "Buy & Fill {n} ", "text": "Satın al ve Doldur: {n} " },
+  "sim.only_walls_and_traps_can_be_paid_in_prov_e809aeabdf": { "en": "Only walls and traps can be paid in Provisions.", "text": "Erzakla yalnızca surlar ve tuzaklar ödenebilir." },
+  "sim.choosing_a_hero_is_not_available_yet_27abc790aa": { "en": "Choosing a hero is not available yet.", "text": "Kahraman seçmek henüz mümkün değil." },
+  "sim.unknown_hero_6cc0c367da": { "en": "Unknown hero.", "text": "Bilinmeyen kahraman." },
+  "sim.this_hero_joins_from_keep_arg1_b12afb3aa8": { "en": "This hero joins from Keep {arg1}.", "text": "Bu kahraman Kale Sv. {arg1} itibarıyla katılır." },
+  "sim.build_a_hero_hall_first_a589773dbb": { "en": "Build a Hero Hall first.", "text": "Önce bir Kahraman Salonu inşa et." },
+  "sim.this_keep_is_already_sealed_051c6a8626": { "en": "This Keep is already sealed.", "text": "Bu Kale zaten mühürlendi." },
+  "sim.build_every_building_this_keep_allows_to_93eea11b5b": { "en": "Build every building this Keep allows to its cap first ({arg1} of {arg2}).", "text": "Önce bu Kale'nin izin verdiği her binayı en üst seviyesine çıkar ({arg1}/{arg2})." },
+  "sim.this_purchase_was_already_refunded_05408e619d": { "en": "This purchase was already refunded.", "text": "Bu satın alma zaten iade edildi." },
+  "sim.this_look_is_earned_in_play_never_sold_9025163fca": { "en": "This look is earned in play, never sold.", "text": "Bu görünüm oynayarak kazanılır, asla satılmaz." },
+  "sim.you_ve_opened_today_s_chest_a_new_one_is_b4753d2b3f": { "en": "You've opened today's chest. A new one is ready when your next day starts.", "text": "Bugünün sandığını açtın. Yeni günün başladığında yenisi hazır olur." },
+  "sim.trial_fortress_damage_is_not_allowed_05759d6468": { "en": "Trial fortress damage is not allowed.", "text": "Sınav kalesi hasarına izin verilmiyor." },
+  "sim.there_is_no_daily_drill_49086be800": { "en": "There is no daily drill.", "text": "Günlük antrenman yok." },
+  "sim.too_long_ago_146e28a63e": { "en": "Too long ago.", "text": "Çok uzun zaman önce." },
+  "sim.build_a_training_dojo_and_a_squad_courty_ad04d756ab": { "en": "Build a Training Dojo and a Squad Courtyard first.", "text": "Önce bir Eğitim Dojosu ve bir Bölük Avlusu inşa et." }
 }

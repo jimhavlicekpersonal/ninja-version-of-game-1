@@ -697,7 +697,6 @@
   "sim.you_have_all_the_village_artisans_you__ca4070d4a7": { "en": "You have all the Village Artisans you can hire.", "text": "നിയമിക്കാവുന്ന എല്ലാ ഗ്രാമശില്പികളും നിങ്ങൾക്കുണ്ട്." },
   "sim.you_have_used_both_alliance_war_attack_d6ede0593a": { "en": "You have used both Alliance War attacks.", "text": "നിങ്ങൾ രണ്ട് സഖ്യയുദ്ധ ആക്രമണങ്ങളും ഉപയോഗിച്ചു." },
   "sim.you_joined_829a54399a": { "en": "You joined {arg1}!", "text": "നിങ്ങൾ ചേർന്നു: {arg1}!" },
-  "sim.you_ve_opened_today_s_chest_a_new_one__55f50ec652": { "en": "You've opened today's chest. A new one is ready at the start of the next day (UTC).", "text": "ഇന്നത്തെ പെട്ടി നിങ്ങൾ തുറന്നു. അടുത്ത ദിവസത്തിന്റെ തുടക്കത്തിൽ (UTC) പുതിയത് തയ്യാറാകും." },
   "sim.your_alliance_lodge_is_full_6f3ca3b404": { "en": "Your Alliance Lodge is full.", "text": "നിങ്ങളുടെ സഖ്യമന്ദിരം നിറഞ്ഞു." },
   "sim.your_army_is_ready_f50ad8c7f1": { "en": "Your army is ready", "text": "നിങ്ങളുടെ സേന തയ്യാർ" },
   "sim.your_clan_stipend_still_has_payments_t_d997968533": { "en": "Your Clan Stipend still has payments to claim. You can buy another when they are all claimed.", "text": "നിങ്ങളുടെ കുല വേതനത്തിൽ ഇനിയും ക്ലെയിം ചെയ്യാൻ തവണകളുണ്ട്. അവയെല്ലാം ക്ലെയിം ചെയ്തശേഷം മറ്റൊന്ന് വാങ്ങാം." },
@@ -2100,5 +2099,19 @@
   "srv.import.refused": { "en": "This village cannot move to the server: {detail}", "text": "ഈ ഗ്രാമം സെർവറിലേക്ക് മാറ്റാനാകില്ല: {detail}" },
   "srv.import.too_new": { "en": "A village at Keep {keep} can move to the server once this online account is {days} days old (in {wait, plural, one {# day} other {# days}}). It stays on this device meanwhile: keep playing, and the game tries again each day.", "text": "കോട്ട {keep} ലെവലിലുള്ള ഗ്രാമം, ഈ ഓൺലൈൻ അക്കൗണ്ടിന് {days} ദിവസം പഴക്കമായാൽ സെർവറിലേക്ക് മാറ്റാം ({wait, plural, one {# ദിവസത്തിനകം} other {# ദിവസത്തിനകം}}). അതുവരെ ഇത് ഈ ഉപകരണത്തിൽ തുടരും: കളി തുടരുക, ഗെയിം ദിവസവും വീണ്ടും ശ്രമിക്കും." },
   "common.buyNext": { "en": "Buy & Next {n} ", "text": "വാങ്ങി അടുത്തത് {n} " },
-  "common.buyFill": { "en": "Buy & Fill {n} ", "text": "വാങ്ങി നിറയ്ക്കുക {n} " }
+  "common.buyFill": { "en": "Buy & Fill {n} ", "text": "വാങ്ങി നിറയ്ക്കുക {n} " },
+  "sim.only_walls_and_traps_can_be_paid_in_prov_e809aeabdf": { "en": "Only walls and traps can be paid in Provisions.", "text": "മതിലുകൾക്കും കെണികൾക്കും മാത്രമേ ധാന്യം കൊണ്ട് പണം നൽകാനാകൂ." },
+  "sim.choosing_a_hero_is_not_available_yet_27abc790aa": { "en": "Choosing a hero is not available yet.", "text": "വീരനെ തിരഞ്ഞെടുക്കാൻ ഇപ്പോൾ കഴിയില്ല." },
+  "sim.unknown_hero_6cc0c367da": { "en": "Unknown hero.", "text": "അജ്ഞാത വീരൻ." },
+  "sim.this_hero_joins_from_keep_arg1_b12afb3aa8": { "en": "This hero joins from Keep {arg1}.", "text": "ഈ വീരൻ കോട്ട {arg1} മുതൽ ചേരും." },
+  "sim.build_a_hero_hall_first_a589773dbb": { "en": "Build a Hero Hall first.", "text": "ആദ്യം ഒരു വീരമണ്ഡപം നിർമ്മിക്കുക." },
+  "sim.this_keep_is_already_sealed_051c6a8626": { "en": "This Keep is already sealed.", "text": "ഈ കോട്ടയ്ക്ക് ഇതിനകം മുദ്ര ലഭിച്ചു." },
+  "sim.build_every_building_this_keep_allows_to_93eea11b5b": { "en": "Build every building this Keep allows to its cap first ({arg1} of {arg2}).", "text": "ആദ്യം ഈ കോട്ട അനുവദിക്കുന്ന എല്ലാ കെട്ടിടങ്ങളും പരമാവധി ലെവലിലെത്തിക്കുക (ആകെ {arg2}, പൂർത്തിയായത് {arg1})." },
+  "sim.this_purchase_was_already_refunded_05408e619d": { "en": "This purchase was already refunded.", "text": "ഈ വാങ്ങലിന് ഇതിനകം പണം തിരികെ നൽകി." },
+  "sim.this_look_is_earned_in_play_never_sold_9025163fca": { "en": "This look is earned in play, never sold.", "text": "ഈ രൂപം കളിച്ച് നേടുന്നതാണ്, ഒരിക്കലും വിൽക്കില്ല." },
+  "sim.you_ve_opened_today_s_chest_a_new_one_is_b4753d2b3f": { "en": "You've opened today's chest. A new one is ready when your next day starts.", "text": "ഇന്നത്തെ പെട്ടി നിങ്ങൾ തുറന്നു. നിങ്ങളുടെ അടുത്ത ദിവസം തുടങ്ങുമ്പോൾ പുതിയത് തയ്യാറാകും." },
+  "sim.trial_fortress_damage_is_not_allowed_05759d6468": { "en": "Trial fortress damage is not allowed.", "text": "പരീക്ഷാ കോട്ടയ്ക്ക് കേടുപാട് അനുവദനീയമല്ല." },
+  "sim.there_is_no_daily_drill_49086be800": { "en": "There is no daily drill.", "text": "ദിവസ അഭ്യാസം ഇല്ല." },
+  "sim.too_long_ago_146e28a63e": { "en": "Too long ago.", "text": "വളരെ മുൻപാണ്." },
+  "sim.build_a_training_dojo_and_a_squad_courty_ad04d756ab": { "en": "Build a Training Dojo and a Squad Courtyard first.", "text": "ആദ്യം ഒരു പരിശീലന ഡോജോയും ഒരു സംഘമുറ്റവും നിർമ്മിക്കുക." }
 }

@@ -28,6 +28,8 @@ Standaard-Nederlands met *je/jij* en *jouw* (kleine letter, ook in de juridische
 | Settings / Store / Online play / Sign-ins | Instellingen / Winkel / Online spelen / Aanmeldingen |
 | Privacy and help / moderators / staff | Privacy en hulp / moderators / staff |
 | Player ID / save code / Deleted player | Speler-ID / opslagcode / Verwijderde speler |
+| The Gauntlet / Bounty Hunt / festival fortress | De Vuurproef / Premiejacht / feestvesting |
+| Daily contract / Keep seal / Warrior Mastery rank | Dagcontract / Burchtzegel / Rang |
 
 Kagemura: Ninja Clans, Apple, Google, Game Center, Play Games, App Store en Google Play blijven onveranderd. Japanse namen, Shinobi, Kage, Oni, Sensei, Dojo, Yagura en Codex worden zo gebruikt.
 

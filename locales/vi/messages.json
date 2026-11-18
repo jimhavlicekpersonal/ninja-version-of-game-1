@@ -697,7 +697,6 @@
   "sim.you_have_all_the_village_artisans_you__ca4070d4a7": { "en": "You have all the Village Artisans you can hire.", "text": "Bạn đã thuê đủ mọi Thợ Làng có thể thuê." },
   "sim.you_have_used_both_alliance_war_attack_d6ede0593a": { "en": "You have used both Alliance War attacks.", "text": "Bạn đã dùng cả hai lượt tấn công Liên Minh Chiến." },
   "sim.you_joined_829a54399a": { "en": "You joined {arg1}!", "text": "Bạn đã gia nhập {arg1}!" },
-  "sim.you_ve_opened_today_s_chest_a_new_one__55f50ec652": { "en": "You've opened today's chest. A new one is ready at the start of the next day (UTC).", "text": "Bạn đã mở rương hôm nay. Rương mới sẵn sàng khi ngày mới bắt đầu (UTC)." },
   "sim.your_alliance_lodge_is_full_6f3ca3b404": { "en": "Your Alliance Lodge is full.", "text": "Hội Quán Liên Minh của bạn đã đầy." },
   "sim.your_army_is_ready_f50ad8c7f1": { "en": "Your army is ready", "text": "Quân đội của bạn đã sẵn sàng" },
   "sim.your_clan_stipend_still_has_payments_t_d997968533": { "en": "Your Clan Stipend still has payments to claim. You can buy another when they are all claimed.", "text": "Bổng Lộc Gia Tộc của bạn vẫn còn lần nhận. Có thể mua cái khác khi đã nhận hết." },
@@ -2100,5 +2099,19 @@
   "srv.import.refused": { "en": "This village cannot move to the server: {detail}", "text": "Ngôi làng này không chuyển lên máy chủ được: {detail}" },
   "srv.import.too_new": { "en": "A village at Keep {keep} can move to the server once this online account is {days} days old (in {wait, plural, one {# day} other {# days}}). It stays on this device meanwhile: keep playing, and the game tries again each day.", "text": "Ngôi làng ở Thành {keep} có thể chuyển lên máy chủ khi tài khoản trực tuyến này được {days} ngày (còn {wait, plural, other {# ngày}}). Trong lúc đó làng vẫn ở trên thiết bị này: cứ chơi tiếp, trò chơi sẽ thử lại mỗi ngày." },
   "common.buyNext": { "en": "Buy & Next {n} ", "text": "Mua & Tiếp {n} " },
-  "common.buyFill": { "en": "Buy & Fill {n} ", "text": "Mua & Bổ sung {n} " }
+  "common.buyFill": { "en": "Buy & Fill {n} ", "text": "Mua & Bổ sung {n} " },
+  "sim.only_walls_and_traps_can_be_paid_in_prov_e809aeabdf": { "en": "Only walls and traps can be paid in Provisions.", "text": "Chỉ tường và bẫy mới có thể trả bằng Lương Thực." },
+  "sim.choosing_a_hero_is_not_available_yet_27abc790aa": { "en": "Choosing a hero is not available yet.", "text": "Chưa thể chọn anh hùng." },
+  "sim.unknown_hero_6cc0c367da": { "en": "Unknown hero.", "text": "Anh hùng không xác định." },
+  "sim.this_hero_joins_from_keep_arg1_b12afb3aa8": { "en": "This hero joins from Keep {arg1}.", "text": "Anh hùng này gia nhập từ Thành cấp {arg1}." },
+  "sim.build_a_hero_hall_first_a589773dbb": { "en": "Build a Hero Hall first.", "text": "Hãy xây Điện Anh Hùng trước." },
+  "sim.this_keep_is_already_sealed_051c6a8626": { "en": "This Keep is already sealed.", "text": "Thành này đã được đóng ấn." },
+  "sim.build_every_building_this_keep_allows_to_93eea11b5b": { "en": "Build every building this Keep allows to its cap first ({arg1} of {arg2}).", "text": "Hãy nâng mọi công trình mà Thành này cho phép lên cấp tối đa trước ({arg1}/{arg2})." },
+  "sim.this_purchase_was_already_refunded_05408e619d": { "en": "This purchase was already refunded.", "text": "Giao dịch mua này đã được hoàn tiền." },
+  "sim.this_look_is_earned_in_play_never_sold_9025163fca": { "en": "This look is earned in play, never sold.", "text": "Ngoại hình này chỉ nhận được khi chơi, không bao giờ được bán." },
+  "sim.you_ve_opened_today_s_chest_a_new_one_is_b4753d2b3f": { "en": "You've opened today's chest. A new one is ready when your next day starts.", "text": "Bạn đã mở rương hôm nay. Rương mới sẽ sẵn sàng khi ngày tiếp theo của bạn bắt đầu." },
+  "sim.trial_fortress_damage_is_not_allowed_05759d6468": { "en": "Trial fortress damage is not allowed.", "text": "Không cho phép mức phá hủy pháo đài thử thách này." },
+  "sim.there_is_no_daily_drill_49086be800": { "en": "There is no daily drill.", "text": "Không có luyện tập hằng ngày." },
+  "sim.too_long_ago_146e28a63e": { "en": "Too long ago.", "text": "Đã quá lâu rồi." },
+  "sim.build_a_training_dojo_and_a_squad_courty_ad04d756ab": { "en": "Build a Training Dojo and a Squad Courtyard first.", "text": "Hãy xây Võ Đường Huấn Luyện và Sân Tập Kết trước." }
 }

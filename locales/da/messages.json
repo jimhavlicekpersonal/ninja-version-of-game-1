@@ -697,7 +697,6 @@
   "sim.you_have_all_the_village_artisans_you__ca4070d4a7": { "en": "You have all the Village Artisans you can hire.", "text": "Du har alle de Landsbyhåndværkere, du kan hyre." },
   "sim.you_have_used_both_alliance_war_attack_d6ede0593a": { "en": "You have used both Alliance War attacks.", "text": "Du har brugt begge dine angreb i Alliancekrigen." },
   "sim.you_joined_829a54399a": { "en": "You joined {arg1}!", "text": "Du gik med i {arg1}!" },
-  "sim.you_ve_opened_today_s_chest_a_new_one__55f50ec652": { "en": "You've opened today's chest. A new one is ready at the start of the next day (UTC).", "text": "Du har åbnet dagens kiste. En ny venter i starten af næste dag (UTC)." },
   "sim.your_alliance_lodge_is_full_6f3ca3b404": { "en": "Your Alliance Lodge is full.", "text": "Din Alliancehal er fuld." },
   "sim.your_army_is_ready_f50ad8c7f1": { "en": "Your army is ready", "text": "Din hær er klar" },
   "sim.your_clan_stipend_still_has_payments_t_d997968533": { "en": "Your Clan Stipend still has payments to claim. You can buy another when they are all claimed.", "text": "Dit Klanstipendium har stadig udbetalinger at hente. Du kan købe et nyt, når de alle er hentet." },
@@ -2100,5 +2099,19 @@
   "srv.import.refused": { "en": "This village cannot move to the server: {detail}", "text": "Denne landsby kan ikke flytte til serveren: {detail}" },
   "srv.import.too_new": { "en": "A village at Keep {keep} can move to the server once this online account is {days} days old (in {wait, plural, one {# day} other {# days}}). It stays on this device meanwhile: keep playing, and the game tries again each day.", "text": "En landsby med Borg {keep} kan flytte til serveren, når denne onlinekonto er {days} dage gammel (om {wait, plural, one {# dag} other {# dage}}). Indtil da bliver den på denne enhed: bliv ved med at spille, spillet prøver igen hver dag." },
   "common.buyNext": { "en": "Buy & Next {n} ", "text": "Køb & Næste {n} " },
-  "common.buyFill": { "en": "Buy & Fill {n} ", "text": "Køb & Fyld {n} " }
+  "common.buyFill": { "en": "Buy & Fill {n} ", "text": "Køb & Fyld {n} " },
+  "sim.only_walls_and_traps_can_be_paid_in_prov_e809aeabdf": { "en": "Only walls and traps can be paid in Provisions.", "text": "Kun mure og fælder kan betales med Proviant." },
+  "sim.choosing_a_hero_is_not_available_yet_27abc790aa": { "en": "Choosing a hero is not available yet.", "text": "Valg af helt er ikke tilgængeligt endnu." },
+  "sim.unknown_hero_6cc0c367da": { "en": "Unknown hero.", "text": "Ukendt helt." },
+  "sim.this_hero_joins_from_keep_arg1_b12afb3aa8": { "en": "This hero joins from Keep {arg1}.", "text": "Denne helt slutter sig til fra Borg {arg1}." },
+  "sim.build_a_hero_hall_first_a589773dbb": { "en": "Build a Hero Hall first.", "text": "Byg først en Heltehal." },
+  "sim.this_keep_is_already_sealed_051c6a8626": { "en": "This Keep is already sealed.", "text": "Denne Borg er allerede forseglet." },
+  "sim.build_every_building_this_keep_allows_to_93eea11b5b": { "en": "Build every building this Keep allows to its cap first ({arg1} of {arg2}).", "text": "Byg først alle bygninger, som denne Borg tillader, op til deres maksimale niveau ({arg1} af {arg2})." },
+  "sim.this_purchase_was_already_refunded_05408e619d": { "en": "This purchase was already refunded.", "text": "Dette køb er allerede refunderet." },
+  "sim.this_look_is_earned_in_play_never_sold_9025163fca": { "en": "This look is earned in play, never sold.", "text": "Dette udseende optjenes i spillet og sælges aldrig." },
+  "sim.you_ve_opened_today_s_chest_a_new_one_is_b4753d2b3f": { "en": "You've opened today's chest. A new one is ready when your next day starts.", "text": "Du har åbnet dagens kiste. En ny venter, når din næste dag begynder." },
+  "sim.trial_fortress_damage_is_not_allowed_05759d6468": { "en": "Trial fortress damage is not allowed.", "text": "Skade på prøvefæstninger er ikke tilladt." },
+  "sim.there_is_no_daily_drill_49086be800": { "en": "There is no daily drill.", "text": "Der er ingen daglig øvelse." },
+  "sim.too_long_ago_146e28a63e": { "en": "Too long ago.", "text": "For længe siden." },
+  "sim.build_a_training_dojo_and_a_squad_courty_ad04d756ab": { "en": "Build a Training Dojo and a Squad Courtyard first.", "text": "Byg først en Træningsdojo og en Troppegård." }
 }

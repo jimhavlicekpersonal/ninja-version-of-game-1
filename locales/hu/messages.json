@@ -697,7 +697,6 @@
   "sim.you_have_all_the_village_artisans_you__ca4070d4a7": { "en": "You have all the Village Artisans you can hire.", "text": "Már az összes felfogadható Falusi mestered megvan." },
   "sim.you_have_used_both_alliance_war_attack_d6ede0593a": { "en": "You have used both Alliance War attacks.", "text": "Mindkét Szövetségi háborús támadásodat felhasználtad." },
   "sim.you_joined_829a54399a": { "en": "You joined {arg1}!", "text": "Csatlakoztál: {arg1}!" },
-  "sim.you_ve_opened_today_s_chest_a_new_one__55f50ec652": { "en": "You've opened today's chest. A new one is ready at the start of the next day (UTC).", "text": "Már kinyitottad a mai ládát. Új láda a következő nap kezdetén vár (UTC)." },
   "sim.your_alliance_lodge_is_full_6f3ca3b404": { "en": "Your Alliance Lodge is full.", "text": "A Szövetségi csarnokod megtelt." },
   "sim.your_army_is_ready_f50ad8c7f1": { "en": "Your army is ready", "text": "A sereged készen áll" },
   "sim.your_clan_stipend_still_has_payments_t_d997968533": { "en": "Your Clan Stipend still has payments to claim. You can buy another when they are all claimed.", "text": "A Klánjáradékodból még vannak átvehető kifizetések. Újat akkor vehetsz, ha mindet átvetted." },
@@ -2100,5 +2099,19 @@
   "srv.import.refused": { "en": "This village cannot move to the server: {detail}", "text": "Ez a falu nem költözhet a szerverre: {detail}" },
   "srv.import.too_new": { "en": "A village at Keep {keep} can move to the server once this online account is {days} days old (in {wait, plural, one {# day} other {# days}}). It stays on this device meanwhile: keep playing, and the game tries again each day.", "text": "Egy {keep}. szintű Várral rendelkező falu akkor költözhet a szerverre, ha ez az online fiók legalább {days} napos (még {wait, plural, one {# nap} other {# nap}}). Addig ezen az eszközön marad: játssz tovább, a játék naponta újrapróbálja." },
   "common.buyNext": { "en": "Buy & Next {n} ", "text": "Vétel + Következő {n} " },
-  "common.buyFill": { "en": "Buy & Fill {n} ", "text": "Vétel + Feltöltés {n} " }
+  "common.buyFill": { "en": "Buy & Fill {n} ", "text": "Vétel + Feltöltés {n} " },
+  "sim.only_walls_and_traps_can_be_paid_in_prov_e809aeabdf": { "en": "Only walls and traps can be paid in Provisions.", "text": "Élelemmel csak falak és csapdák fizethetők." },
+  "sim.choosing_a_hero_is_not_available_yet_27abc790aa": { "en": "Choosing a hero is not available yet.", "text": "A hős kiválasztása még nem érhető el." },
+  "sim.unknown_hero_6cc0c367da": { "en": "Unknown hero.", "text": "Ismeretlen hős." },
+  "sim.this_hero_joins_from_keep_arg1_b12afb3aa8": { "en": "This hero joins from Keep {arg1}.", "text": "Ez a hős ettől a Vár-szinttől csatlakozik: {arg1}." },
+  "sim.build_a_hero_hall_first_a589773dbb": { "en": "Build a Hero Hall first.", "text": "Előbb építs Hőscsarnokot." },
+  "sim.this_keep_is_already_sealed_051c6a8626": { "en": "This Keep is already sealed.", "text": "Ez a Vár már le van pecsételve." },
+  "sim.build_every_building_this_keep_allows_to_93eea11b5b": { "en": "Build every building this Keep allows to its cap first ({arg1} of {arg2}).", "text": "Előbb fejlessz a maximális szintre minden épületet, amelyet ez a Vár enged ({arg1} / {arg2})." },
+  "sim.this_purchase_was_already_refunded_05408e619d": { "en": "This purchase was already refunded.", "text": "Ezt a vásárlást már visszatérítették." },
+  "sim.this_look_is_earned_in_play_never_sold_9025163fca": { "en": "This look is earned in play, never sold.", "text": "Ez a megjelenés játékkal szerezhető, sosem eladó." },
+  "sim.you_ve_opened_today_s_chest_a_new_one_is_b4753d2b3f": { "en": "You've opened today's chest. A new one is ready when your next day starts.", "text": "A mai ládát már kinyitottad. Új láda vár, amikor elkezdődik a következő napod." },
+  "sim.trial_fortress_damage_is_not_allowed_05759d6468": { "en": "Trial fortress damage is not allowed.", "text": "A próbaerőd sebzése nem engedélyezett." },
+  "sim.there_is_no_daily_drill_49086be800": { "en": "There is no daily drill.", "text": "Nincs napi gyakorlat." },
+  "sim.too_long_ago_146e28a63e": { "en": "Too long ago.", "text": "Túl régen volt." },
+  "sim.build_a_training_dojo_and_a_squad_courty_ad04d756ab": { "en": "Build a Training Dojo and a Squad Courtyard first.", "text": "Előbb építs egy Gyakorló dódzsót és egy Osztagudvart." }
 }

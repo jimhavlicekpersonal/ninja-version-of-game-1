@@ -697,7 +697,6 @@
   "sim.you_have_all_the_village_artisans_you__ca4070d4a7": { "en": "You have all the Village Artisans you can hire.", "text": "మీరు నియమించుకోగలిగిన గ్రామ శిల్పులందరూ మీ దగ్గర ఉన్నారు." },
   "sim.you_have_used_both_alliance_war_attack_d6ede0593a": { "en": "You have used both Alliance War attacks.", "text": "మీరు రెండు కూటమి యుద్ధ దాడులనూ వాడేశారు." },
   "sim.you_joined_829a54399a": { "en": "You joined {arg1}!", "text": "మీరు చేరారు: {arg1}!" },
-  "sim.you_ve_opened_today_s_chest_a_new_one__55f50ec652": { "en": "You've opened today's chest. A new one is ready at the start of the next day (UTC).", "text": "ఈరోజు పెట్టెను మీరు తెరిచారు. తదుపరి రోజు (UTC) మొదలవగానే కొత్తది సిద్ధమవుతుంది." },
   "sim.your_alliance_lodge_is_full_6f3ca3b404": { "en": "Your Alliance Lodge is full.", "text": "మీ కూటమి మందిరం నిండిపోయింది." },
   "sim.your_army_is_ready_f50ad8c7f1": { "en": "Your army is ready", "text": "మీ సైన్యం సిద్ధం" },
   "sim.your_clan_stipend_still_has_payments_t_d997968533": { "en": "Your Clan Stipend still has payments to claim. You can buy another when they are all claimed.", "text": "మీ వంశ భృతిలో ఇంకా క్లెయిమ్ చేయాల్సిన చెల్లింపులు ఉన్నాయి. అన్నీ క్లెయిమ్ చేశాక మరొకటి కొనవచ్చు." },
@@ -2100,5 +2099,19 @@
   "srv.import.refused": { "en": "This village cannot move to the server: {detail}", "text": "ఈ గ్రామం సర్వర్‌కు మారలేదు: {detail}" },
   "srv.import.too_new": { "en": "A village at Keep {keep} can move to the server once this online account is {days} days old (in {wait, plural, one {# day} other {# days}}). It stays on this device meanwhile: keep playing, and the game tries again each day.", "text": "కోట {keep} వద్ద ఉన్న గ్రామం, ఈ ఆన్‌లైన్ ఖాతా {days} రోజుల పాతదైనప్పుడు సర్వర్‌కు మారగలదు ({wait, plural, one {# రోజులో} other {# రోజుల్లో}}). అప్పటి వరకు ఇది ఈ పరికరంలోనే ఉంటుంది: ఆడుతూ ఉండండి, ఆట ప్రతిరోజూ మళ్లీ ప్రయత్నిస్తుంది." },
   "common.buyNext": { "en": "Buy & Next {n} ", "text": "కొని & తదుపరి {n} " },
-  "common.buyFill": { "en": "Buy & Fill {n} ", "text": "కొని & నింపు {n} " }
+  "common.buyFill": { "en": "Buy & Fill {n} ", "text": "కొని & నింపు {n} " },
+  "sim.only_walls_and_traps_can_be_paid_in_prov_e809aeabdf": { "en": "Only walls and traps can be paid in Provisions.", "text": "గోడలు, ఉచ్చులకు మాత్రమే సరుకులతో చెల్లించవచ్చు." },
+  "sim.choosing_a_hero_is_not_available_yet_27abc790aa": { "en": "Choosing a hero is not available yet.", "text": "వీరుడిని ఎంచుకోవడం ఇంకా అందుబాటులో లేదు." },
+  "sim.unknown_hero_6cc0c367da": { "en": "Unknown hero.", "text": "తెలియని వీరుడు." },
+  "sim.this_hero_joins_from_keep_arg1_b12afb3aa8": { "en": "This hero joins from Keep {arg1}.", "text": "ఈ వీరుడు కోట {arg1} నుంచి చేరతారు." },
+  "sim.build_a_hero_hall_first_a589773dbb": { "en": "Build a Hero Hall first.", "text": "ముందుగా వీరుల మందిరం నిర్మించండి." },
+  "sim.this_keep_is_already_sealed_051c6a8626": { "en": "This Keep is already sealed.", "text": "ఈ కోటకు ఇప్పటికే ముద్ర పడింది." },
+  "sim.build_every_building_this_keep_allows_to_93eea11b5b": { "en": "Build every building this Keep allows to its cap first ({arg1} of {arg2}).", "text": "ముందుగా ఈ కోట అనుమతించే ప్రతి కట్టడాన్ని గరిష్ఠ స్థాయికి నిర్మించండి ({arg1} / {arg2})." },
+  "sim.this_purchase_was_already_refunded_05408e619d": { "en": "This purchase was already refunded.", "text": "ఈ కొనుగోలు ఇప్పటికే వాపసు అయింది." },
+  "sim.this_look_is_earned_in_play_never_sold_9025163fca": { "en": "This look is earned in play, never sold.", "text": "ఈ రూపం ఆటలో సంపాదించేది, ఎప్పుడూ అమ్మబడదు." },
+  "sim.you_ve_opened_today_s_chest_a_new_one_is_b4753d2b3f": { "en": "You've opened today's chest. A new one is ready when your next day starts.", "text": "మీరు ఈ రోజు పెట్టె తెరిచారు. మీ తదుపరి రోజు మొదలైనప్పుడు కొత్తది సిద్ధంగా ఉంటుంది." },
+  "sim.trial_fortress_damage_is_not_allowed_05759d6468": { "en": "Trial fortress damage is not allowed.", "text": "పరీక్ష కోటకు నష్టం అనుమతించబడదు." },
+  "sim.there_is_no_daily_drill_49086be800": { "en": "There is no daily drill.", "text": "రోజువారీ సాధన లేదు." },
+  "sim.too_long_ago_146e28a63e": { "en": "Too long ago.", "text": "చాలా కాలం క్రితంది." },
+  "sim.build_a_training_dojo_and_a_squad_courty_ad04d756ab": { "en": "Build a Training Dojo and a Squad Courtyard first.", "text": "ముందుగా శిక్షణ దోజో, దళ ప్రాంగణం నిర్మించండి." }
 }

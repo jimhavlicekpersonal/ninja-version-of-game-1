@@ -697,7 +697,6 @@
   "sim.you_have_all_the_village_artisans_you__ca4070d4a7": { "en": "You have all the Village Artisans you can hire.", "text": "Je hebt alle Dorpsambachtslieden die je kunt inhuren." },
   "sim.you_have_used_both_alliance_war_attack_d6ede0593a": { "en": "You have used both Alliance War attacks.", "text": "Je hebt allebei je aanvallen in de Alliantieoorlog gebruikt." },
   "sim.you_joined_829a54399a": { "en": "You joined {arg1}!", "text": "Je bent lid geworden: {arg1}!" },
-  "sim.you_ve_opened_today_s_chest_a_new_one__55f50ec652": { "en": "You've opened today's chest. A new one is ready at the start of the next day (UTC).", "text": "Je hebt de kist van vandaag geopend. Aan het begin van de volgende dag (UTC) staat er een nieuwe klaar." },
   "sim.your_alliance_lodge_is_full_6f3ca3b404": { "en": "Your Alliance Lodge is full.", "text": "Je Alliantiehal is vol." },
   "sim.your_army_is_ready_f50ad8c7f1": { "en": "Your army is ready", "text": "Je leger is klaar" },
   "sim.your_clan_stipend_still_has_payments_t_d997968533": { "en": "Your Clan Stipend still has payments to claim. You can buy another when they are all claimed.", "text": "Je Clantoelage heeft nog betalingen om te claimen. Je kunt een nieuwe kopen als ze allemaal geclaimd zijn." },
@@ -2100,5 +2099,19 @@
   "srv.import.refused": { "en": "This village cannot move to the server: {detail}", "text": "Dit dorp kan niet naar de server verhuizen: {detail}" },
   "srv.import.too_new": { "en": "A village at Keep {keep} can move to the server once this online account is {days} days old (in {wait, plural, one {# day} other {# days}}). It stays on this device meanwhile: keep playing, and the game tries again each day.", "text": "Een dorp met Burcht {keep} kan naar de server verhuizen zodra dit online account {days} dagen oud is (over {wait, plural, one {# dag} other {# dagen}}). Tot die tijd blijft het op dit apparaat: speel gewoon door, het spel probeert het elke dag opnieuw." },
   "common.buyNext": { "en": "Buy & Next {n} ", "text": "Kopen & Volgende {n} " },
-  "common.buyFill": { "en": "Buy & Fill {n} ", "text": "Kopen & Vullen {n} " }
+  "common.buyFill": { "en": "Buy & Fill {n} ", "text": "Kopen & Vullen {n} " },
+  "sim.only_walls_and_traps_can_be_paid_in_prov_e809aeabdf": { "en": "Only walls and traps can be paid in Provisions.", "text": "Alleen muren en vallen kunnen met Proviand worden betaald." },
+  "sim.choosing_a_hero_is_not_available_yet_27abc790aa": { "en": "Choosing a hero is not available yet.", "text": "Een held kiezen is nog niet beschikbaar." },
+  "sim.unknown_hero_6cc0c367da": { "en": "Unknown hero.", "text": "Onbekende held." },
+  "sim.this_hero_joins_from_keep_arg1_b12afb3aa8": { "en": "This hero joins from Keep {arg1}.", "text": "Deze held sluit zich aan vanaf Burcht {arg1}." },
+  "sim.build_a_hero_hall_first_a589773dbb": { "en": "Build a Hero Hall first.", "text": "Bouw eerst een Heldenhal." },
+  "sim.this_keep_is_already_sealed_051c6a8626": { "en": "This Keep is already sealed.", "text": "Deze Burcht is al verzegeld." },
+  "sim.build_every_building_this_keep_allows_to_93eea11b5b": { "en": "Build every building this Keep allows to its cap first ({arg1} of {arg2}).", "text": "Bouw eerst elk gebouw dat deze Burcht toestaat tot het maximum ({arg1} van {arg2})." },
+  "sim.this_purchase_was_already_refunded_05408e619d": { "en": "This purchase was already refunded.", "text": "Deze aankoop is al terugbetaald." },
+  "sim.this_look_is_earned_in_play_never_sold_9025163fca": { "en": "This look is earned in play, never sold.", "text": "Deze look verdien je door te spelen; hij wordt nooit verkocht." },
+  "sim.you_ve_opened_today_s_chest_a_new_one_is_b4753d2b3f": { "en": "You've opened today's chest. A new one is ready when your next day starts.", "text": "Je hebt de kist van vandaag al geopend. Een nieuwe staat klaar zodra je volgende dag begint." },
+  "sim.trial_fortress_damage_is_not_allowed_05759d6468": { "en": "Trial fortress damage is not allowed.", "text": "Schade aan een beproevingsvesting is niet toegestaan." },
+  "sim.there_is_no_daily_drill_49086be800": { "en": "There is no daily drill.", "text": "Er is geen dagelijkse oefening." },
+  "sim.too_long_ago_146e28a63e": { "en": "Too long ago.", "text": "Te lang geleden." },
+  "sim.build_a_training_dojo_and_a_squad_courty_ad04d756ab": { "en": "Build a Training Dojo and a Squad Courtyard first.", "text": "Bouw eerst een Trainingsdojo en een Ploegenhof." }
 }

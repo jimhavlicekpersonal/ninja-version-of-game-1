@@ -697,7 +697,6 @@
   "sim.you_have_all_the_village_artisans_you__ca4070d4a7": { "en": "You have all the Village Artisans you can hire.", "text": "Sinulla on kaikki kylän käsityöläiset, jotka voit palkata." },
   "sim.you_have_used_both_alliance_war_attack_d6ede0593a": { "en": "You have used both Alliance War attacks.", "text": "Olet käyttänyt molemmat Liittosodan hyökkäykset." },
   "sim.you_joined_829a54399a": { "en": "You joined {arg1}!", "text": "Liityit: {arg1}!" },
-  "sim.you_ve_opened_today_s_chest_a_new_one__55f50ec652": { "en": "You've opened today's chest. A new one is ready at the start of the next day (UTC).", "text": "Olet avannut tämän päivän arkun. Uusi on valmiina seuraavan päivän alussa (UTC)." },
   "sim.your_alliance_lodge_is_full_6f3ca3b404": { "en": "Your Alliance Lodge is full.", "text": "Liittomajasi on täynnä." },
   "sim.your_army_is_ready_f50ad8c7f1": { "en": "Your army is ready", "text": "Armeijasi on valmis" },
   "sim.your_clan_stipend_still_has_payments_t_d997968533": { "en": "Your Clan Stipend still has payments to claim. You can buy another when they are all claimed.", "text": "Klaanin apurahassasi on vielä lunastettavia maksuja. Voit ostaa uuden, kun kaikki on lunastettu." },
@@ -2100,5 +2099,19 @@
   "srv.import.refused": { "en": "This village cannot move to the server: {detail}", "text": "Tätä kylää ei voi siirtää palvelimelle: {detail}" },
   "srv.import.too_new": { "en": "A village at Keep {keep} can move to the server once this online account is {days} days old (in {wait, plural, one {# day} other {# days}}). It stays on this device meanwhile: keep playing, and the game tries again each day.", "text": "Kylä, jonka Linnan taso on {keep}, voi siirtyä palvelimelle, kun tämä verkkotili on {days} päivää vanha ({wait, plural, one {# päivän kuluttua} other {# päivän kuluttua}}). Sillä välin se pysyy tällä laitteella: jatka pelaamista, peli yrittää uudelleen joka päivä." },
   "common.buyNext": { "en": "Buy & Next {n} ", "text": "Osta ja Seuraava {n} " },
-  "common.buyFill": { "en": "Buy & Fill {n} ", "text": "Osta ja Täytä {n} " }
+  "common.buyFill": { "en": "Buy & Fill {n} ", "text": "Osta ja Täytä {n} " },
+  "sim.only_walls_and_traps_can_be_paid_in_prov_e809aeabdf": { "en": "Only walls and traps can be paid in Provisions.", "text": "Muonalla voi maksaa vain muureja ja ansoja." },
+  "sim.choosing_a_hero_is_not_available_yet_27abc790aa": { "en": "Choosing a hero is not available yet.", "text": "Sankarin valinta ei ole vielä käytettävissä." },
+  "sim.unknown_hero_6cc0c367da": { "en": "Unknown hero.", "text": "Tuntematon sankari." },
+  "sim.this_hero_joins_from_keep_arg1_b12afb3aa8": { "en": "This hero joins from Keep {arg1}.", "text": "Tämä sankari liittyy joukkoon Linnan tasolta {arg1} alkaen." },
+  "sim.build_a_hero_hall_first_a589773dbb": { "en": "Build a Hero Hall first.", "text": "Rakenna ensin Sankarisali." },
+  "sim.this_keep_is_already_sealed_051c6a8626": { "en": "This Keep is already sealed.", "text": "Tämä Linna on jo sinetöity." },
+  "sim.build_every_building_this_keep_allows_to_93eea11b5b": { "en": "Build every building this Keep allows to its cap first ({arg1} of {arg2}).", "text": "Rakenna ensin jokainen tämän Linnan sallima rakennus enimmäistasolleen ({arg1} / {arg2})." },
+  "sim.this_purchase_was_already_refunded_05408e619d": { "en": "This purchase was already refunded.", "text": "Tämä osto on jo hyvitetty." },
+  "sim.this_look_is_earned_in_play_never_sold_9025163fca": { "en": "This look is earned in play, never sold.", "text": "Tämä ulkoasu ansaitaan pelaamalla, eikä sitä koskaan myydä." },
+  "sim.you_ve_opened_today_s_chest_a_new_one_is_b4753d2b3f": { "en": "You've opened today's chest. A new one is ready when your next day starts.", "text": "Avasit jo tämän päivän arkun. Uusi on valmiina, kun seuraava päiväsi alkaa." },
+  "sim.trial_fortress_damage_is_not_allowed_05759d6468": { "en": "Trial fortress damage is not allowed.", "text": "Koetuslinnoituksen vahinkoa ei sallita." },
+  "sim.there_is_no_daily_drill_49086be800": { "en": "There is no daily drill.", "text": "Päivän harjoitusta ei ole." },
+  "sim.too_long_ago_146e28a63e": { "en": "Too long ago.", "text": "Liian kauan sitten." },
+  "sim.build_a_training_dojo_and_a_squad_courty_ad04d756ab": { "en": "Build a Training Dojo and a Squad Courtyard first.", "text": "Rakenna ensin Harjoitusdojo ja Joukkopiha." }
 }

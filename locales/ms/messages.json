@@ -697,7 +697,6 @@
   "sim.you_have_all_the_village_artisans_you__ca4070d4a7": { "en": "You have all the Village Artisans you can hire.", "text": "Kamu sudah mempunyai semua Tukang Kampung yang boleh diupah." },
   "sim.you_have_used_both_alliance_war_attack_d6ede0593a": { "en": "You have used both Alliance War attacks.", "text": "Kamu sudah menggunakan kedua-dua serangan Perang Perikatan." },
   "sim.you_joined_829a54399a": { "en": "You joined {arg1}!", "text": "Kamu telah menyertai {arg1}!" },
-  "sim.you_ve_opened_today_s_chest_a_new_one__55f50ec652": { "en": "You've opened today's chest. A new one is ready at the start of the next day (UTC).", "text": "Kamu sudah membuka peti hari ini. Peti baharu sedia pada permulaan hari berikutnya (UTC)." },
   "sim.your_alliance_lodge_is_full_6f3ca3b404": { "en": "Your Alliance Lodge is full.", "text": "Balai Perikatan kamu sudah penuh." },
   "sim.your_army_is_ready_f50ad8c7f1": { "en": "Your army is ready", "text": "Tentera kamu sudah sedia" },
   "sim.your_clan_stipend_still_has_payments_t_d997968533": { "en": "Your Clan Stipend still has payments to claim. You can buy another when they are all claimed.", "text": "Elaun Klan kamu masih ada bayaran untuk dituntut. Kamu boleh membeli yang lain apabila semuanya sudah dituntut." },
@@ -2100,5 +2099,19 @@
   "srv.import.refused": { "en": "This village cannot move to the server: {detail}", "text": "Kampung ini tidak boleh berpindah ke pelayan: {detail}" },
   "srv.import.too_new": { "en": "A village at Keep {keep} can move to the server once this online account is {days} days old (in {wait, plural, one {# day} other {# days}}). It stays on this device meanwhile: keep playing, and the game tries again each day.", "text": "Kampung pada Kubu {keep} boleh berpindah ke pelayan setelah akaun dalam talian ini berusia {days} hari (dalam {wait, plural, other {# hari}}). Sementara itu ia kekal pada peranti ini: teruskan bermain, dan permainan akan mencuba lagi setiap hari." },
   "common.buyNext": { "en": "Buy & Next {n} ", "text": "Beli & Seterusnya {n} " },
-  "common.buyFill": { "en": "Buy & Fill {n} ", "text": "Beli & Isi {n} " }
+  "common.buyFill": { "en": "Buy & Fill {n} ", "text": "Beli & Isi {n} " },
+  "sim.only_walls_and_traps_can_be_paid_in_prov_e809aeabdf": { "en": "Only walls and traps can be paid in Provisions.", "text": "Hanya tembok dan perangkap boleh dibayar dengan Bekalan." },
+  "sim.choosing_a_hero_is_not_available_yet_27abc790aa": { "en": "Choosing a hero is not available yet.", "text": "Memilih wira belum tersedia lagi." },
+  "sim.unknown_hero_6cc0c367da": { "en": "Unknown hero.", "text": "Wira tidak dikenali." },
+  "sim.this_hero_joins_from_keep_arg1_b12afb3aa8": { "en": "This hero joins from Keep {arg1}.", "text": "Wira ini menyertai mulai Kubu {arg1}." },
+  "sim.build_a_hero_hall_first_a589773dbb": { "en": "Build a Hero Hall first.", "text": "Bina Dewan Wira dahulu." },
+  "sim.this_keep_is_already_sealed_051c6a8626": { "en": "This Keep is already sealed.", "text": "Kubu ini sudah dimeterai." },
+  "sim.build_every_building_this_keep_allows_to_93eea11b5b": { "en": "Build every building this Keep allows to its cap first ({arg1} of {arg2}).", "text": "Naikkan setiap bangunan yang dibenarkan oleh Kubu ini ke had maksimumnya dahulu ({arg1} daripada {arg2})." },
+  "sim.this_purchase_was_already_refunded_05408e619d": { "en": "This purchase was already refunded.", "text": "Pembelian ini sudah dibayar balik." },
+  "sim.this_look_is_earned_in_play_never_sold_9025163fca": { "en": "This look is earned in play, never sold.", "text": "Rupa ini diperoleh semasa bermain, tidak pernah dijual." },
+  "sim.you_ve_opened_today_s_chest_a_new_one_is_b4753d2b3f": { "en": "You've opened today's chest. A new one is ready when your next day starts.", "text": "Kamu sudah membuka peti hari ini. Peti baharu sedia apabila hari kamu yang seterusnya bermula." },
+  "sim.trial_fortress_damage_is_not_allowed_05759d6468": { "en": "Trial fortress damage is not allowed.", "text": "Kerosakan kubu ujian tidak dibenarkan." },
+  "sim.there_is_no_daily_drill_49086be800": { "en": "There is no daily drill.", "text": "Tiada latihan harian." },
+  "sim.too_long_ago_146e28a63e": { "en": "Too long ago.", "text": "Sudah terlalu lama." },
+  "sim.build_a_training_dojo_and_a_squad_courty_ad04d756ab": { "en": "Build a Training Dojo and a Squad Courtyard first.", "text": "Bina Dojo Latihan dan Halaman Skuad dahulu." }
 }

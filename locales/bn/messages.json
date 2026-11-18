@@ -697,7 +697,6 @@
   "sim.you_have_all_the_village_artisans_you__ca4070d4a7": { "en": "You have all the Village Artisans you can hire.", "text": "যত গ্রামের কারিগর রাখা যায়, সবাই আপনার আছে।" },
   "sim.you_have_used_both_alliance_war_attack_d6ede0593a": { "en": "You have used both Alliance War attacks.", "text": "আপনি জোট যুদ্ধের দুটো আক্রমণই ব্যবহার করেছেন।" },
   "sim.you_joined_829a54399a": { "en": "You joined {arg1}!", "text": "আপনি যোগ দিয়েছেন: {arg1}!" },
-  "sim.you_ve_opened_today_s_chest_a_new_one__55f50ec652": { "en": "You've opened today's chest. A new one is ready at the start of the next day (UTC).", "text": "আপনি আজকের সিন্দুক খুলে ফেলেছেন। পরের দিনের শুরুতে (UTC) নতুন একটি তৈরি হবে।" },
   "sim.your_alliance_lodge_is_full_6f3ca3b404": { "en": "Your Alliance Lodge is full.", "text": "আপনার জোট ভবন পূর্ণ।" },
   "sim.your_army_is_ready_f50ad8c7f1": { "en": "Your army is ready", "text": "আপনার বাহিনী তৈরি" },
   "sim.your_clan_stipend_still_has_payments_t_d997968533": { "en": "Your Clan Stipend still has payments to claim. You can buy another when they are all claimed.", "text": "আপনার গোষ্ঠী ভাতার এখনও কিস্তি নেওয়া বাকি। সব নেওয়া হলে আরেকটি কিনতে পারবেন।" },
@@ -2100,5 +2099,19 @@
   "srv.import.refused": { "en": "This village cannot move to the server: {detail}", "text": "এই গ্রাম সার্ভারে যেতে পারবে না: {detail}" },
   "srv.import.too_new": { "en": "A village at Keep {keep} can move to the server once this online account is {days} days old (in {wait, plural, one {# day} other {# days}}). It stays on this device meanwhile: keep playing, and the game tries again each day.", "text": "দুর্গ লেভেল {keep} থাকা গ্রাম সার্ভারে যেতে পারে তখনই, যখন এই অনলাইন অ্যাকাউন্টের বয়স {days} দিন হবে (আর {wait, plural, one {# দিন} other {# দিন}})। ততদিন এটি এই ডিভাইসেই থাকবে: খেলতে থাকুন, গেম প্রতিদিন আবার চেষ্টা করবে।" },
   "common.buyNext": { "en": "Buy & Next {n} ", "text": "কিনে পরেরটি {n} " },
-  "common.buyFill": { "en": "Buy & Fill {n} ", "text": "কিনে ভরুন {n} " }
+  "common.buyFill": { "en": "Buy & Fill {n} ", "text": "কিনে ভরুন {n} " },
+  "sim.only_walls_and_traps_can_be_paid_in_prov_e809aeabdf": { "en": "Only walls and traps can be paid in Provisions.", "text": "শুধু প্রাচীর আর ফাঁদের দাম রসদে দেওয়া যায়।" },
+  "sim.choosing_a_hero_is_not_available_yet_27abc790aa": { "en": "Choosing a hero is not available yet.", "text": "বীর বেছে নেওয়ার সুবিধা এখনও চালু হয়নি।" },
+  "sim.unknown_hero_6cc0c367da": { "en": "Unknown hero.", "text": "অজানা বীর।" },
+  "sim.this_hero_joins_from_keep_arg1_b12afb3aa8": { "en": "This hero joins from Keep {arg1}.", "text": "এই বীর যোগ দেন দুর্গ {arg1} লেভেল থেকে।" },
+  "sim.build_a_hero_hall_first_a589773dbb": { "en": "Build a Hero Hall first.", "text": "আগে একটি বীরের ভবন তৈরি করুন।" },
+  "sim.this_keep_is_already_sealed_051c6a8626": { "en": "This Keep is already sealed.", "text": "এই দুর্গে আগেই সিলমোহর পড়েছে।" },
+  "sim.build_every_building_this_keep_allows_to_93eea11b5b": { "en": "Build every building this Keep allows to its cap first ({arg1} of {arg2}).", "text": "আগে এই দুর্গে অনুমোদিত প্রতিটি ভবন সর্বোচ্চ লেভেলে তুলুন ({arg2}টির মধ্যে {arg1}টি)।" },
+  "sim.this_purchase_was_already_refunded_05408e619d": { "en": "This purchase was already refunded.", "text": "এই কেনাকাটার টাকা আগেই ফেরত দেওয়া হয়েছে।" },
+  "sim.this_look_is_earned_in_play_never_sold_9025163fca": { "en": "This look is earned in play, never sold.", "text": "এই রূপটি খেলেই অর্জন করতে হয়, কখনও বিক্রি হয় না।" },
+  "sim.you_ve_opened_today_s_chest_a_new_one_is_b4753d2b3f": { "en": "You've opened today's chest. A new one is ready when your next day starts.", "text": "আজকের সিন্দুক আপনি খুলে ফেলেছেন। আপনার পরের দিন শুরু হলে নতুন সিন্দুক তৈরি থাকবে।" },
+  "sim.trial_fortress_damage_is_not_allowed_05759d6468": { "en": "Trial fortress damage is not allowed.", "text": "পরীক্ষার দুর্গের ক্ষয়ক্ষতি গ্রহণযোগ্য নয়।" },
+  "sim.there_is_no_daily_drill_49086be800": { "en": "There is no daily drill.", "text": "কোনো দৈনিক মহড়া নেই।" },
+  "sim.too_long_ago_146e28a63e": { "en": "Too long ago.", "text": "অনেক আগের ঘটনা।" },
+  "sim.build_a_training_dojo_and_a_squad_courty_ad04d756ab": { "en": "Build a Training Dojo and a Squad Courtyard first.", "text": "আগে একটি প্রশিক্ষণ দোজো আর একটি দলের প্রাঙ্গণ তৈরি করুন।" }
 }

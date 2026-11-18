@@ -697,7 +697,6 @@
   "sim.you_have_all_the_village_artisans_you__ca4070d4a7": { "en": "You have all the Village Artisans you can hire.", "text": "O ti ní gbogbo Oníṣẹ́-ọnà Abúlé tí o lè gbà síṣẹ́." },
   "sim.you_have_used_both_alliance_war_attack_d6ede0593a": { "en": "You have used both Alliance War attacks.", "text": "O ti lo ìkọlù Ogun Àjọṣepọ̀ méjèèjì." },
   "sim.you_joined_829a54399a": { "en": "You joined {arg1}!", "text": "O ti darapọ̀ mọ́ {arg1}!" },
-  "sim.you_ve_opened_today_s_chest_a_new_one__55f50ec652": { "en": "You've opened today's chest. A new one is ready at the start of the next day (UTC).", "text": "O ti ṣí àpótí òní. Tuntun kan yóò ṣetán ní ìbẹ̀rẹ̀ ọjọ́ tó kàn (UTC)." },
   "sim.your_alliance_lodge_is_full_6f3ca3b404": { "en": "Your Alliance Lodge is full.", "text": "Gbọ̀ngàn Àjọṣepọ̀ rẹ ti kún." },
   "sim.your_army_is_ready_f50ad8c7f1": { "en": "Your army is ready", "text": "Ọmọ ogun rẹ ti ṣetán" },
   "sim.your_clan_stipend_still_has_payments_t_d997968533": { "en": "Your Clan Stipend still has payments to claim. You can buy another when they are all claimed.", "text": "Owó-oṣù Ìdílé rẹ ṣì ní ìsanwó láti gbà. O lè ra òmíràn nígbà tí o bá ti gba gbogbo wọn." },
@@ -2100,5 +2099,19 @@
   "srv.import.refused": { "en": "This village cannot move to the server: {detail}", "text": "Abúlé yìí kò lè lọ sí sáfà: {detail}" },
   "srv.import.too_new": { "en": "A village at Keep {keep} can move to the server once this online account is {days} days old (in {wait, plural, one {# day} other {# days}}). It stays on this device meanwhile: keep playing, and the game tries again each day.", "text": "Abúlé kan ní Ilé Olódi {keep} lè lọ sí sáfà ní kété tí àkáǹtì orí ayélujára yìí bá ti pé ọjọ́ {days} (ní {wait, plural, other {ọjọ́ #}}). Ó wà lórí ẹ̀rọ yìí ní báyìí ná: máa ṣeré lọ, eré náà yóò sì tún gbìyànjú lójoojúmọ́." },
   "common.buyNext": { "en": "Buy & Next {n} ", "text": "Rà kí o sì Èyí tó kàn {n} " },
-  "common.buyFill": { "en": "Buy & Fill {n} ", "text": "Rà kí o sì Kún un {n} " }
+  "common.buyFill": { "en": "Buy & Fill {n} ", "text": "Rà kí o sì Kún un {n} " },
+  "sim.only_walls_and_traps_can_be_paid_in_prov_e809aeabdf": { "en": "Only walls and traps can be paid in Provisions.", "text": "Odi àti pańpẹ́ nìkan ni a lè fi Oúnjẹ sanwó fún." },
+  "sim.choosing_a_hero_is_not_available_yet_27abc790aa": { "en": "Choosing a hero is not available yet.", "text": "Yíyan akọni kò tíì sí báyìí." },
+  "sim.unknown_hero_6cc0c367da": { "en": "Unknown hero.", "text": "Akọni tí a kò mọ̀." },
+  "sim.this_hero_joins_from_keep_arg1_b12afb3aa8": { "en": "This hero joins from Keep {arg1}.", "text": "Akọni yìí máa ń darapọ̀ láti Ilé Olódi {arg1}." },
+  "sim.build_a_hero_hall_first_a589773dbb": { "en": "Build a Hero Hall first.", "text": "Kọ́ Gbọ̀ngàn Akọni kan ná." },
+  "sim.this_keep_is_already_sealed_051c6a8626": { "en": "This Keep is already sealed.", "text": "A ti fi èdìdì di Ilé Olódi yìí tẹ́lẹ̀." },
+  "sim.build_every_building_this_keep_allows_to_93eea11b5b": { "en": "Build every building this Keep allows to its cap first ({arg1} of {arg2}).", "text": "Kọ́ gbogbo ilé tí Ilé Olódi yìí gbà láàyè dé òpin ìpele wọn ná ({arg1} nínú {arg2})." },
+  "sim.this_purchase_was_already_refunded_05408e619d": { "en": "This purchase was already refunded.", "text": "A ti dá owó rírà yìí padà tẹ́lẹ̀." },
+  "sim.this_look_is_earned_in_play_never_sold_9025163fca": { "en": "This look is earned in play, never sold.", "text": "Inú eré ni a ti ń jèrè ìrísí yìí, a kì í tà á." },
+  "sim.you_ve_opened_today_s_chest_a_new_one_is_b4753d2b3f": { "en": "You've opened today's chest. A new one is ready when your next day starts.", "text": "O ti ṣí àpótí òní. Tuntun kan yóò ṣetán nígbà tí ọjọ́ rẹ tó kàn bá bẹ̀rẹ̀." },
+  "sim.trial_fortress_damage_is_not_allowed_05759d6468": { "en": "Trial fortress damage is not allowed.", "text": "A kò gbà láàyè láti ba ibi olódi ìdánwò jẹ́." },
+  "sim.there_is_no_daily_drill_49086be800": { "en": "There is no daily drill.", "text": "Kò sí ìdánrawò ojoojúmọ́." },
+  "sim.too_long_ago_146e28a63e": { "en": "Too long ago.", "text": "Ó ti pẹ́ jù." },
+  "sim.build_a_training_dojo_and_a_squad_courty_ad04d756ab": { "en": "Build a Training Dojo and a Squad Courtyard first.", "text": "Kọ́ Dojo Ìdánrawò àti Àgbàlá Ẹgbẹ́ Ogun kan ná." }
 }

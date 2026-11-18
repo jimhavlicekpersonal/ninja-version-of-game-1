@@ -697,7 +697,6 @@
   "sim.you_have_all_the_village_artisans_you__ca4070d4a7": { "en": "You have all the Village Artisans you can hire.", "text": "你已雇满所有可雇的村中工匠。" },
   "sim.you_have_used_both_alliance_war_attack_d6ede0593a": { "en": "You have used both Alliance War attacks.", "text": "你已用完两次同盟战进攻。" },
   "sim.you_joined_829a54399a": { "en": "You joined {arg1}!", "text": "你加入了{arg1}！" },
-  "sim.you_ve_opened_today_s_chest_a_new_one__55f50ec652": { "en": "You've opened today's chest. A new one is ready at the start of the next day (UTC).", "text": "你已经打开了今天的宝箱。新的宝箱会在下一天开始时（UTC）准备好。" },
   "sim.your_alliance_lodge_is_full_6f3ca3b404": { "en": "Your Alliance Lodge is full.", "text": "你的同盟会馆已满。" },
   "sim.your_army_is_ready_f50ad8c7f1": { "en": "Your army is ready", "text": "你的军队已就绪" },
   "sim.your_clan_stipend_still_has_payments_t_d997968533": { "en": "Your Clan Stipend still has payments to claim. You can buy another when they are all claimed.", "text": "你的忍族俸禄还有未领取的发放。全部领取后才能再次购买。" },
@@ -2100,5 +2099,19 @@
   "srv.import.refused": { "en": "This village cannot move to the server: {detail}", "text": "此村庄无法迁移到服务器：{detail}" },
   "srv.import.too_new": { "en": "A village at Keep {keep} can move to the server once this online account is {days} days old (in {wait, plural, one {# day} other {# days}}). It stays on this device meanwhile: keep playing, and the game tries again each day.", "text": "天守阁 {keep} 级的村庄需要在此在线账号注册满 {days} 天后（{wait, plural, other {还需 # 天}}）才能迁移到服务器。在此期间村庄仍保存在此设备上：继续玩吧，游戏每天都会重试。" },
   "common.buyNext": { "en": "Buy & Next {n} ", "text": "购买并下一批 {n} " },
-  "common.buyFill": { "en": "Buy & Fill {n} ", "text": "购买并补满 {n} " }
+  "common.buyFill": { "en": "Buy & Fill {n} ", "text": "购买并补满 {n} " },
+  "sim.only_walls_and_traps_can_be_paid_in_prov_e809aeabdf": { "en": "Only walls and traps can be paid in Provisions.", "text": "只有城墙和陷阱可以用粮草支付。" },
+  "sim.choosing_a_hero_is_not_available_yet_27abc790aa": { "en": "Choosing a hero is not available yet.", "text": "目前还不能选择英雄。" },
+  "sim.unknown_hero_6cc0c367da": { "en": "Unknown hero.", "text": "未知的英雄。" },
+  "sim.this_hero_joins_from_keep_arg1_b12afb3aa8": { "en": "This hero joins from Keep {arg1}.", "text": "这位英雄在天守阁 {arg1} 级时加入。" },
+  "sim.build_a_hero_hall_first_a589773dbb": { "en": "Build a Hero Hall first.", "text": "请先建造英雄殿。" },
+  "sim.this_keep_is_already_sealed_051c6a8626": { "en": "This Keep is already sealed.", "text": "这一级天守阁已经封印。" },
+  "sim.build_every_building_this_keep_allows_to_93eea11b5b": { "en": "Build every building this Keep allows to its cap first ({arg1} of {arg2}).", "text": "请先将这一级天守阁允许的每座建筑都升到上限（{arg1}/{arg2}）。" },
+  "sim.this_purchase_was_already_refunded_05408e619d": { "en": "This purchase was already refunded.", "text": "这笔购买已经退款。" },
+  "sim.this_look_is_earned_in_play_never_sold_9025163fca": { "en": "This look is earned in play, never sold.", "text": "这款外观只能在游戏中获得，从不出售。" },
+  "sim.you_ve_opened_today_s_chest_a_new_one_is_b4753d2b3f": { "en": "You've opened today's chest. A new one is ready when your next day starts.", "text": "你已经打开了今天的宝箱。你的下一天开始时，新的宝箱就会准备好。" },
+  "sim.trial_fortress_damage_is_not_allowed_05759d6468": { "en": "Trial fortress damage is not allowed.", "text": "不允许对试炼要塞造成伤害。" },
+  "sim.there_is_no_daily_drill_49086be800": { "en": "There is no daily drill.", "text": "没有每日演练。" },
+  "sim.too_long_ago_146e28a63e": { "en": "Too long ago.", "text": "时间太久了。" },
+  "sim.build_a_training_dojo_and_a_squad_courty_ad04d756ab": { "en": "Build a Training Dojo and a Squad Courtyard first.", "text": "请先建造修行道场和集结庭院。" }
 }

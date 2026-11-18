@@ -697,7 +697,6 @@
   "sim.you_have_all_the_village_artisans_you__ca4070d4a7": { "en": "You have all the Village Artisans you can hire.", "text": "तुम्ही नेमू शकता तितके सर्व गावचे कारागीर तुमच्याकडे आहेत." },
   "sim.you_have_used_both_alliance_war_attack_d6ede0593a": { "en": "You have used both Alliance War attacks.", "text": "तुम्ही युती युद्धातील दोन्ही हल्ले वापरले आहेत." },
   "sim.you_joined_829a54399a": { "en": "You joined {arg1}!", "text": "तुम्ही {arg1} मध्ये सामील झालात!" },
-  "sim.you_ve_opened_today_s_chest_a_new_one__55f50ec652": { "en": "You've opened today's chest. A new one is ready at the start of the next day (UTC).", "text": "तुम्ही आजची पेटी उघडली आहे. पुढचा दिवस सुरू होताच (UTC) नवी तयार होईल." },
   "sim.your_alliance_lodge_is_full_6f3ca3b404": { "en": "Your Alliance Lodge is full.", "text": "तुमचे युती सभागृह भरले आहे." },
   "sim.your_army_is_ready_f50ad8c7f1": { "en": "Your army is ready", "text": "तुमचे सैन्य तयार आहे" },
   "sim.your_clan_stipend_still_has_payments_t_d997968533": { "en": "Your Clan Stipend still has payments to claim. You can buy another when they are all claimed.", "text": "तुमच्या कुळ भत्त्याचे हप्ते अजून घ्यायचे आहेत. ते सर्व घेतल्यावर तुम्ही दुसरा विकत घेऊ शकता." },
@@ -2100,5 +2099,19 @@
   "srv.import.refused": { "en": "This village cannot move to the server: {detail}", "text": "हे गाव सर्व्हरवर जाऊ शकत नाही: {detail}" },
   "srv.import.too_new": { "en": "A village at Keep {keep} can move to the server once this online account is {days} days old (in {wait, plural, one {# day} other {# days}}). It stays on this device meanwhile: keep playing, and the game tries again each day.", "text": "किल्ला {keep} वरचे गाव हे ऑनलाइन खाते {days} दिवस जुने झाल्यावर सर्व्हरवर जाऊ शकते ({wait, plural, one {# दिवसात} other {# दिवसांत}}). तोपर्यंत ते याच डिव्हाइसवर राहते: खेळत राहा, खेळ दररोज पुन्हा प्रयत्न करेल." },
   "common.buyNext": { "en": "Buy & Next {n} ", "text": "खरेदी करा व पुढचे {n} " },
-  "common.buyFill": { "en": "Buy & Fill {n} ", "text": "खरेदी करा व भरा {n} " }
+  "common.buyFill": { "en": "Buy & Fill {n} ", "text": "खरेदी करा व भरा {n} " },
+  "sim.only_walls_and_traps_can_be_paid_in_prov_e809aeabdf": { "en": "Only walls and traps can be paid in Provisions.", "text": "फक्त भिंती आणि सापळ्यांचीच किंमत रसदीत भरता येते." },
+  "sim.choosing_a_hero_is_not_available_yet_27abc790aa": { "en": "Choosing a hero is not available yet.", "text": "नायक निवडणे अजून उपलब्ध नाही." },
+  "sim.unknown_hero_6cc0c367da": { "en": "Unknown hero.", "text": "अज्ञात नायक." },
+  "sim.this_hero_joins_from_keep_arg1_b12afb3aa8": { "en": "This hero joins from Keep {arg1}.", "text": "हा नायक किल्ला {arg1} पासून सामील होतो." },
+  "sim.build_a_hero_hall_first_a589773dbb": { "en": "Build a Hero Hall first.", "text": "आधी नायक दालन बांधा." },
+  "sim.this_keep_is_already_sealed_051c6a8626": { "en": "This Keep is already sealed.", "text": "या किल्ल्याचा शिक्का आधीच मिळाला आहे." },
+  "sim.build_every_building_this_keep_allows_to_93eea11b5b": { "en": "Build every building this Keep allows to its cap first ({arg1} of {arg2}).", "text": "आधी हा किल्ला परवानगी देत असलेली प्रत्येक इमारत कमाल स्तरापर्यंत बांधा ({arg2} पैकी {arg1})." },
+  "sim.this_purchase_was_already_refunded_05408e619d": { "en": "This purchase was already refunded.", "text": "या खरेदीचा परतावा आधीच दिला गेला आहे." },
+  "sim.this_look_is_earned_in_play_never_sold_9025163fca": { "en": "This look is earned in play, never sold.", "text": "हे रूप खेळून मिळते, ते कधीच विकले जात नाही." },
+  "sim.you_ve_opened_today_s_chest_a_new_one_is_b4753d2b3f": { "en": "You've opened today's chest. A new one is ready when your next day starts.", "text": "तुम्ही आजची पेटी उघडली आहे. तुमचा पुढचा दिवस सुरू झाला की नवी पेटी तयार असेल." },
+  "sim.trial_fortress_damage_is_not_allowed_05759d6468": { "en": "Trial fortress damage is not allowed.", "text": "परीक्षा गढीचे हे नुकसान स्वीकारार्ह नाही." },
+  "sim.there_is_no_daily_drill_49086be800": { "en": "There is no daily drill.", "text": "रोजचा सराव उपलब्ध नाही." },
+  "sim.too_long_ago_146e28a63e": { "en": "Too long ago.", "text": "खूप जुने." },
+  "sim.build_a_training_dojo_and_a_squad_courty_ad04d756ab": { "en": "Build a Training Dojo and a Squad Courtyard first.", "text": "आधी प्रशिक्षण दोजो आणि पथकाचे अंगण बांधा." }
 }

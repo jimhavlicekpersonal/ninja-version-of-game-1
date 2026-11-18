@@ -697,7 +697,6 @@
   "sim.you_have_all_the_village_artisans_you__ca4070d4a7": { "en": "You have all the Village Artisans you can hire.", "text": "Ja tens tots els Artesans del poble que pots contractar." },
   "sim.you_have_used_both_alliance_war_attack_d6ede0593a": { "en": "You have used both Alliance War attacks.", "text": "Ja has fet servir els dos atacs de la Guerra d'Aliances." },
   "sim.you_joined_829a54399a": { "en": "You joined {arg1}!", "text": "T'has unit a {arg1}!" },
-  "sim.you_ve_opened_today_s_chest_a_new_one__55f50ec652": { "en": "You've opened today's chest. A new one is ready at the start of the next day (UTC).", "text": "Ja has obert el cofre d'avui. N'hi haurà un de nou a l'inici del dia següent (UTC)." },
   "sim.your_alliance_lodge_is_full_6f3ca3b404": { "en": "Your Alliance Lodge is full.", "text": "La teva Sala de l'Aliança és plena." },
   "sim.your_army_is_ready_f50ad8c7f1": { "en": "Your army is ready", "text": "El teu exèrcit està llest" },
   "sim.your_clan_stipend_still_has_payments_t_d997968533": { "en": "Your Clan Stipend still has payments to claim. You can buy another when they are all claimed.", "text": "El teu Sou del Clan encara té pagaments per reclamar. En podràs comprar un altre quan els hagis reclamat tots." },
@@ -2100,5 +2099,19 @@
   "srv.import.refused": { "en": "This village cannot move to the server: {detail}", "text": "Aquest poble no es pot traslladar al servidor: {detail}" },
   "srv.import.too_new": { "en": "A village at Keep {keep} can move to the server once this online account is {days} days old (in {wait, plural, one {# day} other {# days}}). It stays on this device meanwhile: keep playing, and the game tries again each day.", "text": "Un poble amb la Fortalesa {keep} es pot traslladar al servidor quan aquest compte en línia tingui {days} dies (d'aquí a {wait, plural, one {# dia} other {# dies}}). Mentrestant es queda en aquest dispositiu: continua jugant, i el joc ho torna a provar cada dia." },
   "common.buyNext": { "en": "Buy & Next {n} ", "text": "Compra i Següent {n} " },
-  "common.buyFill": { "en": "Buy & Fill {n} ", "text": "Compra i Omple {n} " }
+  "common.buyFill": { "en": "Buy & Fill {n} ", "text": "Compra i Omple {n} " },
+  "sim.only_walls_and_traps_can_be_paid_in_prov_e809aeabdf": { "en": "Only walls and traps can be paid in Provisions.", "text": "Només les muralles i les trampes es poden pagar amb Provisions." },
+  "sim.choosing_a_hero_is_not_available_yet_27abc790aa": { "en": "Choosing a hero is not available yet.", "text": "Encara no es pot triar cap heroi." },
+  "sim.unknown_hero_6cc0c367da": { "en": "Unknown hero.", "text": "Heroi desconegut." },
+  "sim.this_hero_joins_from_keep_arg1_b12afb3aa8": { "en": "This hero joins from Keep {arg1}.", "text": "Aquest heroi s'uneix a partir de la Fortalesa {arg1}." },
+  "sim.build_a_hero_hall_first_a589773dbb": { "en": "Build a Hero Hall first.", "text": "Primer construeix una Sala dels Herois." },
+  "sim.this_keep_is_already_sealed_051c6a8626": { "en": "This Keep is already sealed.", "text": "Aquesta Fortalesa ja té el segell." },
+  "sim.build_every_building_this_keep_allows_to_93eea11b5b": { "en": "Build every building this Keep allows to its cap first ({arg1} of {arg2}).", "text": "Primer porta al màxim tots els edificis que permet aquesta Fortalesa ({arg1}/{arg2})." },
+  "sim.this_purchase_was_already_refunded_05408e619d": { "en": "This purchase was already refunded.", "text": "Aquesta compra ja s'ha reemborsat." },
+  "sim.this_look_is_earned_in_play_never_sold_9025163fca": { "en": "This look is earned in play, never sold.", "text": "Aquest aspecte s'aconsegueix jugant; no es ven mai." },
+  "sim.you_ve_opened_today_s_chest_a_new_one_is_b4753d2b3f": { "en": "You've opened today's chest. A new one is ready when your next day starts.", "text": "Ja has obert el cofre d'avui. N'hi haurà un de nou quan comenci el teu dia següent." },
+  "sim.trial_fortress_damage_is_not_allowed_05759d6468": { "en": "Trial fortress damage is not allowed.", "text": "No es permet el dany a les fortaleses de les Proves." },
+  "sim.there_is_no_daily_drill_49086be800": { "en": "There is no daily drill.", "text": "No hi ha cap exercici diari." },
+  "sim.too_long_ago_146e28a63e": { "en": "Too long ago.", "text": "Fa massa temps." },
+  "sim.build_a_training_dojo_and_a_squad_courty_ad04d756ab": { "en": "Build a Training Dojo and a Squad Courtyard first.", "text": "Primer construeix un Dojo d'Entrenament i un Pati dels Esquadrons." }
 }

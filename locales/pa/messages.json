@@ -697,7 +697,6 @@
   "sim.you_have_all_the_village_artisans_you__ca4070d4a7": { "en": "You have all the Village Artisans you can hire.", "text": "ਤੁਹਾਡੇ ਕੋਲ ਰੱਖੇ ਜਾ ਸਕਣ ਵਾਲੇ ਸਾਰੇ ਪਿੰਡ ਦੇ ਕਾਰੀਗਰ ਹਨ।" },
   "sim.you_have_used_both_alliance_war_attack_d6ede0593a": { "en": "You have used both Alliance War attacks.", "text": "ਤੁਹਾਡੇ ਗੱਠਜੋੜ ਜੰਗ ਦੇ ਦੋਵੇਂ ਹਮਲੇ ਵਰਤੇ ਜਾ ਚੁੱਕੇ ਹਨ।" },
   "sim.you_joined_829a54399a": { "en": "You joined {arg1}!", "text": "{arg1} ਵਿੱਚ ਜੀ ਆਇਆਂ ਨੂੰ!" },
-  "sim.you_ve_opened_today_s_chest_a_new_one__55f50ec652": { "en": "You've opened today's chest. A new one is ready at the start of the next day (UTC).", "text": "ਅੱਜ ਦਾ ਸੰਦੂਕ ਖੁੱਲ੍ਹ ਚੁੱਕਾ ਹੈ। ਨਵਾਂ ਅਗਲੇ ਦਿਨ ਦੀ ਸ਼ੁਰੂਆਤ (UTC) 'ਤੇ ਤਿਆਰ ਹੋਵੇਗਾ।" },
   "sim.your_alliance_lodge_is_full_6f3ca3b404": { "en": "Your Alliance Lodge is full.", "text": "ਤੁਹਾਡਾ ਗੱਠਜੋੜ ਭਵਨ ਭਰਿਆ ਹੋਇਆ ਹੈ।" },
   "sim.your_army_is_ready_f50ad8c7f1": { "en": "Your army is ready", "text": "ਤੁਹਾਡੀ ਫ਼ੌਜ ਤਿਆਰ ਹੈ" },
   "sim.your_clan_stipend_still_has_payments_t_d997968533": { "en": "Your Clan Stipend still has payments to claim. You can buy another when they are all claimed.", "text": "ਤੁਹਾਡੇ ਕਬੀਲਾ ਵਜ਼ੀਫ਼ੇ ਦੀਆਂ ਕਿਸ਼ਤਾਂ ਅਜੇ ਲੈਣੀਆਂ ਬਾਕੀ ਹਨ। ਸਾਰੀਆਂ ਲੈਣ ਮਗਰੋਂ ਤੁਸੀਂ ਹੋਰ ਖ਼ਰੀਦ ਸਕਦੇ ਹੋ।" },
@@ -2100,5 +2099,19 @@
   "srv.import.refused": { "en": "This village cannot move to the server: {detail}", "text": "ਇਹ ਪਿੰਡ ਸਰਵਰ 'ਤੇ ਨਹੀਂ ਜਾ ਸਕਦਾ: {detail}" },
   "srv.import.too_new": { "en": "A village at Keep {keep} can move to the server once this online account is {days} days old (in {wait, plural, one {# day} other {# days}}). It stays on this device meanwhile: keep playing, and the game tries again each day.", "text": "ਕਿਲ੍ਹਾ {keep} ਵਾਲਾ ਪਿੰਡ ਸਰਵਰ 'ਤੇ ਤਦ ਜਾ ਸਕਦਾ ਹੈ ਜਦੋਂ ਇਹ ਔਨਲਾਈਨ ਖਾਤਾ {days} ਦਿਨ ਪੁਰਾਣਾ ਹੋ ਜਾਵੇ ({wait, plural, one {# ਦਿਨ ਵਿੱਚ} other {# ਦਿਨਾਂ ਵਿੱਚ}})। ਉਦੋਂ ਤੱਕ ਇਹ ਇਸ ਡਿਵਾਈਸ 'ਤੇ ਰਹਿੰਦਾ ਹੈ: ਖੇਡਦੇ ਰਹੋ, ਖੇਡ ਹਰ ਰੋਜ਼ ਮੁੜ ਕੋਸ਼ਿਸ਼ ਕਰਦੀ ਹੈ।" },
   "common.buyNext": { "en": "Buy & Next {n} ", "text": "ਖ਼ਰੀਦੋ ਅਤੇ ਅਗਲਾ {n} " },
-  "common.buyFill": { "en": "Buy & Fill {n} ", "text": "ਖ਼ਰੀਦੋ ਅਤੇ ਭਰੋ {n} " }
+  "common.buyFill": { "en": "Buy & Fill {n} ", "text": "ਖ਼ਰੀਦੋ ਅਤੇ ਭਰੋ {n} " },
+  "sim.only_walls_and_traps_can_be_paid_in_prov_e809aeabdf": { "en": "Only walls and traps can be paid in Provisions.", "text": "ਰਸਦ ਨਾਲ ਸਿਰਫ਼ ਕੰਧਾਂ ਅਤੇ ਫਾਹੀਆਂ ਦਾ ਭੁਗਤਾਨ ਹੋ ਸਕਦਾ ਹੈ।" },
+  "sim.choosing_a_hero_is_not_available_yet_27abc790aa": { "en": "Choosing a hero is not available yet.", "text": "ਨਾਇਕ ਚੁਣਨ ਦੀ ਸਹੂਲਤ ਅਜੇ ਉਪਲਬਧ ਨਹੀਂ।" },
+  "sim.unknown_hero_6cc0c367da": { "en": "Unknown hero.", "text": "ਅਣਜਾਣ ਨਾਇਕ।" },
+  "sim.this_hero_joins_from_keep_arg1_b12afb3aa8": { "en": "This hero joins from Keep {arg1}.", "text": "ਇਹ ਨਾਇਕ ਕਿਲ੍ਹਾ {arg1} ਤੋਂ ਸ਼ਾਮਲ ਹੁੰਦਾ ਹੈ।" },
+  "sim.build_a_hero_hall_first_a589773dbb": { "en": "Build a Hero Hall first.", "text": "ਪਹਿਲਾਂ ਨਾਇਕ ਭਵਨ ਬਣਾਓ।" },
+  "sim.this_keep_is_already_sealed_051c6a8626": { "en": "This Keep is already sealed.", "text": "ਇਸ ਕਿਲ੍ਹੇ 'ਤੇ ਪਹਿਲਾਂ ਹੀ ਮੋਹਰ ਲੱਗ ਚੁੱਕੀ ਹੈ।" },
+  "sim.build_every_building_this_keep_allows_to_93eea11b5b": { "en": "Build every building this Keep allows to its cap first ({arg1} of {arg2}).", "text": "ਪਹਿਲਾਂ ਇਹ ਕਿਲ੍ਹਾ ਜਿਹੜੀਆਂ ਇਮਾਰਤਾਂ ਦੀ ਇਜਾਜ਼ਤ ਦਿੰਦਾ ਹੈ, ਉਹ ਸਾਰੀਆਂ ਉਨ੍ਹਾਂ ਦੀ ਹੱਦ ਤੱਕ ਬਣਾਓ ({arg2} ਵਿੱਚੋਂ {arg1})।" },
+  "sim.this_purchase_was_already_refunded_05408e619d": { "en": "This purchase was already refunded.", "text": "ਇਸ ਖ਼ਰੀਦ ਦੀ ਰਕਮ ਪਹਿਲਾਂ ਹੀ ਵਾਪਸ ਕੀਤੀ ਜਾ ਚੁੱਕੀ ਹੈ।" },
+  "sim.this_look_is_earned_in_play_never_sold_9025163fca": { "en": "This look is earned in play, never sold.", "text": "ਇਹ ਰੂਪ ਖੇਡ ਕੇ ਕਮਾਇਆ ਜਾਂਦਾ ਹੈ, ਕਦੇ ਵੇਚਿਆ ਨਹੀਂ ਜਾਂਦਾ।" },
+  "sim.you_ve_opened_today_s_chest_a_new_one_is_b4753d2b3f": { "en": "You've opened today's chest. A new one is ready when your next day starts.", "text": "ਤੁਸੀਂ ਅੱਜ ਦਾ ਸੰਦੂਕ ਖੋਲ੍ਹ ਲਿਆ ਹੈ। ਤੁਹਾਡਾ ਅਗਲਾ ਦਿਨ ਸ਼ੁਰੂ ਹੋਣ 'ਤੇ ਨਵਾਂ ਸੰਦੂਕ ਤਿਆਰ ਹੋਵੇਗਾ।" },
+  "sim.trial_fortress_damage_is_not_allowed_05759d6468": { "en": "Trial fortress damage is not allowed.", "text": "ਪਰਖ ਗੜ੍ਹ ਦੇ ਨੁਕਸਾਨ ਦੀ ਇਜਾਜ਼ਤ ਨਹੀਂ।" },
+  "sim.there_is_no_daily_drill_49086be800": { "en": "There is no daily drill.", "text": "ਕੋਈ ਰੋਜ਼ਾਨਾ ਅਭਿਆਸ ਨਹੀਂ ਹੈ।" },
+  "sim.too_long_ago_146e28a63e": { "en": "Too long ago.", "text": "ਬਹੁਤ ਸਮਾਂ ਪਹਿਲਾਂ ਦੀ ਗੱਲ ਹੈ।" },
+  "sim.build_a_training_dojo_and_a_squad_courty_ad04d756ab": { "en": "Build a Training Dojo and a Squad Courtyard first.", "text": "ਪਹਿਲਾਂ ਸਿਖਲਾਈ ਦੋਜੋ ਅਤੇ ਦਸਤੇ ਦਾ ਵਿਹੜਾ ਬਣਾਓ।" }
 }

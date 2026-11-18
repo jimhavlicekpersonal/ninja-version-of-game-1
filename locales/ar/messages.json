@@ -697,7 +697,6 @@
   "sim.you_have_all_the_village_artisans_you__ca4070d4a7": { "en": "You have all the Village Artisans you can hire.", "text": "لديك كل حرفيي القرية الذين يمكن توظيفهم." },
   "sim.you_have_used_both_alliance_war_attack_d6ede0593a": { "en": "You have used both Alliance War attacks.", "text": "استخدمت هجومَي حرب التحالفات كليهما." },
   "sim.you_joined_829a54399a": { "en": "You joined {arg1}!", "text": "انضممت إلى {arg1}!" },
-  "sim.you_ve_opened_today_s_chest_a_new_one__55f50ec652": { "en": "You've opened today's chest. A new one is ready at the start of the next day (UTC).", "text": "فتحت صندوق اليوم. يجهز صندوق جديد في بداية اليوم التالي (بالتوقيت العالمي)." },
   "sim.your_alliance_lodge_is_full_6f3ca3b404": { "en": "Your Alliance Lodge is full.", "text": "دار التحالف ممتلئة." },
   "sim.your_army_is_ready_f50ad8c7f1": { "en": "Your army is ready", "text": "جيشك جاهز" },
   "sim.your_clan_stipend_still_has_payments_t_d997968533": { "en": "Your Clan Stipend still has payments to claim. You can buy another when they are all claimed.", "text": "لا يزال في راتب العشيرة دفعات للاستلام. يمكن شراء راتب آخر بعد استلامها كلها." },
@@ -2100,5 +2099,19 @@
   "srv.import.refused": { "en": "This village cannot move to the server: {detail}", "text": "لا يمكن نقل هذه القرية إلى الخادم: {detail}" },
   "srv.import.too_new": { "en": "A village at Keep {keep} can move to the server once this online account is {days} days old (in {wait, plural, one {# day} other {# days}}). It stays on this device meanwhile: keep playing, and the game tries again each day.", "text": "يمكن نقل قرية بمستوى قلعة {keep} إلى الخادم بعد أن يبلغ عمر هذا الحساب عبر الإنترنت {days} يومًا (المتبقي: {wait, plural, zero {# يوم} one {يوم واحد} two {يومان} few {# أيام} many {# يومًا} other {# يوم}}). تبقى القرية على هذا الجهاز في الأثناء: يمكن مواصلة اللعب، وستحاول اللعبة مجددًا كل يوم." },
   "common.buyNext": { "en": "Buy & Next {n} ", "text": "شراء وتجهيز التالي {n} " },
-  "common.buyFill": { "en": "Buy & Fill {n} ", "text": "شراء وملء {n} " }
+  "common.buyFill": { "en": "Buy & Fill {n} ", "text": "شراء وملء {n} " },
+  "sim.only_walls_and_traps_can_be_paid_in_prov_e809aeabdf": { "en": "Only walls and traps can be paid in Provisions.", "text": "لا يمكن الدفع بالمؤن إلا للأسوار والفخاخ." },
+  "sim.choosing_a_hero_is_not_available_yet_27abc790aa": { "en": "Choosing a hero is not available yet.", "text": "اختيار البطل غير متاح بعد." },
+  "sim.unknown_hero_6cc0c367da": { "en": "Unknown hero.", "text": "بطل غير معروف." },
+  "sim.this_hero_joins_from_keep_arg1_b12afb3aa8": { "en": "This hero joins from Keep {arg1}.", "text": "ينضم هذا البطل بدءًا من القلعة {arg1}." },
+  "sim.build_a_hero_hall_first_a589773dbb": { "en": "Build a Hero Hall first.", "text": "يلزم بناء قاعة الأبطال أولًا." },
+  "sim.this_keep_is_already_sealed_051c6a8626": { "en": "This Keep is already sealed.", "text": "هذه القلعة مختومة بالفعل." },
+  "sim.build_every_building_this_keep_allows_to_93eea11b5b": { "en": "Build every building this Keep allows to its cap first ({arg1} of {arg2}).", "text": "يلزم أولًا بناء كل مبنى تسمح به هذه القلعة حتى حدّه الأقصى ({arg1} من {arg2})." },
+  "sim.this_purchase_was_already_refunded_05408e619d": { "en": "This purchase was already refunded.", "text": "استُردت قيمة عملية الشراء هذه بالفعل." },
+  "sim.this_look_is_earned_in_play_never_sold_9025163fca": { "en": "This look is earned in play, never sold.", "text": "هذا المظهر يُكسب باللعب، ولا يُباع أبدًا." },
+  "sim.you_ve_opened_today_s_chest_a_new_one_is_b4753d2b3f": { "en": "You've opened today's chest. A new one is ready when your next day starts.", "text": "فُتح صندوق اليوم بالفعل. يصبح صندوق جديد جاهزًا مع بداية يومك التالي." },
+  "sim.trial_fortress_damage_is_not_allowed_05759d6468": { "en": "Trial fortress damage is not allowed.", "text": "لا يُسمح بضرر حصن الاختبار." },
+  "sim.there_is_no_daily_drill_49086be800": { "en": "There is no daily drill.", "text": "لا يوجد تمرين يومي." },
+  "sim.too_long_ago_146e28a63e": { "en": "Too long ago.", "text": "مضى وقت طويل جدًا." },
+  "sim.build_a_training_dojo_and_a_squad_courty_ad04d756ab": { "en": "Build a Training Dojo and a Squad Courtyard first.", "text": "يلزم بناء دوجو التدريب وساحة الفرق أولًا." }
 }

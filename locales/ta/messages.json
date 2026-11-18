@@ -697,7 +697,6 @@
   "sim.you_have_all_the_village_artisans_you__ca4070d4a7": { "en": "You have all the Village Artisans you can hire.", "text": "அமர்த்தக்கூடிய எல்லாக் கிராமக் கைவினைஞர்களும் உங்களிடம் உள்ளனர்." },
   "sim.you_have_used_both_alliance_war_attack_d6ede0593a": { "en": "You have used both Alliance War attacks.", "text": "இரண்டு கூட்டணிப் போர்த் தாக்குதல்களையும் பயன்படுத்திவிட்டீர்கள்." },
   "sim.you_joined_829a54399a": { "en": "You joined {arg1}!", "text": "நீங்கள் சேர்ந்தீர்கள்: {arg1}!" },
-  "sim.you_ve_opened_today_s_chest_a_new_one__55f50ec652": { "en": "You've opened today's chest. A new one is ready at the start of the next day (UTC).", "text": "இன்றைய பெட்டியைத் திறந்துவிட்டீர்கள். அடுத்த நாள் (UTC) தொடக்கத்தில் புதியது தயாராகும்." },
   "sim.your_alliance_lodge_is_full_6f3ca3b404": { "en": "Your Alliance Lodge is full.", "text": "உங்கள் கூட்டணி மன்றம் நிரம்பியுள்ளது." },
   "sim.your_army_is_ready_f50ad8c7f1": { "en": "Your army is ready", "text": "உங்கள் படை தயார்" },
   "sim.your_clan_stipend_still_has_payments_t_d997968533": { "en": "Your Clan Stipend still has payments to claim. You can buy another when they are all claimed.", "text": "உங்கள் குல உதவித்தொகையில் இன்னும் பெற வேண்டிய கொடுப்பனவுகள் உள்ளன. அனைத்தையும் பெற்ற பிறகு இன்னொன்றை வாங்கலாம்." },
@@ -2100,5 +2099,19 @@
   "srv.import.refused": { "en": "This village cannot move to the server: {detail}", "text": "இந்தக் கிராமம் சர்வருக்கு நகர முடியாது: {detail}" },
   "srv.import.too_new": { "en": "A village at Keep {keep} can move to the server once this online account is {days} days old (in {wait, plural, one {# day} other {# days}}). It stays on this device meanwhile: keep playing, and the game tries again each day.", "text": "கோட்டை நிலை {keep} கொண்ட கிராமம், இந்த ஆன்லைன் கணக்கின் வயது {days} நாட்கள் ஆனதும் சர்வருக்கு நகரலாம் (இன்னும் {wait, plural, one {# நாள்} other {# நாட்கள்}}). அதுவரை இந்தச் சாதனத்திலேயே இருக்கும்: தொடர்ந்து விளையாடுங்கள், ஆட்டம் ஒவ்வொரு நாளும் மீண்டும் முயலும்." },
   "common.buyNext": { "en": "Buy & Next {n} ", "text": "வாங்கு · அடுத்து {n} " },
-  "common.buyFill": { "en": "Buy & Fill {n} ", "text": "வாங்கு · நிரப்பு {n} " }
+  "common.buyFill": { "en": "Buy & Fill {n} ", "text": "வாங்கு · நிரப்பு {n} " },
+  "sim.only_walls_and_traps_can_be_paid_in_prov_e809aeabdf": { "en": "Only walls and traps can be paid in Provisions.", "text": "சுவர்களுக்கும் பொறிகளுக்கும் மட்டுமே உணவால் செலுத்த முடியும்." },
+  "sim.choosing_a_hero_is_not_available_yet_27abc790aa": { "en": "Choosing a hero is not available yet.", "text": "நாயகரைத் தேர்ந்தெடுப்பது இன்னும் கிடைக்கவில்லை." },
+  "sim.unknown_hero_6cc0c367da": { "en": "Unknown hero.", "text": "தெரியாத நாயகர்." },
+  "sim.this_hero_joins_from_keep_arg1_b12afb3aa8": { "en": "This hero joins from Keep {arg1}.", "text": "இந்த நாயகர் சேரும் கோட்டை நிலை: {arg1}." },
+  "sim.build_a_hero_hall_first_a589773dbb": { "en": "Build a Hero Hall first.", "text": "முதலில் நாயகர் மண்டபத்தைக் கட்டுங்கள்." },
+  "sim.this_keep_is_already_sealed_051c6a8626": { "en": "This Keep is already sealed.", "text": "இந்தக் கோட்டைக்கு ஏற்கெனவே முத்திரை கிடைத்துவிட்டது." },
+  "sim.build_every_building_this_keep_allows_to_93eea11b5b": { "en": "Build every building this Keep allows to its cap first ({arg1} of {arg2}).", "text": "முதலில் இந்தக் கோட்டை அனுமதிக்கும் ஒவ்வொரு கட்டடத்தையும் அதன் உச்ச நிலைக்குக் கட்டுங்கள் ({arg1} / {arg2})." },
+  "sim.this_purchase_was_already_refunded_05408e619d": { "en": "This purchase was already refunded.", "text": "இந்த வாங்குதலுக்கு ஏற்கெனவே பணம் திருப்பித் தரப்பட்டது." },
+  "sim.this_look_is_earned_in_play_never_sold_9025163fca": { "en": "This look is earned in play, never sold.", "text": "இந்தத் தோற்றம் ஆட்டத்தில் மட்டுமே பெறப்படும், விற்கப்படுவதில்லை." },
+  "sim.you_ve_opened_today_s_chest_a_new_one_is_b4753d2b3f": { "en": "You've opened today's chest. A new one is ready when your next day starts.", "text": "இன்றைய பெட்டியைத் திறந்துவிட்டீர்கள். உங்கள் அடுத்த நாள் தொடங்கும்போது புதியது தயாராகும்." },
+  "sim.trial_fortress_damage_is_not_allowed_05759d6468": { "en": "Trial fortress damage is not allowed.", "text": "சோதனைக் கோட்டைச் சேதம் அனுமதிக்கப்படவில்லை." },
+  "sim.there_is_no_daily_drill_49086be800": { "en": "There is no daily drill.", "text": "தினசரிப் பயிற்சி எதுவும் இல்லை." },
+  "sim.too_long_ago_146e28a63e": { "en": "Too long ago.", "text": "மிக நீண்ட காலத்துக்கு முன்பு." },
+  "sim.build_a_training_dojo_and_a_squad_courty_ad04d756ab": { "en": "Build a Training Dojo and a Squad Courtyard first.", "text": "முதலில் ஒரு பயிற்சி டோஜோவையும் அணி முற்றத்தையும் கட்டுங்கள்." }
 }

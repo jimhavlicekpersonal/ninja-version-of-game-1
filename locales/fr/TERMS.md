@@ -21,6 +21,8 @@ Français international avec *tu* (minuscule, y compris dans les textes juridiqu
 | Honor / Power / League | Honneur / Puissance / Ligue (Ligue Bambou … Ligue Kage) |
 | Daily chest / streak / skip | coffre quotidien / série / joker |
 | Clan Stipend / Looks | Solde du Clan / Apparences |
+| The Gauntlet / Bounty Hunt / festival fortress | Le Grand Assaut / Chasse à la prime / forteresse du festival |
+| Daily contract / Keep seal / stake / reward ladder mark | Contrat du jour / sceau du Donjon / mise / repère de l'échelle |
 | Research / Upgrade / Lv / Tile | Recherche / Améliorer, amélioration / niv. / case |
 | Kite | cerf-volant |
 | leader (player) | chef de clan (épicène) |

@@ -697,7 +697,6 @@
   "sim.you_have_all_the_village_artisans_you__ca4070d4a7": { "en": "You have all the Village Artisans you can hire.", "text": "I nwere Ndị Ọrụaka Obodo niile ị pụrụ iwe n'ọrụ." },
   "sim.you_have_used_both_alliance_war_attack_d6ede0593a": { "en": "You have used both Alliance War attacks.", "text": "I jirila mwakpo Agha Njikọ abụọ." },
   "sim.you_joined_829a54399a": { "en": "You joined {arg1}!", "text": "Ị sonyere na {arg1}!" },
-  "sim.you_ve_opened_today_s_chest_a_new_one__55f50ec652": { "en": "You've opened today's chest. A new one is ready at the start of the next day (UTC).", "text": "I mepeela igbe nke taa. Nke ọhụrụ ga-adị njikere na mmalite ụbọchị na-esote (UTC)." },
   "sim.your_alliance_lodge_is_full_6f3ca3b404": { "en": "Your Alliance Lodge is full.", "text": "Ụlọ Nzukọ Njikọ gị ejupụtala." },
   "sim.your_army_is_ready_f50ad8c7f1": { "en": "Your army is ready", "text": "Usuu agha gị adịla njikere" },
   "sim.your_clan_stipend_still_has_payments_t_d997968533": { "en": "Your Clan Stipend still has payments to claim. You can buy another when they are all claimed.", "text": "Ụgwọ Agbụrụ gị ka nwere ụgwọ a ga-anara. Ị nwere ike ịzụta ọzọ mgbe a natara ha niile." },
@@ -2100,5 +2099,19 @@
   "srv.import.refused": { "en": "This village cannot move to the server: {detail}", "text": "Obodo a enweghị ike ịkwaga na sava: {detail}" },
   "srv.import.too_new": { "en": "A village at Keep {keep} can move to the server once this online account is {days} days old (in {wait, plural, one {# day} other {# days}}). It stays on this device meanwhile: keep playing, and the game tries again each day.", "text": "Obodo nọ n'Obi ọkwa {keep} nwere ike ịkwaga na sava mgbe akaụntụ ịntanetị a gbara ụbọchị {days} (n'ime {wait, plural, other {ụbọchị #}}). Ọ ga-anọ na ngwaọrụ a ka ọ dị ugbu a: gaa n'ihu na-egwu, egwuregwu ahụ ga-anwa ọzọ kwa ụbọchị." },
   "common.buyNext": { "en": "Buy & Next {n} ", "text": "Zụta & Nke ọzọ {n} " },
-  "common.buyFill": { "en": "Buy & Fill {n} ", "text": "Zụta & Mejupụta {n} " }
+  "common.buyFill": { "en": "Buy & Fill {n} ", "text": "Zụta & Mejupụta {n} " },
+  "sim.only_walls_and_traps_can_be_paid_in_prov_e809aeabdf": { "en": "Only walls and traps can be paid in Provisions.", "text": "Ọ bụ naanị mgbidi na ọnya ka e nwere ike iji Nri kwụọ ụgwọ ha." },
+  "sim.choosing_a_hero_is_not_available_yet_27abc790aa": { "en": "Choosing a hero is not available yet.", "text": "Ịhọrọ dike agbụrụ adịbeghị." },
+  "sim.unknown_hero_6cc0c367da": { "en": "Unknown hero.", "text": "Dike agbụrụ a na-amaghị." },
+  "sim.this_hero_joins_from_keep_arg1_b12afb3aa8": { "en": "This hero joins from Keep {arg1}.", "text": "Dike agbụrụ a na-esonye site n'Obi ọkwa {arg1}." },
+  "sim.build_a_hero_hall_first_a589773dbb": { "en": "Build a Hero Hall first.", "text": "Buru ụzọ wuo Ụlọ Dike Agbụrụ." },
+  "sim.this_keep_is_already_sealed_051c6a8626": { "en": "This Keep is already sealed.", "text": "E tinyelarị akara n'Obi a." },
+  "sim.build_every_building_this_keep_allows_to_93eea11b5b": { "en": "Build every building this Keep allows to its cap first ({arg1} of {arg2}).", "text": "Buru ụzọ wulite ụlọ ọ bụla Obi a kwere ruo ọkwa kacha elu ya ({arg1} n'ime {arg2})." },
+  "sim.this_purchase_was_already_refunded_05408e619d": { "en": "This purchase was already refunded.", "text": "Ewegharịala ego ịzụ ahịa a." },
+  "sim.this_look_is_earned_in_play_never_sold_9025163fca": { "en": "This look is earned in play, never sold.", "text": "A na-enweta ọdịdị a n'egwuregwu; a dịghị ere ya ere." },
+  "sim.you_ve_opened_today_s_chest_a_new_one_is_b4753d2b3f": { "en": "You've opened today's chest. A new one is ready when your next day starts.", "text": "I meghela igbe nke taa. Nke ọhụrụ ga-adị njikere mgbe ụbọchị gị na-esote malitere." },
+  "sim.trial_fortress_damage_is_not_allowed_05759d6468": { "en": "Trial fortress damage is not allowed.", "text": "Anabataghị mmebi ebe ike ule." },
+  "sim.there_is_no_daily_drill_49086be800": { "en": "There is no daily drill.", "text": "Enweghị mmega kwa ụbọchị." },
+  "sim.too_long_ago_146e28a63e": { "en": "Too long ago.", "text": "Ọ dịla anya nke ukwuu." },
+  "sim.build_a_training_dojo_and_a_squad_courty_ad04d756ab": { "en": "Build a Training Dojo and a Squad Courtyard first.", "text": "Buru ụzọ wuo Dojo Ọzụzụ na Ogige Ndị Agha." }
 }

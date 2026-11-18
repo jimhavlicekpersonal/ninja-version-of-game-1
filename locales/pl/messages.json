@@ -697,7 +697,6 @@
   "sim.you_have_all_the_village_artisans_you__ca4070d4a7": { "en": "You have all the Village Artisans you can hire.", "text": "Masz już wszystkich Rzemieślników, których można zatrudnić." },
   "sim.you_have_used_both_alliance_war_attack_d6ede0593a": { "en": "You have used both Alliance War attacks.", "text": "Oba ataki w Wojnie Sojuszy zostały wykorzystane." },
   "sim.you_joined_829a54399a": { "en": "You joined {arg1}!", "text": "Jesteś teraz w: {arg1}!" },
-  "sim.you_ve_opened_today_s_chest_a_new_one__55f50ec652": { "en": "You've opened today's chest. A new one is ready at the start of the next day (UTC).", "text": "Dzisiejsza skrzynia jest już otwarta. Nowa będzie gotowa na początku następnego dnia (UTC)." },
   "sim.your_alliance_lodge_is_full_6f3ca3b404": { "en": "Your Alliance Lodge is full.", "text": "Twoja Siedziba Sojuszu jest pełna." },
   "sim.your_army_is_ready_f50ad8c7f1": { "en": "Your army is ready", "text": "Twoja armia jest gotowa" },
   "sim.your_clan_stipend_still_has_payments_t_d997968533": { "en": "Your Clan Stipend still has payments to claim. You can buy another when they are all claimed.", "text": "Twoje Stypendium Klanu ma jeszcze wypłaty do odebrania. Kolejne możesz kupić, gdy odbierzesz wszystkie." },
@@ -2100,5 +2099,19 @@
   "srv.import.refused": { "en": "This village cannot move to the server: {detail}", "text": "Ta wioska nie może przenieść się na serwer: {detail}" },
   "srv.import.too_new": { "en": "A village at Keep {keep} can move to the server once this online account is {days} days old (in {wait, plural, one {# day} other {# days}}). It stays on this device meanwhile: keep playing, and the game tries again each day.", "text": "Wioska z Twierdzą {keep} może przenieść się na serwer, gdy to konto online będzie miało {days} dni (za {wait, plural, one {# dzień} few {# dni} many {# dni} other {# dnia}}). Do tego czasu zostaje na tym urządzeniu: graj dalej, a gra będzie próbować codziennie." },
   "common.buyNext": { "en": "Buy & Next {n} ", "text": "Kup i Dalej {n} " },
-  "common.buyFill": { "en": "Buy & Fill {n} ", "text": "Kup i Uzupełnij {n} " }
+  "common.buyFill": { "en": "Buy & Fill {n} ", "text": "Kup i Uzupełnij {n} " },
+  "sim.only_walls_and_traps_can_be_paid_in_prov_e809aeabdf": { "en": "Only walls and traps can be paid in Provisions.", "text": "Prowiantem można płacić tylko za mury i pułapki." },
+  "sim.choosing_a_hero_is_not_available_yet_27abc790aa": { "en": "Choosing a hero is not available yet.", "text": "Wybór bohatera nie jest jeszcze dostępny." },
+  "sim.unknown_hero_6cc0c367da": { "en": "Unknown hero.", "text": "Nieznany bohater." },
+  "sim.this_hero_joins_from_keep_arg1_b12afb3aa8": { "en": "This hero joins from Keep {arg1}.", "text": "Ten bohater dołącza od Twierdzy {arg1}." },
+  "sim.build_a_hero_hall_first_a589773dbb": { "en": "Build a Hero Hall first.", "text": "Najpierw zbuduj Salę Bohatera." },
+  "sim.this_keep_is_already_sealed_051c6a8626": { "en": "This Keep is already sealed.", "text": "Ta Twierdza ma już pieczęć." },
+  "sim.build_every_building_this_keep_allows_to_93eea11b5b": { "en": "Build every building this Keep allows to its cap first ({arg1} of {arg2}).", "text": "Najpierw rozbuduj każdy budynek, na który pozwala ta Twierdza, do jej limitu ({arg1} z {arg2})." },
+  "sim.this_purchase_was_already_refunded_05408e619d": { "en": "This purchase was already refunded.", "text": "Za ten zakup zwrócono już pieniądze." },
+  "sim.this_look_is_earned_in_play_never_sold_9025163fca": { "en": "This look is earned in play, never sold.", "text": "Ten wygląd zdobywa się w grze, nigdy nie jest na sprzedaż." },
+  "sim.you_ve_opened_today_s_chest_a_new_one_is_b4753d2b3f": { "en": "You've opened today's chest. A new one is ready when your next day starts.", "text": "Dzisiejsza skrzynia jest już otwarta. Nowa będzie gotowa, gdy zacznie się twój następny dzień." },
+  "sim.trial_fortress_damage_is_not_allowed_05759d6468": { "en": "Trial fortress damage is not allowed.", "text": "Takie zniszczenia fortecy prób są niedozwolone." },
+  "sim.there_is_no_daily_drill_49086be800": { "en": "There is no daily drill.", "text": "Nie ma codziennego treningu." },
+  "sim.too_long_ago_146e28a63e": { "en": "Too long ago.", "text": "To było zbyt dawno." },
+  "sim.build_a_training_dojo_and_a_squad_courty_ad04d756ab": { "en": "Build a Training Dojo and a Squad Courtyard first.", "text": "Najpierw zbuduj Dojo Treningowe i Dziedziniec Oddziałów." }
 }

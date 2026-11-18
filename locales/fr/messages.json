@@ -697,7 +697,6 @@
   "sim.you_have_all_the_village_artisans_you__ca4070d4a7": { "en": "You have all the Village Artisans you can hire.", "text": "Tu as tous les Artisans du village que tu peux engager." },
   "sim.you_have_used_both_alliance_war_attack_d6ede0593a": { "en": "You have used both Alliance War attacks.", "text": "Tu as utilisé tes deux attaques de Guerre d'Alliance." },
   "sim.you_joined_829a54399a": { "en": "You joined {arg1}!", "text": "Bienvenue dans {arg1} !" },
-  "sim.you_ve_opened_today_s_chest_a_new_one__55f50ec652": { "en": "You've opened today's chest. A new one is ready at the start of the next day (UTC).", "text": "Tu as ouvert le coffre du jour. Un nouveau sera prêt au début du jour suivant (UTC)." },
   "sim.your_alliance_lodge_is_full_6f3ca3b404": { "en": "Your Alliance Lodge is full.", "text": "Ton Pavillon d'Alliance est plein." },
   "sim.your_army_is_ready_f50ad8c7f1": { "en": "Your army is ready", "text": "Ton armée est prête" },
   "sim.your_clan_stipend_still_has_payments_t_d997968533": { "en": "Your Clan Stipend still has payments to claim. You can buy another when they are all claimed.", "text": "Ton Solde du Clan a encore des versements à récupérer. Tu pourras en acheter un autre quand ils seront tous récupérés." },
@@ -2100,5 +2099,19 @@
   "srv.import.refused": { "en": "This village cannot move to the server: {detail}", "text": "Ce village ne peut pas passer sur le serveur : {detail}" },
   "srv.import.too_new": { "en": "A village at Keep {keep} can move to the server once this online account is {days} days old (in {wait, plural, one {# day} other {# days}}). It stays on this device meanwhile: keep playing, and the game tries again each day.", "text": "Un village au Donjon {keep} peut passer sur le serveur dès que ce compte en ligne a {days} jours (dans {wait, plural, one {# jour} other {# jours}}). En attendant, il reste sur cet appareil : continue à jouer, le jeu réessaie chaque jour." },
   "common.buyNext": { "en": "Buy & Next {n} ", "text": "Acheter et Suivants {n} " },
-  "common.buyFill": { "en": "Buy & Fill {n} ", "text": "Acheter et Remplir {n} " }
+  "common.buyFill": { "en": "Buy & Fill {n} ", "text": "Acheter et Remplir {n} " },
+  "sim.only_walls_and_traps_can_be_paid_in_prov_e809aeabdf": { "en": "Only walls and traps can be paid in Provisions.", "text": "Seuls les murs et les pièges peuvent être payés en Provisions." },
+  "sim.choosing_a_hero_is_not_available_yet_27abc790aa": { "en": "Choosing a hero is not available yet.", "text": "Le choix d'un héros n'est pas encore disponible." },
+  "sim.unknown_hero_6cc0c367da": { "en": "Unknown hero.", "text": "Héros inconnu." },
+  "sim.this_hero_joins_from_keep_arg1_b12afb3aa8": { "en": "This hero joins from Keep {arg1}.", "text": "Ce héros rejoint le clan à partir du Donjon {arg1}." },
+  "sim.build_a_hero_hall_first_a589773dbb": { "en": "Build a Hero Hall first.", "text": "Construis d'abord une Salle des Héros." },
+  "sim.this_keep_is_already_sealed_051c6a8626": { "en": "This Keep is already sealed.", "text": "Ce Donjon est déjà scellé." },
+  "sim.build_every_building_this_keep_allows_to_93eea11b5b": { "en": "Build every building this Keep allows to its cap first ({arg1} of {arg2}).", "text": "Monte d'abord chaque bâtiment permis par ce Donjon à son niveau maximum ({arg1} sur {arg2})." },
+  "sim.this_purchase_was_already_refunded_05408e619d": { "en": "This purchase was already refunded.", "text": "Cet achat a déjà été remboursé." },
+  "sim.this_look_is_earned_in_play_never_sold_9025163fca": { "en": "This look is earned in play, never sold.", "text": "Cette apparence se gagne en jouant ; elle n'est jamais vendue." },
+  "sim.you_ve_opened_today_s_chest_a_new_one_is_b4753d2b3f": { "en": "You've opened today's chest. A new one is ready when your next day starts.", "text": "Tu as ouvert le coffre du jour. Un nouveau sera prêt au début de ta prochaine journée." },
+  "sim.trial_fortress_damage_is_not_allowed_05759d6468": { "en": "Trial fortress damage is not allowed.", "text": "Les dégâts aux forteresses des Épreuves ne sont pas autorisés." },
+  "sim.there_is_no_daily_drill_49086be800": { "en": "There is no daily drill.", "text": "Il n'y a pas d'exercice du jour." },
+  "sim.too_long_ago_146e28a63e": { "en": "Too long ago.", "text": "Trop ancien." },
+  "sim.build_a_training_dojo_and_a_squad_courty_ad04d756ab": { "en": "Build a Training Dojo and a Squad Courtyard first.", "text": "Construis d'abord un Dojo d'Entraînement et une Cour des Escouades." }
 }

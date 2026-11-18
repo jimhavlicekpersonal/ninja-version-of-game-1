@@ -697,7 +697,6 @@
   "sim.you_have_all_the_village_artisans_you__ca4070d4a7": { "en": "You have all the Village Artisans you can hire.", "text": "고용할 수 있는 마을 장인을 모두 고용했어요." },
   "sim.you_have_used_both_alliance_war_attack_d6ede0593a": { "en": "You have used both Alliance War attacks.", "text": "동맹전 공격 두 번을 모두 사용했어요." },
   "sim.you_joined_829a54399a": { "en": "You joined {arg1}!", "text": "{arg1}에 가입했어요!" },
-  "sim.you_ve_opened_today_s_chest_a_new_one__55f50ec652": { "en": "You've opened today's chest. A new one is ready at the start of the next day (UTC).", "text": "오늘의 상자를 열었어요. 다음 날(UTC)이 시작되면 새 상자가 준비돼요." },
   "sim.your_alliance_lodge_is_full_6f3ca3b404": { "en": "Your Alliance Lodge is full.", "text": "동맹 회관이 가득 찼어요." },
   "sim.your_army_is_ready_f50ad8c7f1": { "en": "Your army is ready", "text": "군대가 준비됐어요" },
   "sim.your_clan_stipend_still_has_payments_t_d997968533": { "en": "Your Clan Stipend still has payments to claim. You can buy another when they are all claimed.", "text": "아직 받을 가문 녹봉이 남아 있어요. 모두 받은 뒤에 다시 살 수 있어요." },
@@ -2100,5 +2099,19 @@
   "srv.import.refused": { "en": "This village cannot move to the server: {detail}", "text": "이 마을은 서버로 옮길 수 없어요: {detail}" },
   "srv.import.too_new": { "en": "A village at Keep {keep} can move to the server once this online account is {days} days old (in {wait, plural, one {# day} other {# days}}). It stays on this device meanwhile: keep playing, and the game tries again each day.", "text": "본성 {keep} 마을은 이 온라인 계정이 생긴 지 {days}일이 지나면 서버로 옮길 수 있어요({wait, plural, other {#일 후}}). 그동안은 이 기기에 남아 있어요. 계속 플레이하면 게임이 매일 다시 시도해요." },
   "common.buyNext": { "en": "Buy & Next {n} ", "text": "구매 & 다음 {n} " },
-  "common.buyFill": { "en": "Buy & Fill {n} ", "text": "구매 & 채우기 {n} " }
+  "common.buyFill": { "en": "Buy & Fill {n} ", "text": "구매 & 채우기 {n} " },
+  "sim.only_walls_and_traps_can_be_paid_in_prov_e809aeabdf": { "en": "Only walls and traps can be paid in Provisions.", "text": "군량으로는 성벽과 함정만 지불할 수 있어요." },
+  "sim.choosing_a_hero_is_not_available_yet_27abc790aa": { "en": "Choosing a hero is not available yet.", "text": "아직 영웅을 고를 수 없어요." },
+  "sim.unknown_hero_6cc0c367da": { "en": "Unknown hero.", "text": "알 수 없는 영웅이에요." },
+  "sim.this_hero_joins_from_keep_arg1_b12afb3aa8": { "en": "This hero joins from Keep {arg1}.", "text": "이 영웅은 본성 {arg1}부터 합류해요." },
+  "sim.build_a_hero_hall_first_a589773dbb": { "en": "Build a Hero Hall first.", "text": "먼저 영웅의 전당을 지으세요." },
+  "sim.this_keep_is_already_sealed_051c6a8626": { "en": "This Keep is already sealed.", "text": "이 본성은 이미 인장을 받았어요." },
+  "sim.build_every_building_this_keep_allows_to_93eea11b5b": { "en": "Build every building this Keep allows to its cap first ({arg1} of {arg2}).", "text": "먼저 이 본성에서 지을 수 있는 모든 건물을 최대 레벨까지 올리세요(완료: {arg1}/{arg2})." },
+  "sim.this_purchase_was_already_refunded_05408e619d": { "en": "This purchase was already refunded.", "text": "이 구매는 이미 환불되었어요." },
+  "sim.this_look_is_earned_in_play_never_sold_9025163fca": { "en": "This look is earned in play, never sold.", "text": "이 외형은 플레이로만 얻을 수 있고 판매하지 않아요." },
+  "sim.you_ve_opened_today_s_chest_a_new_one_is_b4753d2b3f": { "en": "You've opened today's chest. A new one is ready when your next day starts.", "text": "오늘의 상자를 이미 열었어요. 다음 날이 시작되면 새 상자가 준비돼요." },
+  "sim.trial_fortress_damage_is_not_allowed_05759d6468": { "en": "Trial fortress damage is not allowed.", "text": "시련 요새의 피해는 허용되지 않아요." },
+  "sim.there_is_no_daily_drill_49086be800": { "en": "There is no daily drill.", "text": "일일 훈련이 없어요." },
+  "sim.too_long_ago_146e28a63e": { "en": "Too long ago.", "text": "너무 오래전 일이에요." },
+  "sim.build_a_training_dojo_and_a_squad_courty_ad04d756ab": { "en": "Build a Training Dojo and a Squad Courtyard first.", "text": "먼저 수련 도장과 부대 마당을 지으세요." }
 }
