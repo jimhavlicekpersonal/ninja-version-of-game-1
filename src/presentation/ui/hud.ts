@@ -750,7 +750,9 @@ export class Hud {
     this.netPill.className = `net-pill ${conn.status}`;
     this.netPill.textContent = i18nLabel(Hud.NET_LABEL[conn.status] ?? conn.status);
     const queued = conn.enabled ? conn.outbox().length : 0;
-    if (queued) this.netPill.textContent += ` · ${queued} to send`;
+    // P6-10 (UIS-12): the count only on the pill; the sentence (a keyed plural) is its title.
+    if (queued) this.netPill.textContent += ` · ${formatNumber(queued)}`;
+    this.netPill.title = queued ? t('sync.pending', { n: queued }) : i18nText("ui.online_play_17a5942b34");
     if (conn.newDefenses > 0) {
       const n = conn.newDefenses;
       conn.newDefenses = 0;

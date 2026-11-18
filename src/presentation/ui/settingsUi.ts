@@ -61,7 +61,7 @@ export class SettingsUi {
   private restoreVillage(key: string) { return this.host.restoreVillage(key); }
 
   open(online = false): void {
-    const body = h('div', { class: 'settings' });
+    const body = h('div', { class: 'settings', 'data-id': 'settings' });
     const net = this.onlineSection();
     if (online) body.append(net);
 

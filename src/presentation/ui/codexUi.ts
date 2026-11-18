@@ -56,7 +56,7 @@ export function openCodex(host: CodexHost): void {
     // Content batch 2026-11-14: Warrior Mastery, only while the data turns it on (preview).
     const mastery = masterySection(host.c);
     if (mastery) body.append(mastery);
-    if (nextUp) body.append(h('p', { class: 'small' }, h('b', {}, i18nLabel('Next: ')), i18nText("ui.message_6aa36c72d4", { arg1: nextUp.w.name, arg2: nextUp.status.replace('Needs ', 'needs ') })));
+    if (nextUp) body.append(h('p', { class: 'small' }, h('b', {}, i18nLabel('Next: ')), i18nText("ui.message_6aa36c72d4", { arg1: nextUp.w.name, arg2: nextUp.status })));
     const tierSelect = h('select', { 'aria-label': i18nText("ui.filter_classes_by_tier_93298ce75c") }, h('option', { value: '0' }, i18nText("ui.all_tiers_ab6bb77da4")), ...MODEL.tiers.map((tier) => h('option', { value: String(tier.tier) }, tier.name)));
     tierSelect.value = String(tierFilter);
     const roleSelect = h('select', { 'aria-label': i18nText("ui.filter_classes_by_role_ecf50793ab") }, h('option', { value: '' }, i18nText("ui.all_roles_78f133afd3")), ...Object.entries(MODEL.roles).map(([id, r]) => h('option', { value: id }, r.name)));

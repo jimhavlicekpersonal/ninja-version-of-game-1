@@ -438,7 +438,7 @@ export class App {
           if (duel) {
             const sub = { ticket: duel.ticket, seed: session.setup.seed, army: session.setup.army, levels: session.setup.levels, reinforcements: session.setup.reinforcements, ...(session.setup.hero ? { hero: session.setup.hero } : {}), deployments: session.deployments, endTick: session.endTick, clientHash: result.hash, rules: SIM_RULES };
             void this.d.connection.reportDuel(sub).then(
-              (r) => this.d.hud.toast(i18nText("ui.duel_recorded_against_win_in_duel_ad5ab60385", { arg1: isolateName(duel.friendName), arg2: r.rivalry.wins, arg3: r.rivalry.wins === 1 ? '' : 's', arg4: r.rivalry.duels, arg5: r.rivalry.duels === 1 ? '' : 's' }), 'success'),
+              (r) => this.d.hud.toast(i18nText("ui.duel_recorded_against_win_in_duel_ad5ab60385", { arg1: isolateName(duel.friendName), arg2: r.rivalry.wins, arg4: r.rivalry.duels }), 'success'),
               (e: Error) => this.d.hud.toast(i18nText("ui.the_duel_could_not_be_recorded_2b8c3995b6", { arg1: e.message }), 'error'),
             );
             return { result, banked: {}, trophies: 0, note: `Friendly duel with ${isolateName(duel.friendName)}: no warriors were spent and nothing was won.` };
@@ -479,7 +479,7 @@ export class App {
           const note =
             e.kind === 'bounty_end'
               ? e.steps.length
-                ? i18nText("ui.new_bounty_step_reached_the_reward_is__7c76ffd3be", { arg1: e.steps.length === 1 ? '' : 's' })
+                ? i18nText("ui.new_bounty_step_reached_the_reward_is__7c76ffd3be")
                 : i18nText("ui.no_new_bounty_step_this_time_your_best_fad89cfb94")
               : e.won
                 ? i18nText("ui.score_settled_372ee4649e")

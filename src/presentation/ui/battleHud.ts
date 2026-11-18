@@ -177,7 +177,7 @@ export class BattleHud {
             ? i18nText("ui.replay_attacks_loot_taken_cfa170965c", { arg1: isolateName(deps.replayOf.opponentName) })
             : i18nText("ui.replay_loot_won_db27073d59")
           : deps.grove
-            ? i18nText("ui.vs_2d68ca8191", { arg1: deps.grove.title ?? 'Alliance War', arg2: isolateName(deps.grove.enemyName) })
+            ? i18nText("ui.vs_2d68ca8191", { arg1: deps.grove.title ?? i18nText("ui.alliance_war_fe9355cdf5"), arg2: isolateName(deps.grove.enemyName) })
             : deps.special
               ? ownedText(deps.special.title)
             : deps.trial
@@ -529,7 +529,7 @@ export class BattleHud {
     if (mode === 'scout') {
       const hasArmy = Object.values(this.s.setup.army).some((n) => n > 0);
       this.bottomEl.append(
-        h('button', { class: 'btn ghost', type: 'button', onclick: () => this.deps.onHome() }, t('battle.home')),
+        h('button', { class: 'btn ghost', type: 'button', 'data-id': 'battle-home', onclick: () => this.deps.onHome() }, t('battle.home')),
         this.deps.grove || this.deps.trial || this.deps.practice || this.deps.special
           ? h('span', {}, '')
           : h(
@@ -553,9 +553,9 @@ export class BattleHud {
       // P6-11 (PLY-05): once every warrior is in, the fight can be watched faster. Speed scales real time only
       // (deployments keep their tick), so the result and the replay are the same at any speed.
       this.speedShown = this.allDeployed();
-      this.bottomEl.append(this.speedShown ? this.speedButton() : '', h('button', { class: 'btn danger', type: 'button', onclick: () => this.confirmEnd() }, t('battle.end')));
+      this.bottomEl.append(this.speedShown ? this.speedButton() : '', h('button', { class: 'btn danger', type: 'button', 'data-id': 'battle-end', onclick: () => this.confirmEnd() }, t('battle.end')));
     } else {
-      this.bottomEl.append(this.speedButton(), h('button', { class: 'btn primary', type: 'button', onclick: () => this.deps.onHome() }, i18nText("ui.exit_replay_0a858020f8")));
+      this.bottomEl.append(this.speedButton(), h('button', { class: 'btn primary', type: 'button', 'data-id': 'exit-replay', onclick: () => this.deps.onHome() }, i18nText("ui.exit_replay_0a858020f8")));
     }
   }
 

@@ -646,7 +646,8 @@ async function boot(): Promise<void> {
   const openPersistAdvice = () => hud.modal(i18nText("ui.keep_your_village_safe_c885b1fcbb"), persistNote(), [{ label: i18nText("ui.ok_565339bc4d"), primary: true, onClick: () => hud.closeAllModals() }]);
   const rawModal = hud.modal.bind(hud);
   hud.modal = (title, body, ...rest) => {
-    if (title === i18nLabel('Settings') && persistAdvice) body.prepend(persistNote());
+    // P6-10: the Settings dialog is known by its id, never by its translated title.
+    if (body.dataset.id === 'settings' && persistAdvice) body.prepend(persistNote());
     return rawModal(title, body, ...rest);
   };
 
@@ -662,8 +663,9 @@ async function boot(): Promise<void> {
       return;
     }
     const buttons = [...hudEl.querySelectorAll<HTMLButtonElement>('button')].filter((b) => b.offsetParent !== null);
-    const pick = (label: string) => buttons.find((b) => b.textContent?.trim() === i18nLabel(label));
-    (pick('End battle') ?? pick('Exit replay') ?? pick('Home'))?.click();
+    // P6-10: by data-id, never by translated text.
+    const pick = (id: string) => buttons.find((b) => b.dataset.id === id);
+    (pick('battle-end') ?? pick('exit-replay') ?? pick('battle-home'))?.click();
   };
 
   app = new App({
