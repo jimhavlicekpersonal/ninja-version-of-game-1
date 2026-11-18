@@ -26,6 +26,8 @@ function village(): VillageState {
   return createNewVillage(NOW, data);
 }
 
+// P2-01 (2026-11-18): a real player's raid that denies stars now also pays the per-star reward; these raids are
+// three-star so the tests still see only what the raid took.
 describe('F07: online raids take collector loot from the collector', () => {
   it('a destroyed collector pays from its own stock, not from storage', () => {
     const s = village();
@@ -56,7 +58,7 @@ describe('F07: online raids take collector loot from the collector', () => {
   it('loot with no traceable collector comes from storage, never below zero', () => {
     const s = village();
     s.resources.acorns = 300;
-    const record: BattleRecord = { id: 'def-2', kind: 'defense', at: NOW, opponentName: 'Rival', setup: { seed: 1, base: { name: 'x', hallLevel: 1, buildings: [{ id: 'h', type: 'elder_toadstool', level: 1, x: 30, y: 30 }] }, army: {} }, deployments: [], result: { stars: 0, destruction: 0, hallDestroyed: false, loot: { acorns: 500 }, used: {}, ticks: 1, endReason: 'time', hash: '0' } };
+    const record: BattleRecord = { id: 'def-2', kind: 'defense', at: NOW, opponentName: 'Rival', setup: { seed: 1, base: { name: 'x', hallLevel: 1, buildings: [{ id: 'h', type: 'elder_toadstool', level: 1, x: 30, y: 30 }] }, army: {} }, deployments: [], result: { stars: 3, destruction: 0, hallDestroyed: false, loot: { acorns: 500 }, used: {}, ticks: 1, endReason: 'time', hash: '0' } };
     const r = applyCommand(s, { type: 'applyDefense', record, lost: { acorns: 500 }, trophies: 0, shieldUntil: 0 }, NOW, data);
     expect(r.ok && r.state.resources.acorns).toBe(0);
   });
@@ -65,7 +67,7 @@ describe('F07: online raids take collector loot from the collector', () => {
   const untraceable = (rules: number | undefined, buildings: { id: string; type: string; level: number; x: number; y: number }[]): BattleRecord => ({
     id: 'def-3', kind: 'defense', at: NOW, opponentName: 'Rival', ...(rules !== undefined ? { rules } : {}),
     setup: { seed: 1, base: { name: 'x', hallLevel: 1, buildings }, army: {} }, deployments: [],
-    result: { stars: 0, destruction: 0, hallDestroyed: false, loot: { acorns: 500 }, used: {}, ticks: 1, endReason: 'time', hash: '0' },
+    result: { stars: 3, destruction: 0, hallDestroyed: false, loot: { acorns: 500 }, used: {}, ticks: 1, endReason: 'time', hash: '0' },
   });
 
   it('a raid under battle rules this build does not play takes nothing, and says so', () => {

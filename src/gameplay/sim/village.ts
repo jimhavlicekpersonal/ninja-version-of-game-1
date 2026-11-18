@@ -1,4 +1,5 @@
 import { choosableHeroes, heroFor } from './heroes';
+import { defenseWinReward } from './defenseReward';
 import { awardMastery, masteryBonuses, masteryMatches, masteryOn } from './mastery';
 import { hallLevel } from './keep';
 import { canTryAlternate, nextTrialTier, trialBase, trialReward, trialVariant } from './trials';
@@ -797,7 +798,16 @@ function runCommand(s: VillageState, cmd: Command, now: number, data: GameData):
       const untraced = applyDefenseLosses(s, cmd.record, cmd.lost, now, data, cmd.fallen);
       s.trophies = Math.max(0, cmd.trophies);
       s.shieldUntil = Math.max(s.shieldUntil, cmd.shieldUntil);
-      s.defenseLog.push(cmd.record);
+      // P2-01 (DEF-01): a real player's raid keeps conservation (the defender loses what the raider carried), and
+      // every star denied pays the defender the same per-star reward a bot raid does (storage-capped, reported).
+      const pvpRecord = { ...cmd.record };
+      const stars = pvpRecord.result?.stars ?? 3;
+      if (!pvpRecord.simulated && data.raids.defenseWin?.perStar && stars < 3) {
+        const { added, overflow } = defenseWinReward(s, data, (3 - stars) / 3);
+        if (Object.keys(added).length) pvpRecord.banked = added;
+        if (Object.keys(overflow).length) pvpRecord.overflow = overflow;
+      }
+      s.defenseLog.push(pvpRecord);
       while (s.defenseLog.length > data.raids.maxDefenseLog) s.defenseLog.shift();
       s.net.defensesSince = Math.max(s.net.defensesSince, cmd.record.at);
       return { ok: true, state: s, events: untraced ? [{ kind: 'defense_untraced', id: cmd.record.id, lost: cmd.lost, reason: untraced.untraced }] : [] };

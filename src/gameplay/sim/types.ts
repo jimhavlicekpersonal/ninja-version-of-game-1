@@ -914,8 +914,19 @@ export interface RaidsDef {
   storageLootCapByHall: number[];
   /** The first `count` bot raids a village faces bring `housingShare` of a full army, `levelsBelowCap` levels under the research cap. */
   newPlayerRaids?: { count: number; housingShare: number; levelsBelowCap: number };
-  /** A bot raid held to 0 stars pays this share of the Keep's lowest raid loot. */
-  defenseWin?: { shareOfRaidLoot: number };
+  /**
+   * A bot raid held to 0 stars pays this share of the Keep's lowest raid loot (storage-capped; what did not fit is
+   * reported). `perStar` (P2-01): every star denied pays a third of it, so each defence level earns something.
+   * `uncapped` is a lab hook live data never sets.
+   */
+  defenseWin?: { shareOfRaidLoot: number; perStar?: boolean; uncapped?: boolean };
+  /** P2-01 (DEF-01): the share of what it broke open a bot raider carries home, by stars won (index 0-3). */
+  carryByStars?: number[];
+  /** P2-02 (DEF-04): bot raiders come from the defender's Keep (strength Keep+lo to Keep+hi), not from honor. */
+  raiderMatch?: { lo: number; hi: number };
+  /** Lab only (`tools/balance`): model villages are laid out on a generated base; live data never sets these. */
+  labAutoLayout?: boolean;
+  labWalls?: boolean;
   /** Settle-the-score rematches against a bot raider's base (sim/rematch.ts). */
   rematch?: { windowHours: number; shareOfRaidLoot: number };
   /**

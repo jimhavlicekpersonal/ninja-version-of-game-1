@@ -45,7 +45,7 @@ describe('A5: refunds take back everything; what was spent is a debt', () => {
     const { s: paid, grants } = bought();
     paid.resources.acorns = 0;
     let s = run(paid, { type: 'revokePurchase', transactionId: 'apple:1' });
-    const record = { id: 'raid-1', at: T, kind: 'defense' as const, opponentName: 'Raider', setup: { seed: 1, base: { name: 'x', hallLevel: 1, buildings: [] }, army: {}, infiltration: true }, deployments: [], result: { stars: 1, destruction: 50, loot: { acorns: 9999 }, used: {}, hash: 'h' } as never, trophies: -10 };
+    const record = { id: 'raid-1', at: T, kind: 'defense' as const, opponentName: 'Raider', setup: { seed: 1, base: { name: 'x', hallLevel: 1, buildings: [] }, army: {}, infiltration: true }, deployments: [], result: { stars: 3, destruction: 50, loot: { acorns: 9999 }, used: {}, hash: 'h' } as never, trophies: -10 }; // three stars: no per-star reward (P2-01) to repay the debt
     s = run(s, { type: 'applyDefense', record, lost: { acorns: 9999 }, trophies: 0, shieldUntil: T, fallen: [] });
     expect(s.resources.acorns).toBe(-grants.acorns!);
   });

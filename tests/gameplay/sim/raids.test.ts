@@ -138,7 +138,9 @@ describe('bot raiders (#8)', () => {
     }
   });
 
-  it('get stronger as the defender climbs (attackers mirror the player’s own matchmaking)', () => {
+  // P2-02 (DEF-04, 2026-11-18; this item changes the rule the old test pinned): raiders come from the defender's
+  // Keep, not its honor, so holding raids (which raises honor) no longer summons a stronger raider.
+  it('come from the defender\'s Keep whatever its honor', () => {
     const { state } = raidable();
     const hall6 = { ...state, buildings: state.buildings.map((b) => (b.type === 'elder_toadstool' ? { ...b, level: 6 } : b)) };
     const avgHousing = (trophies: number) => {
@@ -147,7 +149,7 @@ describe('bot raiders (#8)', () => {
       return sum / 20;
     };
     expect(strengthFor(1800, data)).toBeGreaterThan(5);
-    expect(avgHousing(1900)).toBeGreaterThan(avgHousing(1200));
+    expect(avgHousing(1900)).toBe(avgHousing(1200));
     // Even a hall 6 village at very low trophies is raided by hall 5+ armies.
     expect(avgHousing(0)).toBeGreaterThanOrEqual(maxHousingAtHall(5, data) * 0.85);
   });

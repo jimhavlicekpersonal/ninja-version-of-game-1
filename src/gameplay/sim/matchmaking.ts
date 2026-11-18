@@ -271,7 +271,7 @@ export function attackerFor(rng: Rng, state: VillageState, data: GameData): BotA
   let st = matchStrength(rng, state.trophies, hallLevel(state, data), data, true);
   // Rules 9 (lab): `raids.raiderMatch {lo, hi}` — bot raiders come from the defender's Keep (a strength drawn
   // between Keep+lo and Keep+hi), not from its honor, so a better defence holds more instead of meeting stronger raiders.
-  const rm = (data.raids as { raiderMatch?: { lo: number; hi: number } }).raiderMatch;
+  const rm = data.raids.raiderMatch;
   if (rm) {
     const own = hallLevel(state, data) - 1;
     const sv = Math.max(0, Math.min(maxHall(data) - 1e-6, own + rm.lo + next(rng) * (rm.hi - rm.lo)));

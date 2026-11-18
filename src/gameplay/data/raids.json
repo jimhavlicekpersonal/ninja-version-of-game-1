@@ -7,9 +7,14 @@
     "levelsBelowCap": 2
   },
   "defenseWin": {
-    "$comment": "A bot raid that wins no star pays the defender this share of its Keep's lowest generated raid loot, in Coins and Provisions (storage-capped).",
-    "shareOfRaidLoot": 0.05
+    "$comment": "Every star a raid fails to win pays the defender a third of this share of its Keep's lowest generated raid loot, in Coins and Provisions (storage-capped; what did not fit is reported). P2-01 (DEF-01, 2026-11-18): was 0.05 for a full hold only.",
+    "shareOfRaidLoot": 0.15,
+    "perStar": true
   },
+  "$commentCarry": "P2-01 (DEF-01): a bot raider carries home this share of what it broke open, by stars won (0-3), so every star a defence denies keeps loot in the village. Raids by real players keep conservation (the defender loses what the attacker carries).",
+  "carryByStars": [0.2, 0.5, 0.8, 1],
+  "$commentRaider": "P2-02 (DEF-04): bot raiders come from the defender's own Keep (strength Keep-1 to Keep), not from honor, so holding raids no longer summons a stronger raider.",
+  "raiderMatch": { "lo": -1, "hi": 0 },
   "rematch": {
     "$comment": "Settle the score: once per bot raid, within `windowHours`, attack the raider's own generated base. No loot from buildings and no honor; a win (1+ stars) pays `shareOfRaidLoot` x stars/3 of the Keep's lowest raid loot.",
     "windowHours": 72,
