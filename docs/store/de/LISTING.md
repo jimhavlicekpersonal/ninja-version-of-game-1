@@ -26,8 +26,15 @@ Führe einen Ninja-Clan. Baue ein verborgenes Dorf in den Bergen, bilde fünfzig
 **Überfalle mit Plan**
 
 - Krieger kommen nur über die Einstiegspunkte hinein: Erkunde die Wege und die Türme, die sie decken.
-- Wirf Rauchbomben, wenn deine Krieger in die Reichweite der Türme laufen, und schick Saboteure, um Verteidigungen lahmzulegen.
+- Schick deinen Trupp mit einem einzigen Befehl los (gemeinsam, als Zange oder im Gänsemarsch; Tanks zuerst oder als Ansturm), oder setz jeden Krieger von Hand.
+- Wirf Rauchbomben, wenn deine Krieger in die Reichweite der Türme laufen, und schick Saboteure, um Verteidigungen lahmzulegen. Ab Clanburg 7 sammelt der Schattenhauptmann einmal pro Kampf deinen ganzen Trupp.
+- Nach einem Überfall siehst du, was dieselbe Armee über einen anderen Punkt erreicht hätte.
 - Ein gut geplanter Angriff zählt mehr als ein riesiger.
+
+**Verteidige dein Dorf**
+
+- Zu jedem Überfall auf dein Dorf gibt es einen Bericht: was du behalten hast, welche Sterne du verwehrt hast und wo der Angreifer eingedrungen ist.
+- Teste deine Verteidigung gegen einen simulierten Angreifer und übe gegen die Armee, die dich besiegt hat.
 
 **Spiel im Team** (online)
 
@@ -38,7 +45,12 @@ Führe einen Ninja-Clan. Baue ein verborgenes Dorf in den Bergen, bilde fünfzig
 
 **Die Schattenprüfungen**
 
-- Eine endlose Leiter von Festungen. Jede Stufe zahlt ihre Belohnung einmal aus und wird schwerer.
+- Eine endlose Leiter von Festungen. Jede Stufe zahlt ihre Belohnung einmal aus und wird schwerer. Mit der Tagesübung übst du, während deine Armee ausgebildet wird.
+
+**Jeden Tag etwas Neues**
+
+- Events nach einem festen Vier-Wochen-Kalender, fünf Feste im Jahr mit je einer Festung und einem Burgdesign zum Verdienen, eine wöchentliche Feuerprobe und ein Tagesauftrag.
+- Erfolge, Burgsiegel, Meisterschaftsränge für Krieger und Designs, die du dir beim Spielen verdienst.
 
 **Faires Spiel**
 

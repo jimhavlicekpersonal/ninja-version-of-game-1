@@ -23,7 +23,7 @@
   "tutorial.end.button": { "en": "Finish", "text": "Afslut" },
   "tutorial.skip": { "en": "Skip tutorial", "text": "Spring vejledningen over" },
   "kind.practice": { "en": "Practice", "text": "Træning" },
-  "whatsNew.0_1_0": { "en": "What's new: send your squad in with one order, watch the fight up close or faster, and see what another entry point would have done. Every raid on your village now has a report, and you can test your defenses. New: a four-week event calendar with festivals, a weekly Gauntlet, daily contracts, achievements, Keep seals and looks to earn.", "text": "" },
+  "whatsNew.0_1_0": { "en": "What's new: send your squad in with one order, watch the fight up close or faster, and see what another entry point would have done. Every raid on your village now has a report, and you can test your defenses. New: a four-week event calendar with festivals, a weekly Gauntlet, daily contracts, achievements, Keep seals and looks to earn.", "text": "Nyt: send din trop ind med én ordre, se kampen tæt på eller hurtigere, og se, hvad et andet infiltrationspunkt ville have givet. Hvert togt mod din landsby har nu en rapport, og du kan teste dit forsvar. Også nyt: en begivenhedskalender på fire uger med festivaler, et ugentligt Spidsrodsløb, daglige kontrakter, præstationer, Borgsegl og udseender at optjene." },
   "trials.ladder": { "en": "The ladder ahead", "text": "Trinene forude" },
   "trials.cleared": { "en": "Cleared: tiers 1 to {best}", "text": "Klaret: trin 1 til {best}" },
   "milestone.keep": { "en": "Clan Keep Lv {level}!", "text": "Klanborg Niv. {level}!" },

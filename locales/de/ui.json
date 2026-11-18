@@ -23,7 +23,7 @@
   "tutorial.end.button": { "en": "Finish", "text": "Fertig" },
   "tutorial.skip": { "en": "Skip tutorial", "text": "Tutorial überspringen" },
   "kind.practice": { "en": "Practice", "text": "Übung" },
-  "whatsNew.0_1_0": { "en": "What's new: send your squad in with one order, watch the fight up close or faster, and see what another entry point would have done. Every raid on your village now has a report, and you can test your defenses. New: a four-week event calendar with festivals, a weekly Gauntlet, daily contracts, achievements, Keep seals and looks to earn.", "text": "" },
+  "whatsNew.0_1_0": { "en": "What's new: send your squad in with one order, watch the fight up close or faster, and see what another entry point would have done. Every raid on your village now has a report, and you can test your defenses. New: a four-week event calendar with festivals, a weekly Gauntlet, daily contracts, achievements, Keep seals and looks to earn.", "text": "Neu: Schick deinen Trupp mit einem einzigen Befehl los, sieh dir den Kampf aus der Nähe oder schneller an und finde heraus, was ein anderer Einstiegspunkt gebracht hätte. Zu jedem Überfall auf dein Dorf gibt es jetzt einen Bericht, und du kannst deine Verteidigung testen. Außerdem neu: ein Event-Kalender über vier Wochen mit Festen, eine wöchentliche Feuerprobe, Tagesaufträge, Erfolge, Burgsiegel und Designs zum Verdienen." },
   "trials.ladder": { "en": "The ladder ahead", "text": "Die nächsten Stufen" },
   "trials.cleared": { "en": "Cleared: tiers 1 to {best}", "text": "Gemeistert: Stufen 1 bis {best}" },
   "milestone.keep": { "en": "Clan Keep Lv {level}!", "text": "Clanburg St. {level}!" },

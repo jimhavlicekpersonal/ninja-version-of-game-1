@@ -23,7 +23,7 @@
   "tutorial.end.button": { "en": "Finish", "text": "마치기" },
   "tutorial.skip": { "en": "Skip tutorial", "text": "튜토리얼 건너뛰기" },
   "kind.practice": { "en": "Practice", "text": "연습" },
-  "whatsNew.0_1_0": { "en": "What's new: send your squad in with one order, watch the fight up close or faster, and see what another entry point would have done. Every raid on your village now has a report, and you can test your defenses. New: a four-week event calendar with festivals, a weekly Gauntlet, daily contracts, achievements, Keep seals and looks to earn.", "text": "" },
+  "whatsNew.0_1_0": { "en": "What's new: send your squad in with one order, watch the fight up close or faster, and see what another entry point would have done. Every raid on your village now has a report, and you can test your defenses. New: a four-week event calendar with festivals, a weekly Gauntlet, daily contracts, achievements, Keep seals and looks to earn.", "text": "새로운 기능: 명령 하나로 부대를 한꺼번에 투입하고, 전투를 가까이서 또는 더 빠르게 보고, 다른 침투 지점이었다면 어땠을지 확인할 수 있어요. 이제 마을이 습격당할 때마다 보고서가 나오고, 방어를 테스트할 수도 있어요. 새로 추가: 축제가 있는 4주 이벤트 달력, 매주 관문 도전, 일일 계약, 업적, 본성 인장, 획득할 수 있는 외형." },
   "trials.ladder": { "en": "The ladder ahead", "text": "앞으로의 시련" },
   "trials.cleared": { "en": "Cleared: tiers 1 to {best}", "text": "돌파: 1~{best}층" },
   "milestone.keep": { "en": "Clan Keep Lv {level}!", "text": "가문 본성 Lv.{level}!" },

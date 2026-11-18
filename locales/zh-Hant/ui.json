@@ -23,7 +23,7 @@
   "tutorial.end.button": { "en": "Finish", "text": "完成" },
   "tutorial.skip": { "en": "Skip tutorial", "text": "略過教學" },
   "kind.practice": { "en": "Practice", "text": "練習" },
-  "whatsNew.0_1_0": { "en": "What's new: send your squad in with one order, watch the fight up close or faster, and see what another entry point would have done. Every raid on your village now has a report, and you can test your defenses. New: a four-week event calendar with festivals, a weekly Gauntlet, daily contracts, achievements, Keep seals and looks to earn.", "text": "" },
+  "whatsNew.0_1_0": { "en": "What's new: send your squad in with one order, watch the fight up close or faster, and see what another entry point would have done. Every raid on your village now has a report, and you can test your defenses. New: a four-week event calendar with festivals, a weekly Gauntlet, daily contracts, achievements, Keep seals and looks to earn.", "text": "新功能：一道指令就能派出整支小隊，可以近距離或加速觀看戰鬥，還能看看換個潛入點會有什麼結果。現在你的村莊每次遭到突襲都會有一份報告，你也可以測試自己的防禦。新增：含節慶的四週活動行事曆、每週闖關挑戰、每日契約、成就、天守閣封印，以及可以贏得的外觀。" },
   "trials.ladder": { "en": "The ladder ahead", "text": "前方的試煉" },
   "trials.cleared": { "en": "Cleared: tiers 1 to {best}", "text": "已通過：第 1 至 {best} 層" },
   "milestone.keep": { "en": "Clan Keep Lv {level}!", "text": "天守閣 {level} 級！" },

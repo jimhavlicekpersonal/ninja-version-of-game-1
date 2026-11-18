@@ -23,7 +23,7 @@
   "tutorial.end.button": { "en": "Finish", "text": "完了" },
   "tutorial.skip": { "en": "Skip tutorial", "text": "チュートリアルをスキップ" },
   "kind.practice": { "en": "Practice", "text": "練習" },
-  "whatsNew.0_1_0": { "en": "What's new: send your squad in with one order, watch the fight up close or faster, and see what another entry point would have done. Every raid on your village now has a report, and you can test your defenses. New: a four-week event calendar with festivals, a weekly Gauntlet, daily contracts, achievements, Keep seals and looks to earn.", "text": "" },
+  "whatsNew.0_1_0": { "en": "What's new: send your squad in with one order, watch the fight up close or faster, and see what another entry point would have done. Every raid on your village now has a report, and you can test your defenses. New: a four-week event calendar with festivals, a weekly Gauntlet, daily contracts, achievements, Keep seals and looks to earn.", "text": "新機能：一つの指示で部隊をまとめて送り込めるようになりました。戦いを間近で、または速めて観戦でき、別の潜入口ならどうなったかも確認できます。村が襲撃されるたびに報告が届き、防衛のテストもできます。新登場：祭りを含む4週間のイベントカレンダー、毎週の腕試し、日替わり契約、実績、天守閣の封印、獲得できる外観。" },
   "trials.ladder": { "en": "The ladder ahead", "text": "この先の試練" },
   "trials.cleared": { "en": "Cleared: tiers 1 to {best}", "text": "突破済み：第1〜{best}層" },
   "milestone.keep": { "en": "Clan Keep Lv {level}!", "text": "天守閣Lv.{level}！" },
