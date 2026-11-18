@@ -119,18 +119,18 @@ server's own row). The prompt's baseline (205 files, 1,934 tests) predates `0c5e
 | P7-02 | done | 7b6e7a4 | id in 5 places, signed Android job would upload com.toadstoolkingdoms.app → one APP_ID variable; signed jobs stop while unset/legacy unless ALLOW_LEGACY_APP_ID=1 |  | Not run: a Gradle build or Xcode (no Android SDK / Mac here). strings.xml and Xcode identifier stay legacy until the owner changes the id (SHIPPING 6) |
 | P7-03 | done | b6845eb | native lists lacked @capacitor/haptics and @capacitor-community/in-app-review → npx cap sync output committed; test checks every plugin dependency in the three native files |  | Not built with Gradle/Xcode here |
 | P7-04 | done | 2627bf6 | Contests None → Frequent; age assurance No → present; parental controls No (reasoning beside each) |  | Apple page re-read 2026-11-18 by a web-fetch helper whose read of the two sections came from a page summary (the body text was cut off): an owner must re-read the page in App Store Connect before submitting. No closure record for C05 yet: in the Phase 7 record |
-| P7-05 | todo | | | | |
+| P7-05 | done | 612e8ef | no licence notices -> licenses.html (12 packages, 2 fonts, OFL text), footer link | pages.support.28 (one key) | licenses 3/3 |
 | P7-06 | done | c6750da | macos-15 + warning -> macos-26 + error below SDK 26 | - | release-config; workflow never run (owner) |
-| P7-07 | todo | | | | |
+| P7-07 | done | 30eb4a4 | 30 English words -> + 10 language lists, corpus in 11 languages passes | - | profanity-lists 13/13; not native-reviewed |
 | P7-08 | done | 2627bf6 | policyUpdated 2026-11-05 (page changed 2026-11-14) → 2026-11-14; test ties it to a hash of the English privacy strings |  |  |
-| P7-09 | todo | | | | |
+| P7-09 | done | e8a9147 | relative og:image, no screenshots -> absolute tags with VITE_PUBLIC_URL; 2 screenshots in manifests, not precached | - | release-config 24/24; build checked both ways |
 | P7-10 | done (docs) | b6845eb | REQUESTS 'Open' listed 9 backend + 7 game-theory entries, most answered → backend 2 open / 7 done, game theory 4 open / 3 done; dated reassessment table in WORLDWIDE_AUDIT |  | docs/art/REQUESTS.md left as is: its re-audit table is reference and the squad-orders ask is genuinely open (P6-01) |
 | P7-11 | done | ad7f0b4 | unset in every workflow -> repository variable, default 0, in 3 workflows | - | release-config 20/20 |
 | P7-12 | done | 12f24e1 | no way to play preview on a build -> manual workflow (artifact only), tester checklist | - | verification-client 8/8 |
 | P7-13 | todo | | | | |
-| P7-14 | todo | | | | |
+| P7-14 | done | 1489b99 | no what's new -> one entry in News once, = release notes | whatsNew.0_1_0 | whats-new 1/1 |
 | P7-15 | done | 0e53a6c | audio category + marketing version set in text; privacy manifest and achievements plugin written down | - | release-config; nothing compiled or run on a device |
-| P7-16 | doing (draft) | b6845eb | docs/store/OWNER_CHECKLIST.md written from STATE_OF_THE_GAME 6, publish.md 4e and this pass; preflight checks the machine-checkable lines |  | Extend with later phases' owner items (festival names, preview URL decision, local-day stats) |
+| P7-16 | done | b6845eb,d93c404 | no single owner list -> OWNER_CHECKLIST.md: identity, legal, stores, hosting, devices, decisions; preflight checks the machine-checkable lines | - | every line says what it blocks and how to tell it is done |
 
 ## New and changed locale keys (for section 13)
 
