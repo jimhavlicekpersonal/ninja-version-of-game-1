@@ -16,6 +16,7 @@ import { attackerStrength } from './matchmaking';
 import { canAfford, capacity, missingFor } from './resources';
 import type { Building, Cost, GameData, VillageState } from './types';
 import { researchLanes } from './research';
+import { breachSide } from './defenseReport';
 import { builderStatus, hallLevel, onGarrisonCrew, lastAttackArmy, limitFor, researchStartQuoteOn, trainQuoteOn } from './village';
 
 export type Objective =
@@ -26,6 +27,8 @@ export type Objective =
   | { kind: 'research'; troop: string; toLevel: number; lanesFree: number }
   | { kind: 'train'; space: number; troop: string }
   | { kind: 'builders'; freeAt: number }
+  /** P6-03: the side the latest raid that earned a star came in through (a free suggestion). */
+  | { kind: 'defendSide'; point: string }
   | { kind: 'none' };
 
 interface Candidate {
@@ -130,8 +133,12 @@ export function nextObjective(state: VillageState, now: number, data: GameData):
     if (crew) return { kind: 'upgrade', buildingId: crew.b.id, type: crew.b.type, toLevel: crew.toLevel, keep: false };
     const army = researchGoal(state, now, data) ?? trainGoal(state, now, data);
     if (army) return army;
+    const side = breachSide(state.defenseLog, now, data);
+    if (side) return { kind: 'defendSide', point: side };
     const ends = state.buildings.map((b) => b.upgrade?.endsAt ?? Infinity).filter((t) => t > now);
     if (ends.length) return { kind: 'builders', freeAt: Math.min(...ends) };
   }
+  const side = breachSide(state.defenseLog, now, data);
+  if (side) return { kind: 'defendSide', point: side };
   return { kind: 'none' };
 }

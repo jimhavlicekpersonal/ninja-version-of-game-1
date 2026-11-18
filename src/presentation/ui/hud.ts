@@ -4,7 +4,8 @@ import { consumptionConsentBlock, replayPrivacyBlock } from './complianceUi';
 import { messageText as i18nMessage, dateText as i18nDate, listText as i18nList } from './i18n';
 import { displayData as localizedData, labelText as i18nLabel } from './i18n';
 import { t as i18nText, fmtDecimal, fmtPercent } from './i18n';
-import { language, t } from './i18n';
+import { language, pointLabel, t } from './i18n';
+import type { BattleRecord } from '../../gameplay/sim/battle/types';
 import { Capacitor } from '@capacitor/core';
 import type { GameController, VillageBackup } from '../../gameplay/control/controller';
 import { buildingDef, hallType, levelDef } from '../../gameplay/sim/data';
@@ -37,6 +38,7 @@ import { sealProgress } from '../../gameplay/sim/seals';
 import { calendarView } from '../../gameplay/sim/calendar';
 import { advance, lastAttackArmy, leagueBonusOf, practiceArmy } from '../../gameplay/sim/village';
 import { goalEventViews } from '../../gameplay/sim/goalEvents';
+import { defenseKept, firstToFall, raidEntry } from '../../gameplay/sim/defenseReport';
 import { EconomyUi } from './economyUi';
 import { DailyUi } from './dailyUi';
 import { chestReady } from '../../gameplay/sim/daily';
@@ -1380,6 +1382,8 @@ export class Hud {
       [ic, text, action] = [icons.star, t('research.lanesFree', { n: o.lanesFree }), () => this.openTraining()];
     } else if (o.kind === 'train') {
       [ic, text, action] = [icons.swords, t('battle.trainFirst'), () => this.openTraining()];
+    } else if (o.kind === 'defendSide') {
+      [ic, text, action] = [icons.shield, t('objective.defendSide', { point: pointLabel(o.point) }), () => this.openLog()];
     } else if (o.kind === 'builders') {
       [ic, text] = [icons.clock, t('objective.builders', { time: formatDuration(o.freeAt - now) })];
     }
@@ -2125,6 +2129,9 @@ export class Hud {
       const loot = r.kind === 'attack' ? r.banked ?? r.result.loot : r.result.loot;
       // A held defense pays a small reward (`banked` on the defense record).
       const held = r.kind === 'defense' && r.banked && Object.values(r.banked).some((v) => (v ?? 0) > 0) ? h('span', { class: 'chip good held' }, i18nText("ui.held_f2e1e705b1"), costChips(r.banked)) : null;
+      // P6-03: the defense report (what holding kept, stars denied, the reward, where the raider came in, and on
+      // demand the first buildings to fall, replayed only under the rules the raid was fought with).
+      const report = r.kind === 'defense' ? this.defenseReportLine(r) : null;
       const settle = answerable.has(r.id)
         ? h('button', { class: 'btn danger', type: 'button', title: i18nText("ui.attack_s_own_base_a_simulated_raider_n_0be62cf5a4", { arg1: r.opponentName }), onclick: () => { this.closeAllModals(); this.deps.onRematch?.(r.id); } }, i18nText("ui.settle_the_score_819ad8b9c9"))
         : null;
@@ -2132,12 +2139,35 @@ export class Hud {
         h(
           'div',
           { class: 'log-row' },
-          h('div', {}, h('b', {}, r.kind === 'attack' ? i18nText("ui.you_raided_b4bf27bb8b", { arg1: isolateName(r.opponentName), arg2: r.setup.base.practice ? i18nLabel(' (practice)') : '' }) : i18nText("ui.raided_you_29f66d0636", { arg1: isolateName(r.opponentName), arg2: r.simulated ? i18nText("ui.simulated_raider_aaf83ad5d6") : '' })), h('div', { class: 'row' }, stars, r.trophies !== undefined ? h('span', { class: `chip ${r.trophies >= 0 ? 'good' : 'short'}` }, icon(icons.leaf), `${r.trophies >= 0 ? '+' : ''}${r.trophies}`) : null, h('span', { class: 'muted small' }, i18nText("ui.ago_ecf7d53ab9", { arg1: r.result.destruction, arg2: formatDuration(this.c.now() - r.at) })), Object.keys(loot).some((k) => (loot as Record<string, number>)[k] > 0) ? costChips(loot) : h('span', { class: 'chip' }, i18nText("ui.no_loot_bdac804bb2")), held)),
+          h('div', {}, h('b', {}, r.kind === 'attack' ? i18nText("ui.you_raided_b4bf27bb8b", { arg1: isolateName(r.opponentName), arg2: r.setup.base.practice ? i18nLabel(' (practice)') : '' }) : i18nText("ui.raided_you_29f66d0636", { arg1: isolateName(r.opponentName), arg2: r.simulated ? i18nText("ui.simulated_raider_aaf83ad5d6") : '' })), h('div', { class: 'row' }, stars, r.trophies !== undefined ? h('span', { class: `chip ${r.trophies >= 0 ? 'good' : 'short'}` }, icon(icons.leaf), `${r.trophies >= 0 ? '+' : ''}${r.trophies}`) : null, h('span', { class: 'muted small' }, i18nText("ui.ago_ecf7d53ab9", { arg1: r.result.destruction, arg2: formatDuration(this.c.now() - r.at) })), Object.keys(loot).some((k) => (loot as Record<string, number>)[k] > 0) ? costChips(loot) : h('span', { class: 'chip' }, i18nText("ui.no_loot_bdac804bb2")), held), report),
           h('div', { class: 'row' }, settle, share, replay),
         ),
       );
     }
     this.modal(i18nText("ui.battle_log_f618f95afb"), body, [], 'wide');
+  }
+
+  /** P6-03: one line per defense: kept share, stars denied, entry point, and a button for the first to fall. */
+  private defenseReportLine(r: BattleRecord, withFell = true): HTMLElement {
+    const gd = localizedData(this.c.data);
+    const k = defenseKept(r);
+    const parts: (HTMLElement | string)[] = [];
+    if (k.share !== null) parts.push(h('span', { class: 'chip good' }, t('defense.kept', { pct: fmtPercent(k.share * 100) })));
+    if (r.result.stars < 3) parts.push(h('span', { class: 'chip' }, t('defense.denied', { n: 3 - r.result.stars })));
+    const entry = raidEntry(r, this.c.data);
+    if (entry) parts.push(h('span', { class: 'chip' }, t('defense.entry', { point: pointLabel(entry) })));
+    // The welcome-back line also names the reward for holding (the battle log shows it as its own chip).
+    if (!withFell && r.banked && Object.values(r.banked).some((v) => (v ?? 0) > 0)) parts.push(h('span', { class: 'chip good' }, i18nText("ui.held_f2e1e705b1"), costChips(r.banked)));
+    const line = h('div', { class: 'row defense-report small', 'data-id': 'defense-report' }, ...parts);
+    if (withFell && replayable(r)) {
+      const btn = h('button', { class: 'btn ghost small-btn', type: 'button' }, t('defense.fellButton')) as HTMLButtonElement;
+      btn.addEventListener('click', () => {
+        const fell = firstToFall(r, this.c.data) ?? [];
+        btn.replaceWith(h('span', { class: 'muted' }, fell.length ? t('defense.fell', { list: i18nList(fell.map((type) => buildingDef(gd, type).name)) }) : i18nText("ui.took_nothing_14469bdaf6")));
+      });
+      line.append(btn);
+    }
+    return line;
   }
 
   // ------------------------------------------------------------ welcome back
@@ -2160,7 +2190,7 @@ export class Hud {
     }
     for (const r of s.raids) {
       const lost = i18nList(RESOURCE_KINDS.filter((k) => (r.result.loot[k] ?? 0) > 0).map((k) => i18nText("ui.message_14677cb26f", { arg1: formatNumber(r.result.loot[k]!), arg2: RES_LABEL[k] })), 'conjunction');
-      list.append(h('li', {}, i18nText("ui.raided_you_d9e46d7bd1", { arg1: isolateName(r.opponentName), arg2: r.simulated ? i18nText("ui.simulated_raider_aaf83ad5d6") : '', arg3: '★'.repeat(r.result.stars), arg4: '☆'.repeat(3 - r.result.stars), arg5: r.result.destruction }), lost ? i18nText("ui.took_cc3b25b89b", { arg1: lost }) : i18nText("ui.took_nothing_14469bdaf6"), r.trophies ? i18nText("ui.honor_b338aaea42", { arg1: r.trophies > 0 ? '+' : '', arg2: r.trophies }) : t('text.period')));
+      list.append(h('li', {}, this.defenseReportLine(r, false), i18nText("ui.raided_you_d9e46d7bd1", { arg1: isolateName(r.opponentName), arg2: r.simulated ? i18nText("ui.simulated_raider_aaf83ad5d6") : '', arg3: '★'.repeat(r.result.stars), arg4: '☆'.repeat(3 - r.result.stars), arg5: r.result.destruction }), lost ? i18nText("ui.took_cc3b25b89b", { arg1: lost }) : i18nText("ui.took_nothing_14469bdaf6"), r.trophies ? i18nText("ui.honor_b338aaea42", { arg1: r.trophies > 0 ? '+' : '', arg2: r.trophies }) : t('text.period')));
     }
     if (this.c.state.shieldUntil > this.c.now() && s.raids.some((r) => shieldHoursFor(r.result.destruction, localizedData(this.c.data)) > 0)) {
       list.append(h('li', {}, i18nText("ui.you_have_a_shield_for_3b6f18b25b", { arg1: formatDuration(this.c.state.shieldUntil - this.c.now()) })));
