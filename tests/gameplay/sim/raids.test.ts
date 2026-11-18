@@ -83,9 +83,10 @@ describe('raid schedule (#9)', () => {
 describe('shields (#18)', () => {
   it('heavier damage gives a longer shield', () => {
     expect(shieldHoursFor(10, data)).toBe(0);
-    expect(shieldHoursFor(30, data)).toBe(12);
-    expect(shieldHoursFor(65, data)).toBe(14);
-    expect(shieldHoursFor(95, data)).toBe(16);
+    // P3-01 (PAC-01, 2026-11-18, authorised): 12/14/16 -> 16/20/24 hours.
+    expect(shieldHoursFor(30, data)).toBe(16);
+    expect(shieldHoursFor(65, data)).toBe(20);
+    expect(shieldHoursFor(95, data)).toBe(24);
   });
 });
 

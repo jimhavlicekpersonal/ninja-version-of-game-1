@@ -21,13 +21,14 @@ function raidable(): { state: VillageState; t0: number } {
 }
 
 describe('raidable loot', () => {
-  it('20% of stored and 50% of uncollected resources are on offer', () => {
+  // P3-01 (2026-11-18): the uncollected share is data (0.5 -> 0.25); restated to read it.
+  it('20% of stored and raidableUncollectedFraction of uncollected resources are on offer', () => {
     const { state, t0 } = raidable();
     const t = t0 + 4 * 3_600_000; // orchard holds 800
     const base = villageToBase(state, t, data);
     const total = (k: 'acorns' | 'dew') => base.buildings.reduce((sum, b) => sum + (b.loot?.[k] ?? 0), 0);
     const orchard = base.buildings.find((b) => b.type === 'acorn_orchard')!;
-    expect(orchard.loot?.acorns).toBe(Math.floor(collectorAmount(find(state, 'acorn_orchard')[0], t, data) * 0.5));
+    expect(orchard.loot?.acorns).toBe(Math.floor(collectorAmount(find(state, 'acorn_orchard')[0], t, data) * data.economy.raidableUncollectedFraction));
     const storedAcorns = total('acorns') - (orchard.loot?.acorns ?? 0);
     expect(storedAcorns).toBeLessThanOrEqual(Math.ceil(2000 * 0.2));
     expect(storedAcorns).toBeGreaterThanOrEqual(Math.floor(2000 * 0.2) - 3);

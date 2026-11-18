@@ -6,7 +6,9 @@ import { advance } from '../../../src/gameplay/sim/village';
 import { data, newGame, must, find } from './helpers';
 
 describe('offline progress (simulated 8-hour absence)', () => {
-  it('timers and collectors survive a save, reload and 8 hours away', () => {
+  // P3-01 (2026-11-18): restated for the collector cap as data (8 -> 24 hours): away exactly that long.
+  it('timers and collectors survive a save, reload and a full collector cap away', () => {
+    const H = data.economy.collectorHoursCap;
     const { state, clock } = newGame({ acorns: 1500, dew: 1500 });
     // Build an orchard and a well, wait for them, then start a hall upgrade.
     let s = must(state, { type: 'place', buildingType: 'acorn_orchard', x: 2, y: 2 }, clock.now());
@@ -17,24 +19,24 @@ describe('offline progress (simulated 8-hour absence)', () => {
     s = must(s, { type: 'upgrade', id: hall.id }, clock.now());
     const leftAt = clock.now();
 
-    // Save, "close the game", 8 hours pass, reload.
+    // Save, "close the game", H hours pass, reload.
     const saved = JSON.stringify(serialize(s, leftAt));
-    clock.advanceHours(8);
+    clock.advanceHours(H);
     const loaded = deserialize(JSON.parse(saved), data);
     const { state: after, summary } = computeOfflineProgress(loaded, clock.now(), data);
 
-    expect(summary.awayMs).toBe(8 * 3_600_000);
+    expect(summary.awayMs).toBe(H * 3_600_000);
     expect(summary.finished.map((f) => f.type)).toEqual(['elder_toadstool']);
     expect(find(after, 'elder_toadstool')[0].level).toBe(2);
-    // Collectors filled to their 8-hour cap (200/h * 8 = 1600) and stopped.
-    expect(summary.collectorGains.acorns).toBe(1600);
-    expect(summary.collectorGains.dew).toBe(1600);
+    // Collectors filled to their cap (200/h * H) and stopped.
+    expect(summary.collectorGains.acorns).toBe(200 * H);
+    expect(summary.collectorGains.dew).toBe(200 * H);
     const orchard = find(after, 'acorn_orchard')[0];
-    expect(collectorAmount(orchard, clock.now(), data)).toBe(1600);
+    expect(collectorAmount(orchard, clock.now(), data)).toBe(200 * H);
     // A further hour away adds nothing: the collectors are full.
     clock.advanceHours(1);
-    expect(collectorAmount(orchard, clock.now(), data)).toBe(1600);
-    expect(after.lastSeenAt).toBe(leftAt + 8 * 3_600_000);
+    expect(collectorAmount(orchard, clock.now(), data)).toBe(200 * H);
+    expect(after.lastSeenAt).toBe(leftAt + H * 3_600_000);
   });
 
   it('handles a device clock that went backwards without losing anything', () => {

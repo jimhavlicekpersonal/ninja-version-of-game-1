@@ -188,7 +188,7 @@
   },
   "acorn_orchard": {
     "name": "Coin Mint",
-    "description": "Artisans stamp fresh Coins every hour. Holds 8 hours of output, so collect often.",
+    "description": "Artisans stamp fresh Coins every hour. Holds a full day of output, so collect once a day or more.",
     "size": 3,
     "category": "collector",
     "produces": "acorns",
@@ -414,7 +414,7 @@
   },
   "dewdrop_well": {
     "name": "Terraced Farm",
-    "description": "Terraced fields that grow Provisions for your warriors. Holds 8 hours of output.",
+    "description": "Terraced fields that grow Provisions for your warriors. Holds a full day of output.",
     "size": 3,
     "category": "collector",
     "produces": "dew",

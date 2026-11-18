@@ -18,7 +18,8 @@ describe('reminders', () => {
     expect(ids).toContain('shield');
     for (let i = 1; i < list.length; i++) expect(list[i].at).toBeGreaterThanOrEqual(list[i - 1].at);
     const col = list.find((r) => r.id === 'collectors')!;
-    expect(col.at - clock.now()).toBeCloseTo(8 * 3_600_000, -4);
+    // P3-01: collectors fill in collectorHoursCap hours (8 -> 24).
+    expect(col.at - clock.now()).toBeCloseTo(data.economy.collectorHoursCap * 3_600_000, -4);
   });
 
   it('new players start the tutorial', () => {

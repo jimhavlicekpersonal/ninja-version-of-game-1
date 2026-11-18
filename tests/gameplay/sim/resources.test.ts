@@ -38,10 +38,11 @@ describe('collectors', () => {
     expect(b.id).toBe(id);
   });
 
-  it('stop at 8 hours of output', () => {
+  // P3-01 (2026-11-18): the cap is collectorHoursCap (8 -> 24 hours); restated to read it.
+  it('stop at collectorHoursCap hours of output', () => {
     const { state, clock } = withOrchard();
-    clock.advanceHours(30);
-    expect(collectorAmount(find(state, 'acorn_orchard')[0], clock.now(), data)).toBe(200 * 8);
+    clock.advanceHours(data.economy.collectorHoursCap + 22);
+    expect(collectorAmount(find(state, 'acorn_orchard')[0], clock.now(), data)).toBe(200 * data.economy.collectorHoursCap);
   });
 
   it('do not produce while under construction', () => {
