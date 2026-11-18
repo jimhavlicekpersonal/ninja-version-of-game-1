@@ -70,9 +70,11 @@ describe('growth 19: the 28-day calendar', () => {
     // The look is never sold.
     s.resources.moonstones = 10_000;
     expect(applyCommand(s, { type: 'buySkin', skin: 'moonlit_shrine' }, T + 40 * DAY, data).ok).toBe(false);
-    // Second cycle: day 28 gives Jade instead.
+    // P5-06 (restated): the second cycle's day 28 gives that cycle's look; Jade once cycles 2-6 have given theirs.
     const view = calendarView(s, T + 40 * DAY, 1, data)!;
-    expect(view.days[27].reward).toEqual({ moonstones: data.daily.calendar!.repeatJade });
+    expect(view.days[27].reward).toEqual({ skin: data.daily.calendar!.skins![0] });
+    const done = { ...s, calendar: { ...s.calendar, cycles: 6 }, cosmetics: { ...s.cosmetics, owned: [...s.cosmetics.owned, ...data.daily.calendar!.skins!] } };
+    expect(calendarView(done, T + 40 * DAY, 1, data)!.days[27].reward).toEqual({ moonstones: data.daily.calendar!.repeatJade });
   });
 
   it('save v19 adds the calendar to older saves', () => {

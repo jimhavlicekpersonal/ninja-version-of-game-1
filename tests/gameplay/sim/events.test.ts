@@ -29,7 +29,9 @@ describe('event schedule', () => {
     const next = upcomingEvents(t, 3, data);
     expect(next).toHaveLength(3);
     for (const e of next) expect(e.start).toBeGreaterThan(t);
-    expect(next[0].start).toBeLessThan(next[1].start);
+    // P5-01 (restated): in the 28-day loop two windows may start together (the Gauntlet and a raid night).
+    expect(next[0].start).toBeLessThanOrEqual(next[1].start);
+    expect(next[1].start).toBeLessThanOrEqual(next[2].start);
   });
 
   it('effects apply only while the event runs', () => {
