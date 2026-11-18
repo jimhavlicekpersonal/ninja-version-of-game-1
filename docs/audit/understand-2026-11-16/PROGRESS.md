@@ -62,7 +62,7 @@ server's own row). The prompt's baseline (205 files, 1,934 tests) predates `0c5e
 | P2-12 | todo | | | | |
 | P2-13 | todo | | | | |
 | P2-14 | todo | | | | |
-| P2-15 | todo | | | | |
+| P2-15 | done | 5364aed | first raid (Dojo 1, one role) carried 85% → 100%; one-role army at Keep 5 still 85% |  | result screen reads record.carry; showing the share before the raid is P6-13 |
 | P3-01 | todo | | | | |
 | P3-02 | todo | | | | |
 | P3-03 | todo | | | | |
