@@ -1,7 +1,6 @@
 import { displayData as localizedData, messageText as ownedText, generatedName } from './i18n';
 import { unitName } from './unitName';
 import type { ProgressLine } from './resultProgress';
-import { WhatIfRun } from '../../gameplay/control/whatIf';
 import { messageText as i18nMessage, listText as i18nList } from './i18n';
 import { labelText as i18nLabel } from './i18n';
 import { t as i18nText } from './i18n';
@@ -9,7 +8,7 @@ import { fmtDecimal, fmtPercent, pointLabel, t } from './i18n';
 import { stakeOptions } from '../../gameplay/sim/carry';
 import { rivalById } from '../../gameplay/sim/rivals';
 import { isolateName } from '../../gameplay/sim/social/names';
-import type { BattleSession, Formation, WaveOrder } from '../../gameplay/control/battleSession';
+import { WhatIfRun, type BattleSession, type Formation, type WaveOrder } from '../../gameplay/control/battleSession';
 import type { BattleHooks, BattleView, ScreenInsets } from '../render/BattleScene';
 import { totalLoot } from '../../gameplay/sim/battle/basegen';
 import { isAbility } from '../../gameplay/sim/battle/battle';
@@ -75,7 +74,7 @@ interface BattleHudDeps {
  * P6-01: "hold a reserve" is offered only if it is the best order on at least one base in five at Keeps 9, 12 and 15
  * (tools/balance/run-squad-orders.mjs; the measurement is in docs/audit/understand-2026-11-16/phase6/).
  */
-export const SQUAD_RESERVE = true;
+const SQUAD_RESERVE = true;
 const SQUAD_KEY = 'tk.squad';
 
 function loadSquadChoice(): { formation: Formation | null; order: WaveOrder } {

@@ -5,6 +5,8 @@ import type { GameData } from '../sim/types';
 import { squadPlan, type SquadOrder, type SquadStep } from './squadPlan';
 
 export type { Formation, SquadOrder, WaveOrder } from './squadPlan';
+/** P6-02: the post-raid review, through this contract file for the GUI. */
+export { WhatIfRun, whatIfDeployments } from './whatIf';
 
 export type BattleMode = 'scout' | 'live' | 'replay';
 
