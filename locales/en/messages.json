@@ -697,7 +697,6 @@
   "sim.you_have_all_the_village_artisans_you__ca4070d4a7": "You have all the Village Artisans you can hire.",
   "sim.you_have_used_both_alliance_war_attack_d6ede0593a": "You have used both Alliance War attacks.",
   "sim.you_joined_829a54399a": "You joined {arg1}!",
-  "sim.you_ve_opened_today_s_chest_a_new_one__55f50ec652": "You've opened today's chest. A new one is ready at the start of the next day (UTC).",
   "sim.your_alliance_lodge_is_full_6f3ca3b404": "Your Alliance Lodge is full.",
   "sim.your_army_is_ready_f50ad8c7f1": "Your army is ready",
   "sim.your_clan_stipend_still_has_payments_t_d997968533": "Your Clan Stipend still has payments to claim. You can buy another when they are all claimed.",
@@ -2100,5 +2099,19 @@
   "srv.import.refused": "This village cannot move to the server: {detail}",
   "srv.import.too_new": "A village at Keep {keep} can move to the server once this online account is {days} days old (in {wait, plural, one {# day} other {# days}}). It stays on this device meanwhile: keep playing, and the game tries again each day.",
   "common.buyNext": "Buy & Next {n} ",
-  "common.buyFill": "Buy & Fill {n} "
+  "common.buyFill": "Buy & Fill {n} ",
+  "sim.only_walls_and_traps_can_be_paid_in_prov_e809aeabdf": "Only walls and traps can be paid in Provisions.",
+  "sim.choosing_a_hero_is_not_available_yet_27abc790aa": "Choosing a hero is not available yet.",
+  "sim.unknown_hero_6cc0c367da": "Unknown hero.",
+  "sim.this_hero_joins_from_keep_arg1_b12afb3aa8": "This hero joins from Keep {arg1}.",
+  "sim.build_a_hero_hall_first_a589773dbb": "Build a Hero Hall first.",
+  "sim.this_keep_is_already_sealed_051c6a8626": "This Keep is already sealed.",
+  "sim.build_every_building_this_keep_allows_to_93eea11b5b": "Build every building this Keep allows to its cap first ({arg1} of {arg2}).",
+  "sim.this_purchase_was_already_refunded_05408e619d": "This purchase was already refunded.",
+  "sim.this_look_is_earned_in_play_never_sold_9025163fca": "This look is earned in play, never sold.",
+  "sim.you_ve_opened_today_s_chest_a_new_one_is_b4753d2b3f": "You've opened today's chest. A new one is ready when your next day starts.",
+  "sim.trial_fortress_damage_is_not_allowed_05759d6468": "Trial fortress damage is not allowed.",
+  "sim.there_is_no_daily_drill_49086be800": "There is no daily drill.",
+  "sim.too_long_ago_146e28a63e": "Too long ago.",
+  "sim.build_a_training_dojo_and_a_squad_courty_ad04d756ab": "Build a Training Dojo and a Squad Courtyard first."
 }

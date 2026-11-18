@@ -340,7 +340,7 @@
         "collectBonus": 0.25
       },
       "goal": {
-        "kind": "bounty",
+        "kind": "festival",
         "power": 1,
         "ladder": [
           {
@@ -387,7 +387,7 @@
         "raidLootBonus": 0.15
       },
       "goal": {
-        "kind": "bounty",
+        "kind": "festival",
         "power": 1,
         "ladder": [
           {
@@ -434,7 +434,7 @@
         "trainingDiscount": 0.25
       },
       "goal": {
-        "kind": "bounty",
+        "kind": "festival",
         "power": 1,
         "ladder": [
           {
@@ -481,7 +481,7 @@
         "collectBonus": 0.25
       },
       "goal": {
-        "kind": "bounty",
+        "kind": "festival",
         "power": 1,
         "ladder": [
           {
@@ -528,7 +528,7 @@
         "raidLootBonus": 0.15
       },
       "goal": {
-        "kind": "bounty",
+        "kind": "festival",
         "power": 1,
         "ladder": [
           {

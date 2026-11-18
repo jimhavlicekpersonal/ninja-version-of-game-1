@@ -151,7 +151,7 @@ export type Command =
    * refused (expired ticket, rule violation). Safe to apply twice.
    */
   /** `stake`: the stake the server fixed when the raid started (sim/carry.ts), protocol 11. */
-  | { type: 'settleOnlineAttack'; ticket: string; result?: BattleResult; trophies?: number; playerTrophies?: number; rejected?: string; stake?: number }
+  | { type: 'settleOnlineAttack'; ticket: string; result?: BattleResult; trophies?: number; playerTrophies?: number; rejected?: string; stake?: number; /** P5-03: the server's time for the daily contract (absent: none). */ contractAt?: number }
   /** An interrupted battle that can no longer be banked: its deployed troops are spent, nothing is won. */
   | { type: 'abandonBattle'; record: Omit<BattleRecord, 'result' | 'id' | 'kind'> }
   | { type: 'leaveLocalGrove' }
@@ -1734,7 +1734,10 @@ function openDailyChest(s: VillageState, now: number, data: GameData, entropy?: 
   // Without entropy (an older game, the model player) the salt stays: the draw is the seed's, as before v22.
   const nextSalt = Number.isFinite(entropy) ? mixSeed(salt, Math.floor(entropy!) >>> 0) : salt;
   // P5-09: from this claim on the chest counts in the player's own day.
-  s.daily = { lastDay: localDayIndex(s, now, data), local: true, step: st.step, skipsLeft: st.skipsLeft, skipWeek: s.daily.local ? st.skipWeek : Math.floor(localDayIndex(s, now, data) / 7), history, salt: nextSalt };
+  // Review M2: on the switching claim, west of UTC the local day is the one before the UTC day just used; storing the
+  // later of the two keeps a second chest out of the same UTC day (the next one waits for the next local day).
+  const lastDay = s.daily.local ? localDayIndex(s, now, data) : Math.max(day, localDayIndex(s, now, data));
+  s.daily = { lastDay, local: true, step: st.step, skipsLeft: st.skipsLeft, skipWeek: s.daily.local ? st.skipWeek : Math.floor(lastDay / 7), history, salt: nextSalt };
   // P5-06: lifetime chest milestones give looks (a count of chests opened: a missed day cannot touch it).
   s.stats.chestsOpened = (s.stats.chestsOpened ?? 0) + 1;
   const chestLook = data.daily.chestLooks?.find((l) => l.at === s.stats.chestsOpened)?.look;
@@ -2039,7 +2042,7 @@ function battleEnd(s: VillageState, rec0: Omit<BattleRecord, 'result' | 'id' | '
   // `overflow`, so the results screen can say so precisely.
   const stake = validStake(rec.stake, data) ? rec.stake : undefined;
   // P5-03: the contract of the day the raid began (its own time, never later than now: browser and server agree).
-  const contract = contractFor(Math.min(now, rec.at ?? now), data);
+  const contract = contractFor(battleBegan(rec, now, data) ?? now, data); // review L3: bounded like any record time
   const roles = trainableRoles(s, data);
   const carry = raidCarry(result, rec.setup, stake, data, roles, contract);
   const metContract = contractMultiplier(contract, result, rec.setup, stake, data, roles) > 1 ? contract!.id : undefined;
@@ -2125,8 +2128,9 @@ function settleOnlineAttack(s: VillageState, cmd: Extract<Command, { type: 'sett
   // Only the stake the server settled with counts (it was fixed when the raid started); a server without
   // stakes settles with none, whatever this game recorded.
   const stake = validStake(cmd.stake, data) ? cmd.stake : undefined;
-  // P5-03: the contract of the day the raid began (`rec.at`, the same time the server settles with).
-  const contract = contractFor(rec.at, data);
+  // P5-03 (review M1): only the server's contract time counts (the ticket's start, `cmd.contractAt`), like its stake;
+  // a server without contracts settles with none, whatever this game's clock said.
+  const contract = Number.isFinite(cmd.contractAt) ? contractFor(cmd.contractAt!, data) : null;
   const roles = trainableRoles(s, data);
   const carry = raidCarry(result, rec.setup, stake, data, roles, contract);
   if (contractMultiplier(contract, result, rec.setup, stake, data, roles) > 1) rec.contract = contract!.id;
@@ -2229,6 +2233,9 @@ function battleBegan(rec: { at?: number }, now: number, data: GameData): number 
   return at < now - (data.battle.durationSeconds + resume * 3600) * MS_PER_SECOND ? null : at;
 }
 
+/** Review M5: how long after a goal event ends (beyond one battle's length) its last battle may still be settled. */
+const GOAL_GRACE_MS = 30 * 60_000;
+
 /**
  * An attack on a goal event's fortress (sim/goalEvents.ts: a Bounty Hunt's, a festival's or the Gauntlet's): the
  * occurrence must be running when the attack began, the base is rebuilt (never taken from the client), the battle is
@@ -2241,6 +2248,9 @@ function bountyEnd(s: VillageState, key: string, rec: Omit<BattleRecord, 'result
   const ev = at === null ? null : runningGoalEvent(key, at, data);
   // XPL-02's alternating-keys exploit (one progress slot, reset on every switch) cannot recur: progress is per key.
   if (at === null || !ev) return fail('NOT_AVAILABLE', 'The Bounty Hunt is not running.');
+  // Review M5: a goal event's countdown is real. A battle begun before the end may finish, but nothing is accepted
+  // later than its length plus a short grace after the event ended (the 72-hour resume window is for raids).
+  if (now > ev.end + data.battle.durationSeconds * MS_PER_SECOND + GOAL_GRACE_MS) return fail('NOT_AVAILABLE', 'The Bounty Hunt is not running.');
   const keep = hallLevel(s, data);
   // The Keep the attack began with: the current one, or one below if a Keep upgrade finished mid-battle.
   // XPL-13 (P1-21): only then. The record must have begun before the Keep reached its level (save v24); the

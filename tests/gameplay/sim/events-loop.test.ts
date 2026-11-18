@@ -107,6 +107,26 @@ describe('goal progress per occurrence (P5-01)', () => {
     for (const key of both.keys) expect(s.goalEvents.find((g) => g.key === key)!.claimed.sort()).toEqual((paid[key] ?? []).sort());
   });
 
+  it('a v24 save written before the list existed is repaired on load (review M4)', () => {
+    const { state, clock } = newGame();
+    const file = serialize(state, clock.now()) as unknown as { version: number; village: Record<string, unknown> };
+    delete file.village.goalEvents;
+    file.village.goalEvent = null;
+    expect(migrate(file, data).village.goalEvents).toEqual([]);
+  });
+
+  it('nothing is settled for a goal event later than a battle and a short grace after it ended (review M5)', () => {
+    const { state } = newGame();
+    const s = atHall(state, 5);
+    const w = activeGoalEvents(both.t, data)[0];
+    const view = goalEventViews(s, both.t, data).find((v) => v.event.key === w.key)!;
+    const loadout = battleLoadout({ ...s, army: { hedgehog_roller: 10 } }, data);
+    const cmd = (at: number) => ({ type: 'bountyEnd' as const, eventKey: w.key, record: { at, opponentName: 'x', setup: { seed: 1, base: view.base, ...loadout, infiltration: true }, deployments: [] } });
+    const late = w.end + data.battle.durationSeconds * 1000 + 31 * 60_000;
+    expect(applyCommand({ ...s, army: { hedgehog_roller: 10 } }, cmd(w.end - 1000), late, data)).toMatchObject({ ok: false, code: 'NOT_AVAILABLE' });
+    expect(applyCommand({ ...s, army: { hedgehog_roller: 10 } }, cmd(w.end - 1000), w.end + 60_000, data).ok).toBe(true);
+  });
+
   it('save v24 turns the one stored slot into the list, keeping its claimed steps', () => {
     const { state, clock } = newGame();
     const old = serialize(state, clock.now()) as unknown as { version: number; village: Record<string, unknown> };

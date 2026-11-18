@@ -42,6 +42,16 @@ describe('the chest rolls at the player\'s midnight (P5-09)', () => {
     expect(applyCommand(r, { type: 'openDailyChest' }, D0 + DAY + 2 * HOUR, data).ok).toBe(false);
   });
 
+  it('west of UTC the switch gives no second chest in the same UTC day (review M2)', () => {
+    const s = ahead(-8);
+    s.daily = { ...s.daily, lastDay: dayIndex(D0 - 10 * HOUR, data), step: 1 };
+    delete s.daily.local;
+    const r = must(s, { type: 'openDailyChest' }, D0 + HOUR); // UTC day D0, local day D0 - 1
+    expect(applyCommand(r, { type: 'openDailyChest' }, D0 + 8 * HOUR, data).ok).toBe(false); // local midnight, same UTC day
+    expect(applyCommand(r, { type: 'openDailyChest' }, D0 + 32 * HOUR, data).ok).toBe(true); // the next local midnight
+    expect(must(r, { type: 'openDailyChest' }, D0 + 32 * HOUR).daily.step).toBe(r.daily.step + 1); // no missed day
+  });
+
   it('the refusal no longer names UTC', () => {
     const s = must(ahead(0), { type: 'openDailyChest' }, D0 + HOUR);
     const r = applyCommand(s, { type: 'openDailyChest' }, D0 + 2 * HOUR, data);
@@ -56,8 +66,13 @@ describe('the stipend rolls at the player\'s midnight (P5-09)', () => {
     s = must(s, { type: 'grantPurchase', productId: data.store.stipend!.id, transactionId: 't', verified: true }, D0);
     s = must(s, { type: 'claimStipend' }, D0 + 2 * HOUR); // local 18:00 the day before
     expect(s.stipend.local).toBe(true);
-    // Local midnight is UTC 08:00.
-    expect(stipendStatus(s, D0 + 7 * HOUR, data).claimable).toBe(false);
-    expect(stipendStatus(s, D0 + 8 * HOUR, data).claimable).toBe(true);
+    // Review M2: the switching claim keeps the UTC day it used, so the local midnight of the same UTC day (UTC 08:00)
+    // pays nothing more; the next local midnight (UTC 08:00 the next day) does.
+    expect(stipendStatus(s, D0 + 8 * HOUR, data).claimable).toBe(false);
+    expect(stipendStatus(s, D0 + 32 * HOUR - 1, data).claimable).toBe(false);
+    expect(stipendStatus(s, D0 + 32 * HOUR, data).claimable).toBe(true);
+    s = must(s, { type: 'claimStipend' }, D0 + 32 * HOUR);
+    expect(stipendStatus(s, D0 + 55 * HOUR, data).claimable).toBe(false);
+    expect(stipendStatus(s, D0 + 56 * HOUR, data).claimable).toBe(true);
   });
 });

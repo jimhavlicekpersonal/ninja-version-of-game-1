@@ -249,8 +249,11 @@ export function migrate(raw: unknown, data?: GD): SaveFile {
     // Timed upgrades start at the finished upgrades already counted, so a running weekly task is not reset.
     const stats = v.stats as Record<string, number> | undefined;
     if (stats && typeof stats === 'object' && stats.timedUpgradesDone === undefined) stats.timedUpgradesDone = stats.upgradesDone ?? 0;
-    // P5-01: goal progress per occurrence (the one slot, reset on every key change, let two overlapping goal events
-    // pay a ladder again on each switch). The stored occurrence carries over with its claimed steps.
+  }
+  // P5-01: goal progress per occurrence (the one slot, reset on every key change, let two overlapping goal events pay
+  // a ladder again on each switch). On every load (review M4: saves of this branch were already v24 before the list
+  // existed): the stored occurrence carries over with its claimed steps.
+  if (v && typeof v === 'object') {
     if (!Array.isArray(v.goalEvents)) v.goalEvents = v.goalEvent && typeof v.goalEvent === 'object' ? [v.goalEvent] : [];
     delete v.goalEvent;
   }
@@ -314,6 +317,8 @@ export function validateVillage(v: VillageState, data: GameData): string[] {
   if (!v.resources || typeof v.resources !== 'object') problems.push('resources missing');
   else for (const k of RESOURCE_KINDS) if (!Number.isFinite(v.resources[k])) problems.push(`bad ${k}`);
   if (!v.trials || !Number.isInteger(v.trials.best) || v.trials.best < 0) problems.push('bad trials');
+  // Save v24 (P5-01): goal progress per occurrence.
+  if (!Array.isArray(v.goalEvents) || !v.goalEvents.every((g) => g && typeof g.key === 'string' && Array.isArray(g.claimed) && g.claimed.every((i) => Number.isInteger(i)))) problems.push('bad goalEvents');
   // Save v24 (P5-08): the sealed Keeps.
   if (v.seals !== undefined && (!Array.isArray(v.seals) || !v.seals.every((k) => Number.isInteger(k) && k >= 1))) problems.push('bad seals');
   // Save v24 (P3-07): the daily drill's last paid local day.

@@ -61,7 +61,8 @@ export function claimStipend(state: VillageState, now: number, data: GameData): 
   if (!status.claimable) return null;
   state.stipend.left -= 1;
   state.stipend.jade -= status.jade;
-  state.stipend.lastDay = localDayIndex(state, now, data);
+  // Review M2: the switching claim stores the later of the UTC and the local day (no second payment the same UTC day).
+  state.stipend.lastDay = state.stipend.local ? localDayIndex(state, now, data) : Math.max(dayIndex(now, data), localDayIndex(state, now, data));
   state.stipend.local = true;
   state.resources.moonstones += status.jade;
   return status.jade;

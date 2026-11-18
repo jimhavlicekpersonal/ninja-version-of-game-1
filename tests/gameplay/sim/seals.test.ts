@@ -16,7 +16,12 @@ function full(keep: number): VillageState {
   let n = 0;
   for (const [type, lim] of Object.entries(limits)) {
     const def = data.buildings[type];
+    // Review H1: only the free Artisan's Huts (a seal must never need Jade).
     if (!def || ['hall', 'obstacle', 'decor'].includes(def.category) || !lim.count) continue;
+    if (def.category === 'builder') {
+      for (let i = 0; i < lim.count - data.economy.builderHutCosts.length; i++) out.push({ id: `s${n++}`, type, level: 1, x: 0, y: 0, upgrade: null, collector: null });
+      continue;
+    }
     for (let i = 0; i < lim.count; i++) out.push({ id: `s${n++}`, type, level: Math.min(lim.maxLevel ?? 1, def.levels.length), x: 0, y: 0, upgrade: null, collector: null });
   }
   return { ...state, buildings: out };
@@ -39,7 +44,8 @@ describe('Keep seals (P5-08)', () => {
 
   it('one building below the cap (or missing) and there is no seal yet', () => {
     const s = full(6);
-    const lower = { ...s, buildings: s.buildings.map((b, i) => (i === 1 ? { ...b, level: b.level - 1 } : b)) };
+    const target = s.buildings.findIndex((b) => !['hall', 'builder'].includes(data.buildings[b.type].category));
+    const lower = { ...s, buildings: s.buildings.map((b, i) => (i === target ? { ...b, level: b.level - 1 } : b)) };
     const p = sealProgress(lower, data)!;
     expect(p.ready).toBe(false);
     expect(p.done).toBe(p.total - 1);

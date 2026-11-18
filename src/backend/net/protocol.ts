@@ -718,6 +718,8 @@ export interface AttackResponse {
   playerTrophies: number;
   /** Protocol 11: the stake the raid was settled with (absent: none). */
   stake?: number;
+  /** P5-03: the time whose UTC day picks the daily contract (the ticket's start, server clock; absent: no contract). */
+  contractAt?: number;
 }
 
 export interface DefenseView {

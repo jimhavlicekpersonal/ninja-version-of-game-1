@@ -1255,7 +1255,8 @@ export interface GoalLadderStep {
  * the occurrence key and the Keep only, so every player at a Keep attacks the identical base that week.
  */
 export interface GoalDef {
-  kind: 'bounty' | 'gauntlet';
+  /** `festival` (review L2): a dated festival's fortress, built like a Bounty's (the village's own) but named as a festival. */
+  kind: 'bounty' | 'gauntlet' | 'festival';
   /** Defense power multiplier on the fortress (1 = a same-Keep base at mid levels). */
   power: number;
   /** Gauntlet: wall HP multiplier (Trial-style modifier; absent = 1). */

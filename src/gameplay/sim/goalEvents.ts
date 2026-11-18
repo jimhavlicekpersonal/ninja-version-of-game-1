@@ -73,8 +73,9 @@ export function bountyBase(seed: number, key: string, keep: number, goal: GoalDe
   const layout = pick(rng, LAYOUTS);
   const base = generateOpponent(s, keep, data, { levelBias: 0.75, layout });
   for (const b of base.buildings) delete b.loot;
-  base.name = `Bounty: ${pick(rng, data.names.playerFirst)} ${pick(rng, data.names.playerSecond)}'s fortress`;
-  base.practice = `Bounty fortress (${layout.name})`;
+  const festival = goal.kind === 'festival';
+  base.name = `${festival ? 'Festival' : 'Bounty'}: ${pick(rng, data.names.playerFirst)} ${pick(rng, data.names.playerSecond)}'s fortress`;
+  base.practice = `${festival ? 'Festival' : 'Bounty'} fortress (${layout.name})`;
   if (goal.power !== 1) base.power = goal.power;
   return base;
 }

@@ -689,7 +689,10 @@ export async function attack(ctx: ServerContext, me: Player, sub: BattleReport):
     const defTrophies = defender?.trophies ?? ticket.defenderTrophies;
     const delta = result.stars >= 1 ? winTrophies(attacker.trophies, defTrophies, data) : -lossTrophies(attacker.trophies, defTrophies, data);
     const playerTrophies = Math.max(0, attacker.trophies + delta);
-    const response: AttackResponse = { attackId, result, trophies: delta, playerTrophies, ...(stake !== undefined ? { stake } : {}) };
+    // P5-03 (review M1): the daily contract is the one of the ticket's start (the server's clock), sent back so the
+    // game settles with the same contract; the device's own clock never picks it.
+    const contractAt = ticket.startedAt ?? ticket.createdAt;
+    const response: AttackResponse = { attackId, result, trophies: delta, playerTrophies, ...(stake !== undefined ? { stake } : {}), contractAt };
     // Staked honor (balance audit 2026-11-08): a lost defence costs `defenseHonorLossShare` of the raider's gain
     // (none by default); step 30's daily cap still applies. A held raid pays the defender as before.
     const lostToday = defender?.honorLoss?.day === day ? defender.honorLoss.lost : 0;
@@ -723,7 +726,7 @@ export async function attack(ctx: ServerContext, me: Player, sub: BattleReport):
     const lootFrom = !defender ? 'generated-base' : (await hasServerVillage(tx, defender.id)) ? 'server-village' : 'uploaded-base';
     const mine = await applyServerResult(tx, ctx, attacker, [
       { cmd: { type: 'battleEnd', record: { at: t, opponentName: ticket.defenderName, setup, deployments, endTick: sub.endTick, ticket: ticket.id, ...(stake !== undefined ? { stake } : {}) }, known: result }, reason: 'attack:troops' },
-      { cmd: { type: 'settleOnlineAttack', ticket: ticket.id, result, trophies: delta, playerTrophies, ...(stake !== undefined ? { stake } : {}) }, reason: lootFrom === 'server-village' ? 'attack:loot' : `attack:loot:${lootFrom}` },
+      { cmd: { type: 'settleOnlineAttack', ticket: ticket.id, result, trophies: delta, playerTrophies, ...(stake !== undefined ? { stake } : {}), contractAt }, reason: lootFrom === 'server-village' ? 'attack:loot' : `attack:loot:${lootFrom}` },
     ], attackId);
     if (mine && !mine.ok) throw fail(400, 'bad_request', 'village.says', { detail: mine.message });
     await tx.updatePlayer(attacker.id, mePatch);

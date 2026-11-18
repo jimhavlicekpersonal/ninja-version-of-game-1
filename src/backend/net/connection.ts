@@ -1410,7 +1410,7 @@ export class Connection {
         if (item.kind === 'attack') {
           // The server's answer settles the attack: its loot and honor are banked only now.
           const r = await port.submitAttack(item.sub);
-          g.dispatch({ type: 'settleOnlineAttack', ticket: item.sub.ticket, result: r.result, trophies: r.trophies, playerTrophies: r.playerTrophies, ...(r.stake !== undefined ? { stake: r.stake } : {}) });
+          g.dispatch({ type: 'settleOnlineAttack', ticket: item.sub.ticket, result: r.result, trophies: r.trophies, playerTrophies: r.playerTrophies, ...(r.stake !== undefined ? { stake: r.stake } : {}), ...(r.contractAt !== undefined ? { contractAt: r.contractAt } : {}) });
           g.dispatch({ type: 'syncRank', trophies: r.playerTrophies });
         } else if (item.kind === 'gangwar') {
           await port.gangWarAttack(item.sub);

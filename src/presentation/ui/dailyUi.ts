@@ -212,6 +212,7 @@ export class DailyUi {
     // Goal events (sim/goalEvents.ts): each running one's ladder, what each step pays at this Keep, what is paid, the best try.
     for (const view of goalEventViews(c.state, now, gd)) {
       const gauntlet = view.event.goal.kind === 'gauntlet';
+      const festival = view.event.goal.kind === 'festival';
       const best = view.progress;
       const ladder = h('div', { class: 'goal-ladder' });
       for (const l of view.ladder) {
@@ -219,7 +220,7 @@ export class DailyUi {
         const look = l.step.look ? gd.cosmetics.hallSkins.find((k) => k.id === l.step.look) : undefined;
         ladder.append(h('div', { class: `log-row${l.paid ? ' current' : ''}` }, h('b', {}, need), rewardChips(l.reward), look ? h('span', { class: 'chip' }, t('events.look', { name: look.name })) : null, l.paid ? h('span', { class: 'chip good' }, i18nText("ui.paid_cdc49c0e76")) : h('span', { class: 'claim-flat' }, i18nText("ui.not_yet_a9549d7d06"))));
       }
-      const attack = h('button', { class: 'btn danger', type: 'button' }, gauntlet ? t('events.gauntlet.attack') : i18nText("ui.attack_the_bounty_fortress_0d8fd46d63"));
+      const attack = h('button', { class: 'btn danger', type: 'button' }, gauntlet ? t('events.gauntlet.attack') : festival ? t('events.festival.attack') : i18nText("ui.attack_the_bounty_fortress_0d8fd46d63"));
       attack.addEventListener('click', () => {
         this.kit.closeAllModals();
         this.opts.onBounty?.(view.event.key, view.base);
@@ -228,6 +229,8 @@ export class DailyUi {
         h('h3', {}, i18nText("ui.the_bounty_5926de348f", { arg1: view.event.name })),
         gauntlet
           ? h('p', { class: 'small' }, h('b', {}, t('events.gauntlet.generated')), ' ', t('events.gauntlet.about'))
+          : festival
+            ? h('p', { class: 'small' }, h('b', {}, t('events.festival.generated')), ' ', t('events.festival.about'))
           : h('p', { class: 'small' }, h('b', {}, i18nText("ui.bounty_fortress_generated_f5b15022f2")), i18nText("ui.a_computer_made_fortress_at_your_keep__c3734d68ef")),
         h('p', { class: 'muted small' }, i18nText("ui.your_best_1a23394f2a", { arg1: best.best, arg2: best.bestDestruction })),
         ladder,

@@ -7,7 +7,8 @@ import { describe, expect, it } from 'vitest';
 import { cappedCarry, contractEndsAt, contractFor, contractMultiplier, diversityShare, raidCarry } from '../../../src/gameplay/sim/carry';
 import { eventsBetween } from '../../../src/gameplay/sim/events';
 import type { ContractDef } from '../../../src/gameplay/sim/types';
-import { data } from './helpers';
+import { applyCommand } from '../../../src/gameplay/sim/village';
+import { data, newGame } from './helpers';
 
 const DAY = 86_400_000;
 const T0 = Date.UTC(2027, 0, 10, 13);
@@ -71,5 +72,23 @@ describe('the daily contract (P5-03)', () => {
     // And an ordinary day (no contract, no stake) is never cut by the cap.
     const plain = cappedCarry(bestDiversity, bestEvent, data);
     expect(plain.eventBonus).toBeCloseTo(bestEvent, 9);
+  });
+});
+
+describe('online raids settle with the server\'s contract time only (review M1)', () => {
+  it('settleOnlineAttack uses contractAt; without it, no contract', () => {
+    const rival = data.raids.contracts!.list.find((c) => c.kind === 'rival')!;
+    let day = T0;
+    while (contractFor(day, data)!.id !== rival.id) day += DAY;
+    const { state } = newGame();
+    const result = { stars: 2, destruction: 70, loot: { acorns: 10000, dew: 10000 }, used: { beetle_brute: 20 }, hash: 'h', hallDestroyed: false, ticks: 900, endReason: 'time' } as unknown as import('../../../src/gameplay/sim/battle/types').BattleResult;
+    const pending = { id: 'r1', kind: 'attack', at: day + DAY + 5, opponentName: 'x', setup: { seed: 1, base: { name: 'b', hallLevel: 5, buildings: [], rival: rival.clan }, army: {}, levels: {} }, deployments: [], result, trophies: 0, banked: {}, ticket: 't1', settlement: 'pending' };
+    const settle = (contractAt?: number) => applyCommand({ ...state, battleLog: [structuredClone(pending)] } as never, { type: 'settleOnlineAttack', ticket: 't1', result, trophies: 5, ...(contractAt !== undefined ? { contractAt } : {}) }, day + 2 * DAY, data);
+    const withIt = settle(day + 60_000);
+    const without = settle();
+    expect(withIt.ok && without.ok).toBe(true);
+    if (!withIt.ok || !without.ok) return;
+    expect(withIt.state.battleLog.at(-1)!.contract).toBe(rival.id);
+    expect(without.state.battleLog.at(-1)!.contract).toBeUndefined();
   });
 });
