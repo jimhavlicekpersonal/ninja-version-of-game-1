@@ -3,7 +3,7 @@ import { t } from './i18n';
 import type { Analytics } from '../../backend/analytics/events';
 import type { GameController } from '../../gameplay/control/controller';
 import type { VillageState } from '../../gameplay/sim/types';
-import { trainingSkipQuote } from '../../gameplay/sim/village';
+import { builderStatus, trainingSkipQuote } from '../../gameplay/sim/village';
 import { chestReady } from '../../gameplay/sim/daily';
 import { buildingOnScreen, type ScreenRect } from '../render/anchors';
 import { clear, h, icon } from './dom';
@@ -66,9 +66,11 @@ const STEPS: Step[] = [
       const left = waitText(hall(s).upgrade?.endsAt, c.now());
       return left ? t('tutorial.finishKeep.wait', { time: left }) : t('tutorial.finishKeep.done');
     },
-    targets: [`.sheet[data-type="${HALL}"] .btn.gold`, '.modal .btn.primary'],
+    // P3-04 (PAC-04): no ring on the Jade "Finish now"; the step ends once the Keep is building and an Artisan is free,
+    // so the army steps run while it builds.
+    targets: [],
     mapTarget: HALL,
-    done: (s) => hall(s).level >= 2,
+    done: (s, c) => hall(s).level >= 2 || (Boolean(hall(s).upgrade) && builderStatus(s, localizedData(c.data), c.now()).free > 0),
     mood: 'calm',
   },
   {
@@ -89,7 +91,8 @@ const STEPS: Step[] = [
       const left = waitText(lastTrainingEnd(s), c.now());
       return left ? t('tutorial.finishTrain.wait', { time: left }) : t('tutorial.finishTrain.done');
     },
-    targets: ['.modal-backdrop:last-child .btn.primary', '.training .btn.gold', '.round-btn[data-id="army"]'],
+    // P3-04: the Jade "Finish training" and its confirm are no longer ringed; the text still names the choice.
+    targets: ['.round-btn[data-id="army"]'],
     done: (s, c) => armySize(s) > 0 && (s.training.length === 0 || !trainingSkipQuote(s, c.now(), localizedData(c.data))),
   },
   {

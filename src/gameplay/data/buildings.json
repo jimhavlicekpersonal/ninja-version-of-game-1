@@ -21,7 +21,7 @@
         "cost": {
           "acorns": 1000
         },
-        "buildSeconds": 240,
+        "buildSeconds": 60,
         "hp": 2400,
         "storage": {
           "acorns": 4000,

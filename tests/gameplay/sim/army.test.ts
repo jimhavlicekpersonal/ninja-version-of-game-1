@@ -1,10 +1,23 @@
-import { describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { armyHousing, housingCapacity } from '../../../src/gameplay/sim/army';
 import { capacity } from '../../../src/gameplay/sim/resources';
 import { generateOpponent } from '../../../src/gameplay/sim/battle/basegen';
 import { migrate } from '../../../src/gameplay/sim/save';
 import { advance, applyCommand } from '../../../src/gameplay/sim/village';
 import { data, find, must, newGame, pointDeploys } from './helpers';
+
+// P3-04 (2026-11-18): Shinobi now train in 10 s and Kunai Adepts in 12 s. These tests check the queue's mechanics,
+// written against the old 20 s and 25 s; the timings are pinned here for this file only (one module instance per file).
+const LIVE_TRAIN = { shinobi: data.troops.hedgehog_roller.trainSeconds, adept: data.troops.frog_lobber.trainSeconds };
+beforeAll(() => {
+  data.troops.hedgehog_roller.trainSeconds = 20;
+  data.troops.frog_lobber.trainSeconds = 25;
+});
+afterAll(() => {
+  data.troops.hedgehog_roller.trainSeconds = LIVE_TRAIN.shinobi;
+  data.troops.frog_lobber.trainSeconds = LIVE_TRAIN.adept;
+});
+
 
 function withArmyBuildings() {
   const g = newGame({ acorns: 1500, dew: 1500 });

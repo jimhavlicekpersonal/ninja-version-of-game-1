@@ -9,7 +9,7 @@
     "air": false,
     "prefers": "any",
     "ignoresHedges": false,
-    "trainSeconds": 20,
+    "trainSeconds": 10,
     "barracksLevel": 1,
     "levels": [
       {
@@ -298,7 +298,7 @@
     "air": false,
     "prefers": "any",
     "ignoresHedges": false,
-    "trainSeconds": 25,
+    "trainSeconds": 12,
     "barracksLevel": 2,
     "projectile": "pebble",
     "projectileSpeed": 0.9,
