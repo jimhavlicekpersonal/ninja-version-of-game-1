@@ -65,9 +65,9 @@ server's own row). The prompt's baseline (205 files, 1,934 tests) predates `0c5e
 | P2-15 | done | 5364aed | first raid (Dojo 1, one role) carried 85% → 100%; one-role army at Keep 5 still 85% |  | result screen reads record.carry; showing the share before the raid is P6-13 |
 | P3-01 | done | 5e40d90 | casual K5→6 26→10.0 days; longest casual stretch ≤K10 18.7 d; casual K15 246→184; regular K15 113.2 |  | economy keys landed in bee66b1 by mistake; 2 data strings to translate |
 | P3-02 | todo | | | | |
-| P3-03 | todo | | | | |
-| P3-04 | todo | | | | |
-| P3-05 | todo | | | | |
+| P3-03 | done | 294182b | regular K15 113.2→101 (4-day cap; 3-day would go under 100); casual K15 184→174.4 |  | collector keeps producing while upgrading |
+| P3-04 | done | 00cc1ef | first hour 5→7 raids, Keep 3 at minute 58→44 (firsthour.mjs); browser 360×640 fresh sandbox village: raid step at 163 s, 0 Jade, no page errors (scripts/pacing/tutorial-browser.cjs) |  | browser run sends the commands the taps send (controller.dispatch), not real taps; 10 Shinobi as the +1 ring suggests; 'Nothing to collect yet' cannot occur by construction (bubble and collect share minCollectAmount during the tutorial) |
+| P3-05 | done |  | re-measured after P3-04: regular K3 0.83→2.00★ avg, first K3 raid 1★ (firsthour), casual K3 1.25★ |  | no extra lever needed; three-star farming gate re-checked at the phase campaign |
 | P3-06 | todo | | | | |
 | P3-07 | todo | | | | |
 | P3-08 | done | 452e090 | 1h income K5-15 92-207 J (K15 550→171); rush 1→15 27,204 J; Keep Celebration 1.0-2.4 h (K15 0.34→1.23 h); Starter Pack 5k→15k each (~1 h at K3-5) |  | P1-05 second half still to finish |
