@@ -23,7 +23,7 @@
   "tutorial.end.button": { "en": "Finish", "text": "Τέλος" },
   "tutorial.skip": { "en": "Skip tutorial", "text": "Παράλειψη οδηγού" },
   "kind.practice": { "en": "Practice", "text": "Εξάσκηση" },
-  "whatsNew.0_1_0": { "en": "What's new: send your squad in with one order, watch the fight up close or faster, and see what another entry point would have done. Every raid on your village now has a report, and you can test your defenses. New: a four-week event calendar with festivals, a weekly Gauntlet, daily contracts, achievements, Keep seals and looks to earn.", "text": "" },
+  "whatsNew.0_1_0": { "en": "What's new: send your squad in with one order, watch the fight up close or faster, and see what another entry point would have done. Every raid on your village now has a report, and you can test your defenses. New: a four-week event calendar with festivals, a weekly Gauntlet, daily contracts, achievements, Keep seals and looks to earn.", "text": "Τι νέο υπάρχει: στείλε την ομάδα σου με μία εντολή, παρακολούθησε τη μάχη από κοντά ή πιο γρήγορα και δες τι θα είχε γίνει από άλλο σημείο διείσδυσης. Κάθε επιδρομή στο χωριό σου έχει πλέον αναφορά, και μπορείς να δοκιμάσεις τις άμυνές σου. Νέο: ημερολόγιο εκδηλώσεων τεσσάρων εβδομάδων με γιορτές, εβδομαδιαία Πρόκληση, ημερήσια συμβόλαια, επιτεύγματα, σφραγίδες Ακρόπυργου και εμφανίσεις για να κερδίσεις." },
   "trials.ladder": { "en": "The ladder ahead", "text": "Οι επόμενες βαθμίδες" },
   "trials.cleared": { "en": "Cleared: tiers 1 to {best}", "text": "Ολοκληρώθηκαν: βαθμίδες 1 έως {best}" },
   "milestone.keep": { "en": "Clan Keep Lv {level}!", "text": "Ακρόπυργος της Φατρίας, Επ. {level}!" },

@@ -26,8 +26,15 @@ Vezess egy nindzsaklánt, építs rejtett falut a hegyekben, képezz ötvenféle
 **Portyázz tervvel**
 
 - A harcosok csak a Beszivárgási pontokon jutnak be. Kémleld ki az utakat és az őket védő tornyokat.
-- Dobj Füstbombát, amikor a harcosaid egy torony hatótávjába lépnek, és küldj Szabotőrt, hogy megbénítson egy védőépületet.
+- Küldd be az osztagodat egyetlen paranccsal (együtt, harapófogóban vagy libasorban; tankok elöl vagy rohammal), vagy helyezz el minden harcost kézzel.
+- Dobj Füstbombát, amikor a harcosaid egy torony hatótávjába lépnek, és küldj Szabotőrt, hogy megbénítson egy védőépületet. A 7. szintű Klánvártól az Árnykapitány csatánként egyszer az egész osztagodat felsorakoztatja.
+- Portya után megnézheted, mit ért volna el ugyanaz a sereg egy másik ponton át.
 - Egy jól átgondolt támadás legyőzi a nagyobb sereget.
+
+**Védd meg a faludat**
+
+- A faludat ért minden portyáról jelentést kapsz: mit tartottál meg, hány csillagot hárítottál el, és hol tört be a portyázó.
+- Teszteld a védelmedet egy szimulált portyázó ellen, és gyakorolj a téged legyőző sereg ellen.
 
 **Játsszatok együtt** (online)
 
@@ -38,7 +45,12 @@ Vezess egy nindzsaklánt, építs rejtett falut a hegyekben, képezz ötvenféle
 
 **Árnypróbák**
 
-- Erődök végtelen sora. Minden szint csak egyszer ad jutalmat, és egyre nehezebb.
+- Erődök végtelen sora. Minden szint csak egyszer ad jutalmat, és egyre nehezebb. A napi gyakorlattal edzhetsz, amíg a sereged kiképzése tart.
+
+**Minden nap valami új**
+
+- Események egy állandó négyhetes naptárban, öt éves ünnep egy-egy erőddel és megszerezhető Vár-megjelenéssel, heti Vesszőfutás és napi szerződés.
+- Eredmények, várpecsétek, Harcosmesterség-rangok és játékkal szerezhető megjelenések.
 
 **Tisztességes játék**
 

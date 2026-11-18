@@ -26,8 +26,15 @@ Vodi nindža klan, izgradi skriveno selo u planinama, obuči pedeset vrsta ratni
 **Napadaj s planom**
 
 - Ratnici ulaze samo kroz Točke infiltracije. Izvidi putove i tornjeve koji ih čuvaju.
-- Baci Dimnu bombu kad ratnici uđu u domet tornja i pošalji Sabotera da onesposobi obranu.
+- Pošalji odred jednom naredbom (zajedno, u kliještima ili u koloni; tenkovi prvi ili juriš) ili sam rasporedi svakog ratnika.
+- Baci Dimnu bombu kad ratnici uđu u domet tornja i pošalji Sabotera da onesposobi obranu. Od Utvrde klana razine 7 Kapetan sjene jednom po bitci okuplja cijeli tvoj odred.
+- Nakon prepada pogledaj što bi ista vojska postigla kroz drugu točku.
 - Promišljen napad pobjeđuje veću vojsku.
+
+**Obrani svoje selo**
+
+- Svaki prepad na tvoje selo donosi izvješće: što je sačuvano, koliko je zvjezdica uskraćeno i kuda je napadač ušao.
+- Testiraj svoju obranu protiv simuliranog napadača i vježbaj protiv vojske koja te pobijedila.
 
 **Igrajte zajedno** (na mreži)
 
@@ -38,7 +45,12 @@ Vodi nindža klan, izgradi skriveno selo u planinama, obuči pedeset vrsta ratni
 
 **Iskušenja sjene**
 
-- Beskrajni niz utvrda. Svaka razina nagrađuje samo jednom i sve je teža.
+- Beskrajni niz utvrda. Svaka razina nagrađuje samo jednom i sve je teža. Dnevna vježba omogućuje ti da vježbaš dok se tvoja vojska obučava.
+
+**Svaki dan nešto novo**
+
+- Događaji u stalnom kalendaru od četiri tjedna, pet godišnjih festivala s tvrđavom i izgledom Utvrde koji možeš zaraditi, tjedni Špalir i dnevni ugovor.
+- Postignuća, pečati Utvrde, rangovi Majstorstva ratnika i izgledi koje zarađuješ igranjem.
 
 **Poštena igra**
 

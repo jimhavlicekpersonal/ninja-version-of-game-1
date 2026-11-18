@@ -23,7 +23,7 @@
   "tutorial.end.button": { "en": "Finish", "text": "Termină" },
   "tutorial.skip": { "en": "Skip tutorial", "text": "Sari peste tutorial" },
   "kind.practice": { "en": "Practice", "text": "Antrenament" },
-  "whatsNew.0_1_0": { "en": "What's new: send your squad in with one order, watch the fight up close or faster, and see what another entry point would have done. Every raid on your village now has a report, and you can test your defenses. New: a four-week event calendar with festivals, a weekly Gauntlet, daily contracts, achievements, Keep seals and looks to earn.", "text": "" },
+  "whatsNew.0_1_0": { "en": "What's new: send your squad in with one order, watch the fight up close or faster, and see what another entry point would have done. Every raid on your village now has a report, and you can test your defenses. New: a four-week event calendar with festivals, a weekly Gauntlet, daily contracts, achievements, Keep seals and looks to earn.", "text": "Noutăți: trimite-ți echipa cu un singur ordin, urmărește lupta de aproape sau mai repede și vezi ce ar fi reușit printr-un alt punct de infiltrare. Fiecare atac asupra satului tău are acum un raport, iar apărarea ți-o poți testa. Nou: un calendar de evenimente pe patru săptămâni cu festivaluri, Proba de Foc săptămânală, contracte zilnice, realizări, sigilii ale Cetății și aspecte de câștigat." },
   "trials.ladder": { "en": "The ladder ahead", "text": "Treptele care urmează" },
   "trials.cleared": { "en": "Cleared: tiers 1 to {best}", "text": "Trepte trecute: de la 1 la {best}" },
   "milestone.keep": { "en": "Clan Keep Lv {level}!", "text": "Cetatea Clanului, Nv. {level}!" },

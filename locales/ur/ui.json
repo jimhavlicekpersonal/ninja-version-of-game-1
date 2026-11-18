@@ -23,7 +23,7 @@
   "tutorial.end.button": { "en": "Finish", "text": "ختم" },
   "tutorial.skip": { "en": "Skip tutorial", "text": "تعارف چھوڑیں" },
   "kind.practice": { "en": "Practice", "text": "مشق" },
-  "whatsNew.0_1_0": { "en": "What's new: send your squad in with one order, watch the fight up close or faster, and see what another entry point would have done. Every raid on your village now has a report, and you can test your defenses. New: a four-week event calendar with festivals, a weekly Gauntlet, daily contracts, achievements, Keep seals and looks to earn.", "text": "" },
+  "whatsNew.0_1_0": { "en": "What's new: send your squad in with one order, watch the fight up close or faster, and see what another entry point would have done. Every raid on your village now has a report, and you can test your defenses. New: a four-week event calendar with festivals, a weekly Gauntlet, daily contracts, achievements, Keep seals and looks to earn.", "text": "نیا کیا ہے: ایک ہی حکم سے اپنا دستہ بھیجیں، لڑائی قریب سے یا تیز رفتار میں دیکھیں، اور جانیں کہ دراندازی کے کسی اور مقام سے کیا ہوتا۔ اب آپ کے گاؤں پر ہر دھاوے کی رپورٹ ملتی ہے، اور آپ اپنا دفاع آزما سکتے ہیں۔ نیا: میلوں کے ساتھ چار ہفتوں کا تقریبات کیلنڈر، ہفتہ وار کڑا معرکہ، روزانہ معاہدے، کامیابیاں، قلعے کی مہریں اور کمانے کے لیے روپ۔" },
   "trials.ladder": { "en": "The ladder ahead", "text": "آگے کے درجے" },
   "trials.cleared": { "en": "Cleared: tiers 1 to {best}", "text": "پار شدہ: درجے 1 تا {best}" },
   "milestone.keep": { "en": "Clan Keep Lv {level}!", "text": "قبیلے کا قلعہ لیول {level}!" },

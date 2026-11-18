@@ -23,7 +23,7 @@
   "tutorial.end.button": { "en": "Finish", "text": "Završi" },
   "tutorial.skip": { "en": "Skip tutorial", "text": "Preskoči uvod" },
   "kind.practice": { "en": "Practice", "text": "Vježba" },
-  "whatsNew.0_1_0": { "en": "What's new: send your squad in with one order, watch the fight up close or faster, and see what another entry point would have done. Every raid on your village now has a report, and you can test your defenses. New: a four-week event calendar with festivals, a weekly Gauntlet, daily contracts, achievements, Keep seals and looks to earn.", "text": "" },
+  "whatsNew.0_1_0": { "en": "What's new: send your squad in with one order, watch the fight up close or faster, and see what another entry point would have done. Every raid on your village now has a report, and you can test your defenses. New: a four-week event calendar with festivals, a weekly Gauntlet, daily contracts, achievements, Keep seals and looks to earn.", "text": "Novosti: pošalji odred jednom naredbom, gledaj borbu izbliza ili brže i provjeri kako bi prošla druga točka infiltracije. Svaki prepad na tvoje selo sada ima izvješće, a svoju obranu možeš testirati. Novo: kalendar događaja za četiri tjedna s festivalima, tjedni Špalir, dnevni ugovori, postignuća, pečati Utvrde i izgledi koje možeš zaraditi." },
   "trials.ladder": { "en": "The ladder ahead", "text": "Razine koje slijede" },
   "trials.cleared": { "en": "Cleared: tiers 1 to {best}", "text": "Prijeđeno: razine od 1 do {best}" },
   "milestone.keep": { "en": "Clan Keep Lv {level}!", "text": "Utvrda klana, razina {level}!" },

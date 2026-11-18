@@ -26,8 +26,15 @@ Condu un clan de ninja. Construiește un sat ascuns în munți, antrenează cinc
 **Atacă după un plan**
 
 - Războinicii intră doar prin punctele de infiltrare: cercetează drumurile și turnurile care le acoperă.
-- Aruncă Bombe fumigene când războinicii intră în raza turnurilor și trimite Sabotorii să blocheze apărările.
+- Trimite-ți echipa cu un singur ordin (împreună, în clește sau în șir; tancuri întâi sau asalt) sau așază fiecare războinic cu mâna ta.
+- Aruncă Bombe fumigene când războinicii intră în raza turnurilor și trimite Sabotorii să blocheze apărările. De la Cetatea Clanului de nivelul 7, Căpitanul Umbrei îți adună toată echipa o dată pe luptă.
+- După un atac, vezi ce ar fi reușit aceeași armată printr-un alt punct.
 - Un atac bine gândit valorează mai mult decât unul uriaș.
+
+**Apără-ți satul**
+
+- Fiecare atac asupra satului tău vine cu un raport: ce ai păstrat, câte stele ai refuzat și pe unde a intrat atacatorul.
+- Testează-ți apărarea împotriva unui atacator simulat și exersează împotriva armatei care te-a învins.
 
 **Joacă în echipă** (online)
 
@@ -38,7 +45,12 @@ Condu un clan de ninja. Construiește un sat ascuns în munți, antrenează cinc
 
 **Încercările Umbrei**
 
-- O scară nesfârșită de fortărețe. Fiecare treaptă își plătește recompensa o singură dată și devine mai grea.
+- O scară nesfârșită de fortărețe. Fiecare treaptă își plătește recompensa o singură dată și devine mai grea. Un exercițiu zilnic te lasă să exersezi cât timp armata ți se antrenează.
+
+**Ceva nou în fiecare zi**
+
+- Evenimente într-un calendar fix de patru săptămâni, cinci festivaluri anuale, fiecare cu o fortăreață și un aspect de Cetate de câștigat, Proba de Foc săptămânală și un contract zilnic.
+- Realizări, sigilii ale Cetății, ranguri de Măiestrie a războinicilor și aspecte pe care le câștigi jucând.
 
 **Joc corect**
 
