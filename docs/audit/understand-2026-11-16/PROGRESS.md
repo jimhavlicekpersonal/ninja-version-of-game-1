@@ -127,7 +127,7 @@ server's own row). The prompt's baseline (205 files, 1,934 tests) predates `0c5e
 | P7-10 | done (docs) | b6845eb | REQUESTS 'Open' listed 9 backend + 7 game-theory entries, most answered → backend 2 open / 7 done, game theory 4 open / 3 done; dated reassessment table in WORLDWIDE_AUDIT |  | docs/art/REQUESTS.md left as is: its re-audit table is reference and the squad-orders ask is genuinely open (P6-01) |
 | P7-11 | done | ad7f0b4 | unset in every workflow -> repository variable, default 0, in 3 workflows | - | release-config 20/20 |
 | P7-12 | done | 12f24e1 | no way to play preview on a build -> manual workflow (artifact only), tester checklist | - | verification-client 8/8 |
-| P7-13 | todo | | | | |
+| P7-13 | done | 8914a1e,8b803af | listing sold an older game -> English + 49 listings name squad orders, review, defense report, drill, events, contract, achievements, seals, looks; claims tied to data/tests | 49 listings | store:storekit run; keywords castle/samurai flagged for the owner (OWNER_CHECKLIST) |
 | P7-14 | done | 1489b99 | no what's new -> one entry in News once, = release notes | whatsNew.0_1_0 | whats-new 1/1 |
 | P7-15 | done | 0e53a6c | audio category + marketing version set in text; privacy manifest and achievements plugin written down | - | release-config; nothing compiled or run on a device |
 | P7-16 | done | b6845eb,d93c404 | no single owner list -> OWNER_CHECKLIST.md: identity, legal, stores, hosting, devices, decisions; preflight checks the machine-checkable lines | - | every line says what it blocks and how to tell it is done |
