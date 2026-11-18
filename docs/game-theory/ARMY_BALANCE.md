@@ -20,15 +20,15 @@ A composition takes the three newest unlocked troops of each family it uses:
 
 | Army | Keep 4 | Keep 6 | Keep 7 | Keep 8 | Keep 10 | Keep 12 | Keep 15 |
 |---|---|---|---|---|---|---|---|
-| Mixed (raid bot mix) | 56 (6%) | 62 (6%) | 74 (28%) | 66 (11%) | 71 (22%) | 67 (17%) | 84 (44%) |
+| Mixed (raid bot mix) | 56 (6%) | 62 (6%) | 74 (28%) | 66 (11%) | 71 (22%) | 67 (17%) | 84 (33%) |
 | Melee rush | 73 (33%) | 63 (11%) | 59 (22%) | 33 (17%) | 63 (6%) | 41 (6%) | 39 (0%) |
-| Artillery-heavy | 65 (11%) | 79 (33%) | 62 (6%) | 58 (6%) | 71 (17%) | 55 (0%) | 71 (11%) |
-| Support-heavy | 52 (6%) | 55 (11%) | 34 (0%) | 15 (0%) | 49 (0%) | 32 (0%) | 35 (0%) |
-| Air | 56 (6%) | 47 (0%) | 47 (0%) | 36 (0%) | 49 (0%) | 27 (0%) | 47 (0%) |
-| Shadow strike | 83 (39%) | 75 (28%) | 67 (22%) | 57 (6%) | 53 (6%) | 45 (0%) | 66 (11%) |
-| Siege | 68 (22%) | 62 (22%) | 41 (0%) | 26 (6%) | 44 (0%) | 30 (0%) | 32 (0%) |
-| Melee + ranged, light support | 71 (28%) | 85 (61%) | 53 (0%) | 54 (6%) | 81 (50%) | 48 (0%) | 49 (0%) |
-| Breach wedge | 66 (22%) | 79 (39%) | 51 (0%) | 53 (0%) | 69 (17%) | 42 (0%) | 50 (0%) |
+| Artillery-heavy | 70 (11%) | 82 (39%) | 63 (6%) | 59 (6%) | 71 (17%) | 52 (0%) | 69 (22%) |
+| Support-heavy | 77 (44%) | 69 (33%) | 42 (6%) | 28 (0%) | 67 (11%) | 40 (0%) | 54 (6%) |
+| Air | 56 (6%) | 47 (0%) | 47 (0%) | 36 (0%) | 49 (0%) | 26 (0%) | 44 (0%) |
+| Shadow strike | 83 (39%) | 75 (28%) | 67 (22%) | 57 (6%) | 53 (6%) | 45 (0%) | 57 (6%) |
+| Siege | 78 (39%) | 68 (22%) | 50 (0%) | 42 (11%) | 46 (0%) | 33 (0%) | 37 (0%) |
+| Melee + ranged, light support | 78 (33%) | 80 (44%) | 53 (6%) | 53 (6%) | 80 (28%) | 45 (0%) | 51 (0%) |
+| Breach wedge | 65 (17%) | 80 (39%) | 58 (6%) | 61 (11%) | 70 (22%) | 45 (0%) | 53 (0%) |
 
 ## What the five live counters' effects cost each army
 
@@ -36,15 +36,15 @@ Destruction lost to the counter abilities: the same bases, deployments and Infil
 
 | Army | Keep 4 | Keep 6 | Keep 7 | Keep 8 | Keep 10 | Keep 12 | Keep 15 |
 |---|---|---|---|---|---|---|---|
-| Mixed (raid bot mix) | 0.0 | 0.0 | -3.4 | -0.4 | 0.0 | 2.0 | 4.1 |
+| Mixed (raid bot mix) | 0.0 | 0.0 | -3.4 | -0.4 | 0.0 | 2.0 | 1.5 |
 | Melee rush | 0.0 | -0.1 | -2.6 | 9.2 | 0.0 | 0.3 | 0.4 |
-| Artillery-heavy | 0.0 | 0.0 | -0.6 | -1.3 | 0.0 | -0.6 | -3.5 |
-| Support-heavy | 0.0 | -0.1 | -0.4 | -4.5 | -0.8 | -0.1 | -0.9 |
-| Air | 0.0 | 0.0 | -3.9 | -12.3 | -1.4 | -1.8 | -4.6 |
-| Shadow strike | 0.0 | 0.0 | -1.8 | -0.3 | 0.0 | 0.2 | -2.2 |
-| Siege | 0.0 | 0.0 | -1.1 | -1.1 | 0.0 | 0.0 | -1.9 |
-| Melee + ranged, light support | 0.0 | 0.0 | -3.9 | -2.3 | 0.0 | -3.1 | -4.9 |
-| Breach wedge | 0.0 | 0.0 | -1.3 | -1.3 | 0.0 | -1.1 | -3.6 |
+| Artillery-heavy | 0.0 | 0.0 | -0.7 | -0.9 | 0.0 | 1.6 | -1.9 |
+| Support-heavy | 0.0 | -0.8 | -1.5 | -1.5 | -0.0 | 0.3 | 0.2 |
+| Air | 0.0 | 0.0 | -3.9 | -12.3 | -1.4 | -1.2 | -5.8 |
+| Shadow strike | 0.0 | 0.0 | -1.8 | -0.3 | 0.0 | 0.2 | 1.9 |
+| Siege | 0.0 | -0.1 | -1.4 | -1.0 | 0.0 | -0.2 | -2.2 |
+| Melee + ranged, light support | 0.0 | -0.4 | -0.8 | -1.6 | 0.0 | -1.2 | -4.6 |
+| Breach wedge | 0.0 | 0.0 | -3.4 | -0.6 | 0.0 | 0.7 | -2.3 |
 
 ## Investment per army
 
@@ -52,15 +52,15 @@ Equal housing is not equal investment. Provisions and Dojo time to train each ar
 
 | Army | Keep 4 | Keep 6 | Keep 7 | Keep 8 | Keep 10 | Keep 12 | Keep 15 |
 |---|---|---|---|---|---|---|---|
-| Mixed (raid bot mix) | 8k · 0.8h · R 51k | 31k · 1.5h · R 174k | 66k · 2.6h · R 367k | 92k · 2.7h · R 713k | 267k · 4.1h · R 3.7m | 607k · 4.3h · R 16.1m | 4.0m · 6.6h · R 290.0m |
+| Mixed (raid bot mix) | 8k · 0.5h · R 51k | 31k · 1.1h · R 174k | 66k · 2.6h · R 367k | 92k · 2.7h · R 713k | 267k · 4.1h · R 3.7m | 607k · 4.3h · R 16.1m | 4.0m · 6.6h · R 290.0m |
 | Melee rush | 12k · 0.9h · R 10k | 44k · 1.9h · R 96k | 66k · 2.6h · R 275k | 123k · 2.7h · R 535k | 263k · 4.1h · R 2.8m | 658k · 4.3h · R 12.1m | 4.3m · 6.6h · R 217.5m |
-| Artillery-heavy | 11k · 0.9h · R 20k | 35k · 1.8h · R 192k | 64k · 2.3h · R 575k | 97k · 2.4h · R 1.1m | 250k · 3.4h · R 5.3m | 616k · 4.0h · R 23.4m | 3.9m · 5.8h · R 406.7m |
+| Artillery-heavy | 11k · 0.7h · R 20k | 35k · 1.6h · R 192k | 64k · 2.3h · R 575k | 97k · 2.4h · R 1.1m | 250k · 3.4h · R 5.3m | 616k · 4.0h · R 23.4m | 3.9m · 5.8h · R 406.7m |
 | Support-heavy | 9k · 0.8h · R 20k | 32k · 1.7h · R 161k | 50k · 2.2h · R 473k | 90k · 2.5h · R 1.0m | 199k · 3.4h · R 4.9m | 502k · 3.9h · R 22.1m | 3.3m · 6.0h · R 395.1m |
 | Air | 18k · 1.0h · R 20k | 68k · 1.9h · R 161k | 121k · 2.1h · R 473k | 186k · 2.4h · R 1.0m | 448k · 2.9h · R 4.9m | 1.2m · 3.5h · R 22.1m | 7.9m · 5.4h · R 395.1m |
 | Shadow strike | 6k · 0.7h · R 20k | 23k · 1.7h · R 161k | 39k · 1.9h · R 473k | 63k · 2.0h · R 857k | 148k · 2.9h · R 4.9m | 387k · 3.6h · R 22.1m | 2.5m · 5.5h · R 395.1m |
 | Siege | 8k · 0.8h · R 20k | 29k · 1.7h · R 161k | 46k · 2.1h · R 473k | 80k · 2.2h · R 857k | 182k · 3.2h · R 4.9m | 450k · 3.4h · R 20.2m | 2.9m · 5.5h · R 374.3m |
-| Melee + ranged, light support | 10k · 0.9h · R 31k | 35k · 1.8h · R 257k | 59k · 2.3h · R 773k | 99k · 2.5h · R 1.6m | 232k · 3.5h · R 7.4m | 583k · 4.0h · R 33.5m | 3.8m · 6.1h · R 584.3m |
-| Breach wedge | 10k · 0.8h · R 31k | 32k · 1.8h · R 257k | 56k · 2.2h · R 773k | 91k · 2.3h · R 1.4m | 217k · 3.4h · R 7.4m | 538k · 3.7h · R 31.6m | 3.5m · 5.7h · R 563.5m |
+| Melee + ranged, light support | 10k · 0.8h · R 31k | 35k · 1.7h · R 257k | 59k · 2.3h · R 773k | 99k · 2.5h · R 1.6m | 232k · 3.5h · R 7.4m | 583k · 4.0h · R 33.5m | 3.8m · 6.1h · R 584.3m |
+| Breach wedge | 10k · 0.8h · R 31k | 32k · 1.7h · R 257k | 56k · 2.2h · R 773k | 91k · 2.3h · R 1.4m | 217k · 3.4h · R 7.4m | 538k · 3.7h · R 31.6m | 3.5m · 5.7h · R 563.5m |
 
 ## Armies used
 
