@@ -64,17 +64,17 @@ server's own row). The prompt's baseline (205 files, 1,934 tests) predates `0c5e
 | P2-14 | done | 5371905 | fortress Keep 12 day 66 (1.34x rusher) without crew → 57.6-59 (1.15-1.17x) with crew 2; Keep 15 222.6 → 137.6-140.6. Regular Keep 15 day 114 |  | support joins the crew; second builder queue is P6-12 |
 | P2-15 | done | 5364aed | first raid (Dojo 1, one role) carried 85% → 100%; one-role army at Keep 5 still 85% |  | result screen reads record.carry; showing the share before the raid is P6-13 |
 | P3-01 | done | 5e40d90 | casual K5→6 26→10.0 days; longest casual stretch ≤K10 18.7 d; casual K15 246→184; regular K15 113.2 |  | economy keys landed in bee66b1 by mistake; 2 data strings to translate |
-| P3-02 | todo | | | | |
+| P3-02 | partial | 7b180b3 | casual K6 day 16.7 (gate 25) ✓; longest casual stretch ≤K10 23.7 d (gate 21) ✗; casual_hires K15 134.4, casual_queues 111.4 |  | CARRIED RED into Phase 4: casual K6→7 23.7 d, regular K15 1.15★, casual K10 3★ 54.5%, defender K3 0.83★ |
 | P3-03 | done | 294182b | regular K15 113.2→101 (4-day cap; 3-day would go under 100); casual K15 184→174.4 |  | collector keeps producing while upgrading |
 | P3-04 | done | 00cc1ef | first hour 5→7 raids, Keep 3 at minute 58→44 (firsthour.mjs); browser 360×640 fresh sandbox village: raid step at 163 s, 0 Jade, no page errors (scripts/pacing/tutorial-browser.cjs) |  | browser run sends the commands the taps send (controller.dispatch), not real taps; 10 Shinobi as the +1 ring suggests; 'Nothing to collect yet' cannot occur by construction (bubble and collect share minCollectAmount during the tutorial) |
 | P3-05 | done |  | re-measured after P3-04: regular K3 0.83→2.00★ avg, first K3 raid 1★ (firsthour), casual K3 1.25★ |  | no extra lever needed; three-star farming gate re-checked at the phase campaign |
-| P3-06 | todo | | | | |
-| P3-07 | todo | | | | |
+| P3-06 | done | 5b12be4 | Keep 10 village with nothing cleared: next attemptable tier 1 → 29 (first of Keep 8), pays tiers 1-29 once | trials.caughtUp | no test clears a catch-up tier end to end (reward and lock tested) |
+| P3-07 | done | ae7b59f | a village with camps but no warriors: no paying action → the drill (full camp, nothing spent) pays once per local day | drill.* | 5 strings; the 'within two minutes' is the battle's own length (not measured in a browser) |
 | P3-08 | done | 452e090 | 1h income K5-15 92-207 J (K15 550→171); rush 1→15 27,204 J; Keep Celebration 1.0-2.4 h (K15 0.34→1.23 h); Starter Pack 5k→15k each (~1 h at K3-5) |  | P1-05 second half still to finish |
-| P3-09 | todo | | | | |
-| P3-10 | todo | | | | |
-| P3-11 | todo | | | | |
-| P3-12 | todo | | | | |
+| P3-09 | done | b63a8ce | objective chip skipped the rushed Keep; tested | keep.armyBehind | 1 string |
+| P3-10 | done | 033b03e | PROGRESSION_MODEL.md pacing targets from the campaign |  |  |
+| P3-11 | partial | b63a8ce | objective: storage ≥90% → Keep/storage upgrade before chest (tested); scout line; tutorial end points at Keep | scout.lootWontFit | NOT done: the scripted three-raid first session with zero overflow was not run; Keep 1-2 storage not raised |
+| P3-12 | done | f40c0de | first attack ended the 24 h new-player shield → keeps it (sim + server, tested) | scout.shieldEnds | 1 string |
 | P4-01 | todo | | | | |
 | P4-02 | todo | | | | |
 | P4-03 | todo | | | | |
