@@ -1148,7 +1148,7 @@ No battle rule changed (speed scales real time only; squad orders and the review
 
 | Item | Finding | Status | What changed | Evidence | Remaining limitations |
 |---|---|---|---|---|---|
-| P6-01 | CMB-09/UIS-03 squad orders had no screen | done | a row of formations (Together, Pincer, Single file) and one cycling wave-order chip, Hold with the waiting count; a ring tap sends the squad | three-tap raid replays to its hash; row fits at the four sizes | the reserve decision is under re-measurement (review M2, below) |
+| P6-01 | CMB-09/UIS-03 squad orders had no screen | done | a row of formations (Together, Pincer, Single file) and one cycling wave-order chip, Hold with the waiting count; a ring tap sends the squad | three-tap raid replays to its hash; row fits at the four sizes in en, ar, de | the reserve is not offered: best alone on 1/3/0 of 10 bases at Keeps 9/12/15 (bar: 2 of 10) |
 | P6-02 | CMB-02 the entry point cannot be learned | done | "What if…" on the result screen: the same deployments through another point, a real battle in slices | equals `runBattle` with its deployments; CPU ×6 longest task 129 ms (low) | emulation, not a cheap phone |
 | P6-03 | defense report | done | kept share, stars denied, entry point, first to fall (replay, same rules only), reward; `defendSide` objective | sim and DOM tests | entry points only for records under today's rules |
 | P6-04 | test my defenses | done | a simulated test raid as a replay (labelled practice); practice against a past raider's army | pure; exact replay | — |

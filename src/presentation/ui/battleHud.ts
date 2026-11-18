@@ -77,7 +77,7 @@ interface BattleHudDeps {
  * P6-01: "hold a reserve" is offered only if it is the best order on at least one base in five at Keeps 9, 12 and 15
  * (tools/balance/run-squad-orders.mjs; the measurement is in docs/audit/understand-2026-11-16/phase6/).
  */
-const SQUAD_RESERVE = true;
+const SQUAD_RESERVE = false;
 const SQUAD_KEY = 'tk.squad';
 
 function loadSquadChoice(): { formation: Formation | null; order: WaveOrder } {
