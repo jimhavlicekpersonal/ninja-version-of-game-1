@@ -6,7 +6,7 @@
  *
  * Hero Hall (content batch 2026-11-14, behind `data.features.heroChoice`, off in the shipped data): with a
  * Hero Hall (`hero_shrine`) built, the player chooses one unlocked hero (`chooseHero`, `VillageState.hero`,
- * save v23); the hero's level is then also capped by the Hall's level. Without the feature, or without a Hall,
+ * save v23). Since P4-10 the Hall's level decides which heroes can be chosen and never caps the hero's level. Without the feature, or without a Hall,
  * or without a valid choice, the automatic hero above joins as before.
  */
 import type { GameData, VillageState } from './types';
@@ -37,19 +37,24 @@ export function heroHallLevel(state: VillageState, data: GameData): number {
   return best;
 }
 
-/** Heroes the player may choose now (hero choice on, a Hero Hall built, the Keep high enough). */
+/**
+ * Heroes the player may choose now (hero choice on, a Hero Hall built, the Keep high enough). P4-10 (BNL-11): the
+ * Hall's level decides which heroes can be chosen (`economy.heroHallLevels`, by the heroes' unlock order); it never
+ * caps a chosen hero's level, which used to make choosing the Captain with a level 1 Hall weaker than letting the Keep
+ * choose.
+ */
 export function choosableHeroes(state: VillageState, data: GameData): string[] {
-  if (!data.features?.heroChoice || heroHallLevel(state, data) <= 0) return [];
+  const hall = heroHallLevel(state, data);
+  if (!data.features?.heroChoice || hall <= 0) return [];
   const keep = hallLevel(state, data);
-  return Object.entries(data.battle.heroes ?? {}).filter(([, d]) => keep >= d.unlockKeep).map(([id]) => id);
+  const needs = data.economy.heroHallLevels ?? [];
+  const order = Object.entries(data.battle.heroes ?? {}).sort(([a, x], [b, y]) => x.unlockKeep - y.unlockKeep || a.localeCompare(b));
+  return order.filter(([, d], i) => keep >= d.unlockKeep && hall >= (needs[i] ?? needs[needs.length - 1] ?? 1)).map(([id]) => id);
 }
 
 export function heroFor(state: VillageState, data: GameData): { id: string; level: number } | null {
   const keep = hallLevel(state, data);
   const chosen = state.hero?.chosen;
-  if (chosen && choosableHeroes(state, data).includes(chosen)) {
-    const def = data.battle.heroes![chosen];
-    return { id: chosen, level: Math.min(keepLevelOf(def, keep), heroHallLevel(state, data)) };
-  }
+  if (chosen && choosableHeroes(state, data).includes(chosen)) return { id: chosen, level: keepLevelOf(data.battle.heroes![chosen], keep) };
   return heroAtKeep(keep, data);
 }

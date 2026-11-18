@@ -7,6 +7,7 @@ import { botDeployments } from '../../../src/gameplay/sim/defense';
 import { opponentForRank } from '../../../src/gameplay/sim/matchmaking';
 import { rivalFor } from '../../../src/gameplay/sim/rivals';
 import { createRng } from '../../../src/gameplay/sim/rng';
+import { chargeRod } from '../../../src/gameplay/sim/battle/previewCounters';
 import type { GameData } from '../../../src/gameplay/sim/types';
 
 function fight(data: GameData, army: Record<string, number>, keep = 4, seed = 11) {
@@ -53,5 +54,18 @@ describe('P4-07 (CMB-08): raid bases use the rival clans\' home layouts', () => 
       expect(low.practice).toBeUndefined();
     }
     expect(seen.size).toBe(5);
+  });
+});
+
+describe('P4-10 (BNL): the Lightning Rod raises at most one "absorbed" callout a second', () => {
+  it('ten hits in one tick give one event; a second later, another', () => {
+    const rod = { effect: { kind: 'lightning_rod', capacity: 100, returnPct: 1 }, maxHp: 1000, charge: 0 };
+    const sim = { buildings: [rod], events: [] as { what?: string }[], tick: 0, data: defaultData } as unknown as Parameters<typeof chargeRod>[0];
+    const troop = { id: 0, dead: false } as unknown as Parameters<typeof chargeRod>[3];
+    for (let i = 0; i < 10; i++) chargeRod(sim, 0, 1, troop, () => {});
+    expect(sim.events.filter((e) => (e as { what?: string }).what === 'absorbed')).toHaveLength(1);
+    (sim as { tick: number }).tick = defaultData.battle.ticksPerSecond;
+    chargeRod(sim, 0, 1, troop, () => {});
+    expect(sim.events.filter((e) => (e as { what?: string }).what === 'absorbed')).toHaveLength(2);
   });
 });

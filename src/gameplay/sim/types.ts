@@ -776,6 +776,8 @@ export interface EconomyDef {
    * instead of Coins, one for one (`place`/`upgrade` with `pay: 'dew'`), so a defender's idle Provisions build walls.
    */
   provisionsPayable?: string[];
+  /** P4-10 (BNL-11): the Hero Hall level each hero needs to be chosen, by the heroes' unlock order (not live). */
+  heroHallLevels?: number[];
   /** P3-03: the longest any level takes to build, unless the building names its own `buildCapSeconds`. */
   buildSecondsCap?: number;
   /**

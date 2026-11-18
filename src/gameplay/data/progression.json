@@ -494,7 +494,7 @@
       "unlockKeep": 7,
       "pinnacleMaxLevel": 10,
       "live": false,
-      "description": "Home of a clan hero; one hall per hero."
+      "description": "Home of your clan heroes: its level decides which hero you can choose."
     },
     {
       "id": "temple_bell_tower",
@@ -778,7 +778,7 @@
       "unlockKeep": 7,
       "pinnacleMaxLevel": 10,
       "live": false,
-      "description": "Polished bronze panels: every third projectile that hits the screen flies back at whoever threw it. Melee warriors just walk up and smash it.",
+      "description": "Polished bronze panels: every third projectile that hits the screen flies back at whoever threw it.",
       "effect": {
         "kind": "reflect_projectiles",
         "every": 3
@@ -1000,7 +1000,7 @@
       "unlockKeep": 12,
       "pinnacleMaxLevel": 8,
       "live": false,
-      "description": "Warriors who fall within 3 tiles are sealed in ink: they cannot be revived, and nothing bails out of them.",
+      "description": "Warriors who fall within 3 tiles are sealed in ink: they cannot be revived.",
       "effect": {
         "kind": "no_revive",
         "radius": 3

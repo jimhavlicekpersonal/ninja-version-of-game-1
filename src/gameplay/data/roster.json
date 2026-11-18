@@ -940,7 +940,7 @@
       "ability": {
         "id": "inner_calm",
         "name": "Inner Calm",
-        "text": "Every warrior on the field heals 40% and ignores the next jam, trap or splash."
+        "text": "Every warrior on the field heals 40% and ignores the next stun, trap or splash."
       },
       "look": {
         "gi": "#f4ead6",

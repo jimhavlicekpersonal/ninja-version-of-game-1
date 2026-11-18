@@ -103,12 +103,18 @@ describe('Hero Hall: choosing a hero', () => {
     expect(heroFor(s, defaultData)).toEqual({ id: 'shadow_captain', level: 7 });
   });
 
-  it('needs a Hero Hall, lets the player pick an unlocked hero, and caps the hero at the Hall\'s level', () => {
+  // P4-10 (BNL-11, restated): the Hall's level decides which heroes can be chosen; it never caps the hero's level.
+  it('needs a Hero Hall, lets the player pick a hero the Hall has unlocked, at the hero\'s Keep level', () => {
     const noHall = village(12, P);
     const r0 = applyCommand(noHall, { type: 'chooseHero', hero: 'iron_matriarch' }, NOW, P);
     expect(r0.ok).toBe(false);
     expect(heroFor(noHall, P)).toEqual({ id: 'shadow_captain', level: 6 });
-    const s = village(12, P, 2);
+    const low = village(12, P, 1);
+    // A level 1 Hall: the Captain only, at his full Keep level (the old cap gave level 1 here).
+    const captain = applyCommand(low, { type: 'chooseHero', hero: 'shadow_captain' }, NOW, P);
+    expect(captain.ok && heroFor(captain.state, P)).toEqual({ id: 'shadow_captain', level: 6 });
+    expect(applyCommand(low, { type: 'chooseHero', hero: 'iron_matriarch' }, NOW, P).ok).toBe(false);
+    const s = village(12, P, 3);
     const locked = applyCommand(s, { type: 'chooseHero', hero: 'grand_sensei' }, NOW, P);
     expect(locked.ok).toBe(false);
     if (!locked.ok) expect(locked.code).toBe('LOCKED');
@@ -116,8 +122,9 @@ describe('Hero Hall: choosing a hero', () => {
     expect(r.ok).toBe(true);
     if (!r.ok) return;
     expect(r.state.hero).toEqual({ chosen: 'iron_matriarch' });
-    expect(heroFor(r.state, P)).toEqual({ id: 'iron_matriarch', level: 2 });
-    expect(battleLoadout(r.state, P).hero).toEqual({ id: 'iron_matriarch', level: 2 });
+    const level = heroFor(r.state, P)!.level;
+    expect(level).toBeGreaterThan(1);
+    expect(battleLoadout(r.state, P).hero).toEqual({ id: 'iron_matriarch', level });
     const back = applyCommand(r.state, { type: 'chooseHero', hero: null }, NOW, P);
     expect(back.ok && heroFor(back.state, P)).toEqual({ id: 'shadow_captain', level: 6 });
   });
