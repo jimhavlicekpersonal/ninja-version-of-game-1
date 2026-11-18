@@ -71,7 +71,6 @@ const ALLOWED = new Set<string>([
   'src/gameplay/sim/calendar.ts#MAX_OFFSET_MINUTES',
   'src/gameplay/sim/calendar.ts#localOffsetMinutes',
   'src/gameplay/sim/carry.ts#troopRole',
-  'src/gameplay/sim/defense.ts#botName',
   'src/gameplay/sim/defense.ts#shieldThreshold',
   'src/gameplay/sim/economy.ts#interpolate',
   'src/gameplay/sim/economy.ts#rewardScale',

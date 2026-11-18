@@ -4,7 +4,7 @@
  */
 import { describe, expect, it } from 'vitest';
 import { runBattle, SIM_RULES } from '../../../src/gameplay/sim/battle/battle';
-import { testDefense } from '../../../src/gameplay/sim/defense';
+import { testDefense } from '../../../src/gameplay/sim/defenseTest';
 import { data, newGame } from './helpers';
 
 describe('test my defenses (P6-04)', () => {
