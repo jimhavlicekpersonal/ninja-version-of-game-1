@@ -143,6 +143,8 @@
     "trophyJitter": 30,
     "powerSlack": 0.25,
     "powerSlackByKeep": [0.75, 0.75, 1, 0.75, 0.25, 0.5, 0.15, 0.75, 0.5, 0.5, 0.5, 0.75, 0.75, 0.5, 0.5],
+    "$commentLossStreak": "P2-10 (DEF-12, 2026-11-18): each consecutive lost raid (0 stars, at least minDeployShare of the army's housing deployed) lowers the earned-strength floor by perLoss, up to max; a win resets it. Device matchmaking only (the server's generated fallback keeps its own, lower floor).",
+    "lossStreakSlack": { "perLoss": 0.25, "max": 1, "minDeployShare": 0.8 },
     "researchFloorKeeps": 1.5,
     "exposureHours": 12
   },

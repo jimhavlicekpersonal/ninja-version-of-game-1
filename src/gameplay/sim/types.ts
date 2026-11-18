@@ -869,6 +869,11 @@ export interface RanksDef {
     powerSlack: number;
     /** `powerSlack` per own Keep (index 0 = Keep 1); a Keep past the table uses `powerSlack`. */
     powerSlackByKeep?: number[];
+    /**
+     * P2-10 (DEF-12): extra slack per consecutive lost raid (`perLoss`, up to `max`), reset by a win; only raids that
+     * deployed at least `minDeployShare` of the army's housing count (`lossStreakSlack` in sim/matchmaking.ts).
+     */
+    lossStreakSlack?: { perLoss: number; max: number; minDeployShare: number };
     /** Earned strength reads research behind the caps as earlier Keeps, but never more than this many below the own Keep (design re-audit). */
     researchFloorKeeps?: number;
     /**

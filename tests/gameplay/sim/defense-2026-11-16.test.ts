@@ -7,7 +7,7 @@ import { generateOpponent } from '../../../src/gameplay/sim/battle/basegen';
 import { diversityPartOf, raidCarry, trainableRoles } from '../../../src/gameplay/sim/carry';
 import { raidVillage, simulateOfflineRaids } from '../../../src/gameplay/sim/defense';
 import { rematchReward } from '../../../src/gameplay/sim/rematch';
-import { attackerFor } from '../../../src/gameplay/sim/matchmaking';
+import { attackerFor, lossStreakSlack, strengthFloor } from '../../../src/gameplay/sim/matchmaking';
 import { capacity } from '../../../src/gameplay/sim/resources';
 import { createRng } from '../../../src/gameplay/sim/rng';
 import type { VillageState } from '../../../src/gameplay/sim/types';
@@ -155,5 +155,32 @@ describe('P2-09 (DEF-10, ECO-08): the league win bonus matters at every Keep', (
       expect(share, `Keep ${k.keep} (${league.id})`).toBeGreaterThanOrEqual(0.05);
       expect(share, `Keep ${k.keep} (${league.id})`).toBeLessThanOrEqual(0.2);
     }
+  });
+});
+
+describe('P2-10 (DEF-12): a losing streak lowers the opponents, and cannot be farmed', () => {
+  const army = { hedgehog_roller: 10 };
+  const raid = (stars: number, sent: number): VillageState['battleLog'][number] =>
+    ({ id: `r${stars}${sent}`, kind: 'attack', at: 0, opponentName: 'x', setup: { seed: 1, base: { name: 'x', hallLevel: 5, buildings: [] }, army }, deployments: [], result: { stars, destruction: 0, loot: {}, used: { hedgehog_roller: sent } }, trophies: 0 }) as unknown as VillageState['battleLog'][number];
+  const at = (log: VillageState['battleLog']) => ({ ...createNewVillage(0, data), battleLog: log });
+  const cfg = data.ranks.matchmaking.lossStreakSlack!;
+
+  it('adds perLoss per full-army loss up to max, and a win resets it', () => {
+    expect(lossStreakSlack(at([]), data)).toBe(0);
+    expect(lossStreakSlack(at([raid(0, 10)]), data)).toBe(cfg.perLoss);
+    expect(lossStreakSlack(at([raid(0, 10), raid(0, 9), raid(0, 8)]), data)).toBe(3 * cfg.perLoss);
+    expect(lossStreakSlack(at(Array.from({ length: 9 }, () => raid(0, 10))), data)).toBe(cfg.max);
+    expect(lossStreakSlack(at([raid(0, 10), raid(0, 10), raid(1, 10)]), data)).toBe(0);
+    expect(lossStreakSlack(at([raid(1, 10), raid(0, 10)]), data)).toBe(cfg.perLoss);
+  });
+
+  it('a loss that sent under 80% of the army neither counts nor resets', () => {
+    expect(lossStreakSlack(at([raid(0, 1), raid(0, 1), raid(0, 7)]), data)).toBe(0);
+    expect(lossStreakSlack(at([raid(0, 10), raid(0, 1), raid(0, 1)]), data)).toBe(cfg.perLoss);
+  });
+
+  it('lowers the strength floor by the streak', () => {
+    const v = at([raid(0, 10), raid(0, 10)]);
+    expect(strengthFloor(at([]), data) - strengthFloor(v, data)).toBeCloseTo(2 * cfg.perLoss, 9);
   });
 });
