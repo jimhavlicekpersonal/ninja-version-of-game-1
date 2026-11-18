@@ -102,3 +102,51 @@ describe('the Build panel follows the state (P6-09)', () => {
   });
 });
 
+
+describe('the rest of the playthrough fixes (P6-09)', () => {
+  type Inner = { renderSheet(): void; selectedId: string | null; collect(b: unknown): void; recentToasts: unknown[] };
+
+  it("the Dojo's sheet names the warriors its next level unlocks", async () => {
+    const { hud, controller } = await buildHud();
+    controller.dispatch({ type: 'tutorial', step: 9, done: true });
+    const at = controller.state.buildings[0];
+    controller.state.buildings.push({ id: 'dojo-test', type: 'burrow_barracks', level: 1, x: at.x + 6, y: at.y + 6 } as never);
+    const inner = hud as unknown as Inner;
+    inner.selectedId = 'dojo-test';
+    inner.renderSheet();
+    const row = document.querySelector('[data-id="dojo-unlocks"]');
+    const names = Object.values(controller.data.troops).filter((t) => t.barracksLevel === 2 && (t.unlockKeep ?? 1) <= 1).map((t) => t.name);
+    if (names.length) {
+      expect(row).not.toBeNull();
+      for (const n of names) expect(row!.textContent).toContain(n);
+    } else expect(row).toBeNull();
+  });
+
+  it('an empty collect is a toast only, never a News line', async () => {
+    const { hud, controller } = await buildHud();
+    const inner = hud as unknown as Inner;
+    const at = controller.state.buildings[0];
+    const type = Object.keys(controller.data.buildings).find((k) => controller.data.buildings[k].produces)!;
+    controller.state.buildings.push({ id: 'mint-test', type, level: 1, x: at.x + 6, y: at.y + 6, upgrade: null, collector: { accrueFrom: controller.now(), stored: 0 } } as never);
+    const mint = controller.state.buildings.find((b) => b.id === 'mint-test')!;
+    const probe = controller.dispatch({ type: 'collect', id: mint.id });
+    expect(probe.ok ? 'ok' : probe.code).toBe('NOTHING_TO_COLLECT');
+    inner.collect(mint);
+    inner.collect(mint);
+    expect(document.querySelector('.toast')).not.toBeNull();
+    expect(inner.recentToasts.length).toBe(0);
+  });
+
+  it('where nothing can be bought, the Store says so first and shows no Jade cards', async () => {
+    const { hud, controller } = await buildHud();
+    controller.dispatch({ type: 'tutorial', step: 9, done: true });
+    Object.defineProperty(controller, 'payments', { value: { name: 'web', available: () => false, prices: null, store: null } });
+    hud.openShortcut('store');
+    const body = document.querySelector('.modal-backdrop:last-child .modal-body')!;
+    const first = body.querySelector('.store-unavailable');
+    expect(first).not.toBeNull();
+    // The reason sits above everything but the tabs, and no unbuyable pack cards follow it.
+    expect(body.querySelectorAll('.shop-card.pack').length).toBe(0);
+    expect(body.querySelectorAll('.store-note').length).toBe(1);
+  });
+});

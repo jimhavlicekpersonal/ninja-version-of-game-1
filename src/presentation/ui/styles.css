@@ -235,6 +235,12 @@ html, body {
   background: var(--paper); border-radius: 24px; box-shadow: var(--edge), var(--hairline), var(--shadow-soft), inset 0 -4px 0 rgba(38, 48, 61, 0.06);
   padding: 12px 14px 14px; animation: sheet-in .3s cubic-bezier(.3, 1.5, .5, 1); max-height: 60vh; overflow: auto;
 }
+/* P6-09 (PLY-02): the sheet is a column whose head and action row stay in view while the middle scrolls, so
+   Upgrade, Collect and Finish are never below the scroll box or under the bottom bar. */
+.sheet { display: flex; flex-direction: column; overscroll-behavior: contain; }
+.sheet > * { flex: none; }
+.sheet > .sheet-head { position: sticky; top: -12px; z-index: 2; background: #fbf6ea; margin: -12px -14px 0; padding: 12px 14px 4px; border-radius: inherit; }
+.sheet > .actions:last-child { position: sticky; bottom: -14px; z-index: 2; background: #f3e9d4; margin: 8px -14px -14px; padding: 8px 14px 14px; box-shadow: 0 -1px 0 rgba(38, 48, 61, .1); }
 @keyframes sheet-in { from { transform: translate(-50%, 24px) scale(.95); opacity: 0; } to { transform: translate(-50%, 0); opacity: 1; } }
 .sheet-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
 .sheet-title { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
@@ -608,11 +614,13 @@ details summary { cursor: pointer; font-weight: 800; margin: 8px 0 4px; }
 .army-bar .coming { background: linear-gradient(#ffe08a, var(--sun)); }
 .army-strip-line { display: flex; align-items: center; gap: 8px; margin-top: 8px; min-height: 42px; }
 .army-strip-line img { width: 34px; height: 32px; object-fit: contain; flex: none; }
-.army-active { flex: 1; min-width: 0; }
-.army-active-name { display: flex; gap: 6px; }
-.army-active-name b { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* P6-09: the name keeps the column's width (it was cut to "S…" at 320 px); the time drops under it when they
+   do not fit side by side, inside the line's fixed 42 px so the strip keeps its height. */
+.army-active { flex: 1 1 5.5rem; min-width: 5.5rem; }
+.army-active-name { display: flex; flex-wrap: wrap; column-gap: 6px; row-gap: 0; line-height: 1.2; }
+.army-active-name b { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1 1 auto; }
 .army-active-name span { flex: none; }
-.chip.army-noroom { font-size: 0.75rem; color: #8a4b12; }
+.chip.army-noroom { font-size: 0.75rem; color: #8a4b12; min-width: 0; flex: 0 1 auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .army-strip-line .btn { min-height: 44px; padding: 4px 10px; font-size: 0.8125rem; }
 .progress.thin { height: 6px; margin-top: 3px; }
 .army-note { color: #8a4b12; font-weight: 700; }
@@ -663,7 +671,34 @@ details summary { cursor: pointer; font-weight: 800; margin: 8px 0 4px; }
 .army-pill.busy { background: linear-gradient(#d9a03a, var(--sun-dark)); }
 .takeover { position: fixed; inset: 0; z-index: 10000; display: grid; place-items: center; padding: 16px; background: rgba(20, 26, 34, .72); }
 /* Sideways on a phone the pinned strip would take half the screen: let it scroll away. */
-@media (max-height: 480px) { .army-head { position: static; } }
+/* P6-09 (PLY-14): sideways on a phone the Army panel opened with no warrior row in view. The strip and the tabs
+   share one row, the empty detail line goes, and the head stays pinned at that height. */
+@media (max-height: 480px) {
+  .army-head { display: flex; align-items: center; gap: 12px; padding-bottom: 6px; }
+  .army-head .army-strip { flex: 1 1 0; min-width: 0; }
+  .army-head .army-tabrow { flex: none; }
+  .army-head .army-tabs { margin-bottom: 0; }
+  .army-strip-line { margin-top: 2px; min-height: 36px; }
+  .army-strip p.army-detail { margin: 0; }
+  .army-strip p.army-detail.empty { display: none; }
+  /* A shorter dialog title bar and one-line descriptions leave the first card's buttons in view at 390 px. */
+  .modal-head { padding-block: 4px 3px; }
+  .modal-head::after { bottom: 2px; }
+  .training .army-desc { display: -webkit-box; -webkit-line-clamp: 1; line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
+  .training .stack-row.refill .muted.small { display: -webkit-box; -webkit-line-clamp: 1; line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
+}
+/* P6-09: on a short or narrow phone the first warrior card's buttons are in view when the panel opens. */
+@media (max-height: 600px) { .training .dojo-speed { display: none; } }
+@media (max-width: 400px) {
+  .army-tabrow { gap: 6px; }
+  .army-tabs.shop-tabs { flex-wrap: nowrap; gap: 4px; }
+  .army-tabs.shop-tabs button { padding-inline: 9px; min-width: 0; }
+  .training .stack-row.refill .muted.small { display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+}
+/* Under 400 px the Codex button is its icon, so the three tabs keep one row. */
+@media (max-width: 400px) { .codex-btn .codex-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; } .codex-btn { min-width: 44px; padding-inline: 10px; } }
+/* P6-09: the daily chest's Open button stays in view under the odds while the panel scrolls. */
+.daily > .actions { position: sticky; bottom: -12px; z-index: 2; background: #f3e9d4; margin-inline: -16px; padding: 8px 16px 12px; box-shadow: 0 -1px 0 rgba(38, 48, 61, .1); }
 /* Keep the expanded roster filters comfortable to use on phones. */
 .training .actions select {
   min-height: 44px;
@@ -1124,3 +1159,12 @@ html[dir="rtl"] .training .actions.army-filters select { padding: 6px 8px 6px 20
 @media (max-height: 480px) {
   html[dir="rtl"] .hud-head { right: calc(8px + var(--safe-r)); left: calc(8px + var(--safe-l) + 108px); }
 }
+
+/* P6-09: sideways on a phone the sheet is a side panel from under the top bar to the bottom edge (in the lower
+   strip its sticky head and action row covered each other). */
+@media (max-height: 480px) and (orientation: landscape) {
+  .sheet { top: calc(96px + var(--safe-t)); bottom: calc(8px + var(--safe-b)); max-height: none; left: calc(8px + var(--safe-l)); transform: none; width: min(460px, 56vw); animation: none; }
+}
+/* P6-09 (PLY-02): on a phone the sheet is as wide as the screen and the rail's fold toggle sat over its close
+   button: the rail steps aside while a sheet is open (the sheet's close button brings it back). */
+@media (max-width: 600px) { #hud:has(.sheet:not([hidden])) .side-rail { visibility: hidden; } }

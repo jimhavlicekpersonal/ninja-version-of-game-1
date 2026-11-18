@@ -609,9 +609,9 @@ async function boot(): Promise<void> {
   let shown = false;
   const earlyToasts: Parameters<Hud['toast']>[] = [];
   const showToast = hud.toast.bind(hud);
-  hud.toast = (text, kind = 'info') => {
-    if (shown) showToast(text, kind);
-    else earlyToasts.push([text, kind]);
+  hud.toast = (text, kind = 'info', opts) => {
+    if (shown) showToast(text, kind, opts);
+    else earlyToasts.push([text, kind, opts]);
   };
 
   // How to keep the village when the browser may delete it (client re-audit item 7): Settings
@@ -726,7 +726,7 @@ async function boot(): Promise<void> {
   if (sandbox) hud.toast(i18nText("ui.testing_sandbox_a_separate_practice_vi_e3d2ae64e5"), 'info');
   if (params.has('debug')) {
     // Testing hook, only with ?debug in the URL.
-    (window as unknown as Record<string, unknown>).tk = { game, controller, app, connection, paintedBytes: paintedBuildingBytes, textureBytes: () => textureBytes(game.textures) };
+    (window as unknown as Record<string, unknown>).tk = { game, controller, app, connection, hud, paintedBytes: paintedBuildingBytes, textureBytes: () => textureBytes(game.textures) };
   }
 
   // Re-audit: no paid offer after a loss (the Rebuild Kit after raids, often simulated ones, read as "pay to not lose").
@@ -756,7 +756,7 @@ async function boot(): Promise<void> {
   document.getElementById('boot')?.classList.add('done');
   bootGuard?.done();
   shown = true;
-  earlyToasts.forEach(([text, kind], i) => setTimeout(() => showToast(text, kind), i * 1200));
+  earlyToasts.forEach(([text, kind, opts], i) => setTimeout(() => showToast(text, kind, opts), i * 1200));
   // P6-09 (PLY-09): the storage banners wait until the tutorial is done (one covered the Keep on the first screen).
   const afterTutorial = (fn: () => void) => {
     if (controller.state.tutorial.done) return fn();

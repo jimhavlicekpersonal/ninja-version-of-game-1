@@ -23,6 +23,7 @@
   "tutorial.end.button": { "en": "Finish", "text": "完了" },
   "tutorial.skip": { "en": "Skip tutorial", "text": "チュートリアルをスキップ" },
   "kind.practice": { "en": "Practice", "text": "" },
+  "sheet.unlocksWarriors": { "en": "Unlocks {list}", "text": "" },
   "kind.trial": { "en": "Shadow Trial", "text": "" },
   "kind.rival": { "en": "Computer rival", "text": "" },
   "kind.generated": { "en": "Generated", "text": "" },

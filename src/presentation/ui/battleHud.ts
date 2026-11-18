@@ -325,6 +325,8 @@ export class BattleHud {
         ),
       ),
     );
+    // P6-09 (PLY-14): a merged or translated label is wider than the edge margin; keep every chevron whole on screen.
+    for (const el of this.chevronsEl.children) clampOnScreen(el as HTMLElement, vw, vh);
   }
 
   hooks(): BattleHooks {
@@ -777,4 +779,14 @@ export class BattleHud {
     this.modalEl.append(backdrop);
     return close;
   }
+}
+
+/** Move an absolutely placed, centred element (left/top at its centre) so its whole box is inside the viewport. */
+export function clampOnScreen(el: HTMLElement, vw: number, vh: number, margin = 6): void {
+  const r = el.getBoundingClientRect();
+  if (!r.width) return;
+  const dx = r.left < margin ? margin - r.left : r.right > vw - margin ? vw - margin - r.right : 0;
+  const dy = r.top < margin ? margin - r.top : r.bottom > vh - margin ? vh - margin - r.bottom : 0;
+  if (dx) el.style.left = `${Math.round(parseFloat(el.style.left) + dx)}px`;
+  if (dy) el.style.top = `${Math.round(parseFloat(el.style.top) + dy)}px`;
 }

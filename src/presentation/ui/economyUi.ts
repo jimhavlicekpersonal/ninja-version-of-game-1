@@ -262,10 +262,14 @@ export class EconomyUi {
           return b;
         })),
       );
+      // P6-09: where nothing can be bought (the web build), the reason comes first and no row of
+      // "Not available" Jade cards follows it.
+      const noStore = this.c.payments.name !== 'mock' && !this.c.payments.available();
+      if (noStore) body.append(h('p', { class: 'note store-note store-unavailable', 'data-id': 'store-unavailable' }, i18nText("ui.purchases_are_not_available_in_this_ve_15307f1254")));
       if (current === 'moonstones') {
         const claim = this.stipendCard(draw);
         if (claim) body.append(claim);
-        body.append(this.packsGrid());
+        if (!noStore) body.append(this.packsGrid());
       }
       else if (current === 'offers') body.append(this.offersList());
       else if (current === 'pass') body.append(this.passProduct(draw));
@@ -277,8 +281,9 @@ export class EconomyUi {
       }
       this.loadPrices(draw);
       if (this.c.payments.name === 'mock') body.append(h('p', { class: 'muted small store-note' }, i18nText("ui.sandbox_test_store_purchases_complete__c4b42410c2")));
-      else if (!this.c.payments.available()) body.append(h('p', { class: 'muted small store-note' }, i18nText("ui.purchases_are_not_available_in_this_ve_15307f1254")));
-      else if (this.storePrices === 'failed') body.append(h('p', { class: 'muted small store-note' }, i18nText("ui.the_store_could_not_be_reached_for_pri_867d731094")));
+      else if (noStore) {
+        /* said at the top */
+      } else if (this.storePrices === 'failed') body.append(h('p', { class: 'muted small store-note' }, i18nText("ui.the_store_could_not_be_reached_for_pri_867d731094")));
       if (this.c.payments.store && this.c.payments.available()) {
         // App Store rule: a way to get back what was bought (this season's Scroll, purchases paid but not delivered).
         const restore = h('button', { class: 'btn ghost', type: 'button' }, i18nText("ui.restore_purchases_c6399925b3")) as HTMLButtonElement;

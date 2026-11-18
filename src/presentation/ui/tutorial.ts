@@ -127,6 +127,7 @@ export class Tutorial {
   private timer = 0;
   private text = h('p', {});
   private lastStep = -1;
+  private scrolledFor = -1;
 
   constructor(
     private readonly c: GameController,
@@ -237,7 +238,6 @@ export class Tutorial {
       this.ring.hidden = true;
       return;
     }
-    this.place(typeof step.mapTarget === 'function' ? step.mapTarget(this.c.state) : step.mapTarget);
     // Point at the first visible target, else at the building on the map.
     let r: ScreenRect | null = null;
     const targets = typeof step.targets === 'function' ? step.targets(this.c.state) : step.targets ?? [];
@@ -250,12 +250,24 @@ export class Tutorial {
       });
       if (found) {
         r = found.getBoundingClientRect();
+        // P6-09: a target outside its scroll box is scrolled into view once per step (the hit test there found the canvas).
+        if (this.scrolledFor !== i && (r.top < 0 || r.top + r.height > window.innerHeight)) {
+          this.scrolledFor = i;
+          (found as HTMLElement).scrollIntoView?.({ block: 'nearest' });
+          r = found.getBoundingClientRect();
+        }
         break;
       }
     }
     const modalOpen = Boolean(document.querySelector('.modal-backdrop'));
     const onMap = typeof step.mapTarget === 'function' ? step.mapTarget(this.c.state) : step.mapTarget;
-    if (!r && onMap && !modalOpen) r = buildingOnScreen(onMap);
+    if (!r && onMap && !modalOpen) {
+      r = buildingOnScreen(onMap);
+      // P6-09: never ring the map through an open sheet (it rang the Mint's Upgrade while the text asked for the Keep).
+      const sheet = document.querySelector('#hud .sheet:not([hidden])')?.getBoundingClientRect();
+      if (r && sheet && overlaps(r.left, r.left + r.width, sheet.left, sheet.right) && overlaps(r.top, r.top + r.height, sheet.top, sheet.bottom)) r = null;
+    }
+    this.place(onMap, r);
     if (!r) {
       this.ring.hidden = true;
       return;
@@ -268,19 +280,48 @@ export class Tutorial {
    * Keep the bubble off what the player needs: at the bottom while a sheet or panel is open (the Build/Attack bar is
    * not needed then); otherwise under the top bar and its event line, and clear of the side rail.
    */
-  private place(mapTarget?: string | null): void {
+  private place(mapTarget?: string | null, ringed?: ScreenRect | null): void {
     const sheet = document.querySelector('#hud .sheet:not([hidden])');
-    const low = Boolean(document.querySelector('.modal-backdrop')) || Boolean(sheet);
+    const modal = Boolean(document.querySelector('.modal-backdrop'));
+    const low = modal || Boolean(sheet);
     this.bubble.classList.toggle('low', low);
     const st = this.bubble.style;
     if (low) {
-      st.top = '';
       st.right = '';
       st.left = '';
       st.width = '';
       st.transform = '';
+      st.top = '';
+      // P6-09 (PLY-02): find the free band first. Over a sheet the bubble sits above it (never over the bottom bar,
+      // never over the sheet's sticky action row); in a dialog at the bottom, or at the top when the target is there.
+      const height = this.bubble.getBoundingClientRect().height;
+      if (!height) return;
+      const vh = window.innerHeight;
+      const head = document.querySelector('#hud .hud-head');
+      const below = Math.max(8, ...(head ? [...head.children].filter((e) => !e.classList.contains('toasts')).map((e) => e.getBoundingClientRect().bottom + 6) : []));
+      const free = (y: number) => y >= 0 && y + height <= vh && !(ringed && overlaps(y, y + height, ringed.top - 8, ringed.top + ringed.height + 8));
+      const choices: number[] = [];
+      const sr = sheet?.getBoundingClientRect();
+      // Sideways the sheet is a side panel: the bubble goes beside it, under the top bar.
+      if (!modal && sr && window.innerWidth - sr.right >= 260) {
+        const rail = document.querySelector('#hud .side-rail:not([hidden])')?.getBoundingClientRect();
+        const railLeft = Boolean(rail && rail.width && rail.left < window.innerWidth / 2);
+        st.left = `${Math.round(sr.right + 8)}px`;
+        st.right = `${Math.round(rail && rail.width && !railLeft ? window.innerWidth - rail.left + 6 : 12)}px`;
+        st.width = 'auto';
+        st.transform = 'none';
+        st.top = `${Math.round(below)}px`;
+        st.bottom = 'auto';
+        return;
+      }
+      if (!modal && sr) choices.push(Math.round(sr.top - height - 8), Math.round(below));
+      else choices.push(Math.round(vh - height - 12), 8);
+      const y = choices.find(free) ?? choices[0];
+      st.top = `${Math.max(0, y)}px`;
+      st.bottom = 'auto';
       return;
     }
+    st.bottom = '';
     const head = document.querySelector('#hud .hud-head');
     const rows = head ? [...head.children].filter((e) => !e.classList.contains('toasts')) : [];
     const below = Math.max(0, ...rows.map((e) => e.getBoundingClientRect().bottom));

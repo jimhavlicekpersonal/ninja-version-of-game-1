@@ -46,6 +46,7 @@
     "i18n:next": "node tools/i18n/i18n.mjs next",
     "perf:lowend": "node tools/perf/lowend.mjs",
     "perf:profile": "node tools/perf/profile.mjs",
+    "ui:surfaces": "node tools/ui/surfaces.mjs",
     "balance:bundle": "node tools/balance/bundle.mjs",
     "rules:fixture": "node tools/release/rules-snapshot.mjs fixture",
     "rules:snapshot": "node tools/release/rules-snapshot.mjs snapshot",

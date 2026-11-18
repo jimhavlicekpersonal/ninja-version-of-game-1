@@ -78,7 +78,7 @@ export class ArmyUi {
     const tabs = h('div', { class: 'shop-tabs army-tabs', role: 'tablist' });
     // Strip and tabs are pinned together: another tab is always one tap away. The Codex sits beside the tabs
     // (re-audit design item 7), a small button rather than a "50 classes" banner on a new player's first visit.
-    const codex = h('button', { class: 'btn ghost codex-btn', type: 'button', title: i18nText("ui.warrior_codex_all_classes_03eb859e9c", { arg1: WARRIORS.length }), onclick: () => this.d.openCodex() }, icon(icons.scroll), i18nText("ui.codex_616efbe968"));
+    const codex = h('button', { class: 'btn ghost codex-btn', type: 'button', title: i18nText("ui.warrior_codex_all_classes_03eb859e9c", { arg1: WARRIORS.length }), 'aria-label': i18nText("ui.codex_616efbe968"), onclick: () => this.d.openCodex() }, icon(icons.scroll), h('span', { class: 'codex-label' }, i18nText("ui.codex_616efbe968")));
     const head = h('div', { class: 'army-head' }, strip, h('div', { class: 'army-tabrow' }, tabs, codex));
     const pane = h('div', { class: 'army-pane' });
     body.append(head, pane);
@@ -173,7 +173,7 @@ export class ArmyUi {
           Object.values(suggestion).some((n) => n > 0) ? this.refillRow(i18nText("ui.suggested_army_5963c5c4f7"), suggestion, draw) : null,
           // Filters only once there is something to filter (re-audit design item 4: 5 tiers and 10 roles for 2 warriors).
           v.dojo === 'ready' && scopeCount >= 5 ? filters : null,
-          speed > 1 ? h('p', { class: 'muted small' }, i18nText("ui.your_training_dojo_trains_faster_than__0f817a20eb", { arg1: speed })) : null,
+          speed > 1 ? h('p', { class: 'muted small dojo-speed' }, i18nText("ui.your_training_dojo_trains_faster_than__0f817a20eb", { arg1: speed })) : null,
           trainList,
           !list.length && v.dojo === 'ready' ? trainEmpty : null,
         ].filter((x): x is HTMLElement => x !== null),
@@ -293,7 +293,7 @@ export class ArmyUi {
       line.append(h('span', { class: 'chip army-noroom' }, i18nText("ui.no_room_to_finish_4a74b86b51")));
     }
     // Always one line, even an empty one: the strip keeps its height, so nothing below it moves under a finger.
-    strip.append(line, h('p', { class: 'muted small army-detail' }, detail.length ? i18nText("ui.warriors_56148a7f40", { arg1: detail.join(' · ') }) : '\u00a0'));
+    strip.append(line, h('p', { class: `muted small army-detail${detail.length ? '' : ' empty'}` }, detail.length ? i18nText("ui.warriors_56148a7f40", { arg1: detail.join(' · ') }) : '\u00a0'));
   }
 
   /** Shown until training is possible, so an empty panel always says what to do next. */

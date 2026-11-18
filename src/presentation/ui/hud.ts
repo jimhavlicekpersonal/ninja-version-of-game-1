@@ -1417,6 +1417,8 @@ export class Hud {
     const level = effectiveLevel(b, now);
     clear(this.sheet);
     this.sheet.hidden = false;
+    // P6-09: a rebuilt sheet starts at its top (the head and the action row are sticky).
+    this.sheet.scrollTop = 0;
     if (def.category === 'obstacle' && def.clear) {
       this.renderObstacleSheet(b, def.name, def.description, def.clear);
       return;
@@ -1724,6 +1726,11 @@ export class Hud {
       chip(i18nText("ui.damage_sec_0418e5cdfb", { arg1: dps(nxt.damage) }), dps(cur.damage), dps(nxt.damage));
     }
     if (nxt.hp && cur.hp) chip(i18nText("ui.hp_0c9cb32a1b", { arg1: formatNumber(nxt.hp) }), cur.hp, nxt.hp);
+    // P6-09 (PLY-12): the Dojo says which warriors its next level unlocks (the ceremony said so only afterwards).
+    if (b.type === 'burrow_barracks') {
+      const names = Object.values(gd.troops).filter((tr) => tr.barracksLevel === level + 1 && (tr.unlockKeep ?? 1) <= hallLevel(this.c.state, gd)).map((tr) => tr.name);
+      if (names.length) chips.push(h('span', { class: 'chip up dojo-unlocks', 'data-id': 'dojo-unlocks' }, icon(icons.troops), t('sheet.unlocksWarriors', { list: i18nList(names, 'conjunction') })));
+    }
     const nextArt = this.deps.levelThumbnail?.(b.type, level + 1) ?? null;
     if (!chips.length && !nextArt) return null;
     return h('div', { class: 'stats next-level' }, nextArt ? h('img', { class: 'sheet-thumb next', src: nextArt, alt: '' }) : null, h('span', { class: 'next-label' }, t('sheet.nextLevel', { level: level + 1 })), ...chips);
@@ -1758,7 +1765,7 @@ export class Hud {
 
   private collect(b: Building): void {
     const r = this.c.dispatch({ type: 'collect', id: b.id });
-    if (!r.ok) this.toast(r.message, r.code === 'NOTHING_TO_COLLECT' ? 'info' : 'error');
+    if (!r.ok) this.toast(i18nMessage(r.message, true), r.code === 'NOTHING_TO_COLLECT' ? 'info' : 'error', r.code === 'NOTHING_TO_COLLECT' ? { log: false } : undefined);
     else for (const e of r.events) if (e.kind === 'collect') this.toast(i18nText("ui.message_308af0994c", { arg1: formatNumber(e.amount), arg2: RES_LABEL[e.resource] }), 'success');
   }
 
@@ -2185,10 +2192,11 @@ export class Hud {
   /** Toasts shown this session, newest first (the News panel lists them). */
   private recentToasts: NewsItem[] = [];
 
-  toast(text: string, kind: 'info' | 'error' | 'success' = 'info'): void {
+  /** `log: false` keeps a passing remark (an empty collect) out of News and messages (P6-09). */
+  toast(text: string, kind: 'info' | 'error' | 'success' = 'info', opts?: { log?: boolean }): void {
     if (kind === 'error') sound.play('error');
     const shown = i18nMessage(text);
-    this.recentToasts.unshift({ at: Date.now(), text: shown, kind });
+    if (opts?.log !== false) this.recentToasts.unshift({ at: Date.now(), text: shown, kind });
     if (this.recentToasts.length > 20) this.recentToasts.length = 20;
     const el = h('div', { class: `toast ${kind}` }, shown);
     let gone = false;
