@@ -26,8 +26,15 @@ Dẫn dắt một gia tộc ninja, xây ngôi làng ẩn trên núi, huấn luy�
 **Lên kế hoạch rồi đột kích**
 
 - Chiến binh chỉ vào được qua Điểm Xâm Nhập. Hãy do thám đường đi và những tháp canh giữ đường.
-- Ném Bom Khói khi chiến binh bước vào tầm tháp, và cử Lính Phá Hoại làm tê liệt phòng thủ.
+- Đưa đội vào trận chỉ bằng một lệnh (cùng nhau, gọng kìm hay hàng dọc; đỡ đòn trước hay xông lên), hoặc tự đặt từng chiến binh.
+- Ném Bom Khói khi chiến binh bước vào tầm tháp, và cử Lính Phá Hoại làm tê liệt phòng thủ. Từ Thành Gia Tộc cấp 7, Đội Trưởng Bóng Tối tập hợp cả đội của bạn một lần mỗi trận.
+- Sau trận đột kích, xem cùng đội quân ấy sẽ làm được gì nếu đi qua một điểm khác.
 - Một trận tấn công tính kỹ thắng được đạo quân lớn hơn.
+
+**Giữ vững ngôi làng**
+
+- Mỗi trận đột kích vào làng của bạn đều có báo cáo: bạn giữ được gì, chặn được bao nhiêu sao, kẻ đột kích phá vào ở đâu.
+- Thử phòng thủ với một kẻ đột kích mô phỏng, và luyện tập với đội quân đã đánh bại bạn.
 
 **Chơi cùng nhau** (trực tuyến)
 
@@ -38,7 +45,12 @@ Dẫn dắt một gia tộc ninja, xây ngôi làng ẩn trên núi, huấn luy�
 
 **Thử Thách Bóng Tối**
 
-- Một chuỗi thành trì không hồi kết, mỗi tầng khó hơn và mỗi tầng chỉ trao thưởng một lần.
+- Một chuỗi thành trì không hồi kết, mỗi tầng khó hơn và mỗi tầng chỉ trao thưởng một lần. Luyện tập hằng ngày cho bạn tập dượt trong lúc quân đang huấn luyện.
+
+**Mỗi ngày một điều mới**
+
+- Sự kiện theo lịch cố định bốn tuần, năm lễ hội mỗi năm với một pháo đài và một ngoại hình Thành để giành, Vượt Ải hằng tuần và khế ước hằng ngày.
+- Thành tích, ấn Thành, hạng tinh thông chiến binh và ngoại hình giành được bằng cách chơi.
 
 **Chơi công bằng**
 

@@ -26,8 +26,15 @@ Ku jagoranci dangin ninja, ku gina ɓoyayyen ƙauye a kan duwatsu, ku horar da n
 **Ku tsara, sannan ku kai hari**
 
 - Mayaƙa suna shiga ne ta Wuraren Kutse kaɗai. Ku leƙi hanyoyin da hasumiyoyin da ke kare su.
-- Ku jefa Bam ɗin Hayaƙi lokacin da mayaƙanku suka shiga zangon hasumiya, ku tura Masu Zagon Ƙasa su tsayar da ginin tsaro.
+- Ku tura tawagarku da umarni ɗaya (tare, kewaye ko layi ɗaya; masu jure farko ko hanzari), ko ku ajiye kowane mayaƙi da hannu.
+- Ku jefa Bam ɗin Hayaƙi lokacin da mayaƙanku suka shiga zangon hasumiya, ku tura Masu Zagon Ƙasa su tsayar da ginin tsaro. Daga Fadar Dangi mataki 7, Shugaban Inuwa yana ƙarfafa dukan tawagarku sau ɗaya a kowane faɗa.
+- Bayan hari, ku ga abin da runduna ɗaya za ta yi da ta shiga ta wani wuri daban.
 - Harin da aka tsara da kyau yana cin runduna mafi girma.
+
+**Ku kare ƙauyenku**
+
+- Kowane hari kan ƙauyenku yana zuwa da rahoto: abin da kuka kiyaye, taurarin da kuka hana, da inda maharin ya kutsa.
+- Ku gwada tsaronku kan maharin kwaikwayo, ku kuma yi atisaye kan rundunar da ta doke ku.
 
 **Ku yi wasa tare** (ta intanet)
 
@@ -38,7 +45,12 @@ Ku jagoranci dangin ninja, ku gina ɓoyayyen ƙauye a kan duwatsu, ku horar da n
 
 **Gwaje-gwajen Inuwa**
 
-- Jerin fadodi marasa ƙarshe: kowane mataki ya fi na baya wuya, kuma kowane mataki yana ba da lada sau ɗaya kawai.
+- Jerin fadodi marasa ƙarshe: kowane mataki ya fi na baya wuya, kuma kowane mataki yana ba da lada sau ɗaya kawai. Atisayen kullum yana ba ku damar yin gwaji yayin da rundunarku ke horo.
+
+**Sabon abu kowace rana**
+
+- Abubuwan wasa a kan tsayayyiyar kalanda ta makonni huɗu, bukukuwa biyar na shekara-shekara masu sansani da Kamannin Fada da za ku samu, Babban Ƙalubale na mako-mako, da kwangilar yau da kullum.
+- Nasarori, hatiman Fada, matsayin ƙwarewar mayaƙa da kamanni da kuke samu ta yin wasa.
 
 **Wasa na gaskiya**
 

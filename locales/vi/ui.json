@@ -23,7 +23,7 @@
   "tutorial.end.button": { "en": "Finish", "text": "Hoàn tất" },
   "tutorial.skip": { "en": "Skip tutorial", "text": "Bỏ qua hướng dẫn" },
   "kind.practice": { "en": "Practice", "text": "Luyện tập" },
-  "whatsNew.0_1_0": { "en": "What's new: send your squad in with one order, watch the fight up close or faster, and see what another entry point would have done. Every raid on your village now has a report, and you can test your defenses. New: a four-week event calendar with festivals, a weekly Gauntlet, daily contracts, achievements, Keep seals and looks to earn.", "text": "" },
+  "whatsNew.0_1_0": { "en": "What's new: send your squad in with one order, watch the fight up close or faster, and see what another entry point would have done. Every raid on your village now has a report, and you can test your defenses. New: a four-week event calendar with festivals, a weekly Gauntlet, daily contracts, achievements, Keep seals and looks to earn.", "text": "Có gì mới: đưa đội của bạn vào trận chỉ bằng một lệnh, xem trận đấu cận cảnh hoặc nhanh hơn, và xem một điểm xâm nhập khác sẽ cho kết quả ra sao. Mỗi trận đột kích vào làng của bạn giờ đều có báo cáo, và bạn có thể thử phòng thủ. Mới: lịch sự kiện bốn tuần với các lễ hội, Vượt Ải hằng tuần, khế ước hằng ngày, thành tích, ấn Thành và ngoại hình để giành lấy." },
   "trials.ladder": { "en": "The ladder ahead", "text": "Các tầng phía trước" },
   "trials.cleared": { "en": "Cleared: tiers 1 to {best}", "text": "Đã vượt qua: tầng 1 đến {best}" },
   "milestone.keep": { "en": "Clan Keep Lv {level}!", "text": "Thành Gia Tộc cấp {level}!" },

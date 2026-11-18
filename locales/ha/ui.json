@@ -23,7 +23,7 @@
   "tutorial.end.button": { "en": "Finish", "text": "Gama" },
   "tutorial.skip": { "en": "Skip tutorial", "text": "Tsallake koyarwa" },
   "kind.practice": { "en": "Practice", "text": "Atisaye" },
-  "whatsNew.0_1_0": { "en": "What's new: send your squad in with one order, watch the fight up close or faster, and see what another entry point would have done. Every raid on your village now has a report, and you can test your defenses. New: a four-week event calendar with festivals, a weekly Gauntlet, daily contracts, achievements, Keep seals and looks to earn.", "text": "" },
+  "whatsNew.0_1_0": { "en": "What's new: send your squad in with one order, watch the fight up close or faster, and see what another entry point would have done. Every raid on your village now has a report, and you can test your defenses. New: a four-week event calendar with festivals, a weekly Gauntlet, daily contracts, achievements, Keep seals and looks to earn.", "text": "Sabbin abubuwa: ku tura tawagarku da umarni ɗaya, ku kalli faɗa daga kusa ko da sauri, ku kuma ga yadda zai kasance da kun shiga ta wani wurin kutse. Yanzu kowane hari kan ƙauyenku yana da rahoto, kuma kuna iya gwada tsaronku. Sabo: kalandar abubuwan wasa ta makonni huɗu tare da bukukuwa, Babban Ƙalubale na mako-mako, kwangilar yau da kullum, nasarori, hatiman Fada da kamanni da za ku samu." },
   "trials.ladder": { "en": "The ladder ahead", "text": "Matakan da ke gaba" },
   "trials.cleared": { "en": "Cleared: tiers 1 to {best}", "text": "An wuce: matakai 1 zuwa {best}" },
   "milestone.keep": { "en": "Clan Keep Lv {level}!", "text": "Fadar Dangi mataki {level}!" },

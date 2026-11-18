@@ -23,7 +23,7 @@
   "tutorial.end.button": { "en": "Finish", "text": "เสร็จสิ้น" },
   "tutorial.skip": { "en": "Skip tutorial", "text": "ข้ามบทสอน" },
   "kind.practice": { "en": "Practice", "text": "ฝึกซ้อม" },
-  "whatsNew.0_1_0": { "en": "What's new: send your squad in with one order, watch the fight up close or faster, and see what another entry point would have done. Every raid on your village now has a report, and you can test your defenses. New: a four-week event calendar with festivals, a weekly Gauntlet, daily contracts, achievements, Keep seals and looks to earn.", "text": "" },
+  "whatsNew.0_1_0": { "en": "What's new: send your squad in with one order, watch the fight up close or faster, and see what another entry point would have done. Every raid on your village now has a report, and you can test your defenses. New: a four-week event calendar with festivals, a weekly Gauntlet, daily contracts, achievements, Keep seals and looks to earn.", "text": "มีอะไรใหม่: ส่งหน่วยของคุณเข้าไปด้วยคำสั่งเดียว ดูการต่อสู้แบบใกล้ชิดหรือเร็วขึ้น และดูว่าถ้าเข้าทางจุดแทรกซึมอื่นจะเป็นอย่างไร ทุกการบุกหมู่บ้านของคุณมีรายงานแล้ว และคุณทดสอบการป้องกันได้ ใหม่: ปฏิทินกิจกรรม 4 สัปดาห์พร้อมเทศกาล ด่านพิสูจน์ฝีมือรายสัปดาห์ สัญญาประจำวัน ความสำเร็จ ตราผนึกป้อม และรูปลักษณ์ให้สะสม" },
   "trials.ladder": { "en": "The ladder ahead", "text": "ชั้นที่รออยู่ข้างหน้า" },
   "trials.cleared": { "en": "Cleared: tiers 1 to {best}", "text": "ผ่านแล้ว: ชั้น 1 ถึง {best}" },
   "milestone.keep": { "en": "Clan Keep Lv {level}!", "text": "ป้อมตระกูล Lv {level}!" },
