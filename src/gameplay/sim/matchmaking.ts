@@ -173,7 +173,7 @@ export function lossStreakSlack(state: VillageState, data: GameData): number {
   const log = state.battleLog ?? [];
   for (let i = log.length - 1; i >= 0 && losses * cfg.perLoss < cfg.max; i--) {
     const r = log[i];
-    if (r.kind !== 'attack' || r.war || r.trial !== undefined || r.goalEvent || r.rematch || r.settlement === 'rejected' || r.settlement === 'pending') continue;
+    if (r.kind !== 'attack' || r.war || r.trial !== undefined || r.goalEvent || r.rematch || r.drill || r.settlement === 'rejected' || r.settlement === 'pending') continue;
     if (r.result.stars > 0) break;
     // Independent review 2026-11-18: against the camps, not the army brought (a one-warrior "army" sent in full).
     const army = camps;
@@ -248,7 +248,7 @@ export function recentRaidArmies(state: VillageState, data: GameData): Record<st
   const n = data.battle.temper?.offers.recentRaids ?? 0;
   if (!n) return [];
   return (state.battleLog ?? [])
-    .filter((r) => r.kind === 'attack' && !r.war && r.trial === undefined && !r.goalEvent && !r.rematch && r.settlement !== 'rejected')
+    .filter((r) => r.kind === 'attack' && !r.war && r.trial === undefined && !r.goalEvent && !r.rematch && !r.drill && r.settlement !== 'rejected')
     .slice(-n)
     .map((r) => r.setup.army);
 }

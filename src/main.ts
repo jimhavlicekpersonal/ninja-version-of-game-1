@@ -534,6 +534,7 @@ async function boot(): Promise<void> {
     onReplay: (record) => app?.replay(record),
     onGroveAttack: (target) => app?.groveAttack(target),
     onTrial: (tier) => app?.trial(tier),
+    onDrill: () => app?.drill(),
     onBounty: (eventKey, base) => app?.bounty(eventKey, base),
     onRematch: (defenseId) => app?.rematch(defenseId),
     onPractice: (army) => app?.practice(army),

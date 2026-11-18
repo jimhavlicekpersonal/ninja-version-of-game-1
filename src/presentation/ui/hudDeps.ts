@@ -35,6 +35,8 @@ export interface HudDeps {
   onGroveAttack(target: number): void;
   /** Start a Shadow Trial attack on this tier. */
   onTrial(tier: number): void;
+  /** P3-07: the daily drill against the next Trial fortress (app.ts `drill`). */
+  onDrill?(): void;
   /** Open a practice battle with this army (nothing spent or won). */
   onPractice(army: Record<string, number>): void;
   /** A Friendly Duel (step 62). */

@@ -204,6 +204,8 @@ export interface VillageState {
    * below only if it began before this moment (an upgrade that finished mid-battle). Absent on older villages.
    */
   keepReachedAt?: number;
+  /** Save v24 (P3-07): the local day the daily drill last paid (sim/drill.ts). Absent: never. */
+  drill?: { day: number };
   /** Task periods; `dayIds`/`weekIds` are the tasks chosen when the period began (absent on older saves until the next roll). */
   tasks: { day: number; dayBaseline: Stats; dayClaimed: string[]; week: number; weekBaseline: Stats; weekClaimed: string[]; dayIds?: string[]; weekIds?: string[]; dayTargets?: Record<string, number>; weekTargets?: Record<string, number> };
   cosmetics: { owned: string[]; hallSkin: string };
@@ -372,7 +374,7 @@ export interface GroveState {
  * Lifetime counters. `upgradesDone` and `troopsTrained` count finished work
  * (cancelled timers never count), so tasks cannot be farmed by start-and-cancel.
  */
-export type StatKey = 'collectedAcorns' | 'collectedDew' | 'upgradesStarted' | 'upgradesDone' | 'troopsTrained' | 'raidsWon' | 'starsEarned' | 'obstaclesCleared' | 'moonstonesSpent' | 'donations' | 'researchDone' | 'trialsCleared' | 'defensesFaced' | 'defensesWon' | 'rematchesWon' | 'raidDestruction' | 'timedUpgradesDone';
+export type StatKey = 'collectedAcorns' | 'collectedDew' | 'upgradesStarted' | 'upgradesDone' | 'troopsTrained' | 'raidsWon' | 'starsEarned' | 'obstaclesCleared' | 'moonstonesSpent' | 'donations' | 'researchDone' | 'trialsCleared' | 'defensesFaced' | 'defensesWon' | 'rematchesWon' | 'raidDestruction' | 'timedUpgradesDone' | 'drillsDone';
 export type Stats = Record<StatKey, number>;
 /**
  * `defensesFaced`/`defensesWon`: raids against the village and the ones it held (no stars lost); `rematchesWon`: won
@@ -380,7 +382,7 @@ export type Stats = Record<StatKey, number>;
  * `timedUpgradesDone` (save v24, P1-08): finished upgrades that took a builder's time (instant wall levels do not).
  * A key added after v24 is filled on every load (`repairStats` in save.ts), so it needs no further bump.
  */
-export const STAT_KEYS: readonly StatKey[] = ['collectedAcorns', 'collectedDew', 'upgradesStarted', 'upgradesDone', 'troopsTrained', 'raidsWon', 'starsEarned', 'obstaclesCleared', 'moonstonesSpent', 'donations', 'researchDone', 'trialsCleared', 'defensesFaced', 'defensesWon', 'rematchesWon', 'raidDestruction', 'timedUpgradesDone'];
+export const STAT_KEYS: readonly StatKey[] = ['collectedAcorns', 'collectedDew', 'upgradesStarted', 'upgradesDone', 'troopsTrained', 'raidsWon', 'starsEarned', 'obstaclesCleared', 'moonstonesSpent', 'donations', 'researchDone', 'trialsCleared', 'defensesFaced', 'defensesWon', 'rematchesWon', 'raidDestruction', 'timedUpgradesDone', 'drillsDone'];
 export function emptyStats(): Stats {
   return Object.fromEntries(STAT_KEYS.map((k) => [k, 0])) as Stats;
 }
@@ -1155,6 +1157,8 @@ export interface DailyDef {
   streak: { steps: { bonus: number; moonstones?: number }[]; skipsPerWeek: number; stepsLostPerMissedDay: number; historyDays: number; jadeEveryDays?: number };
   /** The 28-day calendar (report section 5 step 8): fixed rewards; a `skin` day gives `repeatJade` once owned. */
   calendar?: { days: { reward?: Cost; skin?: string }[]; repeatJade: number };
+  /** P3-07: the daily drill's reward (written at the Keep 5 economy, Keep-scaled like the chest), once per local day. */
+  drill?: { reward: Cost };
 }
 
 export interface EventEffect {

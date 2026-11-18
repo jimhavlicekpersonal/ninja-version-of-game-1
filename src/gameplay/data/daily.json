@@ -76,6 +76,8 @@
     "historyDays": 7,
     "jadeEveryDays": 7
   },
+  "$commentDrill": "P3-07 (PAC-10, 2026-11-18): one practice battle a day against the next Trial fortress with a full camp of the village's own warriors, nothing spent; it pays this once per local day (about a fifth of the daily chest), Keep-scaled like the chest.",
+  "drill": { "reward": { "acorns": 2500, "dew": 2500 } },
   "calendar": {
     "$comment": "Report section 5 step 8 (growth 19): one claim per local day, fixed (never random), never sold; a missed day loses nothing. Resources are Keep-scaled (scaleReward); day 28 gives the Moonlit Shrine look once, then repeatJade.",
     "days": [

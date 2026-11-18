@@ -244,7 +244,8 @@ export function migrate(raw: unknown, data?: GD): SaveFile {
   if (out.version < 24 && v && typeof v === 'object') {
     // v23 -> v24 (the 2026-11-16 replayability pass, docs/audit/understand-2026-11-16/PROGRESS.md): the counter
     // of timed upgrades (P1-08), the Scroll rollover's record (`pass.lastSeason`, P1-01, written when a season
-    // ends) and the time the Keep reached its level (`keepReachedAt`, P1-21, written at the next Keep upgrade).
+    // ends) and the time the Keep reached its level (`keepReachedAt`, P1-21, written at the next Keep upgrade); the
+    // daily drill's last paid day (`drill`, P3-07, written by the first drill) and its stat (`drillsDone`, by repairStats).
     // Timed upgrades start at the finished upgrades already counted, so a running weekly task is not reset.
     const stats = v.stats as Record<string, number> | undefined;
     if (stats && typeof stats === 'object' && stats.timedUpgradesDone === undefined) stats.timedUpgradesDone = stats.upgradesDone ?? 0;
@@ -305,6 +306,8 @@ export function validateVillage(v: VillageState, data: GameData): string[] {
   if (!Number.isFinite(v.createdAt) || !Number.isFinite(v.lastSeenAt)) problems.push('bad timestamps');
   if (!v.resources) problems.push('resources missing');
   if (!v.trials || !Number.isInteger(v.trials.best) || v.trials.best < 0) problems.push('bad trials');
+  // Save v24 (P3-07): the daily drill's last paid local day.
+  if (v.drill !== undefined && (!v.drill || typeof v.drill !== 'object' || !Number.isInteger(v.drill.day))) problems.push('bad drill');
   // Jade may be negative: a refunded purchase whose Jade was already spent (a debt, re-audit).
   // Save v17 (ledger audit A5): a refunded purchase leaves a debt (a negative balance) in any resource.
   else for (const k of RESOURCE_KINDS) if (!Number.isFinite(v.resources[k])) problems.push(`bad ${k}`);

@@ -3,7 +3,7 @@ import { defenseWinReward } from './defenseReward';
 import { hasAttacked, shieldAfterAttack } from './shield';
 import { awardMastery, masteryBonuses, masteryMatches, masteryOn } from './mastery';
 import { hallLevel } from './keep';
-import { canTryAlternate, nextTrialTier, trialBase, trialCatchUpTier, trialRewardsThrough, trialVariant } from './trials';
+import { attemptTier, canTryAlternate, nextTrialTier, trialBase, trialCatchUpTier, trialRewardsThrough, trialVariant } from './trials';
 import { armyHousing, armyReadyAt, armyValue, takeFromArmy, barracksLevel, finishTraining, housingCapacity, queueEndsAt, queueFits, queueHousing, retimeQueue, trainingQueueLimit, trainSecondsFor } from './army';
 import { runBattle, SIM_RULES, SIM_RULES_COMPATIBLE } from './battle/battle';
 import type { BattleRecord, BattleResult, BattleSetup, Deployment } from './battle/types';
@@ -23,7 +23,8 @@ import { rematchBase, rematchReward, rematchStatus } from './rematch';
 import { matchedKeep } from './matchmaking';
 import { scatterObstacles } from './obstacles';
 import { offerCanStillShow, triggerOffer } from './offers';
-import { claimCalendarDay, emptyCalendar, setLocalTime } from './calendar';
+import { claimCalendarDay, emptyCalendar, localDayIndex, setLocalTime } from './calendar';
+import { drillArmy, drillLevels } from './drill';
 import { buildTimeFactor, currentTasks, dayIndex, passBonusCount, passSeason, passSeasonSkin, rollPeriods, unlockedTier } from './pass';
 import { emptyStats, type OfferTrigger } from './types';
 import { advanceGrove, canRequest, donate as donateTroops, emptyGrove, joinGrove, requestTroops, sendChat } from './social/grove';
@@ -127,6 +128,8 @@ export type Command =
   | { type: 'markPrepOffer'; week: number }
   | { type: 'tutorial'; step: number; done?: boolean }
   /** `fallen`: server only, the buildings its own simulation saw destroyed and their loot (saves re-running the raid). */
+  /** P3-07: the daily drill (sim/drill.ts): the army is rebuilt here, the client's is ignored; nothing is spent. */
+  | { type: 'drillEnd'; record: Omit<BattleRecord, 'result' | 'id' | 'kind'> }
   | { type: 'applyDefense'; record: BattleRecord; lost: Cost; trophies: number; shieldUntil: number; fallen?: { id: string; loot: Cost }[]; /** The server's verdict on the per-star hold reward (false: this attacker already raided this defender today). Absent: paid. */ holdReward?: boolean }
   | { type: 'syncRank'; trophies: number; shieldUntil?: number }
   // Multiplayer server results (see sim/net.ts); each is safe to apply twice.
@@ -222,6 +225,7 @@ export type SimEvent =
   /** A bounty attack: the ladder steps it newly reached and what they paid (`reward`, really added; `overflow` did not fit). */
   | { kind: 'bounty_end'; record: BattleRecord; eventKey: string; steps: number[]; reward: Cost; overflow?: Cost }
   | { kind: 'rematch_end'; record: BattleRecord; defenseId: string; won: boolean; reward: Cost; overflow?: Cost }
+  | { kind: 'drill_end'; record: BattleRecord; paid: boolean; reward: Cost; overflow?: Cost }
   | { kind: 'stipend_claimed'; moonstones: number; left: number }
   | { kind: 'skip_used'; what: string; seconds: number; moonstones: number }
   /** Jade bought exactly these missing resources, spent at once by the action that follows. */
@@ -950,6 +954,8 @@ function runCommand(s: VillageState, cmd: Command, now: number, data: GameData):
     case 'rematchEnd':
       s.pendingBattle = null;
       return rematchEnd(s, cmd.defenseId, cmd.record, now, data);
+    case 'drillEnd':
+      return drillEnd(s, cmd.record, now, data);
     case 'leaveLocalGrove':
       // Playing online: the real Grove replaces the bot one (XP, Lodge troops and history stay).
       s.grove.joined = false;
@@ -1615,7 +1621,7 @@ export function dismissPreview(state: VillageState, troop: string, count: number
 
 /** Your own warriors in your last attack (donated ones left out), for "Retrain last army". */
 export function lastAttackArmy(state: VillageState): Record<string, number> | null {
-  const last = [...state.battleLog].reverse().find((r) => r.kind === 'attack');
+  const last = [...state.battleLog].reverse().find((r) => r.kind === 'attack' && !r.drill);
   if (!last) return null;
   const out: Record<string, number> = {};
   for (const [t, n] of Object.entries(last.setup.army)) {
@@ -2211,6 +2217,38 @@ function rematchEnd(s: VillageState, defenseId: string, rec: Omit<BattleRecord, 
   s.battleLog.push(record);
   trimLog(s.battleLog, data.battle.maxReplays);
   return { ok: true, state: s, events: [{ kind: 'rematch_end', record, defenseId, won, reward, ...(hasAny(overflow) ? { overflow } : {}) }] };
+}
+
+/**
+ * P3-07 (PAC-10): the daily drill. The base is the village's next Trial fortress and the army a full camp of its own
+ * mix at its researched levels, both rebuilt here (the client's army and levels are ignored and never checked against
+ * the camps); nothing is spent; the battle is re-simulated (the server runs it, BATTLE_COMMANDS). One fight with
+ * warriors per local day pays `daily.drill.reward`, Keep-scaled like the daily chest; later drills pay nothing.
+ */
+function drillEnd(s: VillageState, rec: Omit<BattleRecord, 'result' | 'id' | 'kind'>, now: number, data: GameData): CommandResult {
+  if (!data.daily.drill) return fail('NOT_AVAILABLE', 'There is no daily drill.');
+  const at = battleBegan(rec, now, data);
+  if (at === null) return fail('NOT_AVAILABLE', 'Too long ago.');
+  const army = drillArmy(s, data);
+  if (!Object.keys(army).length) return fail('NOT_AVAILABLE', 'Build a Training Dojo and a Squad Courtyard first.');
+  const keep = hallLevel(s, data);
+  const tier = attemptTier(s.trials, keep, data);
+  const hero = heroFor(s, data);
+  const setup: BattleSetup = { seed: Number.isInteger(rec.setup?.seed) ? rec.setup.seed : 0, base: { ...trialBase(tier, data, trialVariant(s.trials, tier)), practice: 'Daily drill (practice: nothing spent)' }, army, levels: drillLevels(army, s), infiltration: true, ...(hero ? { hero } : {}) };
+  const { result } = runBattle(setup, rec.deployments, data, rec.endTick);
+  const day = localDayIndex(s, at, data);
+  const paid = foughtWithWarriors(result, setup) && (s.drill?.day ?? -1) < day;
+  let reward: Cost = {};
+  let overflow: Cost = {};
+  if (paid) {
+    ({ granted: reward, overflow } = grantResources(s, scaleReward(data.daily.drill.reward, keep, data), data));
+    s.drill = { day };
+    s.stats.drillsDone = (s.stats.drillsDone ?? 0) + 1;
+  }
+  const record: BattleRecord = { ...rec, setup, opponentName: setup.base.name, id: `r${s.nextSeed++}`, kind: 'attack', at, result: { ...result, loot: {} }, trophies: 0, banked: reward, rules: SIM_RULES, drill: true, ...(hasAny(overflow) ? { overflow } : {}) };
+  s.battleLog.push(record);
+  trimLog(s.battleLog, data.battle.maxReplays);
+  return { ok: true, state: s, events: [{ kind: 'drill_end', record, paid, reward, ...(hasAny(overflow) ? { overflow } : {}) }] };
 }
 
 /**

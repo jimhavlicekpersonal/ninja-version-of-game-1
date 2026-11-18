@@ -8,8 +8,8 @@ import type { BattleRecord } from './battle/types';
 import type { GameData, VillageState } from './types';
 
 /** A raid in the battle log (not a Trial, war, bounty or rematch). */
-function isRaidRecord(r: Pick<BattleRecord, 'kind' | 'trial' | 'war' | 'goalEvent' | 'rematch'>): boolean {
-  return r.kind === 'attack' && r.trial === undefined && !r.war && !r.goalEvent && !r.rematch;
+function isRaidRecord(r: Pick<BattleRecord, 'kind' | 'trial' | 'war' | 'goalEvent' | 'rematch' | 'drill'>): boolean {
+  return r.kind === 'attack' && r.trial === undefined && !r.war && !r.goalEvent && !r.rematch && !r.drill;
 }
 
 /** The attacker's shield after an attack at `now`; `earlierAttack`: the village (or player) has attacked before. */

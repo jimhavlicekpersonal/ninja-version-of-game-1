@@ -12,7 +12,9 @@ import { opponentFor } from './gameplay/sim/matchmaking';
 import { SIM_RULES } from './gameplay/sim/battle/battle';
 import { mixSeed } from './gameplay/sim/rng';
 import { battleArmy, battleLoadout, scoutFee } from './gameplay/sim/village';
-import { trialBase, trialInfo, trialReward, trialRewardsThrough, trialVariant } from './gameplay/sim/trials';
+import { attemptTier, trialBase, trialInfo, trialReward, trialRewardsThrough, trialVariant } from './gameplay/sim/trials';
+import { drillArmy, drillLevels } from './gameplay/sim/drill';
+import { hallLevel } from './gameplay/sim/keep';
 import { rematchBase, rematchStatus } from './gameplay/sim/rematch';
 import { hasAttacked, shieldAfterAttack } from './gameplay/sim/shield';
 import { totalLoot } from './gameplay/sim/battle/basegen';
@@ -203,6 +205,24 @@ export class App {
   }
 
   /**
+   * P3-07: the daily drill (sim/drill.ts): the next Trial fortress with a full camp of the village's own warriors,
+   * labelled practice, nothing spent; settled with `drillEnd`, which pays once per local day.
+   */
+  drill(): void {
+    const c = this.d.controller;
+    const army = drillArmy(c.state, c.data);
+    if (!Object.keys(army).length) {
+      this.d.hud.toast(i18nText("ui.train_some_warriors_first_38d2ad4cb0"), 'error');
+      return;
+    }
+    const tier = attemptTier(c.state.trials, hallLevel(c.state, c.data), c.data);
+    const base: BaseLayout = { ...trialBase(tier, c.data, trialVariant(c.state.trials, tier)), practice: i18nText('drill.title') };
+    const hero = battleLoadout(c.state, c.data).hero;
+    const setup: BattleSetup = { seed: mixSeed(c.state.seed, 0xd2111 + c.state.nextSeed), base, army, levels: drillLevels(army, c.state), infiltration: true, ...(hero ? { hero } : {}) };
+    this.open(new BattleSession(setup, c.data, 'scout'), undefined, undefined, undefined, false, undefined, { kind: 'drill', title: i18nText('drill.title') });
+  }
+
+  /**
    * A practice battle: any army (e.g. one with a warrior you have not trained
    * yet) against a generated base at your Keep. Nothing is spent or won, and it
    * is never saved as a raid; you can still watch its replay.
@@ -264,7 +284,7 @@ export class App {
     trialTier?: number,
     practice = false,
     duel?: { ticket: string; friendName: string },
-    special?: { kind: 'bounty'; eventKey: string; title: string } | { kind: 'rematch'; defenseId: string; title: string },
+    special?: { kind: 'bounty'; eventKey: string; title: string } | { kind: 'rematch'; defenseId: string; title: string } | { kind: 'drill'; title: string },
   ): void {
     const c = this.d.controller;
     this.battleHud?.destroy();
@@ -343,6 +363,18 @@ export class App {
           lastRecord = g.record;
           return { result: g.record.result, banked: {}, trophies: 0 };
         }
+        if (special?.kind === 'drill') {
+          const record = { at: startedAt, opponentName: session.setup.base.name, setup: session.setup, deployments: session.deployments, endTick: session.endTick };
+          const r = c.dispatch({ type: 'drillEnd', record });
+          if (!r.ok) {
+            this.d.hud.toast(r.message, 'error');
+            return null;
+          }
+          const e = r.events.find((x) => x.kind === 'drill_end');
+          if (!e || e.kind !== 'drill_end') return null;
+          lastRecord = e.record;
+          return { result: e.record.result, banked: e.reward, overflow: e.overflow, trophies: 0, note: e.paid ? i18nText('drill.paid') : i18nText('drill.doneToday') };
+        }
         if (special) {
           // Bounty fortress or settle-the-score: settled by the sim (rewards paid once, no loot or honor).
           const record = { at: startedAt, opponentName: session.setup.base.name, setup: session.setup, deployments: session.deployments, endTick: session.endTick };
@@ -411,7 +443,8 @@ export class App {
         hudHooks.deployed();
         // Saved from the first deployment, so closing the app mid-raid (or mid-war-attack) can't erase it.
         // Throttled: the first deployment saves at once, later ones at most every 1.5 s.
-        if (session.mode !== 'live' || replayOf || practice) return;
+        // A drill spends nothing, so an interrupted one is simply not counted (never tracked as a pending battle).
+        if (session.mode !== 'live' || replayOf || practice || special?.kind === 'drill') return;
         const track = () => {
           trackTimer = 0;
           lastTrack = Date.now();

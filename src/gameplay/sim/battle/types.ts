@@ -145,6 +145,8 @@ export interface BattleRecord {
    */
   raider?: { seed: number; hall: number; bias: number };
   rematch?: string;
+  /** P3-07: a daily drill (practice against the next Trial fortress; nothing spent, never a raid). */
+  drill?: boolean;
   goalEvent?: string;
   /** A Shadow Trial attack: its tier (save v16; older trial records have none). */
   trial?: number;
