@@ -99,6 +99,9 @@ describe('lower bounds: the model player keeps winning at every Keep (E24, E25)'
 describe('upper bounds: no farming (audit F22)', () => {
   it('no campaign three-stars more than half its raids at any Keep from 6 on', () => {
     for (const r of results) for (const k of pairs(r.byKeep.filter((x) => x.keep >= 6 && x.raids >= 5)).filter((x) => x.raids >= 10)) expect(k.threeStar, `${r.id} Keeps ${k.keeps}`).toBeLessThanOrEqual(0.5);
+    // Phase 4 review #1: the pairs must not average away one farming Keep. The single-Keep bound of before P4-08 stays
+    // for every Keep with at least 10 raids.
+    for (const r of results) for (const k of r.byKeep.filter((x) => x.keep >= 6 && x.raids >= 10)) expect(k.threeStar, `${r.id} Keep ${k.keep}`).toBeLessThanOrEqual(0.5);
   });
 
   it('the regular player reaches Keep 15 in 100-140 days, and casual play gets there inside the 400-day run', () => {
