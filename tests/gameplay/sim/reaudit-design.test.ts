@@ -7,7 +7,7 @@ import { attackerFor } from '../../../src/gameplay/sim/matchmaking';
 import { botDeployments, raidVillage } from '../../../src/gameplay/sim/defense';
 import { createBattle } from '../../../src/gameplay/sim/battle/battle';
 import { topUpOne, topUpScale } from '../../../src/gameplay/sim/economy';
-import { activeGoalEvent, bountyBase, goalEventView } from '../../../src/gameplay/sim/goalEvents';
+import { activeGoalEvents, bountyBase, goalEventViews } from '../../../src/gameplay/sim/goalEvents';
 import { canPurchase, productGrantsFor, productInfo, storeProductId } from '../../../src/gameplay/sim/monetization';
 import { currentTasks, passPointsPerDay, passPremiumValue, passSaleOpen, passSeasonEndsAt, recentRaidRates, taskTarget } from '../../../src/gameplay/sim/pass';
 import { rematchBase, rematchable, rematchReward } from '../../../src/gameplay/sim/rematch';
@@ -178,15 +178,17 @@ describe('star and win tasks follow the recent star rate (item 6)', () => {
 });
 
 describe('Bounty Hunt: a goal event (item 8)', () => {
-  const def = data.events.schedule.find((e) => e.goal)!;
+  // P5-01 (restated): several goal events may run at once, so these read the Bounty Hunt among the running ones.
+  const def = data.events.schedule.find((e) => e.goal?.kind === 'bounty')!;
   const start = data.events.epoch + def.startHour * HOUR;
+  const bounty = (t: number) => activeGoalEvents(t, data).find((g) => g.id === def.id) ?? null;
 
   it('runs only in its window, every period, with a fixed fortress per village and occurrence', () => {
-    expect(activeGoalEvent(start - 1, data)).toBeNull();
-    expect(activeGoalEvent(start, data)!.id).toBe(def.id);
-    expect(activeGoalEvent(start + def.durationHours * HOUR, data)).toBeNull();
-    expect(activeGoalEvent(start + data.events.periodDays * DAY + HOUR, data)!.key).not.toBe(activeGoalEvent(start, data)!.key);
-    const key = activeGoalEvent(start, data)!.key;
+    expect(bounty(start - 1)).toBeNull();
+    expect(bounty(start)!.id).toBe(def.id);
+    expect(bounty(start + def.durationHours * HOUR)).toBeNull();
+    expect(bounty(start + data.events.periodDays * DAY + HOUR)!.key).not.toBe(bounty(start)!.key);
+    const key = bounty(start)!.key;
     const a = bountyBase(42, key, 5, def.goal!, data);
     expect(bountyBase(42, key, 5, def.goal!, data)).toEqual(a);
     expect(a.buildings.every((b) => !b.loot)).toBe(true);
@@ -196,7 +198,7 @@ describe('Bounty Hunt: a goal event (item 8)', () => {
   it('each ladder step pays once; the base is rebuilt, never taken from the client', () => {
     const { state } = newGame();
     let s: VillageState = { ...atHall(state, 4), army: { hedgehog_roller: 60, beetle_brute: 6 } };
-    const view = goalEventView(s, start + HOUR, data)!;
+    const view = goalEventViews(s, start + HOUR, data).find((v) => v.event.id === def.id)!;
     const key = view.event.key;
     const loadout = battleLoadout(s, data);
     const setup = { seed: 5, base: view.base, ...loadout, infiltration: true };
@@ -208,8 +210,7 @@ describe('Bounty Hunt: a goal event (item 8)', () => {
     s = r1.state;
     const e1 = r1.events.find((e) => e.kind === 'bounty_end')!;
     if (e1.kind !== 'bounty_end') return;
-    expect(s.goalEvent!.key).toBe(key);
-    expect(s.goalEvent!.claimed).toEqual(e1.steps);
+    expect(s.goalEvents.find((g) => g.key === key)!.claimed).toEqual(e1.steps);
     // The same result again pays nothing new.
     s = { ...s, army: { hedgehog_roller: 60, beetle_brute: 6 } };
     const r2 = applyCommand(s, { type: 'bountyEnd', eventKey: key, record: { at: start + 2 * HOUR, opponentName: 'x', setup: { ...setup, ...battleLoadout(s, data) }, deployments } }, start + 2 * HOUR, data);
@@ -269,6 +270,7 @@ describe('Clan Stipend and the $0.99 pack (item 9)', () => {
     old.version = 15;
     delete old.village.stipend;
     delete old.village.goalEvent;
+    delete old.village.goalEvents;
     const stats = old.village.stats as Record<string, number>;
     delete stats.defensesFaced;
     delete stats.raidDestruction;
@@ -276,7 +278,7 @@ describe('Clan Stipend and the $0.99 pack (item 9)', () => {
     expect(out.version).toBe(SAVE_VERSION);
     expect(SAVE_VERSION).toBeGreaterThanOrEqual(16);
     expect(out.village.stipend).toEqual({ left: 0, lastDay: -1, jade: 0 });
-    expect(out.village.goalEvent).toBeNull();
+    expect(out.village.goalEvents).toEqual([]); // v16's null slot, a list since v24 (P5-01)
     expect(out.village.stats.defensesFaced).toBe(0);
     expect(out.village.stats.raidDestruction).toBe(0);
   });

@@ -123,6 +123,46 @@
       "passOnly": true,
       "cap": "#4a5160",
       "spots": "#e4e7ee"
+    },
+    {
+      "id": "fest_new_year",
+      "name": "New Year Gold",
+      "moonstones": 0,
+      "earned": true,
+      "cap": "#b8862b",
+      "spots": "#fff6d8"
+    },
+    {
+      "id": "fest_blossom",
+      "name": "Blossom Wind",
+      "moonstones": 0,
+      "earned": true,
+      "cap": "#d98aa5",
+      "spots": "#fff5f8"
+    },
+    {
+      "id": "fest_lanterns",
+      "name": "Midsummer Lantern",
+      "moonstones": 0,
+      "earned": true,
+      "cap": "#c8552d",
+      "spots": "#ffd27a"
+    },
+    {
+      "id": "fest_moon",
+      "name": "Moon Viewing",
+      "moonstones": 0,
+      "earned": true,
+      "cap": "#2d3561",
+      "spots": "#f3e9c6"
+    },
+    {
+      "id": "fest_snow",
+      "name": "First Snow",
+      "moonstones": 0,
+      "earned": true,
+      "cap": "#9fb6c8",
+      "spots": "#ffffff"
     }
   ]
 }

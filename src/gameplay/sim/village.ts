@@ -18,7 +18,7 @@ import { achievementViews } from './achievements';
 import { scaleReward, skipCost, topUpCost, trainingSkipCost } from './economy';
 import { canPurchase, productGrantsFor, productInfo } from './monetization';
 import { addStipend, claimStipend, emptyStipend } from './stipend';
-import { activeGoalEvent, bountyBase, goalEventByKey, ladderReward, recordBountyResult } from './goalEvents';
+import { goalBase, ladderReward, recordBountyResult, runningGoalEvent } from './goalEvents';
 import { rematchBase, rematchReward, rematchStatus } from './rematch';
 import { matchedKeep } from './matchmaking';
 import { scatterObstacles } from './obstacles';
@@ -223,7 +223,7 @@ export type SimEvent =
   | { kind: 'raid_end'; record: BattleRecord }
   | { kind: 'trial_end'; record: BattleRecord; tier: number; cleared: boolean; firstClear: boolean; reward: Cost; /** P3-06: tiers counted as cleared by a catch-up clear, first and last. */ skipped?: [number, number] }
   /** A bounty attack: the ladder steps it newly reached and what they paid (`reward`, really added; `overflow` did not fit). */
-  | { kind: 'bounty_end'; record: BattleRecord; eventKey: string; steps: number[]; reward: Cost; overflow?: Cost }
+  | { kind: 'bounty_end'; record: BattleRecord; eventKey: string; steps: number[]; reward: Cost; looks?: string[]; overflow?: Cost }
   | { kind: 'rematch_end'; record: BattleRecord; defenseId: string; won: boolean; reward: Cost; overflow?: Cost }
   | { kind: 'drill_end'; record: BattleRecord; paid: boolean; reward: Cost; overflow?: Cost }
   | { kind: 'stipend_claimed'; moonstones: number; left: number }
@@ -311,7 +311,7 @@ export function createNewVillage(now: number, data: GameData): VillageState {
     armyPresets: [],
     stipend: emptyStipend(),
     calendar: emptyCalendar(),
-    goalEvent: null,
+    goalEvents: [],
     mastery: {},
     hero: {},
   };
@@ -1319,6 +1319,7 @@ function buySkin(s: VillageState, id: string, data: GameData): CommandResult {
   if (s.cosmetics.owned.includes(id)) return fail('ALREADY_CLAIMED', 'You already own this look.');
   if (skin.passOnly) return fail('LOCKED', 'This look comes from the Season Scroll.');
   if (skin.calendarOnly) return fail('LOCKED', 'This look comes from the 28-day calendar.');
+  if (skin.earned) return fail('LOCKED', 'This look is earned in play, never sold.');
   if (skin.minKeep && hallLevel(s, data) < skin.minKeep) return fail('LOCKED', `This look unlocks at Keep ${skin.minKeep}.`, { keep: skin.minKeep });
   if (s.resources.moonstones < skin.moonstones) return fail('NOT_ENOUGH_MOONSTONES', `Needs ${skin.moonstones} Jade.`, { jade: skin.moonstones });
   s.resources.moonstones -= skin.moonstones;
@@ -2160,26 +2161,24 @@ function battleBegan(rec: { at?: number }, now: number, data: GameData): number 
 }
 
 /**
- * An attack on a goal event's bounty fortress (sim/goalEvents.ts): the event must be running
- * when the attack began, the base is rebuilt for this village (never taken from the client),
- * the battle is re-simulated, troops are spent, no loot from buildings and no honor. Each
- * ladder step the result newly reaches pays once (Keep-scaled, storage-capped).
+ * An attack on a goal event's fortress (sim/goalEvents.ts: a Bounty Hunt's, a festival's or the Gauntlet's): the
+ * occurrence must be running when the attack began, the base is rebuilt (never taken from the client), the battle is
+ * re-simulated, troops are spent, no loot from buildings and no honor. Each ladder step the result newly reaches pays
+ * once per occurrence (Keep-scaled, storage-capped), with its look if it has one (P5-01). P5-01: any running goal
+ * event, by its key; progress is kept per occurrence, so alternating between two never pays a step twice.
  */
 function bountyEnd(s: VillageState, key: string, rec: Omit<BattleRecord, 'result' | 'id' | 'kind'>, now: number, data: GameData): CommandResult {
   const at = battleBegan(rec, now, data);
-  const ev = at === null ? null : activeGoalEvent(at, data);
-  if (at === null || !ev || ev.key !== key || ev.goal.kind !== 'bounty') return fail('NOT_AVAILABLE', 'The Bounty Hunt is not running.');
-  // XPL-02: never go back to an occurrence older than the one this village already played (alternating two
-  // old keys reset the progress and paid the whole ladder each time).
-  const stored = s.goalEvent && s.goalEvent.key !== key ? goalEventByKey(s.goalEvent.key, at, data) : null;
-  if (stored && stored.start > ev.start) return fail('NOT_AVAILABLE', 'The Bounty Hunt is not running.');
+  const ev = at === null ? null : runningGoalEvent(key, at, data);
+  // XPL-02's alternating-keys exploit (one progress slot, reset on every switch) cannot recur: progress is per key.
+  if (at === null || !ev) return fail('NOT_AVAILABLE', 'The Bounty Hunt is not running.');
   const keep = hallLevel(s, data);
   // The Keep the attack began with: the current one, or one below if a Keep upgrade finished mid-battle.
   // XPL-13 (P1-21): only then. The record must have begun before the Keep reached its level (save v24); the
   // easier fortress of the Keep below used to be the client's choice.
   const asked = rec.setup?.base?.hallLevel;
   const baseKeep = asked === keep - 1 && s.keepReachedAt !== undefined && at < s.keepReachedAt && s.keepReachedAt <= now ? asked : keep;
-  const clean = sanitizeBattleSetup(s, { ...rec.setup, base: bountyBase(s.seed, key, baseKeep, ev.goal, data) }, data);
+  const clean = sanitizeBattleSetup(s, { ...rec.setup, base: goalBase(s.seed, key, baseKeep, ev.goal, data) }, data);
   if ('error' in clean) return fail('INVALID_BATTLE', clean.error);
   const setup = clean.setup;
   const { result } = runBattle(setup, rec.deployments, data, rec.endTick);
@@ -2189,10 +2188,19 @@ function bountyEnd(s: VillageState, key: string, rec: Omit<BattleRecord, 'result
   let wanted: Cost = {};
   for (const i of steps) wanted = sumCost(wanted, ladderReward(ev.goal.ladder[i], baseKeep, data));
   const { granted: reward, overflow } = grantResources(s, wanted, data);
+  // P5-01: a step's look, once (an owned look is never granted twice).
+  const looks: string[] = [];
+  for (const i of steps) {
+    const look = ev.goal.ladder[i].look;
+    if (look && data.cosmetics.hallSkins.some((k) => k.id === look) && !s.cosmetics.owned.includes(look)) {
+      s.cosmetics.owned.push(look);
+      looks.push(look);
+    }
+  }
   const record: BattleRecord = { ...rec, setup, opponentName: setup.base.name, id: `r${s.nextSeed++}`, kind: 'attack', at, result: { ...result, loot: {} }, trophies: 0, banked: reward, rules: SIM_RULES, goalEvent: key, ...(hasAny(overflow) ? { overflow } : {}) };
   s.battleLog.push(record);
   trimLog(s.battleLog, data.battle.maxReplays);
-  return { ok: true, state: s, events: [{ kind: 'bounty_end', record, eventKey: key, steps, reward, ...(hasAny(overflow) ? { overflow } : {}) }] };
+  return { ok: true, state: s, events: [{ kind: 'bounty_end', record, eventKey: key, steps, reward, ...(looks.length ? { looks } : {}), ...(hasAny(overflow) ? { overflow } : {}) }] };
 }
 
 /**

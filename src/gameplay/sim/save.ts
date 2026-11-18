@@ -182,7 +182,7 @@ export function migrate(raw: unknown, data?: GD): SaveFile {
     // baselines. Raids faced starts at the defenses still in the log, so a village that has not
     // been raided yet still gets the gentler first raids (raids.newPlayerRaids).
     v.stipend = v.stipend ?? { left: 0, lastDay: -1 };
-    v.goalEvent = v.goalEvent ?? null;
+    v.goalEvent = v.goalEvent ?? null; // v24 turns it into `goalEvents`
     const log = Array.isArray(v.defenseLog) ? (v.defenseLog as { result?: { stars?: number } }[]) : [];
     const tasks = v.tasks as { dayBaseline?: Record<string, number>; weekBaseline?: Record<string, number> } | undefined;
     const stats = v.stats as Record<string, number> | undefined;
@@ -249,6 +249,10 @@ export function migrate(raw: unknown, data?: GD): SaveFile {
     // Timed upgrades start at the finished upgrades already counted, so a running weekly task is not reset.
     const stats = v.stats as Record<string, number> | undefined;
     if (stats && typeof stats === 'object' && stats.timedUpgradesDone === undefined) stats.timedUpgradesDone = stats.upgradesDone ?? 0;
+    // P5-01: goal progress per occurrence (the one slot, reset on every key change, let two overlapping goal events
+    // pay a ladder again on each switch). The stored occurrence carries over with its claimed steps.
+    if (!Array.isArray(v.goalEvents)) v.goalEvents = v.goalEvent && typeof v.goalEvent === 'object' ? [v.goalEvent] : [];
+    delete v.goalEvent;
   }
   repairStats(v);
   repairTrainingQueue(v);

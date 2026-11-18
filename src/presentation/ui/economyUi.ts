@@ -456,6 +456,7 @@ export class EconomyUi {
       } else if (skin.passOnly) action = h('span', { class: 'chip' }, i18nText("ui.reward_45b24062a2", { arg1: localizedData(this.c.data).pass.name }));
       // Remnant audit (2026-11-06): a calendar look showed a 0 Jade buy button that always failed.
       else if (skin.calendarOnly) action = h('span', { class: 'chip' }, t('store.calendarLook'));
+      else if (skin.earned) action = h('span', { class: 'chip' }, t('store.earnedLook'));
       else if (skin.minKeep && hallLevel(s, localizedData(this.c.data)) < skin.minKeep) action = h('span', { class: 'chip' }, i18nText("ui.unlocks_at_keep_53e015b015", { arg1: skin.minKeep }));
       else {
         action = h('button', { class: 'btn gold', type: 'button' }, icon(icons.moonstones), String(skin.moonstones));
@@ -463,7 +464,7 @@ export class EconomyUi {
           void this.spendMoonstones(i18nText("ui.buy_this_look_1b89833db0"), i18nText("ui.purely_visual_19c28485fc", { arg1: skin.name }), skin.moonstones, () => this.c.dispatch({ type: 'buySkin', skin: skin.id }).ok).then(redraw);
         });
       }
-      const about = !owned && !skin.passOnly && !skin.calendarOnly ? this.jadeAbout(skin.moonstones) : null;
+      const about = !owned && !skin.passOnly && !skin.calendarOnly && !skin.earned ? this.jadeAbout(skin.moonstones) : null;
       grid.append(h('div', { class: 'shop-card' }, swatch, h('div', { class: 'shop-name' }, skin.name), h('div', { class: 'muted small' }, i18nText("ui.clan_keep_look_9be1099dbe")), action, about ? h('div', { class: 'muted small jade-about' }, about) : null));
     }
     return grid;

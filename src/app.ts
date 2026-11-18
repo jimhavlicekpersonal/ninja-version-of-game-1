@@ -1,4 +1,4 @@
-import { t as i18nText } from './presentation/ui/i18n';
+import { displayData as localizedData, listText as i18nList, t as i18nText } from './presentation/ui/i18n';
 import { rivalById, rivalFor, rivalOutpostName } from './gameplay/sim/rivals';
 import { isolateName } from './gameplay/sim/social/names';
 import type Phaser from 'phaser';
@@ -395,7 +395,10 @@ export class App {
               : e.won
                 ? i18nText("ui.score_settled_372ee4649e")
                 : i18nText("ui.the_raider_held_this_rematch_is_used_u_c9e33e0fd9");
-          return { result: e.record.result, banked: paid ? e.reward : {}, overflow: e.overflow, trophies: 0, note };
+          // P5-01: a festival's three-star step also gives its look.
+          const looks = e.kind === 'bounty_end' ? (e.looks ?? []).map((id) => localizedData(c.data).cosmetics.hallSkins.find((k) => k.id === id)?.name ?? id) : [];
+          const withLooks = looks.length ? `${note} ${i18nText('events.lookEarned', { name: i18nList(looks) })}` : note;
+          return { result: e.record.result, banked: paid ? e.reward : {}, overflow: e.overflow, trophies: 0, note: withLooks };
         }
         if (trialTier !== undefined) {
           const t = c.finishTrial(trialTier, session.setup, session.deployments, session.endTick);

@@ -244,8 +244,12 @@ export interface VillageState {
   calendar: CalendarState;
   /** The device's offset from UTC; task days roll at the player's midnight (sim/calendar.ts, save v19). */
   localTime?: { offsetMinutes: number; setAt: number };
-  /** Goal events (sim/goalEvents.ts, save v16): progress in the current goal event occurrence. */
-  goalEvent: GoalEventState | null;
+  /**
+   * Goal events (sim/goalEvents.ts): progress per occurrence, newest last (P5-01, save v24: was one slot, `goalEvent`,
+   * reset whenever the key differed, so two overlapping goal events paid a ladder again on every switch). At most
+   * `GOAL_PROGRESS_KEPT` entries; an occurrence that drops off has long ended and can no longer be attacked.
+   */
+  goalEvents: GoalEventState[];
   /**
    * Warrior Mastery (save v23, sim/mastery.ts): EXP per warrior type. Earned only while `features.mastery` is on
    * (off in the shipped data), so it stays empty in the live game.
@@ -1103,6 +1107,8 @@ export interface SkinDef {
   passOnly?: boolean;
   /** Only from the 28-day calendar (never sold). */
   calendarOnly?: boolean;
+  /** P5-01/P5-06: earned in play (a festival ladder, a season, a Trial tier, a calendar cycle, a chest milestone); never sold. */
+  earned?: boolean;
   /** Can be bought from this Keep level (report section 5 step 6: a look to aim for at each stage). */
   minKeep?: number;
   cap: string;
@@ -1194,14 +1200,37 @@ export interface GoalLadderStep {
   destruction?: number;
   /** Soft resources are scaled by the Keep (`rewardScaleByHall`); Jade is not. */
   reward: Cost;
+  /** P5-01: a look (`cosmetics.json` skin id, `earned`) this step also grants, once; owned looks are never granted twice. */
+  look?: string;
 }
 
-/** What a goal event asks for. `bounty`: attack the occurrence's bounty fortress (a generated base at your Keep, the same for every attempt). */
+/**
+ * What a goal event asks for. `bounty`: attack the occurrence's bounty fortress (a generated base at your Keep, the
+ * same for every attempt, seeded by the village). `gauntlet` (P5-02): one fortress per occurrence and Keep, seeded by
+ * the occurrence key and the Keep only, so every player at a Keep attacks the identical base that week.
+ */
 export interface GoalDef {
-  kind: 'bounty';
-  /** Defense power multiplier on the bounty fortress (1 = a same-Keep base at mid levels). */
+  kind: 'bounty' | 'gauntlet';
+  /** Defense power multiplier on the fortress (1 = a same-Keep base at mid levels). */
   power: number;
+  /** Gauntlet: wall HP multiplier (Trial-style modifier; absent = 1). */
+  wallPower?: number;
+  /** Gauntlet: tempers of these rival clans (battle.json `temper.rivals`), one picked per occurrence; absent = untempered. */
+  rivals?: string[];
   ladder: GoalLadderStep[];
+}
+
+/** P5-01: a festival on a fixed calendar date each year (UTC), occurrence key `<id>#<year>`. */
+export interface DatedEventDef {
+  id: string;
+  name: string;
+  description: string;
+  /** 1-12 and 1-31: the UTC day it starts (at 00:00). */
+  month: number;
+  day: number;
+  durationHours: number;
+  effect: EventEffect;
+  goal?: GoalDef;
 }
 
 export interface EventsDef {
@@ -1209,6 +1238,8 @@ export interface EventsDef {
   epoch: number;
   periodDays: number;
   schedule: { id: string; name: string; description: string; startHour: number; durationHours: number; effect: EventEffect; goal?: GoalDef }[];
+  /** P5-01: festivals on fixed dates, merged with the loop (an operator's schedule retimes the loop only). */
+  dated?: DatedEventDef[];
 }
 
 export interface NotificationsDef {
