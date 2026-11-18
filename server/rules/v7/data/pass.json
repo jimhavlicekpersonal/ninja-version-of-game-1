@@ -1,0 +1,415 @@
+{
+  "name": "Season Scroll",
+  "epoch": 1767225600000,
+  "seasonDays": 30,
+  "pointsPerTier": 300,
+  "$commentSeasonSkins": "Retention audit RET-04 (P1-02): the premium track's look changes each season, chosen by season number modulo this list (a tier whose premium reward names a look gives this season's instead). A buyer who already owns this season's look gets repeatJade Jade for that tier.",
+  "seasonSkins": ["lantern_elder", "crimson_maple", "snow_pine", "indigo_tide", "jade_bamboo", "plum_blossom", "golden_harvest", "storm_cloud"],
+  "repeatJade": 60,
+  "$commentTasks": "P1-08 (RET-05): collect targets are ofDailyProduction of the village's own daily collector output (base and perHall stay the floor), so a single collect no longer finishes them; upgrade tasks count timed upgrades only (stat timedUpgradesDone), so wall levels do not move them.",
+  "$commentBonus": "Retention audit RET-02 / ECO-03 (P1-03): after the last tier, every everyPoints task points pay reward (resources only, Keep-scaled, never Jade), at most maxPerSeason times. A full season's bonus (17 x 3,000 of each at scale 1) stays under the free track's own supply (90,000 of each).",
+  "$commentEstimate": "Economy ECO-06 (P1-05): the value estimate counts the tiers this player can still reach at their own pace this season (points against days elapsed, never above all tasks every day; defaultPace in the first minDaysForPace days), and if it would exceed guardPackMultiple x the Jade of the same-price pack it shows only the Jade and lists the supplies by amount.",
+  "estimate": { "defaultPace": 0.6, "minDaysForPace": 3, "guardPackMultiple": 6 },
+  "bonus": { "everyPoints": 300, "reward": { "acorns": 3000, "dew": 3000 }, "maxPerSeason": 17 },
+  "productId": "lantern_pass",
+  "usd": 4.99,
+  "premiumBuildSpeedBonus": 0.2,
+  "noSaleLastDays": 4,
+  "noSaleUnlessTiers": 15,
+  "adaptiveTasks": {
+    "$comment": "Star and win tasks follow the player's recent raids (sim/pass.ts recentRaidRates): the target is the stars or wins a period's `raids` raids at the recent rate would bring, never above the template's own target and never below 1; when that is under `minExpected`, the task is not offered and a destruction or Trial task takes its place.",
+    "recentRaids": 10,
+    "minRecent": 3,
+    "minExpected": 1
+  },
+  "tiers": [
+    {
+      "tier": 1,
+      "free": {
+        "dew": 500
+      },
+      "premium": {
+        "moonstones": 100
+      }
+    },
+    {
+      "tier": 2,
+      "free": {
+        "acorns": 1000
+      },
+      "premium": {
+        "dew": 3000
+      }
+    },
+    {
+      "tier": 3,
+      "free": {
+        "dew": 1500
+      },
+      "premium": {
+        "acorns": 4500
+      }
+    },
+    {
+      "tier": 4,
+      "free": {
+        "acorns": 2000
+      },
+      "premium": {
+        "dew": 6000
+      }
+    },
+    {
+      "tier": 5,
+      "free": {
+        "moonstones": 10
+      },
+      "premium": {
+        "acorns": 7500
+      }
+    },
+    {
+      "tier": 6,
+      "free": {
+        "acorns": 3000
+      },
+      "premium": {
+        "dew": 9000
+      }
+    },
+    {
+      "tier": 7,
+      "free": {
+        "dew": 3500
+      },
+      "premium": {
+        "acorns": 10500
+      }
+    },
+    {
+      "tier": 8,
+      "free": {
+        "acorns": 4000
+      },
+      "premium": {
+        "dew": 12000
+      }
+    },
+    {
+      "tier": 9,
+      "free": {
+        "dew": 4500
+      },
+      "premium": {
+        "acorns": 13500
+      }
+    },
+    {
+      "tier": 10,
+      "free": {
+        "moonstones": 15
+      },
+      "premium": {
+        "moonstones": 80
+      }
+    },
+    {
+      "tier": 11,
+      "free": {
+        "dew": 5500
+      },
+      "premium": {
+        "acorns": 16500
+      }
+    },
+    {
+      "tier": 12,
+      "free": {
+        "acorns": 6000
+      },
+      "premium": {
+        "dew": 18000
+      }
+    },
+    {
+      "tier": 13,
+      "free": {
+        "dew": 6500
+      },
+      "premium": {
+        "acorns": 19500
+      }
+    },
+    {
+      "tier": 14,
+      "free": {
+        "acorns": 7000
+      },
+      "premium": {
+        "dew": 21000
+      }
+    },
+    {
+      "tier": 15,
+      "free": {
+        "moonstones": 20
+      },
+      "premium": {
+        "skin": "lantern_elder"
+      }
+    },
+    {
+      "tier": 16,
+      "free": {
+        "acorns": 8000
+      },
+      "premium": {
+        "dew": 24000
+      }
+    },
+    {
+      "tier": 17,
+      "free": {
+        "dew": 8500
+      },
+      "premium": {
+        "acorns": 25500
+      }
+    },
+    {
+      "tier": 18,
+      "free": {
+        "acorns": 9000
+      },
+      "premium": {
+        "dew": 27000
+      }
+    },
+    {
+      "tier": 19,
+      "free": {
+        "dew": 9500
+      },
+      "premium": {
+        "acorns": 28500
+      }
+    },
+    {
+      "tier": 20,
+      "free": {
+        "moonstones": 25
+      },
+      "premium": {
+        "moonstones": 80
+      }
+    },
+    {
+      "tier": 21,
+      "free": {
+        "dew": 10500
+      },
+      "premium": {
+        "acorns": 31500
+      }
+    },
+    {
+      "tier": 22,
+      "free": {
+        "acorns": 11000
+      },
+      "premium": {
+        "dew": 33000
+      }
+    },
+    {
+      "tier": 23,
+      "free": {
+        "dew": 11500
+      },
+      "premium": {
+        "acorns": 34500
+      }
+    },
+    {
+      "tier": 24,
+      "free": {
+        "acorns": 12000
+      },
+      "premium": {
+        "dew": 36000
+      }
+    },
+    {
+      "tier": 25,
+      "free": {
+        "moonstones": 30
+      },
+      "premium": {
+        "acorns": 37500
+      }
+    },
+    {
+      "tier": 26,
+      "free": {
+        "acorns": 13000
+      },
+      "premium": {
+        "dew": 39000
+      }
+    },
+    {
+      "tier": 27,
+      "free": {
+        "dew": 13500
+      },
+      "premium": {
+        "acorns": 40500
+      }
+    },
+    {
+      "tier": 28,
+      "free": {
+        "acorns": 14000
+      },
+      "premium": {
+        "dew": 42000
+      }
+    },
+    {
+      "tier": 29,
+      "free": {
+        "dew": 14500
+      },
+      "premium": {
+        "acorns": 43500
+      }
+    },
+    {
+      "tier": 30,
+      "free": {
+        "moonstones": 50
+      },
+      "premium": {
+        "moonstones": 80
+      }
+    }
+  ],
+  "dailyTaskPoints": 100,
+  "weeklyChallengePoints": 400,
+  "dailyTasks": [
+    {
+      "id": "collect_acorns",
+      "text": "Collect {n} Coins",
+      "stat": "collectedAcorns",
+      "base": 2000,
+      "perHall": 3000,
+      "ofDailyProduction": 0.25
+    },
+    {
+      "id": "collect_dew",
+      "text": "Collect {n} Provisions",
+      "stat": "collectedDew",
+      "base": 2000,
+      "perHall": 3000,
+      "ofDailyProduction": 0.25
+    },
+    {
+      "id": "finish_upgrades",
+      "text": "Finish {n} upgrades",
+      "stat": "timedUpgradesDone",
+      "base": 2,
+      "perHall": 0
+    },
+    {
+      "id": "train_troops",
+      "text": "Train {n} warriors",
+      "stat": "troopsTrained",
+      "base": 15,
+      "perHall": 5
+    },
+    {
+      "id": "win_raids",
+      "text": "Win {n} raids",
+      "stat": "raidsWon",
+      "base": 2,
+      "perHall": 0,
+      "adaptive": 4
+    },
+    {
+      "id": "earn_stars",
+      "text": "Earn {n} stars in raids",
+      "stat": "starsEarned",
+      "base": 3,
+      "perHall": 0,
+      "adaptive": 4
+    },
+    {
+      "id": "raid_destruction",
+      "text": "Destroy {n}% in raids (added up)",
+      "stat": "raidDestruction",
+      "base": 120,
+      "perHall": 0
+    },
+    {
+      "id": "finish_research",
+      "text": "Finish {n} research",
+      "stat": "researchDone",
+      "base": 1,
+      "perHall": 0
+    }
+  ],
+  "weeklyChallenges": [
+    {
+      "id": "w_win_raids",
+      "text": "Win {n} raids this week",
+      "stat": "raidsWon",
+      "base": 12,
+      "perHall": 0,
+      "adaptive": 20
+    },
+    {
+      "id": "w_stars",
+      "text": "Earn {n} stars this week",
+      "stat": "starsEarned",
+      "base": 25,
+      "perHall": 0,
+      "adaptive": 20
+    },
+    {
+      "id": "w_upgrades",
+      "text": "Finish {n} upgrades this week",
+      "stat": "timedUpgradesDone",
+      "base": 10,
+      "perHall": 0
+    },
+    {
+      "id": "w_clear",
+      "text": "Clear {n} obstacles this week",
+      "stat": "obstaclesCleared",
+      "base": 3,
+      "perHall": 0
+    },
+    {
+      "id": "w_research",
+      "text": "Finish {n} research this week",
+      "stat": "researchDone",
+      "base": 4,
+      "perHall": 0
+    },
+    {
+      "id": "w_destruction",
+      "text": "Destroy {n}% in raids this week (added up)",
+      "stat": "raidDestruction",
+      "base": 800,
+      "perHall": 0
+    },
+    {
+      "id": "w_trials",
+      "text": "Clear {n} new Shadow Trial tiers this week",
+      "stat": "trialsCleared",
+      "base": 2,
+      "perHall": 0
+    }
+  ],
+  "weeklyCount": 3
+}
