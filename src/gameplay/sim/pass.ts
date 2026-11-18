@@ -303,5 +303,9 @@ export function rollPeriods(state: VillageState, now: number, data: GameData): v
     state.tasks.weekTargets = chooseTargets(data.pass.weeklyChallenges, state.tasks.weekIds, state, data);
   }
   const season = passSeason(now, data);
-  if (season > state.pass.season) state.pass = { season, points: 0, premium: false, claimedFree: [], claimedPremium: [] };
+  if (season > state.pass.season) {
+    // P1-01: the record of what the rollover granted from the season that ended stays for the welcome back.
+    const last = state.pass.lastSeason;
+    state.pass = { season, points: 0, premium: false, claimedFree: [], claimedPremium: [], ...(last ? { lastSeason: last } : {}) };
+  }
 }

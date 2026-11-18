@@ -269,5 +269,6 @@
   "jade.aboutRange": { "en": "about {low}–{high}", "text": "約 {low}–{high}" },
   "replays.allowBase.label": { "en": "Allow my base in other players' shared replays", "text": "允許其他玩家分享的重播中出現我的基地" },
   "replays.allowBase.detail": { "en": "When someone shares a replay of a raid on your village, it shows your base layout (never your name). Turn this off and your base is never shown, and shares already made of it are removed.", "text": "當有人分享襲擊你村莊的重播時，會顯示你的基地配置（絕不顯示你的名字）。關閉後，你的基地將不會再出現，已分享的相關重播也會被刪除。" },
-  "significantUpdate.description": { "en": "This update changes how Kagemura works. A parent or guardian can review it before it is used.", "text": "此更新改變了 Kagemura 的運作方式。家長或監護人可以在使用前檢視。" }
+  "significantUpdate.description": { "en": "This update changes how Kagemura works. A parent or guardian can review it before it is used.", "text": "此更新改變了 Kagemura 的運作方式。家長或監護人可以在使用前檢視。" },
+  "welcome.scrollEnded": { "en": "The Season Scroll ended, and the rewards you had not claimed were added:", "text": "" }
 }

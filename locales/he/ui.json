@@ -269,5 +269,6 @@
   "jade.aboutRange": { "en": "about {low}–{high}", "text": "בערך {low}–{high}" },
   "replays.allowBase.label": { "en": "Allow my base in other players' shared replays", "text": "לאפשר את הבסיס שלי בשידורים חוזרים ששחקנים אחרים משתפים" },
   "replays.allowBase.detail": { "en": "When someone shares a replay of a raid on your village, it shows your base layout (never your name). Turn this off and your base is never shown, and shares already made of it are removed.", "text": "כשמישהו משתף שידור חוזר של פשיטה על הכפר שלך, הוא מציג את מבנה הבסיס שלך (אף פעם לא את השם שלך). כבו את זה והבסיס שלך לעולם לא יוצג, ושיתופים שכבר נעשו שלו יוסרו." },
-  "significantUpdate.description": { "en": "This update changes how Kagemura works. A parent or guardian can review it before it is used.", "text": "העדכון הזה משנה את אופן הפעולה של Kagemura. הורה או אפוטרופוס יכולים לבדוק אותו לפני שמשתמשים בו." }
+  "significantUpdate.description": { "en": "This update changes how Kagemura works. A parent or guardian can review it before it is used.", "text": "העדכון הזה משנה את אופן הפעולה של Kagemura. הורה או אפוטרופוס יכולים לבדוק אותו לפני שמשתמשים בו." },
+  "welcome.scrollEnded": { "en": "The Season Scroll ended, and the rewards you had not claimed were added:", "text": "" }
 }

@@ -269,5 +269,6 @@
   "jade.aboutRange": { "en": "about {low}–{high}", "text": "kira-kira {low}–{high}" },
   "replays.allowBase.label": { "en": "Allow my base in other players' shared replays", "text": "Benarkan pangkalan aku dalam ulang tayang dikongsi pemain lain" },
   "replays.allowBase.detail": { "en": "When someone shares a replay of a raid on your village, it shows your base layout (never your name). Turn this off and your base is never shown, and shares already made of it are removed.", "text": "Apabila seseorang berkongsi ulang tayang serbuan ke atas kampung kamu, ia menunjukkan susun atur pangkalan kamu (tidak sekali-kali nama kamu). Matikan ini dan pangkalan kamu tidak akan ditunjukkan, dan perkongsian sedia ada yang memaparkannya akan dibuang." },
-  "significantUpdate.description": { "en": "This update changes how Kagemura works. A parent or guardian can review it before it is used.", "text": "Kemas kini ini mengubah cara Kagemura berfungsi. Ibu bapa atau penjaga boleh menyemaknya sebelum ia digunakan." }
+  "significantUpdate.description": { "en": "This update changes how Kagemura works. A parent or guardian can review it before it is used.", "text": "Kemas kini ini mengubah cara Kagemura berfungsi. Ibu bapa atau penjaga boleh menyemaknya sebelum ia digunakan." },
+  "welcome.scrollEnded": { "en": "The Season Scroll ended, and the rewards you had not claimed were added:", "text": "" }
 }

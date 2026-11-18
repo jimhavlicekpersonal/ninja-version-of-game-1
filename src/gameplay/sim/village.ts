@@ -363,6 +363,10 @@ export function advance(state: VillageState, now: number, data: GameData): { sta
         b.upgrade = null;
         // Tasks count finished upgrades only, so start-and-cancel earns nothing.
         next.stats.upgradesDone++;
+        // P1-08: upgrades that took a builder's time (an instant wall level is not one).
+        if (u.endsAt > u.startedAt) next.stats.timedUpgradesDone = (next.stats.timedUpgradesDone ?? 0) + 1;
+        // P1-21: when the Keep reached this level (a Bounty attack begun before it may use the Keep below).
+        if (buildingDef(data, b.type).category === 'hall') next.keepReachedAt = u.endsAt;
       } });
     }
   }
@@ -376,16 +380,49 @@ export function advance(state: VillageState, now: number, data: GameData): { sta
   timeline.sort((a, b) => a.at - b.at || a.seq - b.seq);
   for (const e of timeline) {
     settleSeasons(next, e.at, data);
+    claimSeasonLeftovers(next, e.at, data);
     rollPeriods(next, e.at, data);
     e.run();
   }
   if (cleared.size) next.buildings = next.buildings.filter((b) => !cleared.has(b.id));
   finished.sort((a, b) => a.at - b.at);
   settleSeasons(next, now, data);
+  claimSeasonLeftovers(next, now, data);
   rollPeriods(next, now, data);
   advanceGrove(next, now, data);
   settleRaids(next, now, hallLevel(next, data), data);
   return { state: next, finished };
+}
+
+/**
+ * Retention audit RET-03 / ECO-02 (P1-01): a Season Scroll that ends grants every unlocked tier not claimed yet,
+ * free ones always and premium ones while the Scroll was owned, through the same claim as the button (premium
+ * grants are recorded on the purchase, so a refund still takes them back). What was granted and what did not fit
+ * is kept in `pass.lastSeason` for the welcome-back summary. It used to vanish: the one place the game took
+ * something for a missed day. Mutates.
+ */
+function claimSeasonLeftovers(s: VillageState, at: number, data: GameData): void {
+  if (passSeason(at, data) <= s.pass.season) return;
+  const granted: Cost = {};
+  const overflow: Cost = {};
+  const top = unlockedTier(s, data);
+  let any = false;
+  for (const def of data.pass.tiers) {
+    if (def.tier > top) continue;
+    for (const track of ['free', 'premium'] as const) {
+      if (track === 'premium' && !s.pass.premium) continue;
+      if ((track === 'free' ? s.pass.claimedFree : s.pass.claimedPremium).includes(def.tier)) continue;
+      const r = claimTier(s, def.tier, track, data);
+      if (!r.ok) continue;
+      any = true;
+      for (const e of r.events) {
+        if (e.kind !== 'reward') continue;
+        for (const [k, v] of Object.entries(e.grants) as [ResourceKind, number][]) if (v > 0) granted[k] = (granted[k] ?? 0) + v;
+        for (const [k, v] of Object.entries(e.overflow ?? {}) as [ResourceKind, number][]) if (v > 0) overflow[k] = (overflow[k] ?? 0) + v;
+      }
+    }
+  }
+  if (any) s.pass.lastSeason = { season: s.pass.season, granted, overflow };
 }
 
 /** How many settled league seasons the village remembers (for the welcome-back summary and the Ranks screen). */
@@ -2040,8 +2077,10 @@ function bountyEnd(s: VillageState, key: string, rec: Omit<BattleRecord, 'result
   if (stored && stored.start > ev.start) return fail('NOT_AVAILABLE', 'The Bounty Hunt is not running.');
   const keep = hallLevel(s, data);
   // The Keep the attack began with: the current one, or one below if a Keep upgrade finished mid-battle.
-  const asked = rec.setup.base?.hallLevel;
-  const baseKeep = asked === keep - 1 ? asked : keep;
+  // XPL-13 (P1-21): only then. The record must have begun before the Keep reached its level (save v24); the
+  // easier fortress of the Keep below used to be the client's choice.
+  const asked = rec.setup?.base?.hallLevel;
+  const baseKeep = asked === keep - 1 && s.keepReachedAt !== undefined && at < s.keepReachedAt ? asked : keep;
   const clean = sanitizeBattleSetup(s, { ...rec.setup, base: bountyBase(s.seed, key, baseKeep, ev.goal, data) }, data);
   if ('error' in clean) return fail('INVALID_BATTLE', clean.error);
   const setup = clean.setup;

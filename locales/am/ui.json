@@ -269,5 +269,6 @@
   "jade.aboutRange": { "en": "about {low}–{high}", "text": "ወደ {low}–{high} ገደማ" },
   "replays.allowBase.label": { "en": "Allow my base in other players' shared replays", "text": "መንደሬ በሌሎች ተጫዋቾች በሚጋሩ ድጋሚዎች ውስጥ ይታይ" },
   "replays.allowBase.detail": { "en": "When someone shares a replay of a raid on your village, it shows your base layout (never your name). Turn this off and your base is never shown, and shares already made of it are removed.", "text": "አንድ ሰው በመንደርዎ ላይ የተደረገ ወረራ ድጋሚን ሲያጋራ፣ የመንደርዎን አቀማመጥ ያሳያል (ስምዎን ፈጽሞ አያሳይም)። ይህን ካጠፉት መንደርዎ ፈጽሞ አይታይም፣ አስቀድሞ የተደረጉ ማጋራቶቹም ይወገዳሉ።" },
-  "significantUpdate.description": { "en": "This update changes how Kagemura works. A parent or guardian can review it before it is used.", "text": "ይህ ዝማኔ Kagemura የሚሠራበትን መንገድ ይቀይራል። ወላጅ ወይም አሳዳጊ ጥቅም ላይ ከመዋሉ በፊት ሊገመግሙት ይችላሉ።" }
+  "significantUpdate.description": { "en": "This update changes how Kagemura works. A parent or guardian can review it before it is used.", "text": "ይህ ዝማኔ Kagemura የሚሠራበትን መንገድ ይቀይራል። ወላጅ ወይም አሳዳጊ ጥቅም ላይ ከመዋሉ በፊት ሊገመግሙት ይችላሉ።" },
+  "welcome.scrollEnded": { "en": "The Season Scroll ended, and the rewards you had not claimed were added:", "text": "" }
 }

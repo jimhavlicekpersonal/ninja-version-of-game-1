@@ -1,7 +1,7 @@
 import { buildingDef, levelDef, maxDefinedLevel } from './data';
 import { footprint, rectsOverlap } from './grid';
 import type { GameData, VillageState } from './types';
-import { RESOURCE_KINDS } from './types';
+import { RESOURCE_KINDS, STAT_KEYS } from './types';
 import { mixSeed } from './rng';
 import { scatterObstacles } from './obstacles';
 import { normalizeTemper, validTemper } from './battle/temper';
@@ -13,7 +13,7 @@ import { emptyNet } from './net';
 import { emptyDaily } from './daily';
 import type { GameData as GD } from './types';
 
-export const SAVE_VERSION = 23;
+export const SAVE_VERSION = 24;
 const EXPORT_PREFIX = 'TK1';
 
 // Values the save migrations fill in (quality Q20). They describe what each old format meant and never change.
@@ -241,10 +241,34 @@ export function migrate(raw: unknown, data?: GD): SaveFile {
     if (!v.mastery || typeof v.mastery !== 'object' || Array.isArray(v.mastery)) v.mastery = {};
     if (!v.hero || typeof v.hero !== 'object' || Array.isArray(v.hero)) v.hero = {};
   }
+  if (out.version < 24 && v && typeof v === 'object') {
+    // v23 -> v24 (the 2026-11-16 replayability pass, docs/audit/understand-2026-11-16/PROGRESS.md): the counter
+    // of timed upgrades (P1-08), the Scroll rollover's record (`pass.lastSeason`, P1-01, written when a season
+    // ends) and the time the Keep reached its level (`keepReachedAt`, P1-21, written at the next Keep upgrade).
+    // Timed upgrades start at the finished upgrades already counted, so a running weekly task is not reset.
+    const stats = v.stats as Record<string, number> | undefined;
+    if (stats && typeof stats === 'object' && stats.timedUpgradesDone === undefined) stats.timedUpgradesDone = stats.upgradesDone ?? 0;
+  }
+  repairStats(v);
   repairTrainingQueue(v);
   if (data) repairTempers(v, data);
   out.version = SAVE_VERSION;
   return out;
+}
+
+/**
+ * Every counter in `STAT_KEYS`, in the lifetime stats and both task baselines, on every load (save v24). A counter
+ * added later in the pass needs no new save step: a missing one starts at 0, and a missing baseline at the
+ * lifetime value (so a running task does not count what happened before the counter existed). Mutates.
+ */
+function repairStats(v: Record<string, unknown>): void {
+  const stats = v.stats as Record<string, number> | undefined;
+  if (!stats || typeof stats !== 'object') return;
+  const tasks = v.tasks as { dayBaseline?: Record<string, number>; weekBaseline?: Record<string, number> } | undefined;
+  for (const k of STAT_KEYS) {
+    if (!Number.isFinite(stats[k])) stats[k] = 0;
+    for (const b of [tasks?.dayBaseline, tasks?.weekBaseline]) if (b && typeof b === 'object' && !Number.isFinite(b[k])) b[k] = stats[k];
+  }
 }
 
 /**

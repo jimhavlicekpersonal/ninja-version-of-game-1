@@ -269,5 +269,6 @@
   "jade.aboutRange": { "en": "about {low}–{high}", "text": "تقریباً {low}–{high}" },
   "replays.allowBase.label": { "en": "Allow my base in other players' shared replays", "text": "دوسرے کھلاڑیوں کے شیئر کیے گئے ری پلے میں میرے اڈے کی اجازت دیں" },
   "replays.allowBase.detail": { "en": "When someone shares a replay of a raid on your village, it shows your base layout (never your name). Turn this off and your base is never shown, and shares already made of it are removed.", "text": "جب کوئی آپ کے گاؤں پر دھاوے کا ری پلے شیئر کرتا ہے تو اس میں آپ کے اڈے کا نقشہ دکھائی دیتا ہے (آپ کا نام کبھی نہیں)۔ اسے بند کریں تو آپ کا اڈہ کبھی نہیں دکھایا جائے گا، اور اس کے پہلے سے بنے ہوئے شیئر ہٹا دیے جائیں گے۔" },
-  "significantUpdate.description": { "en": "This update changes how Kagemura works. A parent or guardian can review it before it is used.", "text": "یہ اپ ڈیٹ Kagemura کے کام کرنے کا طریقہ بدلتی ہے۔ والدین یا سرپرست استعمال سے پہلے اس کا جائزہ لے سکتے ہیں۔" }
+  "significantUpdate.description": { "en": "This update changes how Kagemura works. A parent or guardian can review it before it is used.", "text": "یہ اپ ڈیٹ Kagemura کے کام کرنے کا طریقہ بدلتی ہے۔ والدین یا سرپرست استعمال سے پہلے اس کا جائزہ لے سکتے ہیں۔" },
+  "welcome.scrollEnded": { "en": "The Season Scroll ended, and the rewards you had not claimed were added:", "text": "" }
 }

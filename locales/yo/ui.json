@@ -269,5 +269,6 @@
   "jade.aboutRange": { "en": "about {low}–{high}", "text": "nǹkan bí {low}–{high}" },
   "replays.allowBase.label": { "en": "Allow my base in other players' shared replays", "text": "Gba ibùdó mi láàyè nínú àtúnwò tí àwọn òṣèré mìíràn pín" },
   "replays.allowBase.detail": { "en": "When someone shares a replay of a raid on your village, it shows your base layout (never your name). Turn this off and your base is never shown, and shares already made of it are removed.", "text": "Nígbà tí ẹnìkan bá pín àtúnwò ìgbógunti sí abúlé rẹ, ó ń fi ìtò ibùdó rẹ hàn (kì í ṣe orúkọ rẹ láé). Pa èyí, a kò sì ní fi ibùdó rẹ hàn láé, a ó sì yọ àwọn àtúnwò tí a ti pín tí ó fi í hàn kúrò." },
-  "significantUpdate.description": { "en": "This update changes how Kagemura works. A parent or guardian can review it before it is used.", "text": "Àtúnṣe yìí ń yí bí Kagemura ṣe ń ṣiṣẹ́ padà. Òbí tàbí alágbàtọ́ lè ṣàyẹ̀wò rẹ̀ kí a tó lò ó." }
+  "significantUpdate.description": { "en": "This update changes how Kagemura works. A parent or guardian can review it before it is used.", "text": "Àtúnṣe yìí ń yí bí Kagemura ṣe ń ṣiṣẹ́ padà. Òbí tàbí alágbàtọ́ lè ṣàyẹ̀wò rẹ̀ kí a tó lò ó." },
+  "welcome.scrollEnded": { "en": "The Season Scroll ended, and the rewards you had not claimed were added:", "text": "" }
 }

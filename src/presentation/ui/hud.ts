@@ -2069,6 +2069,10 @@ export class Hud {
     for (const sr of s.seasons) {
       list.append(h('li', {}, i18nText("ui.the_season_ended_your_chest_b601d5ff95", { arg1: localizedData(this.c.data).ranks.leagues.find((l) => l.id === sr.league)?.name ?? sr.league }), costChips(sr.chest), sr.overflow ? h('span', { class: 'muted small' }, i18nText("ui.did_not_fit_in_storage_2fd00242ff"), costChips(sr.overflow), ')') : null));
     }
+    if (s.scroll) {
+      const sc = s.scroll;
+      list.append(h('li', {}, t('welcome.scrollEnded'), ' ', costChips(sc.granted), Object.values(sc.overflow).some((v) => Number(v) > 0) ? h('span', { class: 'muted small' }, ' ', i18nText("ui.did_not_fit_in_storage_2fd00242ff"), costChips(sc.overflow), ')') : null));
+    }
     if (!list.childElementCount) list.append(h('li', {}, i18nText("ui.all_quiet_in_the_village_330fd36258")));
     body.append(list);
     if (s.raids.length) {

@@ -269,5 +269,6 @@
   "jade.aboutRange": "about {low}–{high}",
   "replays.allowBase.label": "Allow my base in other players' shared replays",
   "replays.allowBase.detail": "When someone shares a replay of a raid on your village, it shows your base layout (never your name). Turn this off and your base is never shown, and shares already made of it are removed.",
-  "significantUpdate.description": "This update changes how Kagemura works. A parent or guardian can review it before it is used."
+  "significantUpdate.description": "This update changes how Kagemura works. A parent or guardian can review it before it is used.",
+  "welcome.scrollEnded": "The Season Scroll ended, and the rewards you had not claimed were added:"
 }

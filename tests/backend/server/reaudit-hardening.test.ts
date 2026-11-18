@@ -11,7 +11,7 @@ import { brotliDecompressSync, gunzipSync } from 'node:zlib';
 import { describe, expect, it, onTestFinished } from 'vitest';
 import { buildServer, pickEncoding, type ServerOptions } from '../../../server/app';
 import { checkConfig, parseAdminTokens, parseTrustProxy, pgPoolSettings, pgTls } from '../../../server/config';
-import { MAX_BACKDATE_MS, MAX_COMMAND_BYTES, MAX_TIMER_BACKDATE_MS } from '../../../server/core/village';
+import { MAX_COMMAND_BYTES, MAX_TIMER_BACKDATE_MS } from '../../../server/core/village';
 import { BATTLE_COMMANDS_PER_MINUTE, DEFAULT_RATE_LIMITS, ipAllowList, ipKey, MemoryRateLimiter, type RateLimiter } from '../../../server/rateLimit';
 import { RedisClient, type RedisCommander } from '../../../server/redis';
 import { MemoryRepo, type Player } from '../../../server/repo';

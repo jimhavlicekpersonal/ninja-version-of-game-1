@@ -4,11 +4,11 @@
   "measured": {
     "en": {
       "ready": true,
-      "strings": 3059,
-      "installedUtf8": 232397,
-      "gzip": 74952,
-      "brotli": 61367,
-      "zipDeflatePayload": 74934,
+      "strings": 3060,
+      "installedUtf8": 232494,
+      "gzip": 74992,
+      "brotli": 61414,
+      "zipDeflatePayload": 74974,
       "namespaces": {
         "boot": {
           "total": 17,
@@ -27,13 +27,13 @@
           "translated": 335
         },
         "ui": {
-          "total": 271,
-          "translated": 271
+          "total": 272,
+          "translated": 272
         }
       }
     },
     "es": {
-      "ready": true,
+      "ready": false,
       "strings": 3059,
       "installedUtf8": 256150,
       "gzip": 82375,
@@ -57,105 +57,13 @@
           "translated": 335
         },
         "ui": {
-          "total": 271,
+          "total": 272,
           "translated": 271
         }
-      },
-      "packagedAssets": {
-        "files": [
-          {
-            "path": "public/lang/es-c4532c8c3ffe76d3.json",
-            "installedUtf8": 256150,
-            "gzip": 82375,
-            "brotli": 67941,
-            "deflate": 82357
-          },
-          {
-            "path": "public/es/community.html",
-            "installedUtf8": 4607,
-            "gzip": 2061,
-            "brotli": 1725,
-            "deflate": 2043
-          },
-          {
-            "path": "public/es/manifest.webmanifest",
-            "installedUtf8": 1945,
-            "gzip": 516,
-            "brotli": 449,
-            "deflate": 498
-          },
-          {
-            "path": "public/es/privacy.html",
-            "installedUtf8": 20014,
-            "gzip": 7113,
-            "brotli": 6116,
-            "deflate": 7095
-          },
-          {
-            "path": "public/es/shikin-kessai.html",
-            "installedUtf8": 3420,
-            "gzip": 1247,
-            "brotli": 983,
-            "deflate": 1229
-          },
-          {
-            "path": "public/es/support.html",
-            "installedUtf8": 6321,
-            "gzip": 2566,
-            "brotli": 2143,
-            "deflate": 2548
-          },
-          {
-            "path": "public/es/terms.html",
-            "installedUtf8": 10314,
-            "gzip": 3995,
-            "brotli": 3382,
-            "deflate": 3977
-          },
-          {
-            "path": "public/es/tokushoho.html",
-            "installedUtf8": 3960,
-            "gzip": 1352,
-            "brotli": 1052,
-            "deflate": 1334
-          },
-          {
-            "path": "ios/App/App/es.lproj/InfoPlist.strings",
-            "installedUtf8": 196,
-            "gzip": 171,
-            "brotli": 129,
-            "deflate": 153
-          },
-          {
-            "path": "android/app/src/main/res/values-es/strings.xml",
-            "installedUtf8": 167,
-            "gzip": 131,
-            "brotli": 84,
-            "deflate": 113
-          },
-          {
-            "path": "android/app/src/main/res/xml/locales_config.xml",
-            "installedUtf8": 1794,
-            "gzip": 288,
-            "brotli": 213,
-            "deflate": 270
-          }
-        ],
-        "installedUtf8": 308888,
-        "gzipSum": 101815,
-        "brotliSum": 84217,
-        "zipArchive": 103149,
-        "extraFontBytes": 0,
-        "excludes": [
-          "Shared English fallback and localization code (measured in built JS separately)",
-          "Server-only deletion HTML and translated store listing/product copy",
-          "Filesystem allocation, browser caches, app-store binary signing and packaging overhead"
-        ]
-      },
-      "serverDeletionPageUtf8": 6786
+      }
     },
     "pt": {
-      "ready": true,
+      "ready": false,
       "strings": 3059,
       "installedUtf8": 253160,
       "gzip": 81668,
@@ -179,13 +87,13 @@
           "translated": 335
         },
         "ui": {
-          "total": 271,
+          "total": 272,
           "translated": 271
         }
       }
     },
     "fr": {
-      "ready": true,
+      "ready": false,
       "strings": 3059,
       "installedUtf8": 261330,
       "gzip": 83601,
@@ -209,13 +117,13 @@
           "translated": 335
         },
         "ui": {
-          "total": 271,
+          "total": 272,
           "translated": 271
         }
       }
     },
     "de": {
-      "ready": true,
+      "ready": false,
       "strings": 3059,
       "installedUtf8": 256127,
       "gzip": 83708,
@@ -239,13 +147,13 @@
           "translated": 335
         },
         "ui": {
-          "total": 271,
+          "total": 272,
           "translated": 271
         }
       }
     },
     "ar": {
-      "ready": true,
+      "ready": false,
       "strings": 3059,
       "installedUtf8": 312066,
       "gzip": 88522,
@@ -269,13 +177,13 @@
           "translated": 335
         },
         "ui": {
-          "total": 271,
+          "total": 272,
           "translated": 271
         }
       }
     },
     "zh-Hans": {
-      "ready": true,
+      "ready": false,
       "strings": 3059,
       "installedUtf8": 232058,
       "gzip": 84126,
@@ -299,13 +207,13 @@
           "translated": 335
         },
         "ui": {
-          "total": 271,
+          "total": 272,
           "translated": 271
         }
       }
     },
     "zh-Hant": {
-      "ready": true,
+      "ready": false,
       "strings": 3059,
       "installedUtf8": 230521,
       "gzip": 83468,
@@ -329,13 +237,13 @@
           "translated": 335
         },
         "ui": {
-          "total": 271,
+          "total": 272,
           "translated": 271
         }
       }
     },
     "ja": {
-      "ready": true,
+      "ready": false,
       "strings": 3059,
       "installedUtf8": 278611,
       "gzip": 86034,
@@ -359,13 +267,13 @@
           "translated": 335
         },
         "ui": {
-          "total": 271,
+          "total": 272,
           "translated": 271
         }
       }
     },
     "ko": {
-      "ready": true,
+      "ready": false,
       "strings": 3059,
       "installedUtf8": 260254,
       "gzip": 83541,
@@ -389,13 +297,13 @@
           "translated": 335
         },
         "ui": {
-          "total": 271,
+          "total": 272,
           "translated": 271
         }
       }
     },
     "id": {
-      "ready": true,
+      "ready": false,
       "strings": 3059,
       "installedUtf8": 244594,
       "gzip": 77351,
@@ -419,13 +327,13 @@
           "translated": 335
         },
         "ui": {
-          "total": 271,
+          "total": 272,
           "translated": 271
         }
       }
     },
     "ru": {
-      "ready": true,
+      "ready": false,
       "strings": 3059,
       "installedUtf8": 341687,
       "gzip": 94927,
@@ -449,13 +357,13 @@
           "translated": 335
         },
         "ui": {
-          "total": 271,
+          "total": 272,
           "translated": 271
         }
       }
     },
     "hi": {
-      "ready": true,
+      "ready": false,
       "strings": 3059,
       "installedUtf8": 415986,
       "gzip": 93535,
@@ -479,13 +387,13 @@
           "translated": 335
         },
         "ui": {
-          "total": 271,
+          "total": 272,
           "translated": 271
         }
       }
     },
     "tr": {
-      "ready": true,
+      "ready": false,
       "strings": 3059,
       "installedUtf8": 249375,
       "gzip": 80809,
@@ -509,13 +417,13 @@
           "translated": 335
         },
         "ui": {
-          "total": 271,
+          "total": 272,
           "translated": 271
         }
       }
     },
     "vi": {
-      "ready": true,
+      "ready": false,
       "strings": 3059,
       "installedUtf8": 274860,
       "gzip": 82225,
@@ -539,13 +447,13 @@
           "translated": 335
         },
         "ui": {
-          "total": 271,
+          "total": 272,
           "translated": 271
         }
       }
     },
     "th": {
-      "ready": true,
+      "ready": false,
       "strings": 3059,
       "installedUtf8": 394690,
       "gzip": 88446,
@@ -569,13 +477,13 @@
           "translated": 335
         },
         "ui": {
-          "total": 271,
+          "total": 272,
           "translated": 271
         }
       }
     },
     "it": {
-      "ready": true,
+      "ready": false,
       "strings": 3059,
       "installedUtf8": 255960,
       "gzip": 82025,
@@ -599,13 +507,13 @@
           "translated": 335
         },
         "ui": {
-          "total": 271,
+          "total": 272,
           "translated": 271
         }
       }
     },
     "pl": {
-      "ready": true,
+      "ready": false,
       "strings": 3059,
       "installedUtf8": 257103,
       "gzip": 85693,
@@ -629,13 +537,13 @@
           "translated": 335
         },
         "ui": {
-          "total": 271,
+          "total": 272,
           "translated": 271
         }
       }
     },
     "uk": {
-      "ready": true,
+      "ready": false,
       "strings": 3059,
       "installedUtf8": 342836,
       "gzip": 94645,
@@ -659,13 +567,13 @@
           "translated": 335
         },
         "ui": {
-          "total": 271,
+          "total": 272,
           "translated": 271
         }
       }
     },
     "nl": {
-      "ready": true,
+      "ready": false,
       "strings": 3059,
       "installedUtf8": 247169,
       "gzip": 80677,
@@ -689,13 +597,13 @@
           "translated": 335
         },
         "ui": {
-          "total": 271,
+          "total": 272,
           "translated": 271
         }
       }
     },
     "ms": {
-      "ready": true,
+      "ready": false,
       "strings": 3059,
       "installedUtf8": 251324,
       "gzip": 78215,
@@ -719,13 +627,13 @@
           "translated": 335
         },
         "ui": {
-          "total": 271,
+          "total": 272,
           "translated": 271
         }
       }
     },
     "bn": {
-      "ready": true,
+      "ready": false,
       "strings": 3059,
       "installedUtf8": 419031,
       "gzip": 91152,
@@ -749,13 +657,13 @@
           "translated": 335
         },
         "ui": {
-          "total": 271,
+          "total": 272,
           "translated": 271
         }
       }
     },
     "ur": {
-      "ready": true,
+      "ready": false,
       "strings": 3059,
       "installedUtf8": 323982,
       "gzip": 87910,
@@ -779,13 +687,13 @@
           "translated": 335
         },
         "ui": {
-          "total": 271,
+          "total": 272,
           "translated": 271
         }
       }
     },
     "sw": {
-      "ready": true,
+      "ready": false,
       "strings": 3059,
       "installedUtf8": 250446,
       "gzip": 79952,
@@ -809,13 +717,13 @@
           "translated": 335
         },
         "ui": {
-          "total": 271,
+          "total": 272,
           "translated": 271
         }
       }
     },
     "ha": {
-      "ready": true,
+      "ready": false,
       "strings": 3059,
       "installedUtf8": 248137,
       "gzip": 78223,
@@ -839,13 +747,13 @@
           "translated": 335
         },
         "ui": {
-          "total": 271,
+          "total": 272,
           "translated": 271
         }
       }
     },
     "yo": {
-      "ready": true,
+      "ready": false,
       "strings": 3059,
       "installedUtf8": 285973,
       "gzip": 83240,
@@ -869,13 +777,13 @@
           "translated": 335
         },
         "ui": {
-          "total": 271,
+          "total": 272,
           "translated": 271
         }
       }
     },
     "am": {
-      "ready": true,
+      "ready": false,
       "strings": 3059,
       "installedUtf8": 329243,
       "gzip": 90421,
@@ -899,13 +807,13 @@
           "translated": 335
         },
         "ui": {
-          "total": 271,
+          "total": 272,
           "translated": 271
         }
       }
     },
     "zu": {
-      "ready": true,
+      "ready": false,
       "strings": 3059,
       "installedUtf8": 258264,
       "gzip": 82123,
@@ -929,13 +837,13 @@
           "translated": 335
         },
         "ui": {
-          "total": 271,
+          "total": 272,
           "translated": 271
         }
       }
     },
     "ig": {
-      "ready": true,
+      "ready": false,
       "strings": 3059,
       "installedUtf8": 261914,
       "gzip": 78135,
@@ -959,13 +867,13 @@
           "translated": 335
         },
         "ui": {
-          "total": 271,
+          "total": 272,
           "translated": 271
         }
       }
     },
     "mr": {
-      "ready": true,
+      "ready": false,
       "strings": 3059,
       "installedUtf8": 410947,
       "gzip": 92216,
@@ -989,13 +897,13 @@
           "translated": 335
         },
         "ui": {
-          "total": 271,
+          "total": 272,
           "translated": 271
         }
       }
     },
     "te": {
-      "ready": true,
+      "ready": false,
       "strings": 3059,
       "installedUtf8": 429398,
       "gzip": 93429,
@@ -1019,13 +927,13 @@
           "translated": 335
         },
         "ui": {
-          "total": 271,
+          "total": 272,
           "translated": 271
         }
       }
     },
     "ta": {
-      "ready": true,
+      "ready": false,
       "strings": 3059,
       "installedUtf8": 490890,
       "gzip": 94298,
@@ -1049,13 +957,13 @@
           "translated": 335
         },
         "ui": {
-          "total": 271,
+          "total": 272,
           "translated": 271
         }
       }
     },
     "gu": {
-      "ready": true,
+      "ready": false,
       "strings": 3059,
       "installedUtf8": 398985,
       "gzip": 91413,
@@ -1079,13 +987,13 @@
           "translated": 335
         },
         "ui": {
-          "total": 271,
+          "total": 272,
           "translated": 271
         }
       }
     },
     "kn": {
-      "ready": true,
+      "ready": false,
       "strings": 3059,
       "installedUtf8": 439005,
       "gzip": 92681,
@@ -1109,13 +1017,13 @@
           "translated": 335
         },
         "ui": {
-          "total": 271,
+          "total": 272,
           "translated": 271
         }
       }
     },
     "ml": {
-      "ready": true,
+      "ready": false,
       "strings": 3059,
       "installedUtf8": 467466,
       "gzip": 95390,
@@ -1139,13 +1047,13 @@
           "translated": 335
         },
         "ui": {
-          "total": 271,
+          "total": 272,
           "translated": 271
         }
       }
     },
     "pa": {
-      "ready": true,
+      "ready": false,
       "strings": 3059,
       "installedUtf8": 408478,
       "gzip": 92552,
@@ -1169,13 +1077,13 @@
           "translated": 335
         },
         "ui": {
-          "total": 271,
+          "total": 272,
           "translated": 271
         }
       }
     },
     "ro": {
-      "ready": true,
+      "ready": false,
       "strings": 3059,
       "installedUtf8": 258229,
       "gzip": 83348,
@@ -1199,13 +1107,13 @@
           "translated": 335
         },
         "ui": {
-          "total": 271,
+          "total": 272,
           "translated": 271
         }
       }
     },
     "cs": {
-      "ready": true,
+      "ready": false,
       "strings": 3059,
       "installedUtf8": 254000,
       "gzip": 85601,
@@ -1229,13 +1137,13 @@
           "translated": 335
         },
         "ui": {
-          "total": 271,
+          "total": 272,
           "translated": 271
         }
       }
     },
     "el": {
-      "ready": true,
+      "ready": false,
       "strings": 3059,
       "installedUtf8": 373126,
       "gzip": 98328,
@@ -1259,13 +1167,13 @@
           "translated": 335
         },
         "ui": {
-          "total": 271,
+          "total": 272,
           "translated": 271
         }
       }
     },
     "he": {
-      "ready": true,
+      "ready": false,
       "strings": 3059,
       "installedUtf8": 288990,
       "gzip": 83838,
@@ -1289,13 +1197,13 @@
           "translated": 335
         },
         "ui": {
-          "total": 271,
+          "total": 272,
           "translated": 271
         }
       }
     },
     "hu": {
-      "ready": true,
+      "ready": false,
       "strings": 3059,
       "installedUtf8": 259459,
       "gzip": 86050,
@@ -1319,13 +1227,13 @@
           "translated": 335
         },
         "ui": {
-          "total": 271,
+          "total": 272,
           "translated": 271
         }
       }
     },
     "sv": {
-      "ready": true,
+      "ready": false,
       "strings": 3059,
       "installedUtf8": 242443,
       "gzip": 79433,
@@ -1349,13 +1257,13 @@
           "translated": 335
         },
         "ui": {
-          "total": 271,
+          "total": 272,
           "translated": 271
         }
       }
     },
     "ca": {
-      "ready": true,
+      "ready": false,
       "strings": 3059,
       "installedUtf8": 256087,
       "gzip": 82390,
@@ -1379,13 +1287,13 @@
           "translated": 335
         },
         "ui": {
-          "total": 271,
+          "total": 272,
           "translated": 271
         }
       }
     },
     "hr": {
-      "ready": true,
+      "ready": false,
       "strings": 3059,
       "installedUtf8": 245474,
       "gzip": 82126,
@@ -1409,13 +1317,13 @@
           "translated": 335
         },
         "ui": {
-          "total": 271,
+          "total": 272,
           "translated": 271
         }
       }
     },
     "da": {
-      "ready": true,
+      "ready": false,
       "strings": 3059,
       "installedUtf8": 240241,
       "gzip": 78983,
@@ -1439,13 +1347,13 @@
           "translated": 335
         },
         "ui": {
-          "total": 271,
+          "total": 272,
           "translated": 271
         }
       }
     },
     "fi": {
-      "ready": true,
+      "ready": false,
       "strings": 3059,
       "installedUtf8": 249222,
       "gzip": 82060,
@@ -1469,13 +1377,13 @@
           "translated": 335
         },
         "ui": {
-          "total": 271,
+          "total": 272,
           "translated": 271
         }
       }
     },
     "nb": {
-      "ready": true,
+      "ready": false,
       "strings": 3059,
       "installedUtf8": 240915,
       "gzip": 78925,
@@ -1499,13 +1407,13 @@
           "translated": 335
         },
         "ui": {
-          "total": 271,
+          "total": 272,
           "translated": 271
         }
       }
     },
     "sk": {
-      "ready": true,
+      "ready": false,
       "strings": 3059,
       "installedUtf8": 253935,
       "gzip": 85495,
@@ -1529,13 +1437,13 @@
           "translated": 335
         },
         "ui": {
-          "total": 271,
+          "total": 272,
           "translated": 271
         }
       }
     },
     "sl": {
-      "ready": true,
+      "ready": false,
       "strings": 3059,
       "installedUtf8": 246234,
       "gzip": 82032,
@@ -1559,13 +1467,13 @@
           "translated": 335
         },
         "ui": {
-          "total": 271,
+          "total": 272,
           "translated": 271
         }
       }
     },
     "or": {
-      "ready": true,
+      "ready": false,
       "strings": 3059,
       "installedUtf8": 422266,
       "gzip": 89929,
@@ -1589,7 +1497,7 @@
           "translated": 335
         },
         "ui": {
-          "total": 271,
+          "total": 272,
           "translated": 271
         }
       }
@@ -1598,27 +1506,27 @@
   "projections": {
     "50_languages_at_1x_spanish": {
       "estimate": true,
-      "basis": "Complete Spanish client text pack, six public pages, PWA manifest and locale resources multiplied by 50 and the stated expansion factor. English is already embedded, so this intentionally overestimates 49 added packs. The other 0 target languages are not ready or measured; fonts use the existing OS fallback policy.",
-      "installedUtf8": 15444400,
-      "gzip": 5090750,
-      "brotli": 4210850,
-      "zipArchive": 5157450
+      "basis": "Complete Spanish client text pack, six public pages, PWA manifest and locale resources multiplied by 50 and the stated expansion factor. English is already embedded, so this intentionally overestimates 49 added packs. The other 49 target languages are not ready or measured; fonts use the existing OS fallback policy.",
+      "installedUtf8": 12807500,
+      "gzip": 4118750,
+      "brotli": 3397050,
+      "zipArchive": 4117850
     },
     "50_languages_at_1.5x_spanish": {
       "estimate": true,
-      "basis": "Complete Spanish client text pack, six public pages, PWA manifest and locale resources multiplied by 50 and the stated expansion factor. English is already embedded, so this intentionally overestimates 49 added packs. The other 0 target languages are not ready or measured; fonts use the existing OS fallback policy.",
-      "installedUtf8": 23166600,
-      "gzip": 7636125,
-      "brotli": 6316275,
-      "zipArchive": 7736175
+      "basis": "Complete Spanish client text pack, six public pages, PWA manifest and locale resources multiplied by 50 and the stated expansion factor. English is already embedded, so this intentionally overestimates 49 added packs. The other 49 target languages are not ready or measured; fonts use the existing OS fallback policy.",
+      "installedUtf8": 19211250,
+      "gzip": 6178125,
+      "brotli": 5095575,
+      "zipArchive": 6176775
     },
     "50_languages_at_2x_spanish": {
       "estimate": true,
-      "basis": "Complete Spanish client text pack, six public pages, PWA manifest and locale resources multiplied by 50 and the stated expansion factor. English is already embedded, so this intentionally overestimates 49 added packs. The other 0 target languages are not ready or measured; fonts use the existing OS fallback policy.",
-      "installedUtf8": 30888800,
-      "gzip": 10181500,
-      "brotli": 8421700,
-      "zipArchive": 10314900
+      "basis": "Complete Spanish client text pack, six public pages, PWA manifest and locale resources multiplied by 50 and the stated expansion factor. English is already embedded, so this intentionally overestimates 49 added packs. The other 49 target languages are not ready or measured; fonts use the existing OS fallback policy.",
+      "installedUtf8": 25615000,
+      "gzip": 8237500,
+      "brotli": 6794100,
+      "zipArchive": 8235700
     }
   },
   "decision": "Bundle every completed language in native installs; the web caches only the chosen language. No extra font is needed for Spanish.",

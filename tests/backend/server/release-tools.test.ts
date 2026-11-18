@@ -3,7 +3,7 @@
  * every game release, and the game-versions dashboard.
  */
 import { execFile } from 'node:child_process';
-import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { createServer, type Server } from 'node:http';
@@ -99,8 +99,9 @@ describe('PUB-01: the deploy check reads lang and dir separately', () => {
   it('accepts every ready language page, right-to-left ones included', async () => {
     const { pageLanguageProblem } = await import('../../../tools/release/page-language.mjs');
     const { readdirSync } = await import('node:fs');
-    const availability = JSON.parse(readFileSync('locales/availability.json', 'utf8')) as Record<string, { ready: boolean }>;
-    const ready = Object.entries(availability).filter(([code, meta]) => code !== 'en' && meta.ready).map(([code]) => code);
+    // Every language with published pages (readiness can drop inside a phase that added English text).
+    const languages = JSON.parse(readFileSync('locales/languages.json', 'utf8')).languages as { code: string }[];
+    const ready = languages.map((l) => l.code).filter((code) => code !== 'en' && existsSync(`public/${code}`));
     expect(ready.length).toBeGreaterThan(40);
     let rtlPages = 0;
     for (const code of ready) {

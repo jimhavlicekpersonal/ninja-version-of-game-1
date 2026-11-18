@@ -194,7 +194,16 @@ export interface VillageState {
    * `tierKeep[t - 1]`: the Keep level when tier `t` unlocked (save v22, balance audit CU-6). A tier's resources scale
    * by it, so claiming later, after a Keep upgrade, no longer multiplies them.
    */
-  pass: { season: number; points: number; premium: boolean; claimedFree: number[]; claimedPremium: number[]; tierKeep?: number[] };
+  /**
+   * `lastSeason` (save v24, P1-01): what the rollover granted from the season that just ended (every unlocked tier
+   * not claimed by then, premium ones while the Scroll was owned), for the welcome-back summary.
+   */
+  pass: { season: number; points: number; premium: boolean; claimedFree: number[]; claimedPremium: number[]; tierKeep?: number[]; lastSeason?: { season: number; granted: Cost; overflow: Cost } };
+  /**
+   * Save v24 (P1-21): when the Clan Keep reached its current level. A Bounty attack may use the fortress of the Keep
+   * below only if it began before this moment (an upgrade that finished mid-battle). Absent on older villages.
+   */
+  keepReachedAt?: number;
   /** Task periods; `dayIds`/`weekIds` are the tasks chosen when the period began (absent on older saves until the next roll). */
   tasks: { day: number; dayBaseline: Stats; dayClaimed: string[]; week: number; weekBaseline: Stats; weekClaimed: string[]; dayIds?: string[]; weekIds?: string[]; dayTargets?: Record<string, number>; weekTargets?: Record<string, number> };
   cosmetics: { owned: string[]; hallSkin: string };
@@ -363,10 +372,15 @@ export interface GroveState {
  * Lifetime counters. `upgradesDone` and `troopsTrained` count finished work
  * (cancelled timers never count), so tasks cannot be farmed by start-and-cancel.
  */
-export type StatKey = 'collectedAcorns' | 'collectedDew' | 'upgradesStarted' | 'upgradesDone' | 'troopsTrained' | 'raidsWon' | 'starsEarned' | 'obstaclesCleared' | 'moonstonesSpent' | 'donations' | 'researchDone' | 'trialsCleared' | 'defensesFaced' | 'defensesWon' | 'rematchesWon' | 'raidDestruction';
+export type StatKey = 'collectedAcorns' | 'collectedDew' | 'upgradesStarted' | 'upgradesDone' | 'troopsTrained' | 'raidsWon' | 'starsEarned' | 'obstaclesCleared' | 'moonstonesSpent' | 'donations' | 'researchDone' | 'trialsCleared' | 'defensesFaced' | 'defensesWon' | 'rematchesWon' | 'raidDestruction' | 'timedUpgradesDone';
 export type Stats = Record<StatKey, number>;
-/** `defensesFaced`/`defensesWon`: raids against the village and the ones it held (no stars lost); `rematchesWon`: won "settle the score" rematches; `raidDestruction`: summed destruction % of settled raids (save v16). */
-export const STAT_KEYS: readonly StatKey[] = ['collectedAcorns', 'collectedDew', 'upgradesStarted', 'upgradesDone', 'troopsTrained', 'raidsWon', 'starsEarned', 'obstaclesCleared', 'moonstonesSpent', 'donations', 'researchDone', 'trialsCleared', 'defensesFaced', 'defensesWon', 'rematchesWon', 'raidDestruction'];
+/**
+ * `defensesFaced`/`defensesWon`: raids against the village and the ones it held (no stars lost); `rematchesWon`: won
+ * "settle the score" rematches; `raidDestruction`: summed destruction % of settled raids (save v16).
+ * `timedUpgradesDone` (save v24, P1-08): finished upgrades that took a builder's time (instant wall levels do not).
+ * A key added after v24 is filled on every load (`repairStats` in save.ts), so it needs no further bump.
+ */
+export const STAT_KEYS: readonly StatKey[] = ['collectedAcorns', 'collectedDew', 'upgradesStarted', 'upgradesDone', 'troopsTrained', 'raidsWon', 'starsEarned', 'obstaclesCleared', 'moonstonesSpent', 'donations', 'researchDone', 'trialsCleared', 'defensesFaced', 'defensesWon', 'rematchesWon', 'raidDestruction', 'timedUpgradesDone'];
 export function emptyStats(): Stats {
   return Object.fromEntries(STAT_KEYS.map((k) => [k, 0])) as Stats;
 }

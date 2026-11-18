@@ -166,7 +166,7 @@ describe('save v23', () => {
     const s = createNewVillage(NOW, defaultData);
     expect(s.mastery).toEqual({});
     expect(s.hero).toEqual({});
-    expect(SAVE_VERSION).toBe(23);
+    expect(SAVE_VERSION).toBe(24);
   });
 
   it('a v22 save gains both, empty, and keeps everything else', () => {
@@ -175,7 +175,7 @@ describe('save v23', () => {
     delete s.hero;
     const file = { ...serialize(s as unknown as VillageState, NOW), version: 22 };
     const out = migrate(structuredClone(file), defaultData);
-    expect(out.version).toBe(23);
+    expect(out.version).toBe(SAVE_VERSION);
     expect(out.village.mastery).toEqual({});
     expect(out.village.hero).toEqual({});
     expect({ ...out.village, mastery: undefined, hero: undefined }).toEqual({ ...file.village, mastery: undefined, hero: undefined });
