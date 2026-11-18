@@ -161,6 +161,8 @@ export class DailyUi {
           ),
         );
       }
+      // P6-14: the 28-day calendar sits above the odds table (it was at the bottom of the panel).
+      body.append(this.calendarSection(render));
       body.append(h('h3', {}, i18nText("ui.what_s_inside_exact_odds_410a56fa88")), table, h('p', { class: 'muted small' }, i18nText("ui.contents_are_sized_for_your_clan_keep__e282ce8f31", { arg1: hall, arg2: Math.max(1, step) })));
 
       const actions = h('div', { class: 'actions' });
@@ -188,7 +190,6 @@ export class DailyUi {
         actions.append(h('p', { class: 'muted' }, t('daily.next', { time: formatDuration(nextChestAt(s, now, gd) - now) })));
       }
       body.append(actions);
-      body.append(this.calendarSection(render));
     };
     render();
     this.kit.modal(i18nText("ui.daily_chest_f40fff0e7c"), body, [], 'normal');

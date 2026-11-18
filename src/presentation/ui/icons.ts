@@ -107,6 +107,15 @@ export const icons = {
       '<path d="M14.4 13.6l1.4.4M17.2 14l1.4-.4" stroke="#141a22" stroke-width="1" stroke-linecap="round"/>',
     rad('kg-hood', [[0, '#55627a'], [1, '#1f2734']]) + rad('kg-hood2', [[0, '#b0503f'], [1, '#5a1f18']]),
   ),
+  /** P6-14: the Shadow Trials' own icon (it shared the honor star): a tiered fortress tower. */
+  trials: svg(
+    `<path d="M5 9.5h14l-2.2-2.6H7.2z" fill="#a82f20" stroke="${INK}" stroke-width="1.3" stroke-linejoin="round"/>` +
+      `<path d="M6.5 14.5h11l-1.8-2.4H8.3z" fill="#a82f20" stroke="${INK}" stroke-width="1.3" stroke-linejoin="round"/>` +
+      `<rect x="8.6" y="9.5" width="6.8" height="2.6" fill="url(#kg-washi)" stroke="${INK}" stroke-width="1.2"/>` +
+      `<rect x="9.2" y="14.5" width="5.6" height="5.2" fill="url(#kg-washi)" stroke="${INK}" stroke-width="1.2"/>` +
+      `<path d="M12 3.2v3.7" stroke="${INK}" stroke-width="1.4" stroke-linecap="round"/><path d="M11 19.7v-2.6h2v2.6" fill="${INK}"/>`,
+    WASHI,
+  ),
   leaf: svg(
     `<circle cx="12" cy="12" r="8.6" fill="url(#kg-washi)" stroke="${INK}" stroke-width="1.5"/>` +
       '<path d="M12 4.6l1.7 5.1 5.3.3-4.2 3.2 1.5 5.1L12 15.3l-4.3 3 1.5-5.1-4.2-3.2 5.3-.3z" fill="url(#kg-red)" stroke="#7a1f16" stroke-width="1" stroke-linejoin="round"/>' +

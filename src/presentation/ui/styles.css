@@ -1210,3 +1210,8 @@ button.res.res-builders { border: none; font: inherit; color: inherit; cursor: p
 .res.gain { animation: res-gain .6s ease-out; }
 @keyframes res-gain { 0% { box-shadow: 0 0 0 0 rgba(255, 210, 63, .8); } 100% { box-shadow: 0 0 0 10px rgba(255, 210, 63, 0); } }
 .milestone .ceremony-card p.small { margin: 4px 0; }
+/* P6-14: a rail button's label beside it the first time it appears; the Honor pill as a button. */
+.side-rail .rail-intro { position: absolute; inset-inline-end: calc(100% + 8px); top: 50%; transform: translateY(-50%); white-space: nowrap; padding: 4px 10px; border-radius: 999px; background: rgba(20, 26, 34, .85); color: #fff; font: 700 0.8125rem var(--font); pointer-events: none; animation: fade .3s ease-out; }
+html[dir="rtl"] .side-rail .rail-intro { inset-inline-end: auto; inset-inline-start: calc(100% + 8px); }
+button.res.res-trophies { border: none; font: inherit; color: inherit; cursor: pointer; }
+.round-btn .badge.dot { min-width: 18px; }

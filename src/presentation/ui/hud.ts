@@ -87,6 +87,8 @@ export class Hud {
   private resEls = new Map<ResourceKind, { amt: HTMLElement; bar: HTMLElement; cap: HTMLElement | null }>();
   private buildersEl!: HTMLElement;
   private crewEl!: HTMLElement;
+  /** P6-14: a dot on the battle log while a settle-the-score rematch is open. */
+  private logBadge = h('span', { class: 'badge dot', hidden: true, 'aria-hidden': 'true' }, '!');
   private trophiesEl!: HTMLElement;
   private shieldEl!: HTMLElement;
   private shieldBox!: HTMLElement;
@@ -333,7 +335,8 @@ export class Hud {
     this.crewEl = h('span', { class: 'crew-badge', hidden: true, 'aria-hidden': 'true' });
     top.append(h('button', { class: 'res res-builders', type: 'button', 'data-id': 'builders', title: i18nText("ui.free_village_artisans_747cc3abe1"), 'aria-label': i18nText("ui.free_village_artisans_747cc3abe1"), onclick: () => this.openBuilders() }, icon(icons.beaver, 'res-icon'), h('div', { class: 'res-body' }, this.buildersEl), this.crewEl));
     this.trophiesEl = h('span', { class: 'res-amt' });
-    const trophyBtn = h('div', { class: 'res res-trophies', title: i18nText("ui.honor_22ea092e76"), role: 'button' }, icon(icons.leaf, 'res-icon'), h('div', { class: 'res-body' }, this.trophiesEl));
+    // P6-14: a real button with a label (it was a div with a click handler).
+    const trophyBtn = h('button', { class: 'res res-trophies', type: 'button', 'data-id': 'honor', title: i18nText("ui.honor_22ea092e76"), 'aria-label': i18nText("ui.honor_22ea092e76") }, icon(icons.leaf, 'res-icon'), h('div', { class: 'res-body' }, this.trophiesEl));
     trophyBtn.addEventListener('click', () => this.openLeague());
     top.append(trophyBtn);
     this.shieldEl = h('span', { class: 'res-amt' });
@@ -371,7 +374,7 @@ export class Hud {
         'div',
         { class: 'group' },
         h('button', { class: 'round-btn', type: 'button', 'data-id': 'settings', 'aria-label': t('hud.settings'), onclick: () => this.openSettings() }, icon(icons.gear)),
-        h('button', { class: 'round-btn', type: 'button', 'data-id': 'log', 'aria-label': t('hud.battleLog'), onclick: () => this.openLog() }, icon(icons.scroll)),
+        h('button', { class: 'round-btn', type: 'button', 'data-id': 'log', 'aria-label': t('hud.battleLog'), onclick: () => this.openLog() }, icon(icons.scroll), this.logBadge),
         h('button', { class: 'round-btn', type: 'button', 'data-id': 'army', 'aria-label': t('hud.army'), onclick: () => this.openTraining() }, icon(icons.troops), this.armyPill),
       ),
       h(
@@ -424,11 +427,44 @@ export class Hud {
       railBtn('Goals', icons.star, () => this.econ.openGoals()),
       railBtn('Alliance', icons.grove, () => void this.grove().then((g) => g?.open())),
       railBtn('Friends', icons.friends, () => void this.friendsPanel().then((f) => f?.open())),
-      railBtn('Trials', icons.leaf, () => this.openTrials()),
+      railBtn('Trials', icons.trials, () => this.openTrials()),
     );
     this.rail = rail;
     this.root.append(head, rail, this.fpsEl, this.bottomBar, this.placeBar, this.sheet, this.modalRoot);
   }
+
+  /** P6-14: once per device and button, a label beside a rail button that just appeared. */
+  private introduceRailButton(label: string, b: HTMLElement): void {
+    let seen: string[] = [];
+    try {
+      seen = JSON.parse(localStorage.getItem('tk.railSeen') ?? '[]') as string[];
+    } catch {
+      return;
+    }
+    // A village that already had the button when this shipped (the first look) learns nothing new.
+    if (!this.railIntroReady) {
+      if (!seen.includes(label)) seen.push(label);
+      try {
+        localStorage.setItem('tk.railSeen', JSON.stringify(seen));
+      } catch {
+        /* blocked */
+      }
+      return;
+    }
+    if (seen.includes(label)) return;
+    seen.push(label);
+    try {
+      localStorage.setItem('tk.railSeen', JSON.stringify(seen));
+    } catch {
+      return;
+    }
+    const tip = h('span', { class: 'rail-intro', 'aria-hidden': 'true' }, t(`rail.${label}`));
+    b.append(tip);
+    window.setTimeout(() => tip.remove(), 4500);
+  }
+
+  /** Set after the first rail update, so buttons a village already has are not introduced again. */
+  private railIntroReady = false;
 
   /** A negative balance is a refund debt, repaid from future income. */
   private explainDebt(k: ResourceKind): void {
@@ -687,7 +723,12 @@ export class Hud {
       Friends: this.deps.connection.canFriends,
       Trials: raided,
     };
-    for (const [label, b] of Object.entries(this.railBtns)) b.hidden = this.railCollapsed || !show[label];
+    for (const [label, b] of Object.entries(this.railBtns)) {
+      const wasHidden = b.hidden;
+      b.hidden = this.railCollapsed || !show[label];
+      // P6-14: the first time a rail button appears on this device, its label shows beside it for a few seconds.
+      if (wasHidden && !b.hidden && show[label]) this.introduceRailButton(label, b);
+    }
     const shown = Object.entries(show).filter(([, v]) => v).length;
     // A rail of one or two buttons needs no fold.
     this.railToggle.hidden = shown <= 2;
@@ -698,6 +739,7 @@ export class Hud {
       this.railCollapsed = false;
       this.updateRail();
     }
+    this.railIntroReady = true;
   }
 
   private toggleRail(): void {
@@ -743,7 +785,9 @@ export class Hud {
     const tasksReady = currentTasks(s, hl, gd).filter((t) => !t.claimed && t.progress >= t.target).length;
     set('Pass', tiersReady + tasksReady);
     set('Goals', achievementViews(s, hl, gd).filter((v) => v.claimable).length);
-    set('Events', 0);
+    // P6-14: Events counts the goal events with an unpaid step; the battle log the open rematches.
+    set('Events', goalEventViews(s, this.c.now(), gd).filter((v) => v.ladder.some((l) => !l.paid)).length);
+    this.logBadge.hidden = !(this.deps.onRematch && rematchable(s, this.c.now(), gd).length);
     const live = raidPhase(this.c.now(), gd);
     if (this.deps.groveSource.kind === 'online') {
       const g = this.deps.groveSource.snapshot();
