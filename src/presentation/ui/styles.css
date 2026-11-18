@@ -1217,3 +1217,5 @@ button.res.res-trophies { border: none; font: inherit; color: inherit; cursor: p
 .round-btn .badge.dot { min-width: 18px; }
 /* P6-16: an unaffordable Next stays tappable (it says why) but reads as unavailable. */
 .btn.gold.unaffordable { filter: grayscale(.7); opacity: .7; }
+/* The objective chip's arrow never shrinks (in German the two-line text squeezed it to 3-5 px). */
+.objective-chip > span[aria-hidden] { flex: none; overflow: visible; }
