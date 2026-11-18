@@ -11,7 +11,7 @@ import { askAgeBand } from './ageScreen';
 import { canPurchase, productGrantsFor, productInfo, spentThisMonth, spentTotal, storeProductId } from '../../gameplay/sim/monetization';
 import { stipendStatus } from '../../gameplay/sim/stipend';
 import type { StorePrice } from '../../backend/payments/provider';
-import { currentTasks, passBonusCount, passPremiumValue, passSaleOpen, passSeasonEndsAt, passSeasonSkin, unlockedTier } from '../../gameplay/sim/pass';
+import { currentTasks, passBonusCount, passPremiumValue, passSaleOpen, passSeasonEndsAt, passSeasonSkin, seasonName, unlockedTier } from '../../gameplay/sim/pass';
 import type { Cost, OfferRule, ResourceKind } from '../../gameplay/sim/types';
 import { RESOURCE_KINDS } from '../../gameplay/sim/types';
 import { hallLevel, passTierReward, rewardOverflow } from '../../gameplay/sim/village';
@@ -504,6 +504,7 @@ export class EconomyUi {
       const tier = unlockedTier(s, d);
       const into = s.pass.points - tier * d.pass.pointsPerTier;
       body.append(
+        seasonName(this.c.state.pass.season, d) ? h('p', {}, t('season.current', { name: seasonName(this.c.state.pass.season, d)! })) : '',
         h('p', { class: 'muted' }, i18nText("ui.season_ends_in_complete_tasks_to_earn__300938261c", { arg1: formatDuration(passSeasonEndsAt(this.c.now(), d) - this.c.now()) })),
         h('div', { class: 'progress-row' }, h('div', { class: 'progress' }, h('i', { style: `width:${tier >= d.pass.tiers.length ? 100 : (into / d.pass.pointsPerTier) * 100}%` })), h('span', {}, i18nText("ui.tier_pts_805378a19e", { arg1: tier, arg2: d.pass.tiers.length, arg3: s.pass.points }))),
       );

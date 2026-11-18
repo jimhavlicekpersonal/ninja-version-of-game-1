@@ -434,7 +434,17 @@ function claimSeasonLeftovers(s: VillageState, at: number, data: GameData): void
       }
     }
   }
-  if (any) s.pass.lastSeason = { season: s.pass.season, granted, overflow };
+  // P5-10: every rollover writes the recap (the card at the next visit), with or without leftovers.
+  void any;
+  const start = s.pass.startStats;
+  s.pass.lastSeason = {
+    season: s.pass.season,
+    granted,
+    overflow,
+    tiers: top,
+    league: leagueFor(s.trophies, data).id,
+    ...(start ? { raidsWon: Math.max(0, s.stats.raidsWon - start.raidsWon), stars: Math.max(0, s.stats.starsEarned - start.starsEarned) } : {}),
+  };
 }
 
 /** How many settled league seasons the village remembers (for the welcome-back summary and the Ranks screen). */

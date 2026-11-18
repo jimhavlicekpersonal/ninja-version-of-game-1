@@ -2,7 +2,7 @@ import type { BattleRecord } from './battle/types';
 import { simulateOfflineRaids } from './defense';
 import type { SeasonReward } from './ranks';
 import { producedResource, collectorAmount } from './resources';
-import type { Cost, GameData, ResourceKind, VillageState } from './types';
+import type { GameData, ResourceKind, VillageState } from './types';
 import { advance, type FinishedUpgrade } from './village';
 
 export interface OfflineSummary {
@@ -17,7 +17,7 @@ export interface OfflineSummary {
   /** Monthly league chests that were awarded. */
   seasons: SeasonReward[];
   /** P1-01: a Season Scroll that ended while away, with the unclaimed rewards it granted and what did not fit. */
-  scroll?: { season: number; granted: Cost; overflow: Cost };
+  scroll?: NonNullable<VillageState['pass']['lastSeason']>;
 }
 
 function waiting(state: VillageState, at: number, data: GameData): Partial<Record<ResourceKind, number>> {

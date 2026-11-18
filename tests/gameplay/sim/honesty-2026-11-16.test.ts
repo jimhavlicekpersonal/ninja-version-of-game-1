@@ -47,7 +47,8 @@ describe('RET-03 / ECO-02 (P1-01): a season that ends grants its unclaimed tiers
     }
     const jadeBefore = state.resources.moonstones;
     const after = advance(state, passSeasonEndsAt(at, data) + 1000, data).state;
-    expect(after.pass.lastSeason).toBeUndefined();
+    // P5-10 (restated): every rollover writes the season recap; with every tier claimed it grants nothing.
+    expect(after.pass.lastSeason?.granted).toEqual({});
     expect(after.resources.moonstones).toBe(jadeBefore);
   });
 

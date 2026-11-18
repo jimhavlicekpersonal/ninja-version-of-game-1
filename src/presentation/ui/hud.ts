@@ -20,10 +20,10 @@ import { replayable } from '../../gameplay/sim/battle/battle';
 import { rematchable } from '../../gameplay/sim/rematch';
 import { stipendStatus } from '../../gameplay/sim/stipend';
 import { shieldHoursFor, storageLootCap } from '../../gameplay/sim/defense';
-import { leagueChest, leagueFor, nextLeague, seasonEndsAt } from '../../gameplay/sim/ranks';
+import { leagueChest, leagueFor, nextLeague, seasonEndsAt, seasonOf } from '../../gameplay/sim/ranks';
 import { achievementViews } from '../../gameplay/sim/achievements';
 import { activeOffers } from '../../gameplay/sim/offers';
-import { currentTasks, unlockedTier } from '../../gameplay/sim/pass';
+import { currentTasks, seasonName, unlockedTier } from '../../gameplay/sim/pass';
 import { ArmyUi } from './armyUi';
 import { costChips, RES_LABEL } from './chips';
 import { refusalText } from './refusalText';
@@ -1999,6 +1999,7 @@ export class Hud {
       {},
       h('p', {}, h('b', {}, cur.name), i18nText("ui.honor_0c29c8fc2d", { arg1: s.trophies })),
       nxt ? h('p', { class: 'muted' }, i18nText("ui.more_honor_to_reach_3b60f7cad1", { arg1: nxt.min - s.trophies, arg2: nxt.name })) : h('p', { class: 'muted' }, i18nText("ui.you_are_in_the_top_league_8b390ac669")),
+      seasonName(seasonOf(this.c.now()), gd) ? h('p', {}, t('season.current', { name: seasonName(seasonOf(this.c.now()), gd)! })) : null,
       h('p', { class: 'muted' }, i18nText("ui.season_ends_in_at_the_end_of_each_mont_c60052cb71", { arg1: formatDuration(seasonEndsAt(this.c.now()) - this.c.now()), arg2: gd.ranks.seasonResetFloor })),
       // P5-08: the Keeps this clan has sealed.
       s.seals?.length ? h('p', { class: 'muted' }, t('seal.count', { list: i18nList([...s.seals].sort((a, b) => a - b).map(String)) })) : null,
@@ -2092,7 +2093,16 @@ export class Hud {
     }
     if (s.scroll) {
       const sc = s.scroll;
-      list.append(h('li', {}, t('welcome.scrollEnded'), ' ', costChips(sc.granted), Object.values(sc.overflow).some((v) => Number(v) > 0) ? h('span', { class: 'muted small' }, ' ', i18nText("ui.did_not_fit_in_storage_2fd00242ff"), costChips(sc.overflow), ')') : null));
+      const gdl = localizedData(this.c.data);
+      // P5-10: the season's recap card (its name, league, raids, stars, tiers) and a share the player starts.
+      const name = seasonName(sc.season, gdl);
+      const league = gdl.ranks.leagues.find((l) => l.id === sc.league)?.name;
+      const recap = name && league !== undefined ? t('season.recap', { name, league, raids: sc.raidsWon ?? '–', stars: sc.stars ?? '–', tiers: sc.tiers ?? 0 }) : null;
+      if (recap) {
+        const share = typeof navigator !== 'undefined' && typeof navigator.share === 'function' ? h('button', { class: 'btn ghost small-btn', type: 'button', onclick: () => void navigator.share({ text: recap }).catch(() => undefined) }, t('season.share')) : null;
+        list.append(h('li', { class: 'season-recap' }, h('b', {}, t('season.over', { name: name! })), ' ', recap, share ? ' ' : null, share));
+      }
+      if (Object.values(sc.granted).some((v) => Number(v) > 0)) list.append(h('li', {}, t('welcome.scrollEnded'), ' ', costChips(sc.granted), Object.values(sc.overflow).some((v) => Number(v) > 0) ? h('span', { class: 'muted small' }, ' ', i18nText("ui.did_not_fit_in_storage_2fd00242ff"), costChips(sc.overflow), ')') : null));
     }
     if (!list.childElementCount) list.append(h('li', {}, i18nText("ui.all_quiet_in_the_village_330fd36258")));
     body.append(list);

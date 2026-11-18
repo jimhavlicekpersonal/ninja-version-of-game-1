@@ -467,5 +467,7 @@
       "perHall": 0
     }
   ],
-  "weeklyCount": 3
+  "weeklyCount": 3,
+  "$commentSeasonNames": "P5-10 (2026-11-18): each Scroll season and each monthly league season is named from this list (season number mod 12).",
+  "seasonNames": ["Season of the Crane", "Season of the Plum Rain", "Season of the Iron Bell", "Season of the Long Night", "Season of the Red Fan", "Season of the Mountain Wind", "Season of the Silent Lake", "Season of the Paper Lantern", "Season of the Falling Leaf", "Season of the Hidden Blade", "Season of the White Pine", "Season of the Ember Moon"]
 }

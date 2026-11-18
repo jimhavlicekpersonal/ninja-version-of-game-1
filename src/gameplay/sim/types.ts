@@ -200,7 +200,18 @@ export interface VillageState {
    * `lastSeason` (save v24, P1-01): what the rollover granted from the season that just ended (every unlocked tier
    * not claimed by then, premium ones while the Scroll was owned), for the welcome-back summary.
    */
-  pass: { season: number; points: number; premium: boolean; claimedFree: number[]; claimedPremium: number[]; tierKeep?: number[]; lastSeason?: { season: number; granted: Cost; overflow: Cost } };
+  pass: {
+    season: number;
+    points: number;
+    premium: boolean;
+    claimedFree: number[];
+    claimedPremium: number[];
+    tierKeep?: number[];
+    /** P5-10: the season recap (`tiers` reached, `league` at the rollover, `raidsWon`/`stars` in the season when known). */
+    lastSeason?: { season: number; granted: Cost; overflow: Cost; tiers?: number; league?: string; raidsWon?: number; stars?: number };
+    /** P5-10 (save v24, optional): the counters as this season began, for the recap. */
+    startStats?: { raidsWon: number; starsEarned: number };
+  };
   /**
    * Save v24 (P1-21): when the Clan Keep reached its current level. A Bounty attack may use the fortress of the Keep
    * below only if it began before this moment (an upgrade that finished mid-battle). Absent on older villages.
@@ -1124,6 +1135,8 @@ export interface PassDef {
   dailyTasks: TaskTemplate[];
   weeklyChallenges: TaskTemplate[];
   weeklyCount: number;
+  /** P5-10: twelve season names; season n is `seasonNames[n mod 12]` (Scroll and league seasons alike). */
+  seasonNames?: string[];
 }
 
 export interface SkinDef {

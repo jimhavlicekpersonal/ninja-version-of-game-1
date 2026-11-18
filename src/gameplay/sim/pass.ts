@@ -48,6 +48,12 @@ export function buildTimeFactor(state: VillageState, t: number, data: GameData):
   return premiumActive(state, t, data) ? 1 - data.pass.premiumBuildSpeedBonus : 1;
 }
 
+/** P5-10: a season's name (Scroll season or monthly league season number), or null without the list. */
+export function seasonName(n: number, data: GameData): string | null {
+  const list = data.pass.seasonNames;
+  return list?.length ? list[((n % list.length) + list.length) % list.length] : null;
+}
+
 export function unlockedTier(state: VillageState, data: GameData): number {
   return Math.min(data.pass.tiers.length, Math.floor(state.pass.points / data.pass.pointsPerTier));
 }
@@ -428,6 +434,7 @@ export function rollPeriods(state: VillageState, now: number, data: GameData): v
   if (season > state.pass.season) {
     // P1-01: the record of what the rollover granted from the season that ended stays for the welcome back.
     const last = state.pass.lastSeason;
-    state.pass = { season, points: 0, premium: false, claimedFree: [], claimedPremium: [], ...(last ? { lastSeason: last } : {}) };
+    // P5-10: the counters as the season begins, for its recap at the next rollover.
+    state.pass = { season, points: 0, premium: false, claimedFree: [], claimedPremium: [], ...(last ? { lastSeason: last } : {}), startStats: { raidsWon: state.stats.raidsWon, starsEarned: state.stats.starsEarned } };
   }
 }
