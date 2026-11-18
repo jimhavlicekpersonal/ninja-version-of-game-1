@@ -128,7 +128,7 @@ describe('worldwide audit GLOBAL-002: import provenance', () => {
       // A save cannot relabel a verified low-value transaction as a Stipend,
       // or inflate the Jade grant attached to a real transaction.
       const spoofed = played();
-      spoofed.purchases.push({ id: r1.transactionId, productId: 'clan_stipend', usd: r1.usd, at: T2, grants: { moonstones: 1_000_000 }, stipend: { left: 100, lastDay: -1, jade: 1_000_000 } });
+      spoofed.purchases.push({ id: r1.transactionId, productId: 'clan_stipend', usd: r1.usd, at: T2, grants: { moonstones: 1_000_000 }, stipend: { payments: 100, jade: 1_000_000 } });
       spoofed.resources.moonstones = 20_000;
       const spoofedResult = checkProvenance(spoofed, T2, data, await w.repo.purchasesOf(buyer.id, 100));
       expect(spoofedResult.state.stipend).toMatchObject({ left: 0, jade: 0 });

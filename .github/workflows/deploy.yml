@@ -22,7 +22,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with:
-          node-version: 24
+          node-version-file: .node-version
           cache: npm
       - run: npm ci
       - run: npm run lint
@@ -32,6 +32,10 @@ jobs:
         continue-on-error: true
         run: npm audit --omit=dev --audit-level=high
       - run: npm test
+      # PUB-02 / XPL-07: the generated-base, matchmaking and bot-plan pins again with V8's optimising compilers
+      # off. A difference between the two runs is an engine fault: the server must not run on that Node.
+      - name: Determinism pins without optimising compilers
+        run: npx vitest run tests/gameplay/battle/matchmaking-pins.test.ts --execArgv=--no-turbofan --execArgv=--no-maglev
       # The model-player campaigns and the battle timing check (tests/slow.ts), outside the default suite.
       - run: npm run test:slow
       - run: npm run typecheck:server
@@ -83,11 +87,11 @@ jobs:
           fetch-depth: 0
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with:
-          node-version: 24
+          node-version-file: .node-version
           cache: npm
       - run: npm ci
       - run: npm run typecheck:server
-      - run: npx vitest run tests/backend/server tests/backend/net tests/backend/contract
+      - run: npx vitest run --maxWorkers=2 tests/backend/server tests/backend/net tests/backend/contract
       - run: npm run server:build
       # The test suites above migrate only their own throwaway schemas, so the
       # database's default schema is still empty here. The built server refuses
@@ -144,7 +148,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with:
-          node-version: 24
+          node-version-file: .node-version
       - id: deployment
         uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5
       - name: Verify the published game and language assets

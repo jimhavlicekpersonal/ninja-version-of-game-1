@@ -80,11 +80,15 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with:
-          node-version: 24
+          node-version-file: .node-version
           cache: npm
       - run: npm ci
       - run: npm run typecheck:server
-      - run: npm test
+      - run: npm test -- --maxWorkers=2
+      # PUB-02 / XPL-07: the generated-base, matchmaking and bot-plan pins again with V8's optimising compilers
+      # off. A difference between the two runs is an engine fault: the server must not run on that Node.
+      - name: Determinism pins without optimising compilers
+        run: npx vitest run tests/gameplay/battle/matchmaking-pins.test.ts --execArgv=--no-turbofan --execArgv=--no-maglev
       - run: npm run server:build
 
   image:
@@ -115,7 +119,7 @@ jobs:
           fetch-depth: 0
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with:
-          node-version: 24
+          node-version-file: .node-version
           cache: npm
       - run: npm ci
       - name: Deploy
@@ -150,7 +154,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with:
-          node-version: 24
+          node-version-file: .node-version
       - name: Deploy
         env:
           DEPLOY_HOOK: ${{ secrets.DEPLOY_HOOK }}

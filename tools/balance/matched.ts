@@ -9,7 +9,7 @@
  * career; this is the fast slice `tests/gameplay/balance/matched.test.ts` gates.
  */
 import { maxHousingAtHall } from '../../src/gameplay/sim/army';
-import { createBattle, deploymentsByTick, result as battleResult, step } from '../../src/gameplay/sim/battle/battle';
+import { createBattle, deploymentsByTick, result as battleResult, stateHash, step } from '../../src/gameplay/sim/battle/battle';
 import { defaultData } from '../../src/gameplay/sim/data';
 import { botDeployments } from '../../src/gameplay/sim/defense';
 import { botArmy, opponentFor } from '../../src/gameplay/sim/matchmaking';
@@ -88,6 +88,10 @@ export interface MatchedResult {
   destruction: number;
   opponentKeep: number;
   fights: number;
+  /** The research levels the village fought with (PUB-02: a failing row names its inputs). */
+  levels: Record<string, number>;
+  /** Each battle: its opponent's Keep, result and final state hash, so a wrong row shows where it went wrong. */
+  battles: { seed: number; opponentKeep: number; stars: number; destruction: number; hash: string }[];
 }
 
 /** A village at `keep` with `army` researched `lag` levels below the Keep's caps, honor at 0 (the power floor decides). */
@@ -108,6 +112,7 @@ export function matchedRaids(keep: number, lag: number, mix: 'bots' | 'explorer'
   let three = 0;
   let destruction = 0;
   let opp = 0;
+  const battles: MatchedResult['battles'] = [];
   for (let i = 0; i < seeds; i++) {
     const seed = 1000 + keep * 97 + i * 7919;
     const base = opponentFor(seed, state, data);
@@ -120,6 +125,7 @@ export function matchedRaids(keep: number, lag: number, mix: 'bots' | 'explorer'
     if (r.stars === 3) three++;
     destruction += r.destruction;
     opp += base.hallLevel;
+    battles.push({ seed, opponentKeep: base.hallLevel, stars: r.stars, destruction: r.destruction, hash: stateHash(sim) });
   }
-  return { keep, lag, mix, stars: stars / seeds, threeStar: three / seeds, destruction: destruction / seeds, opponentKeep: opp / seeds, fights: seeds };
+  return { keep, lag, mix, stars: stars / seeds, threeStar: three / seeds, destruction: destruction / seeds, opponentKeep: opp / seeds, fights: seeds, levels, battles };
 }

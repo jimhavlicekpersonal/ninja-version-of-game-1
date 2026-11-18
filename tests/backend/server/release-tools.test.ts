@@ -94,3 +94,40 @@ describe('report section 5 step 2: a release that did nothing says so', () => {
     expect(readFileSync('.github/workflows/android.yml', 'utf8')).toMatch(/GITHUB_STEP_SUMMARY/);
   });
 });
+
+describe('PUB-01: the deploy check reads lang and dir separately', () => {
+  it('accepts every ready language page, right-to-left ones included', async () => {
+    const { pageLanguageProblem } = await import('../../../tools/release/page-language.mjs');
+    const { readdirSync } = await import('node:fs');
+    const availability = JSON.parse(readFileSync('locales/availability.json', 'utf8')) as Record<string, { ready: boolean }>;
+    const ready = Object.entries(availability).filter(([code, meta]) => code !== 'en' && meta.ready).map(([code]) => code);
+    expect(ready.length).toBeGreaterThan(40);
+    let rtlPages = 0;
+    for (const code of ready) {
+      for (const page of readdirSync(`public/${code}`).filter((f) => f.endsWith('.html'))) {
+        const html = readFileSync(`public/${code}/${page}`, 'utf8');
+        expect(pageLanguageProblem(html, code), `${code}/${page}`).toBeNull();
+        // The old check, the exact text `<html lang="code">`, rejected every right-to-left page.
+        if (!html.includes(`<html lang="${code}">`)) rtlPages++;
+      }
+    }
+    expect(rtlPages).toBeGreaterThan(0);
+    expect(pageLanguageProblem('<html lang="ar">', 'ar')).toMatch(/right-to-left/);
+    expect(pageLanguageProblem('<html lang="de" dir="rtl">', 'de')).toMatch(/left-to-right/);
+    expect(pageLanguageProblem('<html lang="es">', 'de')).toMatch(/expected/);
+  });
+});
+
+describe('PUB-02 / XPL-07: CI, the server image and the test runs share one exact Node', () => {
+  it('every workflow reads .node-version and the Dockerfile pins the same version', async () => {
+    const { readdirSync } = await import('node:fs');
+    const version = readFileSync('.node-version', 'utf8').trim();
+    expect(version).toMatch(/^\d+\.\d+\.\d+$/);
+    expect(readFileSync('Dockerfile', 'utf8')).toContain(`node:${version}-slim@sha256:`);
+    for (const f of readdirSync('.github/workflows')) {
+      const yml = readFileSync(`.github/workflows/${f}`, 'utf8');
+      expect(yml, f).not.toMatch(/node-version:\s/);
+      if (yml.includes('setup-node')) expect(yml, f).toContain('node-version-file: .node-version');
+    }
+  });
+});

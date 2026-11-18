@@ -74,9 +74,10 @@ export function checkProvenance(s: VillageState, now: number, data: GameData, cr
   const purchaseById = new Map(credited.filter((p) => p.status === 'credited').map((p) => [`${p.store}:${p.transactionId}`, p]));
   // A transaction ID alone is not enough: all entitlements come from the
   // product and purchase time stored by the server, never from the save.
+  // The record's own product id is ignored: what it is worth comes from the server's row.
   const confirmed = state.purchases.flatMap((p) => {
     const row = purchaseById.get(p.id);
-    return row && row.productId === p.productId ? [{ record: p, row }] : [];
+    return row ? [{ record: p, row }] : [];
   });
   // A save cannot prove unclaimed consumable entitlements. Rebuild the remaining
   // Clan Stipend balance only from server-verified purchases, capped by the
@@ -88,13 +89,9 @@ export function checkProvenance(s: VillageState, now: number, data: GameData, cr
     const granted = { payments: data.store.stipend?.payments ?? 0, jade: (data.store.stipend?.payments ?? 0) * (data.store.stipend?.jadePerPayment ?? 0) };
     return { payments: sum.payments + Math.max(0, granted.payments), jade: sum.jade + Math.max(0, granted.jade) };
   }, { payments: 0, jade: 0 });
-  // Do not trust per-save payout history here. Its only safe bound is the
-  // total checked entitlement; the remaining balance itself is capped below.
-  const recordedPaid = 0;
-  const paidFromStipends = Math.min(verifiedStipend.jade, recordedPaid);
-  const payableJade = Math.max(0, verifiedStipend.jade - paidFromStipends);
+  // Per-save payout history is not trusted: the only safe bound is the total checked entitlement.
   state.stipend.left = Math.min(Math.max(0, state.stipend.left), verifiedStipend.payments);
-  state.stipend.jade = Math.min(Math.max(0, state.stipend.jade), payableJade);
+  state.stipend.jade = Math.min(Math.max(0, state.stipend.jade), verifiedStipend.jade);
   const unconfirmed = state.purchases.filter((p) => !confirmed.some((c) => c.record.id === p.id)).map((p) => p.id);
   // Grant values in the imported record are editable, so authorize only the
   // catalog value for the product the store transaction actually verified.

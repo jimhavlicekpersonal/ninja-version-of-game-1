@@ -160,5 +160,10 @@ export default defineConfig(({ command, mode }) => ({
   // (`vitest run --mode slow`) runs only those. CI runs both.
   test: mode === 'slow'
     ? { include: SLOW_TESTS, environment: 'node' }
-    : { include: ['tests/**/*.test.ts'], exclude: [...configDefaults.exclude, ...SLOW_TESTS], environment: 'node' },
+    : {
+        include: ['tests/**/*.test.ts'], exclude: [...configDefaults.exclude, ...SLOW_TESTS], environment: 'node',
+        // PUB-03: every Postgres test makes a schema and runs all migrations against one shared database;
+        // Vitest's 5 s default timed out on CI. Only the database-backed runs get the longer limit.
+        ...(process.env.TEST_DATABASE_URL ? { testTimeout: 30_000, hookTimeout: 30_000 } : {}),
+      },
 }));
