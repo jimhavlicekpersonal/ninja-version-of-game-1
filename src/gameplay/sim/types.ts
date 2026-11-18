@@ -72,6 +72,8 @@ export interface TemperAxisDef {
   splashRadius?: number;
   /** Fire interval lengthened by this share at full weight. */
   fireSlow?: number;
+  /** Rules 10 hook, not set in shipped data (P4-10, BNL-10): extra damage against a warrior class (`cls`). */
+  versus?: { cls: string; bonus: number };
 }
 
 /** What a tempered base takes off the attackers' support (`TemperDef.troopCuts`). */
@@ -588,8 +590,6 @@ export interface WarriorKit {
   chargeMultiplier?: number;
   stunTicks?: number;
   wallMultiplier?: number;
-  /** Built, not live (Rules 10): when this warrior brings a wall down, the walls within this many tiles fall with it. */
-  breachRadius?: number;
   openWalls?: boolean;
   /** 'rally' (heroes, report section 5 step 8): allies near the source deal `strength` more damage for `durationTicks` after its first hit. */
   aura?: 'heal' | 'haste' | 'veil' | 'resist' | 'splash' | 'taunt' | 'rally';
@@ -660,6 +660,13 @@ export interface SabotageDef {
 export interface BattleDef {
   /** Heroes (report section 5 step 8, SIM_RULES 5): troop-shaped, never trained, one per battle from `unlockKeep`. */
   heroes?: Record<string, TroopDef & { unlockKeep: number }>;
+  /**
+   * Rules 8/10 hooks, none set in shipped data (P4-10, BNL-10; tests/gameplay/battle/rules10-hooks.test.ts): walls' health
+   * multiplier; defenses packed together fire slower (`crowding`); each defense shot varies by up to +-`damageSpread`.
+   */
+  wallHp?: number;
+  crowding?: { radius: number; slow: number; max: number };
+  damageSpread?: number;
   warriorRules: {
     supportIntervalTicks: number;
     /** P4-01: share of its damage a support warrior in position strikes with (absent or 0: it never strikes). */
@@ -960,6 +967,8 @@ export interface RaidsDef {
   /** Lab only (`tools/balance`): model villages are laid out on a generated base; live data never sets these. */
   labAutoLayout?: boolean;
   labWalls?: boolean;
+  /** Rules 10 hook, not set in shipped data (P4-10, BNL-10): an attack carries this share of its loot by stars won. */
+  attackCarryByStars?: number[];
   /** Settle-the-score rematches against a bot raider's base (sim/rematch.ts). */
   rematch?: { windowHours: number; shareOfRaidLoot: number; /** P2-07: share of what the raid took a three-star rematch pays back (x stars/3). Absent: 0. */ recoverShare?: number };
   /**

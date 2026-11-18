@@ -2033,7 +2033,7 @@ function bankRaidLoot(s: VillageState, result: BattleResult, at: number, data: G
   const cap = capacity(s, data);
   // Rules 10 (lab): `raids.attackCarryByStars` — the same rule as on defence: you carry home a share of what you
   // broke open, by the stars you won.
-  const byStars = (data.raids as { attackCarryByStars?: number[] }).attackCarryByStars;
+  const byStars = data.raids.attackCarryByStars;
   if (byStars) carry *= byStars[result.stars] ?? 1;
   const loot = carriedLoot(result.loot, carry);
   const fromBattle = addCapped(s.resources, loot, cap);

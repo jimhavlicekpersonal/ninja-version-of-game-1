@@ -118,7 +118,7 @@ export function createBattle(setup: BattleSetup, data: GameData): BattleSim {
       def.category === 'hall' ? 'hall' : def.category === 'defense' ? 'defense' : def.category === 'hedge' ? 'hedge' : def.category === 'trap' ? 'trap' : 'other';
     // Shadow Trials scale defenses (and walls) beyond the normal level caps.
     // Rules 10 (lab): `battle.wallHp` multiplies every wall's health, so a closed wall is worth breaching.
-    const mult = kind === 'defense' || kind === 'trap' ? setup.base.power ?? 1 : kind === 'hedge' ? (setup.base.wallPower ?? 1) * ((data.battle as { wallHp?: number }).wallHp ?? 1) : 1;
+    const mult = kind === 'defense' || kind === 'trap' ? setup.base.power ?? 1 : kind === 'hedge' ? (setup.base.wallPower ?? 1) * (data.battle.wallHp ?? 1) : 1;
     const hp = mult === 1 ? ld.hp : ld.hp * mult;
     // A building being upgraded neither fires nor runs its counter effect (one downtime rule for both).
     const active = activeInBattle(bb);
@@ -153,7 +153,7 @@ export function createBattle(setup: BattleSetup, data: GameData): BattleSim {
   applyBaseWide(buildings, profile, data);
   // Rules 9 (lab): towers need room. Each other defence within `radius` tiles slows a defence's fire by `slow`
   // (up to `max`), so packing every tower round the Keep is no longer free (data: battle.crowding, absent = off).
-  const crowd = (data.battle as { crowding?: { radius: number; slow: number; max: number } }).crowding;
+  const crowd = data.battle.crowding;
   if (crowd) {
     const defs = buildings.filter((x) => x.kind === 'defense' && x.combat);
     for (const x of defs) {
@@ -710,7 +710,7 @@ function stepTraps(sim: BattleSim): void {
  * the one-shot breakpoints that make a 3% stat change swing a raid by 30 points. 0 or absent = off (no RNG drawn).
  */
 function shotSpread(sim: BattleSim): number {
-  const spread = (sim.data.battle as { damageSpread?: number }).damageSpread ?? 0;
+  const spread = sim.data.battle.damageSpread ?? 0;
   return spread > 0 ? 1 + spread * (next(sim.rng) * 2 - 1) : 1;
 }
 /** Rules 8 (lab): a tuned tower's shot does more to the class of warrior it hunts. */

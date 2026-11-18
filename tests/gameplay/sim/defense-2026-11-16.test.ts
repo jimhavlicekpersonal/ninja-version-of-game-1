@@ -16,7 +16,7 @@ import { applyCommand, createNewVillage, hallLevel, leagueBonusOf } from '../../
 import campaignJson from '../../../docs/game-theory/campaign.json';
 
 const campaign = campaignJson as { results: { id: string; byKeep: { keep: number; honor: number; stars: number; loot: number }[] }[] };
-import { data } from './helpers';
+import { data, pointDeploys } from './helpers';
 
 const NOW = Date.UTC(2026, 5, 1, 12);
 
@@ -239,5 +239,21 @@ describe('independent review 2026-11-18: Phase 2 holes', () => {
     if (!paid.ok || !unpaid.ok) return;
     expect(paid.state.defenseLog.at(-1)!.banked).toBeDefined();
     expect(unpaid.state.defenseLog.at(-1)!.banked).toBeUndefined();
+  });
+});
+
+describe('P4-10 (BNL-10): raids.attackCarryByStars (Rules 10 hook, not live)', () => {
+  it('absent carries as before; set, an attack carries its share by the stars won', () => {
+    expect(data.raids.attackCarryByStars).toBeUndefined();
+    const v0 = createNewVillage(0, data);
+    const s0: VillageState = { ...v0, army: { hedgehog_roller: 20 }, resources: { ...v0.resources, acorns: 0, dew: 0 } };
+    const base = { name: 'Dummy', hallLevel: 1, buildings: [{ id: 'h', type: 'elder_toadstool', level: 1, x: 18, y: 18, loot: { dew: 100 } }] };
+    const deployments = pointDeploys({ seed: 4, base, army: s0.army }, 'hedgehog_roller', 12);
+    const end = (d: typeof data) => applyCommand(s0, { type: 'battleEnd', record: { at: 0, opponentName: 'Dummy', setup: { seed: 4, base, army: s0.army }, deployments } }, 0, d);
+    const plain = end(data);
+    const half = end({ ...data, raids: { ...data.raids, attackCarryByStars: [0, 0.5, 0.5, 0.5] } });
+    expect(plain.ok && half.ok).toBe(true);
+    if (!plain.ok || !half.ok) return;
+    expect(half.state.resources.dew).toBe(Math.floor(plain.state.resources.dew / 2));
   });
 });
