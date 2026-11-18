@@ -129,3 +129,8 @@ Server localization build inputs: Docker copies `locales/` and `tools/i18n/`; `v
 - Statistics: the rollup watermark is commit-order safe (last gaps, migration 0042): `stats_events.txid` (the writing transaction, a column default) and `Repo.statsHorizon` (`pg_snapshot_xmin`; memory: the next insert number); `statsTouched(after, limit, before)` reads positions in (watermark, horizon). No lag window; needs PostgreSQL 13+.
 - Game: `payments/select.ts` `previewAllowed` (dev build, or `?debug&preview` with `VITE_ALLOW_PREVIEW=1`, never set by deploy.yml); `analytics/crashReports.ts` `crashReportsAllowed`.
 
+## Replayability pass 2026-11-18 (`docs/backend/REQUESTS.md` top entry; `docs/SHIPPING.md` 3m)
+
+- Deploy order: server migrations, the server (rules 8 with rules 7 archived; `drillEnd`, `claimKeepSeal`; `attackedBefore`; `AttackResponse.contractAt`; the new events, raid, matchmaking and word-list data), then the game (save v24) in the same window; `MIN_CLIENT_BUILD` to the first build of this release.
+- Still open: P2-12, raids against villages when a server is configured (design in REQUESTS). Until it ships, defense does nothing online.
+- Workflows: `content-preview.yml` (manual, off by default, artifact only), `VITE_STATS_TZ` and `VITE_PUBLIC_URL` repository variables, `ios-testflight.yml` on `macos-26` (never run yet).

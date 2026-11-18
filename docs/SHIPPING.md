@@ -292,6 +292,16 @@ A bundle is made for one build of the data: after a game release, make a new one
 - **Significant updates (C02, iOS Declared Age Range):** `SIGNIFICANT_UPDATE_BUILD=1.4.0` on the server (or `VITE_SIGNIFICANT_UPDATE_BUILD` in a build) marks the build whose changes count as significant; a minor's iPhone where Apple says the age rules apply then asks the parent or guardian once to acknowledge it (PermissionKit). The Swift side (`ios/App/App/TkAgePlugin.swift` `regulatoryFeatures`, `acknowledgeSignificantUpdate`) was written from Apple's iOS 26.2 documentation and **never compiled**: build with the iOS 26.2 SDK, check every API name, and try it on a device with a child account before relying on it.
 - **Statistics UTC offset (growth 1/3):** `public/privacy.html` and its 22 translations now describe the offset; `VITE_STATS_TZ=1` stays the owner's switch.
 
+### 3m. Releasing the replayability pass (2026-11-18, `docs/prompts/BEAST_MODE_2026-11-16.md`)
+
+One release of both sides, in this order (`docs/backend/REQUESTS.md` lists every item that rides it):
+
+1. **Rules snapshot (done):** rules 7 was archived in `server/rules/v7` before any combat change (`60fad9c`); `SIM_RULES` is 8 with `SIM_RULES_COMPATIBLE` empty, so replays recorded under older rules show as unavailable.
+2. **Server first:** run its migrations, then deploy the server built from this branch. It replays the new commands (`drillEnd`, `claimKeepSeal`), the rules-8 battles and the new data (events, contracts with `contractAt`, raid tables, word lists), and keeps the first-attack shield (`attackedBefore`). Rewrite any operator event-schedule file that names `bounty_hunt` or `raiders_moon_2` before deploying (3k).
+3. **Then the game, in the same window:** the web build, and the app builds already in review. Save version 24: a server-held village is written in the new format, so a game from before the bump that adopts it stops with "a save from a newer build" and shows "Update Kagemura"; set `MIN_CLIENT_BUILD` (and the forced-update notice) to the first build of this release.
+4. **What an older build sees:** while its rules are still served (the archive keeps rules 7), it can play; its replays and the new ones are unavailable to each other. Once `RETIRED_RULES=7` is set (step 6 of 3g), it sees "Update Kagemura". Online, defense still does nothing until P2-12 ships (no bot raids with a server).
+5. Release notes: `docs/store/RELEASE_NOTES.md` (the same text the game shows once in News).
+
 ## 4. Reminders
 
 The installed iOS/Android app schedules real local notifications when you leave the game (turn them on in Settings). The web version can only notify while the game is still open in the background.

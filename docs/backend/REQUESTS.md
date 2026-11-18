@@ -4,6 +4,12 @@ Other compartments write here instead of editing `src/backend/` or `server/` (AG
 
 ## Open
 
+- **2026-11-18 (INTEGRATION) — the replayability pass deploys together, in this order** (`docs/SHIPPING.md` 3m):
+  1. Server migrations, then the server from this branch: SIM_RULES 8 with rules 7 archived (Phase 4 entry below), the commands `drillEnd` and `claimKeepSeal`, `attackedBefore` (first-attack shield), `contractAt` and the daily contracts, the new events schedule (rewrite an operator file naming `bounty_hunt` or `raiders_moon_2`), the raid tables of Phase 2, the Next fees and matchmaking slack of Phase 4, and the word lists (P7-07). The data version changes; nothing in the protocol is removed (all additive).
+  2. The web game and the app builds (save v24), in the same window; `MIN_CLIENT_BUILD` to the first build of this release.
+  3. Later: `RETIRED_RULES=7` once few battles use it.
+  Still open and not part of this release: P2-12 (raids against villages with a server: the design below).
+
 - **2026-11-18 (P7-07, word lists):** `social.json` gains `profanityByLanguage` (ten launch languages), applied by `censorText` to every chat line and name together with `profanity`. The server censors names and chat with the same function and data: deploy the server with the game that carries it (the data version changes; nothing else does). Native review status: `docs/localization/WORD_LISTS.md`.
 
 - **2026-11-18 (INTEGRATION, Phase 5 retention, `docs/audit/understand-2026-11-16/PROGRESS.md`; no `SIM_RULES` change):** what the server replays changed; **deploy the server before the game.**
