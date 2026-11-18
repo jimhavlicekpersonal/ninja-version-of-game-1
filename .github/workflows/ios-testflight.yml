@@ -9,7 +9,9 @@ on:
 
 jobs:
   testflight:
-    runs-on: macos-15
+    # P7-06 (PUB-09): the image with Xcode 26 / the iOS 26 SDK that App Store Connect requires in 2026.
+    # This workflow has never run (no signing secrets yet): the first run is the owner's check.
+    runs-on: macos-26
     env:
       APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
       ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
@@ -64,7 +66,8 @@ jobs:
           echo "iOS SDK $sdk"
           # Apple raises the minimum upload SDK each spring (the iOS 26 SDK / Xcode 26 for 2026);
           # confirm the current rule at https://developer.apple.com/news/upcoming-requirements/.
-          if [ "${sdk%%.*}" -lt 26 ]; then echo "::warning::iOS SDK $sdk is older than 26: App Store Connect may refuse this upload. Use a runner image with Xcode 26 (e.g. runs-on: macos-26)."; fi
+          # P7-06: below the required SDK the upload would be refused, so the job stops here instead of warning.
+          if [ "${sdk%%.*}" -lt 26 ]; then echo "::error::iOS SDK $sdk is older than 26: App Store Connect refuses this upload. Use a runner image with Xcode 26."; exit 1; fi
       - name: Install the App Store Connect API key
         run: |
           mkdir -p "$RUNNER_TEMP/keys"

@@ -290,3 +290,12 @@ describe('native projects list every Capacitor plugin the game depends on (PUB-0
     }
   });
 });
+
+describe('P7-06 (PUB-09): the iPhone release runs on an image with the required SDK', () => {
+  it('runs on macos-26 and stops (not warns) below iOS SDK 26', () => {
+    const y = read('.github/workflows/ios-testflight.yml');
+    expect(y).toMatch(/runs-on: macos-26/);
+    expect(y).not.toMatch(/runs-on: macos-15/);
+    expect(y).toMatch(/::error::iOS SDK .* older than 26.*\n?.*exit 1|older than 26[^\n]*exit 1/);
+  });
+});
