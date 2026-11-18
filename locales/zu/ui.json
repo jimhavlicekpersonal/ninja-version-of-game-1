@@ -23,7 +23,7 @@
   "tutorial.end.button": { "en": "Finish", "text": "Qeda" },
   "tutorial.skip": { "en": "Skip tutorial", "text": "Yeqa isifundo" },
   "kind.practice": { "en": "Practice", "text": "Ukuzijwayeza" },
-  "whatsNew.0_1_0": { "en": "What's new: send your squad in with one order, watch the fight up close or faster, and see what another entry point would have done. Every raid on your village now has a report, and you can test your defenses. New: a four-week event calendar with festivals, a weekly Gauntlet, daily contracts, achievements, Keep seals and looks to earn.", "text": "" },
+  "whatsNew.0_1_0": { "en": "What's new: send your squad in with one order, watch the fight up close or faster, and see what another entry point would have done. Every raid on your village now has a report, and you can test your defenses. New: a four-week event calendar with festivals, a weekly Gauntlet, daily contracts, achievements, Keep seals and looks to earn.", "text": "Yini entsha: thumela iqembu lakho ngomyalo owodwa, bukela impi useduze noma ngokushesha, futhi ubone ukuthi bekuzokwenzekani ngelinye iphuzu lokungena. Manje konke ukugasela esigodini sakho kunombiko, futhi ungahlola izivikelo zakho. Okusha: ikhalenda lemicimbi lamaviki amane elinemikhosi, uMzila Wezinselelo wamasonto onke, izivumelwano zansuku zonke, izimpumelelo, izigxivizo zeNqaba nokubukeka ongakuzuza." },
   "trials.ladder": { "en": "The ladder ahead", "text": "Isitebhisi esingaphambili" },
   "trials.cleared": { "en": "Cleared: tiers 1 to {best}", "text": "Kuqediwe: amazinga 1 – {best}" },
   "milestone.keep": { "en": "Clan Keep Lv {level}!", "text": "Inqaba Yesizwe izinga {level}!" },

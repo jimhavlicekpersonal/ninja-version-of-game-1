@@ -23,7 +23,7 @@
   "tutorial.end.button": { "en": "Finish", "text": "पूरा करें" },
   "tutorial.skip": { "en": "Skip tutorial", "text": "ट्यूटोरियल छोड़ें" },
   "kind.practice": { "en": "Practice", "text": "अभ्यास" },
-  "whatsNew.0_1_0": { "en": "What's new: send your squad in with one order, watch the fight up close or faster, and see what another entry point would have done. Every raid on your village now has a report, and you can test your defenses. New: a four-week event calendar with festivals, a weekly Gauntlet, daily contracts, achievements, Keep seals and looks to earn.", "text": "" },
+  "whatsNew.0_1_0": { "en": "What's new: send your squad in with one order, watch the fight up close or faster, and see what another entry point would have done. Every raid on your village now has a report, and you can test your defenses. New: a four-week event calendar with festivals, a weekly Gauntlet, daily contracts, achievements, Keep seals and looks to earn.", "text": "नया क्या है: एक ही आदेश से अपना दस्ता भेजें, लड़ाई को क़रीब से या तेज़ रफ़्तार में देखें, और देखें कि किसी दूसरे घुसपैठ बिंदु से क्या नतीजा निकलता। अब आपके गाँव पर हर छापे की रिपोर्ट मिलती है, और आप अपनी रक्षा परख सकते हैं। नया: उत्सवों के साथ चार हफ़्ते का आयोजन कैलेंडर, हर हफ़्ते की अग्निपरीक्षा, रोज़ाना अनुबंध, उपलब्धियाँ, किले की मुहरें और कमाने के लिए नए रूप।" },
   "trials.ladder": { "en": "The ladder ahead", "text": "आगे की सीढ़ी" },
   "trials.cleared": { "en": "Cleared: tiers 1 to {best}", "text": "पार किए: पड़ाव 1 से {best}" },
   "milestone.keep": { "en": "Clan Keep Lv {level}!", "text": "कबीले का किला स्तर {level}!" },

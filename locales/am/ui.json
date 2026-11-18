@@ -23,7 +23,7 @@
   "tutorial.end.button": { "en": "Finish", "text": "ይጨርሱ" },
   "tutorial.skip": { "en": "Skip tutorial", "text": "መማሪያውን ይዝለሉ" },
   "kind.practice": { "en": "Practice", "text": "ልምምድ" },
-  "whatsNew.0_1_0": { "en": "What's new: send your squad in with one order, watch the fight up close or faster, and see what another entry point would have done. Every raid on your village now has a report, and you can test your defenses. New: a four-week event calendar with festivals, a weekly Gauntlet, daily contracts, achievements, Keep seals and looks to earn.", "text": "" },
+  "whatsNew.0_1_0": { "en": "What's new: send your squad in with one order, watch the fight up close or faster, and see what another entry point would have done. Every raid on your village now has a report, and you can test your defenses. New: a four-week event calendar with festivals, a weekly Gauntlet, daily contracts, achievements, Keep seals and looks to earn.", "text": "ምን አዲስ ነገር አለ፦ ጓድዎን በአንድ ትዕዛዝ ይላኩ፣ ውጊያውን በቅርበት ወይም በፍጥነት ይመልከቱ፣ እንዲሁም በሌላ የሰርጎ መግቢያ ነጥብ ምን ይፈጠር እንደነበር ይመልከቱ። አሁን በመንደርዎ ላይ የሚደረግ እያንዳንዱ ወረራ ሪፖርት አለው፣ መከላከያዎንም መፈተን ይችላሉ። አዲስ፦ በዓላትን የያዘ የአራት ሳምንት የዝግጅቶች የቀን መቁጠሪያ፣ ሳምንታዊ ፈታኙ ጎዳና፣ ዕለታዊ ውሎች፣ ስኬቶች፣ የምሽግ ማኅተሞችና የሚያገኟቸው ገጽታዎች።" },
   "trials.ladder": { "en": "The ladder ahead", "text": "ከፊት ያለው መሰላል" },
   "trials.cleared": { "en": "Cleared: tiers 1 to {best}", "text": "የተጠናቀቁ፦ እርከን 1 እስከ {best}" },
   "milestone.keep": { "en": "Clan Keep Lv {level}!", "text": "የጎሳ ምሽግ ደረጃ {level}!" },

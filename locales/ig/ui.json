@@ -23,7 +23,7 @@
   "tutorial.end.button": { "en": "Finish", "text": "Mechaa" },
   "tutorial.skip": { "en": "Skip tutorial", "text": "Wụfee nkuzi" },
   "kind.practice": { "en": "Practice", "text": "Mmega" },
-  "whatsNew.0_1_0": { "en": "What's new: send your squad in with one order, watch the fight up close or faster, and see what another entry point would have done. Every raid on your village now has a report, and you can test your defenses. New: a four-week event calendar with festivals, a weekly Gauntlet, daily contracts, achievements, Keep seals and looks to earn.", "text": "" },
+  "whatsNew.0_1_0": { "en": "What's new: send your squad in with one order, watch the fight up close or faster, and see what another entry point would have done. Every raid on your village now has a report, and you can test your defenses. New: a four-week event calendar with festivals, a weekly Gauntlet, daily contracts, achievements, Keep seals and looks to earn.", "text": "Ihe ọhụrụ: jiri otu iwu zipụ otu gị, lee ọgụ ahụ nso ma ọ bụ ngwa ngwa, ma hụ ihe ebe mbanye ọzọ gaara eme. Ugbu a, mwakpo ọ bụla e mere obodo gị nwere akụkọ, ị nwekwara ike ịnwale ihe nchekwa gị. Ọhụrụ: kalenda mmemme izu anọ nwere mmemme afọ, Ụzọ Ọnwụnwa kwa izu, nkwekọrịta kwa ụbọchị, ihe ịga nke ọma, akara Obi na ọdịdị ị ga-enweta." },
   "trials.ladder": { "en": "The ladder ahead", "text": "Ubube dị n'ihu" },
   "trials.cleared": { "en": "Cleared: tiers 1 to {best}", "text": "Emechaala: ọkwa 1 ruo {best}" },
   "milestone.keep": { "en": "Clan Keep Lv {level}!", "text": "Obi Agbụrụ ọkwa {level}!" },

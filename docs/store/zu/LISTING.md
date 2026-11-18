@@ -26,8 +26,15 @@ Hola isizwe se-ninja. Yakha isigodi esifihlekile ezintabeni, uqeqeshe izinhlobo 
 **Gasela ngecebo**
 
 - Amaqhawe angena kuphela ngaMaphuzu Okungena esigodi: hlola izindlela nemibhoshongo ezivikelayo.
-- Phonsa Ibhomu Lentuthu lapho amaqhawe akho engena ebangeni lombhoshongo, uthumele uMonakalisi ukuze amise isivikelo.
+- Thumela iqembu lakho ngomyalo owodwa (ndawonye, ngezimpondo noma ngomugqa; abaqinile kuqala noma ngokuphuthuma), noma ubeke iqhawe ngalinye ngesandla.
+- Phonsa Ibhomu Lentuthu lapho amaqhawe akho engena ebangeni lombhoshongo, uthumele uMonakalisi ukuze amise isivikelo. Kusukela eNqabeni Yesizwe yezinga 7, Ukaputeni Wesithunzi uqoqa iqembu lakho lonke kanye ngempi.
+- Ngemva kokugasela, bona ukuthi ibutho elifanayo belizokwenzani ngelinye iphuzu.
 - Ukuhlasela okuhlelwe kahle kunqoba ibutho elikhulu.
+
+**Vikela isigodi sakho**
+
+- Konke ukugasela esigodini sakho kuza nombiko: okugciniwe, izinkanyezi ezivinjiwe, nalapho umgaseli angene khona.
+- Hlola izivikelo zakho ngokumelene nomgaseli olingisiwe, futhi uzijwayeze ngokumelene nebutho elikunqobile.
 
 **Dlalani ndawonye** (ku-inthanethi)
 
@@ -38,7 +45,12 @@ Hola isizwe se-ninja. Yakha isigodi esifihlekile ezintabeni, uqeqeshe izinhlobo 
 
 **Izivivinyo Zesithunzi**
 
-- Uchungechunge lwezinqaba olungapheli. Izinga ngalinye likhokha kanye kuphela, futhi liba nzima kakhulu.
+- Uchungechunge lwezinqaba olungapheli. Izinga ngalinye likhokha kanye kuphela, futhi liba nzima kakhulu. Ukuzijwayeza kwansuku zonke kukuvumela ukuthi uzijwayeze ngenkathi ibutho lakho liqeqeshwa.
+
+**Okuthile okusha nsuku zonke**
+
+- Imicimbi ekhalendeni elinqunyiwe lamaviki amane, imikhosi emihlanu yonyaka enenqaba nokubukeka kweNqaba ongakuzuza, uMzila Wezinselelo wamasonto onke, nesivumelwano sansuku zonke.
+- Izimpumelelo, izigxivizo zeNqaba, izikhundla zobungcweti bamaqhawe nokubukeka okuzuza ngokudlala.
 
 **Ukudlala ngokulungile**
 
