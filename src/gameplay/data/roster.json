@@ -169,7 +169,7 @@
         "accent": "#f4ead6",
         "weapon": "needle quiver and launcher"
       },
-      "dpsScale": 0.6,
+      "dpsScale": 0.8,
       "liveTroop": "thousand_needle"
     },
     {
@@ -675,7 +675,7 @@
         "accent": "#e9b44c",
         "weapon": "bronze hand-mortar"
       },
-      "dpsScale": 0.5,
+      "dpsScale": 0.4,
       "liveTroop": "siege_bombardier"
     },
     {
@@ -693,6 +693,7 @@
         "accent": "#ff4a2a",
         "weapon": "volcanic cannon"
       },
+      "dpsScale": 1.1,
       "liveTroop": "volcano_cannoneer"
     },
     {
