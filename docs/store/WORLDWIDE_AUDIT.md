@@ -947,7 +947,9 @@ Each item was revalidated against the code first; each defect got a test that fa
 
 Free Jade: a returning Season Scroll buyer gets at most 60 Jade a season for a look they own (P1-02); nothing else in this phase pays Jade (the task bonus pays resources only). Translations: 17 strings and one listing sentence in 49 languages, machine translation by one agent per language, `npm run i18n:check` clean, then one reviewer per script group; not reviewed by native speakers.
 
-Campaign (`npm run balance:campaign`, all 13 gates pass): regular Keep 15 on day 113 (unchanged); casual Keep 15 on day 268 (was 246, a single seed; the Keep 13-14 stretch). Model-player outcomes are not observed retention or revenue.
+Campaign (`npm run balance:campaign`, after the review fixes; all 13 gates pass): regular Keep 15 on day 113 and casual Keep 15 on day 246, both unchanged from before the phase (an intermediate run gave casual 268: single-seed noise of about ±2 weeks at that Keep). Model-player outcomes are not observed retention or revenue.
+
+Checks run on the final tree of the phase: `npm test` (212 files; the only failure before the campaign re-run was the stale-campaign assertion), `npm run test:slow` (4 files, 7 tests), `npm run lint`, `npm run build`, `npm run typecheck:server`, `npm run server:build`, `npm run i18n:check` (all 50 languages pass); the Postgres and Redis suites three times locally (Phase 0). Not run: CI itself, a device, a store build, a browser playthrough; no person has played any of it.
 
 **Independent review (section 0.5 of the agent prompt), 2026-11-18.** A fresh reviewer read the diff and ran its own scripts against the committed tree. Findings and what was done:
 
