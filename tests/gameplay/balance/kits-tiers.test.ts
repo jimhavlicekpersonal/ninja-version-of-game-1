@@ -15,9 +15,13 @@ import { armyScore, kitValue } from '../../../tools/balance/kitValue';
 
 const KIT_FLOOR = 2;
 /** Kits worth under +2 at both their unlock Keep and Keep 15 (P4-01's support kits among them). */
-const KIT_KNOWN_BELOW = new Set(['bear_warrior', 'dragon_kite_armada', 'hound_handler', 'mist_weaver', 'shadow_stalker', 'bomb_carrier', 'night_blade', 'ram_crew', 'twin_fang_dancer', 'lantern_balloon', 'thunder_kite', 'void_walker', 'blowgun_hunter', 'herbalist', 'mirage_twin', 'spirit_caller', 'tiger_lord']);
+// Re-measured on the final rules-8 tree (2026-11-18, after the Phase 4 review fixes and the rules-8 balance fix): three
+// kits fell under the floor after this list was first set at 6e81fe0, all from later Phase 4 changes, and are listed with
+// the cause: drum_monk (haste 0.25 -> 0.10, P4-01/P4-08), eclipse_ninja (HP x0.9, P4-06), sage_of_clouds (support strikes
+// and the Drum's cut, P4-01). One tier pair is fixed (mist_weaver<drum_monk). Phase 4 review #5.
+const KIT_KNOWN_BELOW = new Set(['bear_warrior', 'blowgun_hunter', 'drum_monk', 'mist_weaver', 'ram_crew', 'shadow_stalker', 'spirit_caller', 'thunder_kite', 'twin_fang_dancer', 'eclipse_ninja', 'herbalist', 'lantern_balloon', 'tiger_lord', 'void_walker', 'bomb_carrier', 'dragon_kite_armada', 'hound_handler', 'mirage_twin', 'night_blade', 'sage_of_clouds']);
 /** Keep 15 scores where a newer tier is below the previous one in its role ("newer<older"). */
-const TIER_KNOWN_BELOW = new Set(['boar_rider<hawk_tamer', 'crane_glider<owl_bomber', 'blowgun_hunter<shuriken_storm', 'thousand_needle<chain_sickle_reaper', 'wall_climber<mole_digger', 'mist_weaver<drum_monk', 'oni_breaker<mountain_shield', 'night_blade<mirage_twin', 'wind_step_assassin<twin_fang_dancer', 'storm_sovereign<moonblade_master', 'ghost_engineer<fuse_master', 'bomb_carrier<fire_monk', 'volcano_cannoneer<siege_bombardier']);
+const TIER_KNOWN_BELOW = new Set(['boar_rider<hawk_tamer', 'oni_breaker<mountain_shield', 'blowgun_hunter<shuriken_storm', 'thousand_needle<chain_sickle_reaper', 'bomb_carrier<fire_monk', 'volcano_cannoneer<siege_bombardier', 'crane_glider<owl_bomber', 'night_blade<mirage_twin', 'ghost_engineer<fuse_master', 'wall_climber<mole_digger', 'wind_step_assassin<twin_fang_dancer', 'storm_sovereign<moonblade_master']);
 
 const ROLE: Record<string, string> = Object.fromEntries((roster.warriors as { role: string; liveTroop?: string }[]).filter((w) => w.liveTroop).map((w) => [w.liveTroop!, w.role]));
 const ids = Object.keys(data.troops).sort();
