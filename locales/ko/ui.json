@@ -23,6 +23,7 @@
   "tutorial.end.button": { "en": "Finish", "text": "마치기" },
   "tutorial.skip": { "en": "Skip tutorial", "text": "튜토리얼 건너뛰기" },
   "kind.practice": { "en": "Practice", "text": "" },
+  "result.leagueBonus": { "en": "League bonus: ", "text": "" },
   "sheet.unlocksWarriors": { "en": "Unlocks {list}", "text": "" },
   "kind.trial": { "en": "Shadow Trial", "text": "" },
   "kind.rival": { "en": "Computer rival", "text": "" },

@@ -7,12 +7,12 @@ import type { GameController } from './gameplay/control/controller';
 import type { GroveSource, RaidBattle } from './backend/social/groveSource';
 import type { Connection } from './backend/net/connection';
 import type { BattleSceneInit } from './presentation/render/BattleScene';
-import type { BaseLayout, BattleRecord, BattleSetup } from './gameplay/sim/battle/types';
+import type { BaseLayout, BattleRecord, BattleResult, BattleSetup } from './gameplay/sim/battle/types';
 import { opponentFor } from './gameplay/sim/matchmaking';
 import { SIM_RULES } from './gameplay/sim/battle/battle';
 import { mixSeed } from './gameplay/sim/rng';
-import { battleArmy, battleLoadout, scoutFee } from './gameplay/sim/village';
-import { attemptTier, trialBase, trialInfo, trialReward, trialRewardsThrough, trialVariant } from './gameplay/sim/trials';
+import { battleArmy, battleLoadout, lastAttackArmy, scoutFee } from './gameplay/sim/village';
+import { attemptTier, canTryAlternate, trialBase, trialInfo, trialReward, trialRewardsThrough, trialVariant } from './gameplay/sim/trials';
 import { drillArmy, drillLevels } from './gameplay/sim/drill';
 import { hallLevel } from './gameplay/sim/keep';
 import { rematchBase, rematchStatus } from './gameplay/sim/rematch';
@@ -21,6 +21,7 @@ import { totalLoot } from './gameplay/sim/battle/basegen';
 import { capacity } from './gameplay/sim/resources';
 import { armyDiversity, contractById, contractMultiplier, diversityPartOf, diversityShare, trainableRoles } from './gameplay/sim/carry';
 import { BattleHud } from './presentation/ui/battleHud';
+import { progressLines, snapProgress } from './presentation/ui/resultProgress';
 import { sound } from './presentation/audio/sound';
 import type { Hud } from './presentation/ui/hud';
 
@@ -265,6 +266,53 @@ export class App {
     this.open(new BattleSession(record.setup, this.d.controller.data, 'replay', record), record);
   }
 
+  /**
+   * P6-07 (UIS-01): the result screen's next step. After a raid: Next while an army is still standing, and "Refill in
+   * one tap" (the Army panel's command) when the last raid's army can be queued. After a Trial: the next tier when it
+   * was cleared, or "Try a different fortress" when it failed and a switch is left. Existing labels only.
+   */
+  private nextActions(r: BattleResult, k: { trialTier?: number; practice: boolean; grove: boolean; duel: boolean; special: boolean; replay: boolean; online: boolean }): { label: string; primary?: boolean; onClick(): void }[] {
+    const c = this.d.controller;
+    const out: { label: string; primary?: boolean; onClick(): void }[] = [];
+    if (k.practice || k.grove || k.duel || k.replay) return out;
+    if (k.trialTier !== undefined) {
+      const gd = c.data;
+      const next = attemptTier(c.state.trials, hallLevel(c.state, gd), gd);
+      if (r.stars >= gd.trials.starsToClear && next > k.trialTier) out.push({ label: i18nText("ui.scout_tier_8fde370df8", { arg1: next }), primary: true, onClick: () => { this.home(); this.trial(next); } });
+      else if (canTryAlternate(c.state.trials, gd)) {
+        out.push({
+          label: i18nText("ui.try_a_different_fortress_d0b3ff0e49"),
+          primary: true,
+          onClick: () => {
+            const res = c.dispatch({ type: 'trialAlternate' });
+            this.home();
+            if (res.ok) this.trial(attemptTier(c.state.trials, hallLevel(c.state, gd), gd));
+            else this.d.hud.toast(res.message, 'error');
+          },
+        });
+      }
+      return out;
+    }
+    if (k.special) return out;
+    const last = lastAttackArmy(c.state);
+    if (last && Object.keys(last).length) {
+      out.push({
+        label: i18nText("ui.refill_in_one_tap_25afd91239"),
+        onClick: () => {
+          const res = c.dispatch({ type: 'trainArmy', army: last });
+          this.home();
+          if (!res.ok) this.d.hud.toast(res.message, 'error');
+          else {
+            const queued = res.events.reduce((sum, e) => sum + (e.kind === 'train_start' ? e.count ?? 1 : 0), 0);
+            this.d.hud.toast(i18nText('army.queued', { n: queued }), 'success');
+          }
+        },
+      });
+    }
+    if (Object.values(c.state.army).some((n) => n > 0)) out.push({ label: i18nText('battle.next'), primary: true, onClick: () => { this.home(); void this.scout(); } });
+    return out;
+  }
+
   home(): void {
     this.flushTrack = null;
     this.battleHud?.destroy();
@@ -290,6 +338,7 @@ export class App {
     this.battleHud?.destroy();
     this.session = session;
     let lastRecord: BattleRecord | null = null;
+    const before = snapProgress(c.state, c.data);
     this.battleHud = new BattleHud({
       root: this.d.battleRoot,
       session,
@@ -342,6 +391,18 @@ export class App {
         return true;
       },
       onFinished: () => {
+        const out = finish();
+        // P6-07 (UIS-01): what this battle moved (raids, Trials, bounties and rematches; practice and duels move nothing).
+        if (out && !practice && !grove) out.progress = progressLines(before, snapProgress(c.state, c.data), c.state, localizedData(c.data));
+        return out;
+      },
+      nextActions: (r) => this.nextActions(r, { trialTier, practice, grove: Boolean(grove), duel: Boolean(duel), special: Boolean(special), replay: Boolean(replayOf), online: Boolean(this.ticket) }),
+      onReplay: () => {
+        if (lastRecord) this.replay(lastRecord);
+      },
+    });
+    const finish = (): ReturnType<ConstructorParameters<typeof BattleHud>[0]['onFinished']> => {
+      {
         if (practice) {
           // Never banked: a record only for "Watch replay".
           const result = session.result();
@@ -433,11 +494,8 @@ export class App {
         const met = contractById(out.record.contract, c.data);
         const metMult = met ? contractMultiplier(met, out.record.result, out.record.setup, out.record.stake, c.data, trainableRoles(c.state, c.data)) : 1;
         return { result: out.record.result, banked: out.banked, overflow: out.record.overflow, trophies: out.record.trophies ?? 0, bonus: out.record.leagueBonus, eventBonus: out.record.eventBonus, stake: out.record.stake, diversity: diversityPartOf(out.record.carry, out.record.stake, out.record.result.stars, c.data, metMult), contract: met ? localizedData(c.data).raids.contracts!.list.find((x) => x.id === met.id)!.name : undefined, ...(out.record.masteryXp ? { note: i18nText('mastery.gained', { xp: out.record.masteryXp }) } : {}) };
-      },
-      onReplay: () => {
-        if (lastRecord) this.replay(lastRecord);
-      },
-    });
+      }
+    };
     this.d.hudRoot.hidden = true;
     sound.music('battle');
     const sm = this.d.game.scene;

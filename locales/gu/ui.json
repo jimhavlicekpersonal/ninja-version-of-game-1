@@ -23,6 +23,7 @@
   "tutorial.end.button": { "en": "Finish", "text": "પૂરું કરો" },
   "tutorial.skip": { "en": "Skip tutorial", "text": "ટ્યુટોરિયલ છોડો" },
   "kind.practice": { "en": "Practice", "text": "" },
+  "result.leagueBonus": { "en": "League bonus: ", "text": "" },
   "sheet.unlocksWarriors": { "en": "Unlocks {list}", "text": "" },
   "kind.trial": { "en": "Shadow Trial", "text": "" },
   "kind.rival": { "en": "Computer rival", "text": "" },

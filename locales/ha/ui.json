@@ -23,6 +23,7 @@
   "tutorial.end.button": { "en": "Finish", "text": "Gama" },
   "tutorial.skip": { "en": "Skip tutorial", "text": "Tsallake koyarwa" },
   "kind.practice": { "en": "Practice", "text": "" },
+  "result.leagueBonus": { "en": "League bonus: ", "text": "" },
   "sheet.unlocksWarriors": { "en": "Unlocks {list}", "text": "" },
   "kind.trial": { "en": "Shadow Trial", "text": "" },
   "kind.rival": { "en": "Computer rival", "text": "" },
