@@ -64,7 +64,7 @@ import { badgeIdFor, provideBadges } from './cardArt';
 import { toastMs } from './toastTime';
 import { parseAskRecord, shouldAskAge } from './askAgain';
 import { loadKnown, loadMarks, milestonesDue, newUnlocks, saveKnown, saveMarks, showCeremony, showMilestone, type Milestone, type MilestoneMarks } from './unlockCeremony';
-import { markNoticeSeen, newsBody, seenNoticeKey, unseenNews, type NewsItem } from './newsUi';
+import { markNoticeSeen, markWhatsNewSeen, newsBody, seenNoticeKey, unseenNews, type NewsItem } from './newsUi';
 import { lazyPanel, staleChunkError } from './lazyPanel';
 import type { SettingsHost } from './settingsUi';
 
@@ -1327,6 +1327,7 @@ export class Hud {
       online: conn.online,
     });
     markNoticeSeen(conn.server?.notice ?? null);
+    markWhatsNewSeen();
     const unread = conn.notices.filter((n) => !n.read).map((n) => n.id);
     if (unread.length) void conn.markNoticesRead(unread).catch(() => undefined);
     this.modal(t('news.title'), body, [], 'normal', () => this.updateBadges());

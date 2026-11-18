@@ -23,6 +23,7 @@
   "tutorial.end.button": { "en": "Finish", "text": "முடி" },
   "tutorial.skip": { "en": "Skip tutorial", "text": "பயிற்சியைத் தவிர்" },
   "kind.practice": { "en": "Practice", "text": "பயிற்சி" },
+  "whatsNew.0_1_0": { "en": "What's new: send your squad in with one order, watch the fight up close or faster, and see what another entry point would have done. Every raid on your village now has a report, and you can test your defenses. New: a four-week event calendar with festivals, a weekly Gauntlet, daily contracts, achievements, Keep seals and looks to earn.", "text": "" },
   "trials.ladder": { "en": "The ladder ahead", "text": "முன்னுள்ள ஏணி" },
   "trials.cleared": { "en": "Cleared: tiers 1 to {best}", "text": "முடித்தவை: படிகள் 1 முதல் {best} வரை" },
   "milestone.keep": { "en": "Clan Keep Lv {level}!", "text": "குலக் கோட்டை நிலை {level}!" },

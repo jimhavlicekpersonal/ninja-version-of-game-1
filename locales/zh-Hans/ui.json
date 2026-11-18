@@ -23,6 +23,7 @@
   "tutorial.end.button": { "en": "Finish", "text": "完成" },
   "tutorial.skip": { "en": "Skip tutorial", "text": "跳过" },
   "kind.practice": { "en": "Practice", "text": "练习" },
+  "whatsNew.0_1_0": { "en": "What's new: send your squad in with one order, watch the fight up close or faster, and see what another entry point would have done. Every raid on your village now has a report, and you can test your defenses. New: a four-week event calendar with festivals, a weekly Gauntlet, daily contracts, achievements, Keep seals and looks to earn.", "text": "" },
   "trials.ladder": { "en": "The ladder ahead", "text": "前方的试炼" },
   "trials.cleared": { "en": "Cleared: tiers 1 to {best}", "text": "已通过：第 1 至 {best} 层" },
   "milestone.keep": { "en": "Clan Keep Lv {level}!", "text": "天守阁 {level} 级！" },

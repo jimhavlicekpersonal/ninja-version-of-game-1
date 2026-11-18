@@ -23,6 +23,7 @@
   "tutorial.end.button": { "en": "Finish", "text": "પૂરું કરો" },
   "tutorial.skip": { "en": "Skip tutorial", "text": "ટ્યુટોરિયલ છોડો" },
   "kind.practice": { "en": "Practice", "text": "અભ્યાસ" },
+  "whatsNew.0_1_0": { "en": "What's new: send your squad in with one order, watch the fight up close or faster, and see what another entry point would have done. Every raid on your village now has a report, and you can test your defenses. New: a four-week event calendar with festivals, a weekly Gauntlet, daily contracts, achievements, Keep seals and looks to earn.", "text": "" },
   "trials.ladder": { "en": "The ladder ahead", "text": "આગળની સીડી" },
   "trials.cleared": { "en": "Cleared: tiers 1 to {best}", "text": "પાર કર્યા: પડાવ 1 થી {best}" },
   "milestone.keep": { "en": "Clan Keep Lv {level}!", "text": "કુળ કિલ્લો સ્તર {level}!" },
