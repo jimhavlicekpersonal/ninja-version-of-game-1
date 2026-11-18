@@ -92,3 +92,22 @@ describe('P2-05/P2-06 (DEF-06, DEF-11): a long absence cannot empty the treasury
     expect(data.raids.exhaustion!.windowHours).toBeGreaterThanOrEqual(36);
   });
 });
+
+describe('P2-07 (DEF-08, ECO-07): Settle the score pays back what the raid took', () => {
+  it('pays the larger of the fixed share and recoverShare x stars/3 of the raid\'s take, never more than it took', async () => {
+    const { rematchReward } = await import('../../../src/gameplay/sim/rematch');
+    const share = data.raids.rematch!.recoverShare!;
+    expect(share).toBeGreaterThan(0);
+    expect(share).toBeLessThanOrEqual(1);
+    const took = { acorns: 900_000, dew: 600_000 };
+    const fixed = rematchReward(3, 12, data);
+    const three = rematchReward(3, 12, data, took);
+    expect(three.acorns).toBe(Math.max(fixed.acorns ?? 0, Math.floor(900_000 * share)));
+    expect(three.dew).toBe(Math.max(fixed.dew ?? 0, Math.floor(600_000 * share)));
+    expect(three.acorns!).toBeLessThanOrEqual(took.acorns);
+    expect(rematchReward(2, 12, data, took).acorns).toBe(Math.max(Math.floor(((fixed.acorns ?? 0) * 2) / 3), Math.floor((900_000 * share * 2) / 3)));
+    // A raid that took little still pays at least the old fixed reward.
+    expect(rematchReward(3, 12, data, { acorns: 1 })).toEqual(fixed);
+    expect(rematchReward(0, 12, data, took)).toEqual({});
+  });
+});

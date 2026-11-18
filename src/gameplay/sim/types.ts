@@ -928,7 +928,7 @@ export interface RaidsDef {
   labAutoLayout?: boolean;
   labWalls?: boolean;
   /** Settle-the-score rematches against a bot raider's base (sim/rematch.ts). */
-  rematch?: { windowHours: number; shareOfRaidLoot: number };
+  rematch?: { windowHours: number; shareOfRaidLoot: number; /** P2-07: share of what the raid took a three-star rematch pays back (x stars/3). Absent: 0. */ recoverShare?: number };
   /**
    * Exhausted stores (balance audit 2026-11-08): each raid the village lost (1+ star) in the last `windowHours`
    * multiplies what the next raider can take by `factor`.

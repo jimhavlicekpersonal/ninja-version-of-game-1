@@ -18,7 +18,9 @@
   "rematch": {
     "$comment": "Settle the score: once per bot raid, within `windowHours`, attack the raider's own generated base. No loot from buildings and no honor; a win (1+ stars) pays `shareOfRaidLoot` x stars/3 of the Keep's lowest raid loot.",
     "windowHours": 72,
-    "shareOfRaidLoot": 0.15
+    "shareOfRaidLoot": 0.15,
+    "$commentRecover": "P2-07 (DEF-08, 2026-11-18): a win also pays back recoverShare x stars/3 of what that raid took, per resource, when larger (three stars at Keep 12 paid 437k against a 607k army). 1.0, not the suggested 0.75: after P2-01 raiders take less, and 0.75 paid 0.46-0.81 of a normal raid at Keeps 10-12. Never more than the raid took, so losing on purpose stays a loss.",
+    "recoverShare": 1
   },
   "exhaustion": {
     "$comment": "Balance audit 2026-11-08 (exhausted stores): each raid the village lost (1+ star) in the last windowHours multiplies what the next raider can take by factor, offline and online. P2-06 (DEF-11, 2026-11-18): window 24 -> 36 hours, so raids a day apart on a once-a-day player are caught.",

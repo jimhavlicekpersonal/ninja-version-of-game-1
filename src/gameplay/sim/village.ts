@@ -2159,7 +2159,7 @@ function rematchEnd(s: VillageState, defenseId: string, rec: Omit<BattleRecord, 
   let overflow: Cost = {};
   if (won) {
     s.stats.rematchesWon = (s.stats.rematchesWon ?? 0) + 1;
-    ({ granted: reward, overflow } = grantResources(s, rematchReward(result.stars, hallLevel(s, data), data), data));
+    ({ granted: reward, overflow } = grantResources(s, rematchReward(result.stars, hallLevel(s, data), data, status.record.result.loot ?? {}), data));
   }
   const record: BattleRecord = { ...rec, setup, opponentName: base.name, id: `r${s.nextSeed++}`, kind: 'attack', at, result: { ...result, loot: {} }, trophies: 0, banked: reward, rules: SIM_RULES, rematch: defenseId, ...(hasAny(overflow) ? { overflow } : {}) };
   s.battleLog.push(record);

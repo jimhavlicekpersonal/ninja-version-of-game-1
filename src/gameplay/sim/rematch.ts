@@ -4,8 +4,10 @@
  * The raider is generated (labelled as such): its base comes from the seed, Keep
  * and level bias stored on the defense record (`raider`), with no loot inside.
  * No honor moves (bots never move ratings or honor through a rematch). A win
- * (1+ stars) pays a small fixed reward: `shareOfRaidLoot` x stars/3 of the
- * player's Keep's lowest raid loot, in Coins and Provisions, storage-capped.
+ * (1+ stars) pays the larger of `shareOfRaidLoot` x stars/3 of the player's Keep's
+ * lowest raid loot (in Coins and Provisions) and, per resource, `recoverShare` x
+ * stars/3 of what that raid took (P2-07: three stars used to pay back less than the
+ * army cost), storage-capped.
  */
 import { generateOpponent } from './battle/basegen';
 import type { BaseLayout, BattleRecord } from './battle/types';
@@ -39,9 +41,20 @@ export function rematchable(state: VillageState, now: number, data: GameData): B
   return state.defenseLog.filter((d) => rematchStatus(state, d.id, now, data).ok).reverse();
 }
 
-/** What a rematch with this many stars pays at a Keep (before the storage check). */
-export function rematchReward(stars: number, keep: number, data: GameData): Cost {
-  const share = data.raids.rematch?.shareOfRaidLoot ?? 0;
-  const amount = Math.floor(((data.battle.generatedLootByHall[keep - 1]?.min ?? 0) * share * Math.max(0, Math.min(3, stars))) / 3);
-  return amount > 0 ? { acorns: amount, dew: amount } : {};
+/**
+ * What a rematch with this many stars pays at a Keep (before the storage check): per resource, the larger of the
+ * fixed share of the Keep's lowest raid loot (Coins and Provisions) and `recoverShare` of what the raid `took`.
+ */
+export function rematchReward(stars: number, keep: number, data: GameData, took: Cost = {}): Cost {
+  const cfg = data.raids.rematch;
+  const s = Math.max(0, Math.min(3, stars));
+  const fixed = Math.floor(((data.battle.generatedLootByHall[keep - 1]?.min ?? 0) * (cfg?.shareOfRaidLoot ?? 0) * s) / 3);
+  const out: Cost = {};
+  if (fixed > 0) out.acorns = out.dew = fixed;
+  const recover = cfg?.recoverShare ?? 0;
+  for (const [k, v] of Object.entries(took) as [keyof Cost, number][]) {
+    const back = Math.floor(((v ?? 0) * recover * s) / 3);
+    if (back > (out[k] ?? 0)) out[k] = back;
+  }
+  return out;
 }
