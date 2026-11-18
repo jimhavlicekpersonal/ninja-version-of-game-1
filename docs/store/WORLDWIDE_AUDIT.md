@@ -1182,3 +1182,34 @@ No battle rule changed (speed scales real time only; squad orders and the review
 | L11 | ledger test counts | fixed |
 
 Translations (section 13): `907db45`, the phase's 52 new and changed strings into 49 languages by eleven script-group translators; `i18n:check` passes for every language and `i18n:status` reports all complete. "Garrison crew" and "Tanks first" are new terms in most languages. Machine translation checked for structure, not reviewed by native speakers.
+
+### 2026-11-18 replayability pass, Phase 7: what code can still do toward a store release (integration session; agent prompt `docs/prompts/BEAST_MODE_2026-11-16.md` section 12, evidence `docs/audit/understand-2026-11-16/publish.md`, ledger `docs/audit/understand-2026-11-16/PROGRESS.md`)
+
+P7-01 to P7-04, P7-08 and P7-10 are recorded in the Phases 0-1 record and the reassessment above. Nothing here changes a battle, a save or the economy hash; the word lists change the data the server loads (deploy together, `docs/backend/REQUESTS.md`). Nothing in this phase makes the game publishable: `docs/store/OWNER_CHECKLIST.md` is the list, and `npm run release:preflight` still reports open items, six of them blocking.
+
+| Item | Finding | Status | What changed | Evidence | Remaining limitations |
+|---|---|---|---|---|---|
+| P7-05 | PUB-08 no licence notices | done | `tools/release/licenses.mjs` → `public/licenses.html`: 11 shipped packages (with `eventemitter3`, without the server-only `fastify`, `pg`), the Apache-2.0 native libraries with the licence text, the two fonts with OFL 1.1; one support-page key changed | `tests/backend/licenses.test.ts` | native libraries listed by family (AndroidX, Cordova layer, Firebase Messaging), not per artifact |
+| P7-06 | PUB-09 iOS image | done | `macos-26`; an SDK under 26 stops the job | release-config | **the workflow has never run** |
+| P7-07 | PUB-10 English-only filter | done | ten launch-language lists, applied to every line | corpus of ordinary sentences in 16 languages passes | **no list reviewed by a native speaker** (`docs/localization/WORD_LISTS.md`); 39 languages have no list; moderation quality, not legal compliance |
+| P7-09 | PUB-12 previews and screenshots | done | absolute og/twitter tags with `VITE_PUBLIC_URL`; two screenshots in every manifest, not precached | a build both ways; release-config | screenshot labels in English in the localized manifests |
+| P7-11 | PUB-14 local-day statistics | done | `vars.VITE_STATS_TZ`, off by default, in the three client workflows | release-config | the owner decides when (checklist) |
+| P7-12 | BNL-14 preview content unplayable | done | `content-preview.yml`: manual, input off by default, a downloadable artifact (not a web path under the public host, a deliberate change from section 12), tester checklist | verification-client | whether it may exist and who tests: owner |
+| P7-13 | listing sells an older game | done | the English listing and all 49 translated listings name what the game now has; each claim tied to data or a test; `store:storekit` rerun | store-compliance, claims table | "castle", "samurai" keywords flagged for the owner; 49 listings unreviewed by native speakers |
+| P7-14 | what's new | done | one entry in News until seen, never for a new player; the same text is `docs/store/RELEASE_NOTES.md` | DOM and source tests | — |
+| P7-15 | uncompilable native items | done (text) | ambient audio session; `MARKETING_VERSION` 0.1.0 | release-config | **not compiled, not run on a device**: the audio change, the app-level `PrivacyInfo.xcprivacy` (an Xcode target step, not made), the Game Center / Play Games achievements plugin (not made) |
+| P7-16 | owner checklist | done | `docs/store/OWNER_CHECKLIST.md` (identity, legal, stores, signing for both platforms, hosting, devices, decisions, playtests) | preflight checks the machine-checkable lines | no code can empty it |
+| P7-17..20 | not taken (section 12) | open | — | — | accessibility statement (C21), late raid report message (R02), `keepalive` (GLOBAL-010), release tags |
+
+**Independent review (section 0.5), 2026-11-18**, of the Phase 7 commits; fixes in the review-fix commit:
+
+| # | Finding | Outcome |
+|---|---|---|
+| H1 | the word lists censored ordinary words in other launch languages (hr *puta*, ro *pute*, ja 死ねない/ガイジン; English *hell*/*dick* are German) | fixed: removed or narrowed; the corpus covers 16 languages |
+| M1 | localized support pages linked a missing `licenses.html` | fixed: `../licenses.html`; test |
+| M2 | the licence page missed shipped code and listed server code | fixed |
+| M3 | section 12's not-taken items missing from the ledger | fixed (P7-17..20) |
+| M4 | What's new showed on every open | fixed: until seen; never for a new player |
+| Lows | listing citation, keywords note, preview checklist, comment, checklist review place and Apple secrets | fixed |
+
+Translations (section 13): the footer link, What's new and the listing additions in all 49 languages by eleven script-group translators; `i18n:check` passes for every language. Machine translation checked for structure, not reviewed by native speakers.
