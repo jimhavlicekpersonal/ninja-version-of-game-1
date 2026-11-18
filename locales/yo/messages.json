@@ -1371,7 +1371,7 @@
   "ui.search_49c266baaa": { "en": "Search", "text": "Wá" },
   "ui.search_alliances_a696ac16e8": { "en": "Search Alliances…", "text": "Wá Àjọṣepọ̀…" },
   "ui.search_stopped_acf16c738e": { "en": "Search stopped.", "text": "Ìwádìí ti dúró." },
-  "ui.season_ends_in_at_the_end_of_each_mont_c60052cb71": { "en": "Season ends in {arg1}. At the end of each month you get your league's chest, and honor above {arg2} is halved.", "text": "", "old": "Àsìkò yóò parí ní {arg1}. Ní òpin oṣù kọ̀ọ̀kan, o ń gba àpótí líìgì rẹ, a sì ń pín ọlá tí ó ju {arg2} lọ sí méjì." },
+  "ui.season_ends_in_at_the_end_of_each_mont_c60052cb71": { "en": "Season ends in {arg1}. At the end of each month you get your league's chest, and honor above {arg2} is halved.", "text": "Àsìkò yóò parí ní {arg1}. Ní òpin oṣù kọ̀ọ̀kan, o máa ń gba àpótí líìgì rẹ, a sì máa ń pín ọlá tí ó ju {arg2} lọ sí méjì." },
   "ui.season_ends_in_complete_tasks_to_earn__300938261c": { "en": "Season ends in {arg1}. Complete tasks to earn points and unlock tiers.", "text": "Àsìkò yóò parí ní {arg1}. Parí iṣẹ́ láti jèrè àmì àti láti ṣí ìpele." },
   "ui.see_defense_replays_db4b59b872": { "en": "See defense replays", "text": "Wo àtúnwò ààbò" },
   "ui.see_offer_in_the_store_afae86c740": { "en": "See offer in the store", "text": "Wo ìfilọ̀ nínú ọjà" },
@@ -1603,7 +1603,7 @@
   "ui.who_can_find_me_by_name_ed481ead6d": { "en": "Who can find me by name", "text": "Ta ló lè rí mi nípa orúkọ" },
   "ui.win_bonus_76ff020d10": { "en": "Win bonus ", "text": "Àfikún ìṣẹ́gun " },
   "ui.win_c622058960": { "en": "Win ", "text": "Ìṣẹ́gun " },
-  "ui.win_raids_to_earn_honor_lose_it_when_y_a98b0bc1b5": { "en": "Win raids to earn honor; lose it when your attacks fail or when raiders beat your village. More honor brings tougher opponents with more loot.", "text": "", "old": "Borí nínú ìgbógunti láti jèrè ọlá; o ń pàdánù rẹ̀ nígbà tí ìkọlù rẹ bá kùnà tàbí nígbà tí àwọn agbógunti bá ṣẹ́gun abúlé rẹ. Ọlá púpọ̀ ń mú àwọn alátakò líle pẹ̀lú ìkógun púpọ̀ wá." },
+  "ui.win_raids_to_earn_honor_lose_it_when_y_a98b0bc1b5": { "en": "Win raids to earn honor; lose it when your attacks fail or when raiders beat your village. More honor brings tougher opponents with more loot.", "text": "Borí nínú ìgbógunti láti jèrè ọlá; o máa ń pàdánù rẹ̀ nígbà tí ìkọlù rẹ bá kùnà tàbí nígbà tí àwọn agbógunti bá ṣẹ́gun abúlé rẹ. Ọlá púpọ̀ sí i ń mú àwọn alátakò tí ó le jù pẹ̀lú ìkógun púpọ̀ wá." },
   "ui.won_acdf2907db": { "en": "Won", "text": "Ó borí" },
   "ui.won_cf6247318b": { "en": "{arg1} won", "text": "{arg1} borí" },
   "ui.year_89f6832560": { "en": "Year", "text": "Ọdún" },
@@ -2114,5 +2114,5 @@
   "sim.there_is_no_daily_drill_49086be800": { "en": "There is no daily drill.", "text": "Kò sí ìdánrawò ojoojúmọ́." },
   "sim.too_long_ago_146e28a63e": { "en": "Too long ago.", "text": "Ó ti pẹ́ jù." },
   "sim.build_a_training_dojo_and_a_squad_courty_ad04d756ab": { "en": "Build a Training Dojo and a Squad Courtyard first.", "text": "Kọ́ Dojo Ìdánrawò àti Àgbàlá Ẹgbẹ́ Ogun kan ná." },
-  "sim.upgrade_your_clan_keep_to_level_arg1_to_9970fcfb20": { "en": "Upgrade your Clan Keep to level {arg1} to build a {arg2}.", "text": "" }
+  "sim.upgrade_your_clan_keep_to_level_arg1_to_9970fcfb20": { "en": "Upgrade your Clan Keep to level {arg1} to build a {arg2}.", "text": "Gbé Ilé Olódi Ìdílé rẹ dé ìpele {arg1} láti kọ́ {arg2}." }
 }

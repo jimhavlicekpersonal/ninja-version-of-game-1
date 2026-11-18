@@ -1371,7 +1371,7 @@
   "ui.search_49c266baaa": { "en": "Search", "text": "Cerca" },
   "ui.search_alliances_a696ac16e8": { "en": "Search Alliances…", "text": "Cerca Alleanze…" },
   "ui.search_stopped_acf16c738e": { "en": "Search stopped.", "text": "Ricerca interrotta." },
-  "ui.season_ends_in_at_the_end_of_each_mont_c60052cb71": { "en": "Season ends in {arg1}. At the end of each month you get your league's chest, and honor above {arg2} is halved.", "text": "", "old": "La stagione finisce tra {arg1}. Alla fine di ogni mese ricevi il forziere della tua lega, e l'onore oltre {arg2} viene dimezzato." },
+  "ui.season_ends_in_at_the_end_of_each_mont_c60052cb71": { "en": "Season ends in {arg1}. At the end of each month you get your league's chest, and honor above {arg2} is halved.", "text": "La stagione finisce tra {arg1}. Alla fine di ogni mese ricevi il forziere della tua lega, e l'onore oltre {arg2} viene dimezzato." },
   "ui.season_ends_in_complete_tasks_to_earn__300938261c": { "en": "Season ends in {arg1}. Complete tasks to earn points and unlock tiers.", "text": "La stagione finisce tra {arg1}. Completa compiti per guadagnare punti e sbloccare gradi." },
   "ui.see_defense_replays_db4b59b872": { "en": "See defense replays", "text": "Guarda i replay delle difese" },
   "ui.see_offer_in_the_store_afae86c740": { "en": "See offer in the store", "text": "Vedi l'offerta nel negozio" },
@@ -1603,7 +1603,7 @@
   "ui.who_can_find_me_by_name_ed481ead6d": { "en": "Who can find me by name", "text": "Chi può trovarmi per nome" },
   "ui.win_bonus_76ff020d10": { "en": "Win bonus ", "text": "Bonus vittoria " },
   "ui.win_c622058960": { "en": "Win ", "text": "Vittoria " },
-  "ui.win_raids_to_earn_honor_lose_it_when_y_a98b0bc1b5": { "en": "Win raids to earn honor; lose it when your attacks fail or when raiders beat your village. More honor brings tougher opponents with more loot.", "text": "", "old": "Vinci incursioni per guadagnare onore; lo perdi quando i tuoi attacchi falliscono o quando gli assalitori battono il tuo villaggio. Più onore porta avversari più tosti con più bottino." },
+  "ui.win_raids_to_earn_honor_lose_it_when_y_a98b0bc1b5": { "en": "Win raids to earn honor; lose it when your attacks fail or when raiders beat your village. More honor brings tougher opponents with more loot.", "text": "Vinci incursioni per guadagnare onore; lo perdi quando i tuoi attacchi falliscono o quando gli assalitori battono il tuo villaggio. Più onore porta avversari più tosti con più bottino." },
   "ui.won_acdf2907db": { "en": "Won", "text": "Vinto" },
   "ui.won_cf6247318b": { "en": "{arg1} won", "text": "Vittoria: {arg1}" },
   "ui.year_89f6832560": { "en": "Year", "text": "Anno" },
@@ -2114,5 +2114,5 @@
   "sim.there_is_no_daily_drill_49086be800": { "en": "There is no daily drill.", "text": "Non c'è nessuna esercitazione quotidiana." },
   "sim.too_long_ago_146e28a63e": { "en": "Too long ago.", "text": "Troppo tempo fa." },
   "sim.build_a_training_dojo_and_a_squad_courty_ad04d756ab": { "en": "Build a Training Dojo and a Squad Courtyard first.", "text": "Prima costruisci un Dojo d'Addestramento e un Cortile delle Squadre." },
-  "sim.upgrade_your_clan_keep_to_level_arg1_to_9970fcfb20": { "en": "Upgrade your Clan Keep to level {arg1} to build a {arg2}.", "text": "" }
+  "sim.upgrade_your_clan_keep_to_level_arg1_to_9970fcfb20": { "en": "Upgrade your Clan Keep to level {arg1} to build a {arg2}.", "text": "Migliora la Rocca del Clan al livello {arg1} per costruire: {arg2}." }
 }

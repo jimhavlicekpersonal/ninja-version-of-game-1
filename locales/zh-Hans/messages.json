@@ -1371,7 +1371,7 @@
   "ui.search_49c266baaa": { "en": "Search", "text": "搜索" },
   "ui.search_alliances_a696ac16e8": { "en": "Search Alliances…", "text": "搜索同盟……" },
   "ui.search_stopped_acf16c738e": { "en": "Search stopped.", "text": "搜索已停止。" },
-  "ui.season_ends_in_at_the_end_of_each_mont_c60052cb71": { "en": "Season ends in {arg1}. At the end of each month you get your league's chest, and honor above {arg2} is halved.", "text": "", "old": "赛季将在 {arg1}后结束。每月月底你会获得所在联赛的宝箱，超过 {arg2} 的荣誉会减半。" },
+  "ui.season_ends_in_at_the_end_of_each_mont_c60052cb71": { "en": "Season ends in {arg1}. At the end of each month you get your league's chest, and honor above {arg2} is halved.", "text": "赛季将在 {arg1}后结束。每月月底你会获得所在联赛的宝箱，超过 {arg2} 的荣誉会减半。" },
   "ui.season_ends_in_complete_tasks_to_earn__300938261c": { "en": "Season ends in {arg1}. Complete tasks to earn points and unlock tiers.", "text": "赛季将在 {arg1}后结束。完成任务获得点数，解锁更多阶。" },
   "ui.see_defense_replays_db4b59b872": { "en": "See defense replays", "text": "查看防守回放" },
   "ui.see_offer_in_the_store_afae86c740": { "en": "See offer in the store", "text": "在商店中查看优惠" },
@@ -1603,7 +1603,7 @@
   "ui.who_can_find_me_by_name_ed481ead6d": { "en": "Who can find me by name", "text": "谁可以按名称找到我" },
   "ui.win_bonus_76ff020d10": { "en": "Win bonus ", "text": "胜利加成 " },
   "ui.win_c622058960": { "en": "Win ", "text": "胜利 " },
-  "ui.win_raids_to_earn_honor_lose_it_when_y_a98b0bc1b5": { "en": "Win raids to earn honor; lose it when your attacks fail or when raiders beat your village. More honor brings tougher opponents with more loot.", "text": "", "old": "赢得突袭可获得荣誉；进攻失败或村庄被突袭者击败时会失去荣誉。荣誉越高，遇到的对手越强，战利品也越多。" },
+  "ui.win_raids_to_earn_honor_lose_it_when_y_a98b0bc1b5": { "en": "Win raids to earn honor; lose it when your attacks fail or when raiders beat your village. More honor brings tougher opponents with more loot.", "text": "突袭获胜可获得荣誉；进攻失败或村庄被突袭者击败时会失去荣誉。荣誉越高，遇到的对手越强，战利品也越多。" },
   "ui.won_acdf2907db": { "en": "Won", "text": "胜利" },
   "ui.won_cf6247318b": { "en": "{arg1} won", "text": "{arg1}获胜" },
   "ui.year_89f6832560": { "en": "Year", "text": "年份" },
@@ -2114,5 +2114,5 @@
   "sim.there_is_no_daily_drill_49086be800": { "en": "There is no daily drill.", "text": "没有每日演练。" },
   "sim.too_long_ago_146e28a63e": { "en": "Too long ago.", "text": "时间太久了。" },
   "sim.build_a_training_dojo_and_a_squad_courty_ad04d756ab": { "en": "Build a Training Dojo and a Squad Courtyard first.", "text": "请先建造修行道场和集结庭院。" },
-  "sim.upgrade_your_clan_keep_to_level_arg1_to_9970fcfb20": { "en": "Upgrade your Clan Keep to level {arg1} to build a {arg2}.", "text": "" }
+  "sim.upgrade_your_clan_keep_to_level_arg1_to_9970fcfb20": { "en": "Upgrade your Clan Keep to level {arg1} to build a {arg2}.", "text": "将天守阁升到 {arg1} 级才能建造{arg2}。" }
 }

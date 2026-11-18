@@ -1371,7 +1371,7 @@
   "ui.search_49c266baaa": { "en": "Search", "text": "શોધો" },
   "ui.search_alliances_a696ac16e8": { "en": "Search Alliances…", "text": "ગઠબંધન શોધો…" },
   "ui.search_stopped_acf16c738e": { "en": "Search stopped.", "text": "શોધ બંધ થઈ." },
-  "ui.season_ends_in_at_the_end_of_each_mont_c60052cb71": { "en": "Season ends in {arg1}. At the end of each month you get your league's chest, and honor above {arg2} is halved.", "text": "", "old": "સીઝન {arg1}માં પૂરી થાય છે. દર મહિનાના અંતે તમને તમારી લીગની પેટી મળે છે, અને {arg2} થી વધુ સન્માન અડધું થાય છે." },
+  "ui.season_ends_in_at_the_end_of_each_mont_c60052cb71": { "en": "Season ends in {arg1}. At the end of each month you get your league's chest, and honor above {arg2} is halved.", "text": "સીઝન {arg1}માં પૂરી થશે. દર મહિનાના અંતે તમને તમારી લીગની પેટી મળે છે, અને {arg2}થી વધુ સન્માન અડધું થાય છે." },
   "ui.season_ends_in_complete_tasks_to_earn__300938261c": { "en": "Season ends in {arg1}. Complete tasks to earn points and unlock tiers.", "text": "સીઝન {arg1}માં પૂરી થાય છે. પોઇન્ટ મેળવવા અને પડાવ અનલૉક કરવા કાર્યો પૂરાં કરો." },
   "ui.see_defense_replays_db4b59b872": { "en": "See defense replays", "text": "સંરક્ષણ રિપ્લે જુઓ" },
   "ui.see_offer_in_the_store_afae86c740": { "en": "See offer in the store", "text": "સ્ટોરમાં ઑફર જુઓ" },
@@ -1603,7 +1603,7 @@
   "ui.who_can_find_me_by_name_ed481ead6d": { "en": "Who can find me by name", "text": "મને નામથી કોણ શોધી શકે" },
   "ui.win_bonus_76ff020d10": { "en": "Win bonus ", "text": "જીત બોનસ " },
   "ui.win_c622058960": { "en": "Win ", "text": "જીત " },
-  "ui.win_raids_to_earn_honor_lose_it_when_y_a98b0bc1b5": { "en": "Win raids to earn honor; lose it when your attacks fail or when raiders beat your village. More honor brings tougher opponents with more loot.", "text": "", "old": "સન્માન મેળવવા ધાડ જીતો; તમારા હુમલા નિષ્ફળ જાય કે ધાડપાડુઓ તમારા ગામને હરાવે ત્યારે તે ગુમાવો. વધુ સન્માન વધુ લૂંટવાળા અઘરા વિરોધીઓ લાવે છે." },
+  "ui.win_raids_to_earn_honor_lose_it_when_y_a98b0bc1b5": { "en": "Win raids to earn honor; lose it when your attacks fail or when raiders beat your village. More honor brings tougher opponents with more loot.", "text": "ધાડ જીતીને સન્માન મેળવો; તમારા હુમલા નિષ્ફળ જાય કે ધાડપાડુઓ તમારા ગામને હરાવે ત્યારે તમે તે ગુમાવો છો. વધુ સન્માનથી વધુ લૂંટવાળા અઘરા વિરોધીઓ મળે છે." },
   "ui.won_acdf2907db": { "en": "Won", "text": "જીત્યા" },
   "ui.won_cf6247318b": { "en": "{arg1} won", "text": "વિજેતા: {arg1}" },
   "ui.year_89f6832560": { "en": "Year", "text": "વર્ષ" },
@@ -2114,5 +2114,5 @@
   "sim.there_is_no_daily_drill_49086be800": { "en": "There is no daily drill.", "text": "કોઈ દૈનિક કવાયત નથી." },
   "sim.too_long_ago_146e28a63e": { "en": "Too long ago.", "text": "બહુ લાંબા સમય પહેલાંનું છે." },
   "sim.build_a_training_dojo_and_a_squad_courty_ad04d756ab": { "en": "Build a Training Dojo and a Squad Courtyard first.", "text": "પહેલાં તાલીમ ડોજો અને ટુકડી આંગણું બનાવો." },
-  "sim.upgrade_your_clan_keep_to_level_arg1_to_9970fcfb20": { "en": "Upgrade your Clan Keep to level {arg1} to build a {arg2}.", "text": "" }
+  "sim.upgrade_your_clan_keep_to_level_arg1_to_9970fcfb20": { "en": "Upgrade your Clan Keep to level {arg1} to build a {arg2}.", "text": "{arg2} બનાવવા માટે તમારો કુળ કિલ્લો સ્તર {arg1} સુધી અપગ્રેડ કરો." }
 }

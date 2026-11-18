@@ -1371,7 +1371,7 @@
   "ui.search_49c266baaa": { "en": "Search", "text": "खोजें" },
   "ui.search_alliances_a696ac16e8": { "en": "Search Alliances…", "text": "गठबंधन खोजें…" },
   "ui.search_stopped_acf16c738e": { "en": "Search stopped.", "text": "खोज रोक दी गई।" },
-  "ui.season_ends_in_at_the_end_of_each_mont_c60052cb71": { "en": "Season ends in {arg1}. At the end of each month you get your league's chest, and honor above {arg2} is halved.", "text": "", "old": "सीज़न {arg1} में ख़त्म होगा। हर महीने के आख़िर में आपको अपनी लीग का संदूक मिलता है, और {arg2} से ऊपर का सम्मान आधा हो जाता है।" },
+  "ui.season_ends_in_at_the_end_of_each_mont_c60052cb71": { "en": "Season ends in {arg1}. At the end of each month you get your league's chest, and honor above {arg2} is halved.", "text": "सीज़न {arg1} में ख़त्म होगा। हर महीने के आख़िर में आपको अपनी लीग का संदूक मिलता है, और {arg2} से ऊपर का सम्मान आधा हो जाता है।" },
   "ui.season_ends_in_complete_tasks_to_earn__300938261c": { "en": "Season ends in {arg1}. Complete tasks to earn points and unlock tiers.", "text": "सीज़न {arg1} में ख़त्म होगा। अंक कमाने और पड़ाव खोलने के लिए काम पूरे करें।" },
   "ui.see_defense_replays_db4b59b872": { "en": "See defense replays", "text": "रक्षा के रीप्ले देखें" },
   "ui.see_offer_in_the_store_afae86c740": { "en": "See offer in the store", "text": "स्टोर में ऑफ़र देखें" },
@@ -1603,7 +1603,7 @@
   "ui.who_can_find_me_by_name_ed481ead6d": { "en": "Who can find me by name", "text": "मुझे नाम से कौन ढूँढ सकता है" },
   "ui.win_bonus_76ff020d10": { "en": "Win bonus ", "text": "जीत का बोनस " },
   "ui.win_c622058960": { "en": "Win ", "text": "जीत " },
-  "ui.win_raids_to_earn_honor_lose_it_when_y_a98b0bc1b5": { "en": "Win raids to earn honor; lose it when your attacks fail or when raiders beat your village. More honor brings tougher opponents with more loot.", "text": "", "old": "सम्मान कमाने के लिए छापे जीतें; हमले विफल होने पर या छापामारों के आपके गाँव को हराने पर यह घटता है। ज़्यादा सम्मान से ज़्यादा लूट वाले कठिन प्रतिद्वंद्वी मिलते हैं।" },
+  "ui.win_raids_to_earn_honor_lose_it_when_y_a98b0bc1b5": { "en": "Win raids to earn honor; lose it when your attacks fail or when raiders beat your village. More honor brings tougher opponents with more loot.", "text": "सम्मान कमाने के लिए छापे जीतें; हमले विफल होने पर या छापामारों के आपके गाँव को हराने पर यह घटता है। ज़्यादा सम्मान से ज़्यादा लूट वाले कठिन प्रतिद्वंद्वी मिलते हैं।" },
   "ui.won_acdf2907db": { "en": "Won", "text": "जीत" },
   "ui.won_cf6247318b": { "en": "{arg1} won", "text": "{arg1} की जीत" },
   "ui.year_89f6832560": { "en": "Year", "text": "वर्ष" },
@@ -2114,5 +2114,5 @@
   "sim.there_is_no_daily_drill_49086be800": { "en": "There is no daily drill.", "text": "कोई रोज़ाना अभ्यास नहीं है।" },
   "sim.too_long_ago_146e28a63e": { "en": "Too long ago.", "text": "बहुत पहले की बात है।" },
   "sim.build_a_training_dojo_and_a_squad_courty_ad04d756ab": { "en": "Build a Training Dojo and a Squad Courtyard first.", "text": "पहले प्रशिक्षण दोजो और दस्ते का आँगन बनाएँ।" },
-  "sim.upgrade_your_clan_keep_to_level_arg1_to_9970fcfb20": { "en": "Upgrade your Clan Keep to level {arg1} to build a {arg2}.", "text": "" }
+  "sim.upgrade_your_clan_keep_to_level_arg1_to_9970fcfb20": { "en": "Upgrade your Clan Keep to level {arg1} to build a {arg2}.", "text": "{arg2} बनाने के लिए अपना कबीले का किला स्तर {arg1} तक अपग्रेड करें।" }
 }

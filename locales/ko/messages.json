@@ -1371,7 +1371,7 @@
   "ui.search_49c266baaa": { "en": "Search", "text": "검색" },
   "ui.search_alliances_a696ac16e8": { "en": "Search Alliances…", "text": "동맹 검색…" },
   "ui.search_stopped_acf16c738e": { "en": "Search stopped.", "text": "검색을 멈췄어요." },
-  "ui.season_ends_in_at_the_end_of_each_mont_c60052cb71": { "en": "Season ends in {arg1}. At the end of each month you get your league's chest, and honor above {arg2} is halved.", "text": "", "old": "시즌 종료까지 {arg1}. 매달 말에 리그 상자를 받고, {arg2}을(를) 넘는 명예는 절반이 돼요." },
+  "ui.season_ends_in_at_the_end_of_each_mont_c60052cb71": { "en": "Season ends in {arg1}. At the end of each month you get your league's chest, and honor above {arg2} is halved.", "text": "시즌 종료까지 {arg1}. 매달 말에 소속 리그의 상자를 받고, 명예 중 {arg2} 초과분은 절반이 돼요." },
   "ui.season_ends_in_complete_tasks_to_earn__300938261c": { "en": "Season ends in {arg1}. Complete tasks to earn points and unlock tiers.", "text": "시즌 종료까지 {arg1}. 과제를 완료해 포인트를 얻고 단계를 여세요." },
   "ui.see_defense_replays_db4b59b872": { "en": "See defense replays", "text": "방어 리플레이 보기" },
   "ui.see_offer_in_the_store_afae86c740": { "en": "See offer in the store", "text": "상점에서 혜택 보기" },
@@ -1603,7 +1603,7 @@
   "ui.who_can_find_me_by_name_ed481ead6d": { "en": "Who can find me by name", "text": "이름으로 나를 찾을 수 있는 사람" },
   "ui.win_bonus_76ff020d10": { "en": "Win bonus ", "text": "승리 보너스 " },
   "ui.win_c622058960": { "en": "Win ", "text": "승리 " },
-  "ui.win_raids_to_earn_honor_lose_it_when_y_a98b0bc1b5": { "en": "Win raids to earn honor; lose it when your attacks fail or when raiders beat your village. More honor brings tougher opponents with more loot.", "text": "", "old": "습격에서 이기면 명예를 얻고, 공격에 실패하거나 습격자에게 마을이 지면 잃어요. 명예가 높을수록 전리품이 많은 강한 상대를 만나요." },
+  "ui.win_raids_to_earn_honor_lose_it_when_y_a98b0bc1b5": { "en": "Win raids to earn honor; lose it when your attacks fail or when raiders beat your village. More honor brings tougher opponents with more loot.", "text": "습격에서 이기면 명예를 얻고, 공격에 실패하거나 습격자에게 마을이 지면 잃어요. 명예가 높을수록 전리품이 많은 강한 상대를 만나요." },
   "ui.won_acdf2907db": { "en": "Won", "text": "승리" },
   "ui.won_cf6247318b": { "en": "{arg1} won", "text": "{arg1} 승리" },
   "ui.year_89f6832560": { "en": "Year", "text": "연도" },
@@ -2114,5 +2114,5 @@
   "sim.there_is_no_daily_drill_49086be800": { "en": "There is no daily drill.", "text": "일일 훈련이 없어요." },
   "sim.too_long_ago_146e28a63e": { "en": "Too long ago.", "text": "너무 오래전 일이에요." },
   "sim.build_a_training_dojo_and_a_squad_courty_ad04d756ab": { "en": "Build a Training Dojo and a Squad Courtyard first.", "text": "먼저 수련 도장과 부대 마당을 지으세요." },
-  "sim.upgrade_your_clan_keep_to_level_arg1_to_9970fcfb20": { "en": "Upgrade your Clan Keep to level {arg1} to build a {arg2}.", "text": "" }
+  "sim.upgrade_your_clan_keep_to_level_arg1_to_9970fcfb20": { "en": "Upgrade your Clan Keep to level {arg1} to build a {arg2}.", "text": "{arg2} 건물을 지으려면 가문 본성을 레벨 {arg1}까지 업그레이드하세요." }
 }

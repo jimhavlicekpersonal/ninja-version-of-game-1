@@ -1371,7 +1371,7 @@
   "ui.search_49c266baaa": { "en": "Search", "text": "ଖୋଜନ୍ତୁ" },
   "ui.search_alliances_a696ac16e8": { "en": "Search Alliances…", "text": "ମେଣ୍ଟ ଖୋଜନ୍ତୁ…" },
   "ui.search_stopped_acf16c738e": { "en": "Search stopped.", "text": "ଖୋଜା ବନ୍ଦ ହେଲା।" },
-  "ui.season_ends_in_at_the_end_of_each_mont_c60052cb71": { "en": "Season ends in {arg1}. At the end of each month you get your league's chest, and honor above {arg2} is halved.", "text": "", "old": "ଋତୁ {arg1} ରେ ଶେଷ। ପ୍ରତି ମାସ ଶେଷରେ ଆପଣ ନିଜ ଲିଗର ସିନ୍ଦୁକ ପାଆନ୍ତି, ଓ {arg2} ଉପରର ସମ୍ମାନ ଅଧା ହୁଏ।" },
+  "ui.season_ends_in_at_the_end_of_each_mont_c60052cb71": { "en": "Season ends in {arg1}. At the end of each month you get your league's chest, and honor above {arg2} is halved.", "text": "ଋତୁ ଶେଷ ହେବାକୁ ବାକି: {arg1}। ପ୍ରତି ମାସ ଶେଷରେ ଆପଣ ନିଜ ଲିଗର ସିନ୍ଦୁକ ପାଆନ୍ତି, ଓ {arg2} ଉପରର ସମ୍ମାନ ଅଧା ହୁଏ।" },
   "ui.season_ends_in_complete_tasks_to_earn__300938261c": { "en": "Season ends in {arg1}. Complete tasks to earn points and unlock tiers.", "text": "ଋତୁ {arg1} ରେ ଶେଷ। ପଏଣ୍ଟ ଅର୍ଜନ ଓ ପାହାଚ ଖୋଲିବାକୁ କାର୍ଯ୍ୟ ସମ୍ପୂର୍ଣ୍ଣ କରନ୍ତୁ।" },
   "ui.see_defense_replays_db4b59b872": { "en": "See defense replays", "text": "ପ୍ରତିରକ୍ଷା ରିପ୍ଲେ ଦେଖନ୍ତୁ" },
   "ui.see_offer_in_the_store_afae86c740": { "en": "See offer in the store", "text": "ଷ୍ଟୋରରେ ଅଫର୍ ଦେଖନ୍ତୁ" },
@@ -1603,7 +1603,7 @@
   "ui.who_can_find_me_by_name_ed481ead6d": { "en": "Who can find me by name", "text": "ମୋତେ ନାମ ଦ୍ୱାରା କିଏ ଖୋଜିପାରିବେ" },
   "ui.win_bonus_76ff020d10": { "en": "Win bonus ", "text": "ବିଜୟ ବୋନସ୍ " },
   "ui.win_c622058960": { "en": "Win ", "text": "ବିଜୟ " },
-  "ui.win_raids_to_earn_honor_lose_it_when_y_a98b0bc1b5": { "en": "Win raids to earn honor; lose it when your attacks fail or when raiders beat your village. More honor brings tougher opponents with more loot.", "text": "", "old": "ସମ୍ମାନ ଅର୍ଜନ ପାଇଁ ଚଢ଼ାଉ ଜିତନ୍ତୁ; ଆପଣଙ୍କ ଆକ୍ରମଣ ବିଫଳ ହେଲେ କିମ୍ବା ଚଢ଼ାଉକାରୀ ଆପଣଙ୍କ ଗାଁକୁ ହରାଇଲେ ଏହା ହଜେ। ଅଧିକ ସମ୍ମାନ ଅଧିକ ଲୁଟ୍ ସହ କଠିନ ପ୍ରତିଦ୍ୱନ୍ଦ୍ୱୀ ଆଣେ।" },
+  "ui.win_raids_to_earn_honor_lose_it_when_y_a98b0bc1b5": { "en": "Win raids to earn honor; lose it when your attacks fail or when raiders beat your village. More honor brings tougher opponents with more loot.", "text": "ସମ୍ମାନ ଅର୍ଜନ ପାଇଁ ଚଢ଼ାଉ ଜିତନ୍ତୁ; ଆପଣଙ୍କ ଆକ୍ରମଣ ବିଫଳ ହେଲେ କିମ୍ବା ଚଢ଼ାଉକାରୀ ଆପଣଙ୍କ ଗାଁକୁ ହରାଇଲେ ଏହା ହଜେ। ଅଧିକ ସମ୍ମାନ ଅଧିକ ଲୁଟ୍ ସହ କଠିନ ପ୍ରତିଦ୍ୱନ୍ଦ୍ୱୀ ଆଣେ।" },
   "ui.won_acdf2907db": { "en": "Won", "text": "ଜିତିଲେ" },
   "ui.won_cf6247318b": { "en": "{arg1} won", "text": "{arg1} ଜିତିଲେ" },
   "ui.year_89f6832560": { "en": "Year", "text": "ବର୍ଷ" },
@@ -2114,5 +2114,5 @@
   "sim.there_is_no_daily_drill_49086be800": { "en": "There is no daily drill.", "text": "କୌଣସି ଦୈନିକ ଅଭ୍ୟାସ ନାହିଁ।" },
   "sim.too_long_ago_146e28a63e": { "en": "Too long ago.", "text": "ବହୁତ ପୁରୁଣା।" },
   "sim.build_a_training_dojo_and_a_squad_courty_ad04d756ab": { "en": "Build a Training Dojo and a Squad Courtyard first.", "text": "ପ୍ରଥମେ ଏକ ପ୍ରଶିକ୍ଷଣ ଡୋଜୋ ଓ ଏକ ଦଳ ପ୍ରାଙ୍ଗଣ ନିର୍ମାଣ କରନ୍ତୁ।" },
-  "sim.upgrade_your_clan_keep_to_level_arg1_to_9970fcfb20": { "en": "Upgrade your Clan Keep to level {arg1} to build a {arg2}.", "text": "" }
+  "sim.upgrade_your_clan_keep_to_level_arg1_to_9970fcfb20": { "en": "Upgrade your Clan Keep to level {arg1} to build a {arg2}.", "text": "ଗଢ଼ିବାକୁ ଗୋଷ୍ଠୀ ଦୁର୍ଗକୁ ସ୍ତର {arg1} କୁ ଅପଗ୍ରେଡ୍ କରନ୍ତୁ: {arg2}।" }
 }

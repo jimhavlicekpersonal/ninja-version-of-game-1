@@ -1371,7 +1371,7 @@
   "ui.search_49c266baaa": { "en": "Search", "text": "Hledat" },
   "ui.search_alliances_a696ac16e8": { "en": "Search Alliances…", "text": "Hledat aliance…" },
   "ui.search_stopped_acf16c738e": { "en": "Search stopped.", "text": "Hledání zastaveno." },
-  "ui.season_ends_in_at_the_end_of_each_mont_c60052cb71": { "en": "Season ends in {arg1}. At the end of each month you get your league's chest, and honor above {arg2} is halved.", "text": "", "old": "Sezóna končí za {arg1}. Na konci každého měsíce dostaneš truhlu své ligy a čest nad {arg2} se sníží na polovinu." },
+  "ui.season_ends_in_at_the_end_of_each_mont_c60052cb71": { "en": "Season ends in {arg1}. At the end of each month you get your league's chest, and honor above {arg2} is halved.", "text": "Sezóna končí za {arg1}. Na konci každého měsíce dostaneš truhlu své ligy a čest nad {arg2} se sníží na polovinu." },
   "ui.season_ends_in_complete_tasks_to_earn__300938261c": { "en": "Season ends in {arg1}. Complete tasks to earn points and unlock tiers.", "text": "Sezóna končí za {arg1}. Plň úkoly, získávej body a odemykej stupně." },
   "ui.see_defense_replays_db4b59b872": { "en": "See defense replays", "text": "Zobrazit záznamy obrany" },
   "ui.see_offer_in_the_store_afae86c740": { "en": "See offer in the store", "text": "Zobrazit nabídku v obchodě" },
@@ -1603,7 +1603,7 @@
   "ui.who_can_find_me_by_name_ed481ead6d": { "en": "Who can find me by name", "text": "Kdo mě může najít podle jména" },
   "ui.win_bonus_76ff020d10": { "en": "Win bonus ", "text": "Bonus za výhru " },
   "ui.win_c622058960": { "en": "Win ", "text": "Výhra " },
-  "ui.win_raids_to_earn_honor_lose_it_when_y_a98b0bc1b5": { "en": "Win raids to earn honor; lose it when your attacks fail or when raiders beat your village. More honor brings tougher opponents with more loot.", "text": "", "old": "Vyhrávej nájezdy a získávej čest; ztrácíš ji, když tvé útoky selžou nebo když nájezdníci porazí tvou vesnici. Víc cti přináší těžší soupeře s větší kořistí." },
+  "ui.win_raids_to_earn_honor_lose_it_when_y_a98b0bc1b5": { "en": "Win raids to earn honor; lose it when your attacks fail or when raiders beat your village. More honor brings tougher opponents with more loot.", "text": "Vyhrávej nájezdy a získávej čest; ztrácíš ji, když tvé útoky selžou nebo když nájezdníci porazí tvou vesnici. Víc cti přináší těžší soupeře s větší kořistí." },
   "ui.won_acdf2907db": { "en": "Won", "text": "Výhra" },
   "ui.won_cf6247318b": { "en": "{arg1} won", "text": "Vítěz: {arg1}" },
   "ui.year_89f6832560": { "en": "Year", "text": "Rok" },
@@ -2114,5 +2114,5 @@
   "sim.there_is_no_daily_drill_49086be800": { "en": "There is no daily drill.", "text": "Žádné denní cvičení není k dispozici." },
   "sim.too_long_ago_146e28a63e": { "en": "Too long ago.", "text": "Příliš dávno." },
   "sim.build_a_training_dojo_and_a_squad_courty_ad04d756ab": { "en": "Build a Training Dojo and a Squad Courtyard first.", "text": "Nejdřív postav Výcvikové dódžó a Nádvoří oddílů." },
-  "sim.upgrade_your_clan_keep_to_level_arg1_to_9970fcfb20": { "en": "Upgrade your Clan Keep to level {arg1} to build a {arg2}.", "text": "" }
+  "sim.upgrade_your_clan_keep_to_level_arg1_to_9970fcfb20": { "en": "Upgrade your Clan Keep to level {arg1} to build a {arg2}.", "text": "Vylepši Klanovou pevnost na úroveň {arg1}, ať můžeš postavit budovu {arg2}." }
 }
