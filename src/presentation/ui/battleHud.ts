@@ -1,5 +1,6 @@
 import { displayData as localizedData, messageText as ownedText, generatedName } from './i18n';
 import { unitName } from './unitName';
+import { RES_LABEL } from './chips';
 import type { ProgressLine } from './resultProgress';
 import { messageText as i18nMessage, listText as i18nList } from './i18n';
 import { labelText as i18nLabel } from './i18n';
@@ -53,6 +54,8 @@ interface BattleHudDeps {
   canPayFee(): boolean;
   onHome(): void;
   onNext(): void;
+  /** P6-16: go home and open the Army panel (the scout screen with no army). */
+  onTrain?(): void;
   /** Resolves false when the battle could not start (an online raid needs the server's go and seed). */
   onAttack(): boolean | Promise<boolean>;
   /** Called once when a live battle ends; returns the loot actually banked. */
@@ -195,7 +198,7 @@ export class BattleHud {
         this.s.mode !== 'replay' && !deps.grove && !deps.trial && !deps.special && this.s.setup.base.trophies !== undefined
           ? h(
               'div',
-              { class: 'small b-trophies', title: i18nText("ui.honor_theirs_then_what_you_win_or_lose_a762882eaa") },
+              { class: 'small b-trophies', role: 'button', tabindex: '0', title: i18nText("ui.honor_theirs_then_what_you_win_or_lose_a762882eaa"), onclick: (ev: Event) => { ev.stopPropagation(); this.toast(i18nText("ui.honor_theirs_then_what_you_win_or_lose_a762882eaa")); } },
               icon(icons.leaf),
               i18nText("ui.message_f9da5dafaf", { arg1: this.s.setup.base.trophies, arg2: winTrophies(deps.myTrophies, this.s.setup.base.trophies, localizedData(this.s.data)), arg3: lossTrophies(deps.myTrophies, this.s.setup.base.trophies, localizedData(this.s.data)) }),
             )
@@ -217,6 +220,7 @@ export class BattleHud {
     }
     this.tick();
     this.interval = window.setInterval(() => this.tick(), 100);
+    window.addEventListener('keydown', this.onKey);
   }
 
   private leftEl!: HTMLElement;
@@ -267,6 +271,7 @@ export class BattleHud {
 
   destroy(): void {
     window.clearInterval(this.interval);
+    window.removeEventListener('keydown', this.onKey);
     clear(this.deps.root);
     this.deps.root.hidden = true;
     delete this.deps.root.dataset.mode;
@@ -534,7 +539,13 @@ export class BattleHud {
           ? h('span', {}, '')
           : h(
               'button',
-              { class: 'btn gold', type: 'button', disabled: !this.deps.canPayFee(), onclick: () => this.deps.onNext() },
+              {
+                class: `btn gold${this.deps.canPayFee() ? '' : ' unaffordable'}`,
+                type: 'button',
+                'aria-disabled': String(!this.deps.canPayFee()),
+                // P6-16 (UIS-10): a tap on an unaffordable Next says why instead of doing nothing.
+                onclick: () => (this.deps.canPayFee() ? this.deps.onNext() : this.toast(i18nText("sim.not_enough_resources_needs_69f536b412", { arg1: `${formatNumber(this.deps.scoutFee)} ${RES_LABEL.acorns}` }))),
+              },
               h('span', {}, t('battle.next')),
               h('span', { class: 'chip' }, icon(icons.acorns), formatNumber(this.deps.scoutFee)),
             ),
@@ -543,8 +554,9 @@ export class BattleHud {
           {
             class: 'btn danger big-attack',
             type: 'button',
-            disabled: !hasArmy,
-            onclick: (ev: Event) => void this.attackTapped(ev.currentTarget as HTMLButtonElement),
+            
+            // P6-16: with no army, the button leads to the Army panel instead of being a dead end.
+            onclick: (ev: Event) => (hasArmy ? void this.attackTapped(ev.currentTarget as HTMLButtonElement) : this.deps.onTrain ? this.deps.onTrain() : undefined),
           },
           hasArmy ? t('battle.attack') : t('battle.trainFirst'),
         ),
@@ -665,6 +677,8 @@ export class BattleHud {
         icon(icons.smoke),
         h('span', { class: 'troop-count' }, `×${left}`),
       );
+      const ab = localizedData(this.s.data).battle.abilities.smoke_bomb;
+      this.longPress(card, () => `${ab.name}: ${ab.description}`);
       card.addEventListener('click', () => {
         if (this.left('smoke_bomb') <= 0) return;
         if (this.selected && !isAbility(localizedData(this.s.data), this.selected)) this.lastTroop = this.selected;
@@ -690,6 +704,7 @@ export class BattleHud {
         thumb ? h('img', { src: thumb, alt: '' }) : null,
         h('span', { class: 'troop-count' }, `×${left}`),
       );
+      if (def) this.longPress(card, () => `${def.name}: ${def.description}`);
       card.addEventListener('click', () => {
         if (this.left(type) <= 0) return;
         // P6-11: once warriors are in, a second tap on the selected card puts it down, and the camera follows the fight.
@@ -1021,7 +1036,62 @@ export class BattleHud {
       ),
     );
     this.modalEl.append(backdrop);
+    // P6-16 (UIS-13): focus goes into the dialog and Tab stays inside it; Escape closes it when it can be closed.
+    backdrop.dataset.closable = String(closable);
+    backdrop.addEventListener('keydown', (e) => {
+      if (e.key !== 'Tab') return;
+      const f = [...backdrop.querySelectorAll<HTMLElement>('button:not([disabled]), [tabindex="0"]')];
+      if (!f.length) return;
+      const i = f.indexOf(document.activeElement as HTMLElement);
+      const nextI = e.shiftKey ? (i <= 0 ? f.length - 1 : i - 1) : i === f.length - 1 ? 0 : i + 1;
+      e.preventDefault();
+      f[nextI].focus();
+    });
+    (foot.querySelector<HTMLElement>('.btn.primary') ?? backdrop.querySelector<HTMLElement>('button'))?.focus();
     return close;
+  }
+
+  /**
+   * P6-16 (UIS-13): battle hotkeys on a keyboard: 1-9 pick a warrior card, S the Smoke Bomb, Esc closes the top
+   * dialog or asks "End the battle?" (a replay or the scout screen go home). Typing in a field is left alone.
+   */
+  private onKey = (e: KeyboardEvent): void => {
+    if (e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey) return;
+    const tag = (e.target as HTMLElement | null)?.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+    const top = [...this.modalEl.querySelectorAll<HTMLElement>('.modal-backdrop:not(.out)')].pop();
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      if (top) {
+        if (top.dataset.closable === 'true') top.querySelector<HTMLButtonElement>('.modal-head .icon-btn')?.click();
+        return;
+      }
+      if (this.s.mode === 'live' && !this.s.sim.ended) this.confirmEnd();
+      else this.deps.root.querySelector<HTMLButtonElement>('[data-id="exit-replay"], [data-id="battle-home"]')?.click();
+      return;
+    }
+    if (top || this.s.mode === 'replay') return;
+    if (e.key === 's' || e.key === 'S') {
+      this.troopsEl.querySelector<HTMLButtonElement>('.troop-card.ability')?.click();
+      e.preventDefault();
+      return;
+    }
+    if (/^[1-9]$/.test(e.key)) {
+      const cards = [...this.troopsEl.querySelectorAll<HTMLButtonElement>('.troop-card:not(.ability)')];
+      cards[Number(e.key) - 1]?.click();
+      e.preventDefault();
+    }
+  };
+
+  /** P6-16: a long press on a card shows its name and line from data (a title never shows on touch). */
+  private longPress(el: HTMLElement, text: () => string): void {
+    let timer = 0;
+    const cancel = () => window.clearTimeout(timer);
+    el.addEventListener('pointerdown', () => {
+      cancel();
+      timer = window.setTimeout(() => this.toast(text()), 550);
+    });
+    for (const ev of ['pointerup', 'pointerleave', 'pointercancel']) el.addEventListener(ev, cancel);
   }
 }
 

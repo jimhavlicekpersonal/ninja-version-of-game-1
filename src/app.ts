@@ -404,6 +404,11 @@ export class App {
       canPayFee: () => c.state.resources.acorns >= scoutFee(c.state, c.data),
       onHome: () => this.home(),
       onNext: () => this.scout(true),
+      // P6-16: the scout screen with no army leads to the Army panel.
+      onTrain: () => {
+        this.home();
+        this.d.hud.openShortcut('army');
+      },
       onAttack: async () => {
         // An online raid counts from here (re-audit): the server settles it as a loss if it is never
         // reported, and only now sends the battle seed (ledger audit A1). No seed, no battle.

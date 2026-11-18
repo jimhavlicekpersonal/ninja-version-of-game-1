@@ -1215,3 +1215,5 @@ button.res.res-builders { border: none; font: inherit; color: inherit; cursor: p
 html[dir="rtl"] .side-rail .rail-intro { inset-inline-end: auto; inset-inline-start: calc(100% + 8px); }
 button.res.res-trophies { border: none; font: inherit; color: inherit; cursor: pointer; }
 .round-btn .badge.dot { min-width: 18px; }
+/* P6-16: an unaffordable Next stays tappable (it says why) but reads as unavailable. */
+.btn.gold.unaffordable { filter: grayscale(.7); opacity: .7; }
