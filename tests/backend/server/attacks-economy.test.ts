@@ -9,6 +9,7 @@ import { describe, expect, it } from 'vitest';
 import { ServerError } from '../../../src/backend/net/ports';
 import type { BattleRecord } from '../../../src/gameplay/sim/battle/types';
 import { deserialize } from '../../../src/gameplay/sim/save';
+import { mixSeed } from '../../../src/gameplay/sim/rng';
 import type { GameData, VillageState } from '../../../src/gameplay/sim/types';
 import { applyCommand, type Command } from '../../../src/gameplay/sim/village';
 import { emulator, placeCollector, placeType } from './economyHarness';
@@ -100,6 +101,30 @@ for (const [label, makeRepo] of repoFactories) {
       // The ticket was not used up: the attack with the real army still goes through.
       const ok = await ann.submitAttack({ ticket: m.ticket, seed: await startSeed(ann, m.ticket), ...rush(10) });
       expect(ok.result.used.hedgehog_roller).toBeGreaterThan(0);
+    });
+
+    it('settles a started no-warrior report as a loss', async () => {
+      const { w, ann } = await scene();
+      await w.repo.updatePlayer(ann.id, { trophies: 500 });
+      const m = await ann.match();
+      const seed = await startSeed(ann, m.ticket);
+      await expect(ann.submitAttack({ ticket: m.ticket, seed, army: {}, deployments: [] })).rejects.toBeTruthy();
+      const after = (await w.repo.getPlayer(ann.id))!;
+      expect(after.trophies).toBeLessThan(500);
+      expect((await w.repo.getTicket(m.ticket))?.used).toBe(true);
+    });
+
+    it('replaces client chest entropy on server-held villages', async () => {
+      const { w, ann } = await scene();
+      const before = deserialize((await ann.getVillage())!.file, w.data).daily.salt ?? 0;
+      const game = emulator((await ann.getVillage())!.file, w.data);
+      const local = game.do({ type: 'openDailyChest', entropy: 7 }, w.now());
+      expect(local.ok).toBe(true);
+      const batch = game.batch();
+      const reply = await ann.sendCommands(batch);
+      const after = deserialize((await ann.getVillage())!.file, w.data).daily.salt ?? 0;
+      expect(after).not.toBe(mixSeed(before, 7));
+      expect(reply.corrections).toBeDefined();
     });
 
     it('gives donated troops from the donor’s server-held army (step 23)', async () => {

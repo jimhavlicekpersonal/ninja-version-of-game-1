@@ -660,7 +660,9 @@ export async function attack(ctx: ServerContext, me: Player, sub: BattleReport):
   // Balance audit 2026-11-08 (DZ-3): the free clan hero alone wins nothing; with no warrior deployed the
   // battle is practice (the game records it so too, `foughtWithWarriors`).
   if (!foughtWithWarriors(result, setup)) {
-    await repo.useTicket(ticket.id, undefined);
+    // Once Attack was pressed, a refused no-warrior report cannot erase the
+    // commitment. Settle it as a loss so it cannot be retried or hidden.
+    await forfeitTicket(ctx, ticket);
     if (ticket.defenderId) await ctx.locks.release(ticket.defenderId, me.id);
     throw fail(409, 'no_warriors', 'pvp.no_warriors');
   }

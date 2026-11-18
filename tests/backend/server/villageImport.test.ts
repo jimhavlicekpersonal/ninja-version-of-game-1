@@ -79,6 +79,17 @@ describe('worldwide audit GLOBAL-002: import provenance', () => {
     signJws({ transactionId: id, originalTransactionId: id, bundleId: TEST_BUNDLE, productId, purchaseDate: T2, environment: 'Sandbox', type: 'Consumable', ...(token ? { appAccountToken: token } : {}) });
 
   for (const [label, makeRepo] of repoFactories) {
+    it(`does not import an unverified Clan Stipend entitlement (${label})`, async () => {
+      const w = world({ repo: await makeRepo(), start: T2 });
+      const forger = await w.player('StipendForger');
+      const forged = played();
+      forged.stipend = { left: 1, lastDay: -1, jade: 1_000_000 };
+      const imported = await forger.importVillage(serialize(forged, w.now()));
+      const village = deserialize(imported.file, data);
+      expect(village.stipend).toMatchObject({ left: 0, jade: 0 });
+      expect(village.resources.moonstones).toBe(500);
+    });
+
     it(`holds back invented Jade and an unpaid premium Scroll, keeps checked purchases (${label})`, async () => {
       const w = world({ repo: await makeRepo(), start: T2, shared: { payments: { apple: testAppleVerifier() } } });
       // The audit's reproduction: 20,000 Jade, premium on, no purchase records.
@@ -113,6 +124,16 @@ describe('worldwide audit GLOBAL-002: import provenance', () => {
       const copy = await w.player('Copy');
       const cv = await copy.importVillage(serialize(real, w.now()));
       expect(cv.importHeld).toEqual({ jade: 1300, premium: true, purchases: 2 });
+
+      // A save cannot relabel a verified low-value transaction as a Stipend,
+      // or inflate the Jade grant attached to a real transaction.
+      const spoofed = played();
+      spoofed.purchases.push({ id: r1.transactionId, productId: 'clan_stipend', usd: r1.usd, at: T2, grants: { moonstones: 1_000_000 }, stipend: { left: 100, lastDay: -1, jade: 1_000_000 } });
+      spoofed.resources.moonstones = 20_000;
+      const spoofedResult = checkProvenance(spoofed, T2, data, await w.repo.purchasesOf(buyer.id, 100));
+      expect(spoofedResult.state.stipend).toMatchObject({ left: 0, jade: 0 });
+      expect(spoofedResult.state.resources.moonstones).toBe(freeJadeAllowance(1) + 1300);
+      expect(spoofedResult.held?.jade).toBe(20_000 - freeJadeAllowance(1) - 1300);
     });
   }
 

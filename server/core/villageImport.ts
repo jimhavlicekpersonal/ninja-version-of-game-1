@@ -71,16 +71,39 @@ export interface Provenance {
  */
 export function checkProvenance(s: VillageState, now: number, data: GameData, credited: PurchaseRow[]): Provenance {
   const state = structuredClone(s);
-  const ok = new Set(credited.filter((p) => p.status === 'credited').map((p) => `${p.store}:${p.transactionId}`));
-  const confirmed = state.purchases.filter((p) => ok.has(p.id));
-  const unconfirmed = state.purchases.filter((p) => !ok.has(p.id)).map((p) => p.id);
-  // What each purchase really delivered (offers may convert to Jade; the record keeps it), else the catalog.
-  const paidJade = confirmed.reduce((sum, p) => sum + ((p.grants ?? productInfo(data, p.productId)?.grants)?.moonstones ?? 0), 0);
+  const purchaseById = new Map(credited.filter((p) => p.status === 'credited').map((p) => [`${p.store}:${p.transactionId}`, p]));
+  // A transaction ID alone is not enough: all entitlements come from the
+  // product and purchase time stored by the server, never from the save.
+  const confirmed = state.purchases.flatMap((p) => {
+    const row = purchaseById.get(p.id);
+    return row && row.productId === p.productId ? [{ record: p, row }] : [];
+  });
+  // A save cannot prove unclaimed consumable entitlements. Rebuild the remaining
+  // Clan Stipend balance only from server-verified purchases, capped by the
+  // amounts each verified purchase actually granted. Preserve legitimate
+  // imported claims by subtracting the Jade already recorded as paid out.
+  const verifiedStipend = confirmed.reduce((sum, { row }) => {
+    const product = productInfo(data, row.productId);
+    if (product?.kind !== 'stipend') return sum;
+    const granted = { payments: data.store.stipend?.payments ?? 0, jade: (data.store.stipend?.payments ?? 0) * (data.store.stipend?.jadePerPayment ?? 0) };
+    return { payments: sum.payments + Math.max(0, granted.payments), jade: sum.jade + Math.max(0, granted.jade) };
+  }, { payments: 0, jade: 0 });
+  // Do not trust per-save payout history here. Its only safe bound is the
+  // total checked entitlement; the remaining balance itself is capped below.
+  const recordedPaid = 0;
+  const paidFromStipends = Math.min(verifiedStipend.jade, recordedPaid);
+  const payableJade = Math.max(0, verifiedStipend.jade - paidFromStipends);
+  state.stipend.left = Math.min(Math.max(0, state.stipend.left), verifiedStipend.payments);
+  state.stipend.jade = Math.min(Math.max(0, state.stipend.jade), payableJade);
+  const unconfirmed = state.purchases.filter((p) => !confirmed.some((c) => c.record.id === p.id)).map((p) => p.id);
+  // Grant values in the imported record are editable, so authorize only the
+  // catalog value for the product the store transaction actually verified.
+  const paidJade = confirmed.reduce((sum, { row }) => sum + (productInfo(data, row.productId)?.grants?.moonstones ?? 0), 0);
   const allowed = freeJadeAllowance(hallLevel(state, data)) + paidJade;
   const jade = Math.max(0, Math.round(state.resources.moonstones - allowed));
   state.resources.moonstones -= jade;
   const season = passSeason(now, data);
-  const paidPass = confirmed.some((p) => productInfo(data, p.productId)?.kind === 'pass' && passSeason(p.at, data) === season);
+  const paidPass = confirmed.some(({ row }) => productInfo(data, row.productId)?.kind === 'pass' && passSeason(row.at, data) === season);
   const premium = state.pass.premium && !paidPass;
   if (premium) state.pass.premium = false;
   // Re-audit: counters and claims are not proof either. Whatever the imported counters already
@@ -96,7 +119,7 @@ export function checkProvenance(s: VillageState, now: number, data: GameData, cr
   state.pass.claimedPremium = [...new Set([...state.pass.claimedPremium, ...tiers])];
   state.tasks = { ...state.tasks, dayBaseline: { ...state.stats }, weekBaseline: { ...state.stats } };
   // A Season Scroll look nobody paid for (this server never credited a Scroll purchase) does not move.
-  const anyPass = confirmed.some((p) => productInfo(data, p.productId)?.kind === 'pass');
+  const anyPass = confirmed.some(({ row }) => productInfo(data, row.productId)?.kind === 'pass');
   const passOnly = new Set(data.cosmetics.hallSkins.filter((k) => k.passOnly).map((k) => k.id));
   if (!anyPass && state.cosmetics.owned.some((id) => passOnly.has(id))) {
     state.cosmetics.owned = state.cosmetics.owned.filter((id) => !passOnly.has(id));
