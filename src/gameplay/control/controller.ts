@@ -137,7 +137,9 @@ export class GameController {
     const { state: caughtUp, summary } = computeOfflineProgress(state, now, deps.data, { botRaids: deps.botRaids });
     const controller = new GameController(deps, GameController.marked(caughtUp, deps));
     await controller.save();
-    const show = summary.awayMs >= deps.data.economy.welcomeBackMinAwaySeconds * 1000;
+    // The welcome-back dialog needs a real absence, but a Season Scroll payout is told whatever the gap: a restart
+    // across the season's end must not credit in silence (review SCR-07).
+    const show = summary.awayMs >= deps.data.economy.welcomeBackMinAwaySeconds * 1000 || summary.scroll.length > 0;
     return { controller, offline: show ? summary : null, isNew: false, loadError };
   }
 
@@ -202,8 +204,12 @@ export class GameController {
    * own times. Anything the replay refuses is simply dropped (the server will
    * refuse it too).
    */
-  adoptEconomy(economy: Economy, replay: { command: Command; t: number }[]): void {
+  adoptEconomy(economy: Economy, replay: { command: Command; t: number }[], seasons?: Pick<VillageState, 'pass' | 'season' | 'seasonLog'>): void {
     let s = withEconomy(this.state, economy);
+    // `seasons`: the Season Scroll and league season of the village that economy was read from. Their settlement
+    // pays into the economy, so they travel with it: an economy from before a season's end with a Scroll from
+    // after it would never be paid here (review SCR-01). The next tick settles again, exactly as the server will.
+    if (seasons) s = { ...s, pass: structuredClone(seasons.pass), season: seasons.season, seasonLog: structuredClone(seasons.seasonLog) };
     for (const r of replay) {
       const x = applyCommand(s, r.command, r.t, this.deps.data);
       if (x.ok) s = x.state;
@@ -234,7 +240,10 @@ export class GameController {
     const week = p.phase === 'upcoming' ? p.week : p.week + 1;
     if (g.prepOfferWeek === week || p.nextStart - now > this.deps.data.social.groveRaid.prepOfferHours * 3_600_000) return;
     const r = applyCommand(this.state, { type: 'markPrepOffer', week }, now, this.deps.data);
-    if (r.ok) this.state = r.state;
+    if (r.ok) {
+      this.state = r.state;
+      this.tellSettled(r.events);
+    }
     this.triggerOffer('grove_raid_soon');
   }
 
@@ -263,12 +272,22 @@ export class GameController {
     return () => this.offerListeners.delete(fn);
   }
 
+  /**
+   * A command the controller runs for itself (not through `dispatch`) can be the first thing to cross a season's
+   * end. What the settlement paid on the way is told to the listeners like any other reward, never dropped.
+   */
+  private tellSettled(events: SimEvent[]): void {
+    const paid = events.filter((e) => e.kind === 'reward' && e.source.startsWith('pass_end:'));
+    if (paid.length) for (const fn of this.eventListeners) fn(paid);
+  }
+
   /** Show an offer for this trigger, at most once per session. */
   triggerOffer(trigger: OfferTrigger): OfferRule | null {
     if (this.offersThisSession >= this.deps.data.offers.maxPerSession) return null;
     const r = applyCommand(this.state, { type: 'triggerOffer', trigger }, this.now(), this.deps.data);
     if (!r.ok) return null;
     this.state = r.state;
+    this.tellSettled(r.events);
     const e = r.events.find((x) => x.kind === 'offer_shown');
     if (!e || e.kind !== 'offer_shown') return null;
     this.offersThisSession++;
@@ -462,8 +481,10 @@ export class GameController {
     const groveDue = s.grove.joined && now - s.grove.processedAt >= 30_000;
     const periodDue = localDayIndex(s, now, data) > s.tasks.day || passSeason(now, data) > s.pass.season;
     const seasonDue = seasonOf(now) > s.season;
-    this.checkPrepOffer(now);
-    if (!trainingDone && !researchDone && !groveDue && !periodDue && !seasonDue && !s.buildings.some((b) => b.upgrade && b.upgrade.endsAt <= now)) return [];
+    if (!trainingDone && !researchDone && !groveDue && !periodDue && !seasonDue && !s.buildings.some((b) => b.upgrade && b.upgrade.endsAt <= now)) {
+      this.checkPrepOffer(now);
+      return [];
+    }
     const logged = this.state.seasonLog.length ? this.state.seasonLog[this.state.seasonLog.length - 1].season : -1;
     const { state, finished, rewards } = advance(this.state, now, data);
     this.state = state;
@@ -478,6 +499,10 @@ export class GameController {
       .filter((sr) => sr.season > logged)
       .map((sr) => ({ kind: 'reward', source: `season:${sr.league}`, grants: sr.chest, ...(sr.overflow ? { overflow: sr.overflow } : {}) }));
     if (seasonEvents.length) for (const fn of this.eventListeners) fn(seasonEvents);
+    // After the settlement, never before it: the war-prep offer opens on a Friday at 00:00 UTC, the moment a
+    // Season Scroll season can end, and its command then crossed the season end first and its payout was told to
+    // nobody (review SCR-04).
+    this.checkPrepOffer(now);
     return finished;
   }
 

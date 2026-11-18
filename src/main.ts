@@ -2,6 +2,8 @@ import { termsGate, provideJadeValueSwitch } from './presentation/ui/complianceU
 import { checkSignificantUpdate, significantUpdateBuild } from './backend/platform/ageRegulatory';
 import { t as i18nText } from './presentation/ui/i18n';
 import { displayData, listText as i18nList, fmtNumber, initLanguage, labelText as i18nLabel, t } from './presentation/ui/i18n';
+import { RES_LABEL } from './presentation/ui/chips';
+import { RESOURCE_KINDS, type Cost, type ResourceKind } from './gameplay/sim/types';
 import Phaser from 'phaser';
 import './presentation/ui/styles.css';
 import { Analytics, IdbEventStore, MemoryEventStore, type EventStore } from './backend/analytics/events';
@@ -799,8 +801,21 @@ function wireSound(controller: GameController, hud: Hud): void {
   controller.onEvents((events) => {
     // A Season Scroll season that ended paid the tiers left unclaimed (`pass_end:`): say so once, in labels the
     // game already has in every language.
-    if (events.some((e) => e.kind === 'reward' && e.source.startsWith('pass_end:'))) {
-      hud.toast([displayData(controller.data).pass.name, i18nText("ui.rewards_59afe47d9d"), i18nText("ui.claimed_ddcd277929")].join(' · '), 'success');
+    const settled = events.filter((e) => e.kind === 'reward' && e.source.startsWith('pass_end:'));
+    if (settled.length) {
+      // What was added, and what did not fit (review SCR-06: it said "Claimed" with full storage and nothing added).
+      const paid: Cost = {};
+      const lost: Cost = {};
+      for (const e of settled) {
+        if (e.kind !== 'reward') continue;
+        for (const [k, v] of Object.entries(e.grants) as [ResourceKind, number][]) paid[k] = (paid[k] ?? 0) + v;
+        for (const [k, v] of Object.entries(e.overflow ?? {}) as [ResourceKind, number][]) lost[k] = (lost[k] ?? 0) + v;
+      }
+      const list = (c: Cost) => i18nList(RESOURCE_KINDS.filter((k) => (c[k] ?? 0) > 0).map((k) => i18nText("ui.message_14677cb26f", { arg1: fmtNumber(c[k]!), arg2: RES_LABEL[k] })), 'conjunction');
+      const got = list(paid);
+      const missed = list(lost);
+      const head = [displayData(controller.data).pass.name, i18nText("ui.rewards_59afe47d9d"), ...(got ? [i18nText("ui.claimed_ddcd277929")] : [])].join(' · ');
+      hud.toast(`${head}${got ? `: ${got}` : ''}${missed ? `${i18nText("ui.did_not_fit_in_storage_2fd00242ff")}${missed})` : ''}`, got ? 'success' : 'info');
     }
     for (const e of events) {
       if (e.kind === 'raid_settled') {
