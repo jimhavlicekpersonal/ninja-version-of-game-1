@@ -56,7 +56,7 @@ server's own row). The prompt's baseline (205 files, 1,934 tests) predates `0c5e
 | P2-05 and P2-06 | done | 64b32b4 | share of stored resources lost (away.ts): 30 days away K9 30% full 96.6% → 24.9%, K12 93.7% → 15.9%; same for 3 and 7 days; full storages 7.5% / 4.8% |  | maxRaidsPerCatchUp 24→3; exhaustion window 24→36 h; round2-rules exhaustion test restated (authorised) |
 | P2-07 | done | ace7673 | 3★ rematch vs a normal raid (lost raids, 30% full): K5 0.33x→0.76-0.81x; K10 0.28x→0.81-1.26x; K12 0.26x→0.73-1.08x; K15 0.46x→1.07-1.96x; at 2.5★ 0.61-1.63x |  | recoverShare 1.0, not 0.75: after P2-01 raiders carry less and 0.75 paid 0.46-0.81x at Keeps 10-12; never more than the raid took. Spread follows what the raid took, so 'about a normal raid' holds for the typical (lightly defended) case only |
 | P2-08 | done | 14c8a88 | two-star stake EV (regular, raid-weighted K5-15, bot plan) 0.658→0.777, three-star 0.131→0.184; casual 0.755→0.892; 80% hitter 0.88→1.04 |  | bot plan gains at Keeps 5 and 9 (regular), 5/14/15 (casual) |
-| P2-09 | todo | | | | |
+| P2-09 | done | 822033b | bonus / avg raid banked, regular: K5 22.3→17.9%, K10 4.8→11.3%, K12 1.6→8.5%, K15 0.7→18.4%; all K5-15 within 6.8-18.4% |  | casual at Keep 5 (Cedar) 4.0%, under 5%: the gate is on the regular model's league. Iron flat 5000→4000. Honor panel shows the bonus at the player's Keep |
 | P2-10 | todo | | | | |
 | P2-11 | done | fc1c03d | fee / mean offer K5 4.82→1.93%, K9 1.56%, K12 1.60%, K15 3.32→1.88% |  | matchmaking test restated against the matched Keep (authorised) |
 | P2-12 | todo | | | | |
