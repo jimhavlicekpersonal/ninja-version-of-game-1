@@ -77,3 +77,18 @@ describe('P2-02 (DEF-04): raiders come from the defender\'s Keep, not its honor'
     }
   });
 });
+
+describe('P2-05/P2-06 (DEF-06, DEF-11): a long absence cannot empty the treasury', () => {
+  it('a thirty-day absence meets at most maxRaidsPerCatchUp raids', async () => {
+    const { simulateOfflineRaids } = await import('../../../src/gameplay/sim/defense');
+    expect(data.raids.maxRaidsPerCatchUp).toBe(3);
+    const v = createNewVillage(0, data);
+    const away = simulateOfflineRaids(v, 30 * 24 * 3_600_000, data);
+    expect(away.raids.length).toBeLessThanOrEqual(3);
+    expect(away.raids.length).toBeGreaterThan(0);
+  });
+
+  it('the exhaustion window reaches a raid a day and a half old', () => {
+    expect(data.raids.exhaustion!.windowHours).toBeGreaterThanOrEqual(36);
+  });
+});

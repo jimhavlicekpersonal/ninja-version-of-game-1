@@ -41,8 +41,12 @@ describe('exhausted stores', () => {
     expect(exhaustionFactor([], 100 * H, data)).toBe(1);
     expect(exhaustionFactor([lost(2, 1)], 100 * H, data)).toBe(f);
     expect(exhaustionFactor([lost(2, 1), lost(20, 3)], 100 * H, data)).toBe(f * f);
-    // Held raids and raids before the window do not count.
-    expect(exhaustionFactor([lost(2, 0), lost(30, 2)], 100 * H, data)).toBe(1);
+    // Held raids and raids before the window do not count. P2-06 (2026-11-18): the window is 36 hours,
+    // so a raid 30 hours ago (a once-a-day player) now counts.
+    const w = data.raids.exhaustion!.windowHours;
+    expect(w).toBe(36);
+    expect(exhaustionFactor([lost(2, 0), lost(w + 1, 2)], 100 * H, data)).toBe(1);
+    expect(exhaustionFactor([lost(30, 2)], 100 * H, data)).toBe(f);
   });
 
   it('scaleBaseLoot scales every building and rounds down', () => {

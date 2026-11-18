@@ -21,8 +21,8 @@
     "shareOfRaidLoot": 0.15
   },
   "exhaustion": {
-    "$comment": "Balance audit 2026-11-08 (exhausted stores): each raid the village lost (1+ star) in the last windowHours multiplies what the next raider can take by factor, offline and online.",
-    "windowHours": 24,
+    "$comment": "Balance audit 2026-11-08 (exhausted stores): each raid the village lost (1+ star) in the last windowHours multiplies what the next raider can take by factor, offline and online. P2-06 (DEF-11, 2026-11-18): window 24 -> 36 hours, so raids a day apart on a once-a-day player are caught.",
+    "windowHours": 36,
     "factor": 0.5
   },
   "diversity": {
@@ -52,7 +52,8 @@
   "chancePerSlot": 0.12,
   "graceMinutes": 2,
   "battleResumeHours": 72,
-  "maxRaidsPerCatchUp": 24,
+  "$commentCatchUp": "P2-05 (DEF-06, 2026-11-18): at most this many raids in one catch-up after an absence (was 24: thirty days away emptied 94-97% of what was stored).",
+  "maxRaidsPerCatchUp": 3,
   "maxDefenseLog": 10,
   "botArmyMix": [
     {
