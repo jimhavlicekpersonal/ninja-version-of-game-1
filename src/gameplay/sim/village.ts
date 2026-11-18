@@ -17,7 +17,7 @@ import { scaleReward, skipCost, topUpCost, trainingSkipCost } from './economy';
 import { canPurchase, productGrantsFor, productInfo } from './monetization';
 import { addStipend, claimStipend, emptyStipend } from './stipend';
 import { activeGoalEvent, bountyBase, goalEventByKey, ladderReward, recordBountyResult } from './goalEvents';
-import { rematchBase, rematchReward, rematchStatus } from './rematch';
+import { rematchBase, rematchKeep, rematchReward, rematchStatus } from './rematch';
 import { scatterObstacles } from './obstacles';
 import { offerCanStillShow, triggerOffer } from './offers';
 import { claimCalendarDay, emptyCalendar, setLocalTime } from './calendar';
@@ -1307,7 +1307,8 @@ export function dailyChestOverflowRisk(state: VillageState, now: number, data: G
 export function passTierReward(state: VillageState, tier: number, track: 'free' | 'premium', data: GameData): (Cost & { skin?: string }) | null {
   const def = data.pass.tiers.find((t) => t.tier === tier);
   if (!def) return null;
-  const { skin, ...res } = track === 'free' ? def.free : def.premium;
+  // The premium column only for exactly 'premium' (a command's track is whatever the game sent).
+  const { skin, ...res } = track === 'premium' ? def.premium : def.free;
   return { ...scaleReward(res, passTierKeep(state, tier, data), data), ...(skin ? { skin } : {}) };
 }
 
@@ -1339,16 +1340,19 @@ function claimTask(s: VillageState, id: string, kind: 'daily' | 'weekly', data: 
 function claimTier(s: VillageState, tier: number, track: 'free' | 'premium', data: GameData): CommandResult {
   const def = data.pass.tiers.find((t) => t.tier === tier);
   if (!def) return fail('NOT_FOUND', 'No such tier.');
+  // Review 2026-11-17 (R3-02): a track that was neither 'free' nor 'premium' skipped the premium check below and
+  // was still paid from the premium column, so the whole premium Scroll could be claimed without buying it.
+  if (track !== 'free' && track !== 'premium') return fail('NOT_FOUND', 'No such tier.');
   if (tier > unlockedTier(s, data)) return fail('NOT_READY', 'Earn more pass points first.');
   if (track === 'premium' && !s.pass.premium) return fail('LOCKED', 'Premium rewards need the premium Season Scroll.');
-  const list = track === 'free' ? s.pass.claimedFree : s.pass.claimedPremium;
+  const list = track === 'premium' ? s.pass.claimedPremium : s.pass.claimedFree;
   if (list.includes(tier)) return fail('ALREADY_CLAIMED', 'Already claimed.');
   return { ok: true, state: s, events: [payTier(s, tier, track, data)] };
 }
 
 /** Mark one unlocked Season Scroll tier claimed and pay it (the caller has checked it may be claimed). Mutates. */
 function payTier(s: VillageState, tier: number, track: 'free' | 'premium', data: GameData, source: 'pass' | 'pass_end' = 'pass'): SimEvent {
-  (track === 'free' ? s.pass.claimedFree : s.pass.claimedPremium).push(tier);
+  (track === 'premium' ? s.pass.claimedPremium : s.pass.claimedFree).push(tier);
   const reward = passTierReward(s, tier, track, data)!;
   const newSkin = reward.skin && !s.cosmetics.owned.includes(reward.skin) ? reward.skin : null;
   const { granted, overflow } = grantReward(s, reward, data);
@@ -1743,18 +1747,22 @@ function scout(s: VillageState, paid: boolean, data: GameData): CommandResult {
  */
 /** Reject a battle that used troops or troop levels the player does not have. */
 function checkBattleSetup(s: VillageState, setup: BattleSetup, data: GameData): string | null {
-  const have = battleArmy(s);
-  for (const [t, n] of Object.entries(setup.army)) {
-    if (!data.troops[t] || !Number.isInteger(n) || n < 0) return 'Unknown warriors in battle.';
-    if (n > (have[t] ?? 0)) return 'More warriors than your army holds.';
-  }
-  for (const [t, lvl] of Object.entries(setup.levels ?? {})) {
-    if (!data.troops[t] || !Number.isInteger(lvl) || lvl < 1 || lvl > troopLevelOf(s, t)) return 'Warrior levels do not match your research.';
-  }
   const lodge = lodgeTroops(s);
   for (const [t, r] of Object.entries(setup.reinforcements ?? {})) {
     if (!data.troops[t] || !r || !Number.isInteger(r.count) || r.count < 0 || r.count > (lodge[t]?.count ?? 0)) return 'More donated warriors than your Lodge holds.';
     if (r.count > 0 && r.level !== lodge[t].level) return 'Donated warrior levels do not match your Lodge.';
+  }
+  const have = battleArmy(s);
+  for (const [t, n] of Object.entries(setup.army)) {
+    if (!data.troops[t] || !Number.isInteger(n) || n < 0) return 'Unknown warriors in battle.';
+    if (n > (have[t] ?? 0)) return 'More warriors than your army holds.';
+    // Review 2026-11-17 (R3-05): the army may count the Lodge, but only the part the setup declares as donated
+    // is taken from the Lodge afterwards (`spendTroops`). A setup that named no donated warriors fought with
+    // them and spent none. So whatever is not declared as donated must come from the village's own army.
+    if (setup.reinforcements && Object.hasOwn(setup.reinforcements, t) ? n - setup.reinforcements[t].count > (s.army[t] ?? 0) : setup.reinforcements && n > (s.army[t] ?? 0)) return 'More warriors than your army holds.';
+  }
+  for (const [t, lvl] of Object.entries(setup.levels ?? {})) {
+    if (!data.troops[t] || !Number.isInteger(lvl) || lvl < 1 || lvl > troopLevelOf(s, t)) return 'Warrior levels do not match your research.';
   }
   if (!masteryMatches(s, setup, data)) return 'Warrior mastery does not match your village.';
   return null;
@@ -1984,10 +1992,18 @@ function settleOnlineAttack(s: VillageState, cmd: Extract<Command, { type: 'sett
 
 /** Keep the log to `max` entries, dropping the oldest settled ones (an attack awaiting the server is never dropped). Mutates. */
 function trimLog(log: BattleRecord[], max: number): void {
-  while (log.length > max) {
-    const i = log.findIndex((r) => r.settlement !== 'pending');
-    log.splice(i < 0 ? 0 : i, 1);
+  let drop = log.length - max;
+  if (drop <= 0) return;
+  // The oldest settled records go first; a pending online attack is kept while a settled one can go instead.
+  // One pass (it removed one record per pass, which a very long log from a forged save made quadratic: R3-07).
+  const kept: BattleRecord[] = [];
+  for (const r of log) {
+    if (drop > 0 && r.settlement !== 'pending') drop--;
+    else kept.push(r);
   }
+  if (drop > 0) kept.splice(0, drop);
+  log.length = 0;
+  for (const r of kept) log.push(r);
 }
 
 /** Keep an Alliance War attack in the battle log so it can be replayed. Mutates. */
@@ -2084,7 +2100,7 @@ function rematchEnd(s: VillageState, defenseId: string, rec: Omit<BattleRecord, 
   let overflow: Cost = {};
   if (won) {
     s.stats.rematchesWon = (s.stats.rematchesWon ?? 0) + 1;
-    ({ granted: reward, overflow } = grantResources(s, rematchReward(result.stars, hallLevel(s, data), data), data));
+    ({ granted: reward, overflow } = grantResources(s, rematchReward(result.stars, rematchKeep(s, status.record, data), data), data));
   }
   const record: BattleRecord = { ...rec, setup, opponentName: base.name, id: `r${s.nextSeed++}`, kind: 'attack', at, result: { ...result, loot: {} }, trophies: 0, banked: reward, rules: SIM_RULES, rematch: defenseId, ...(hasAny(overflow) ? { overflow } : {}) };
   s.battleLog.push(record);

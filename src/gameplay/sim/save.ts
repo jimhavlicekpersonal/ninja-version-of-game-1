@@ -1,5 +1,5 @@
 import { buildingDef, levelDef, maxDefinedLevel } from './data';
-import { footprint, rectsOverlap } from './grid';
+import { footprint } from './grid';
 import type { GameData, VillageState } from './types';
 import { RESOURCE_KINDS } from './types';
 import { mixSeed } from './rng';
@@ -275,6 +275,9 @@ function repairTempers(v: Record<string, unknown> | undefined, data: GameData): 
   }
 }
 
+/** Overlapping buildings named in a damaged save's report (the rest are counted, not listed). */
+const OVERLAPS_REPORTED = 20;
+
 export function validateVillage(v: VillageState, data: GameData): string[] {
   const problems: string[] = [];
   if (!v || typeof v !== 'object') return ['village missing'];
@@ -286,6 +289,9 @@ export function validateVillage(v: VillageState, data: GameData): string[] {
   else for (const k of RESOURCE_KINDS) if (!Number.isFinite(v.resources[k])) problems.push(`bad ${k}`);
   if (!Array.isArray(v.buildings)) return [...problems, 'buildings missing'];
   const map = data.economy.mapSize;
+  // Review 2026-11-17 (R3-08): every building needs a tile of its own, so no village holds more buildings than
+  // the map has tiles. A file that claims more is not checked building by building (that work was the attack).
+  if (v.buildings.length > map * map) return [...problems, 'too many buildings'];
   const ids = new Set<string>();
   let halls = 0;
   for (const b of v.buildings) {
@@ -335,13 +341,26 @@ export function validateVillage(v: VillageState, data: GameData): string[] {
     if (!Array.isArray(v.research.active)) problems.push('bad research timer');
     else for (const a of v.research.active) if (!data.troops[a.troop] || !(a.endsAt >= a.startedAt)) problems.push('bad research timer');
   }
-  for (let i = 0; i < v.buildings.length; i++) {
-    for (let j = i + 1; j < v.buildings.length; j++) {
-      const a = v.buildings[i];
-      const c = v.buildings[j];
-      if (!data.buildings[a.type] || !data.buildings[c.type]) continue;
-      if (rectsOverlap(footprint(a, data), footprint(c, data))) problems.push(`${a.id} overlaps ${c.id}`);
+  // Overlaps, by marking each building's tiles on the map once (it compared every pair of buildings and kept a
+  // sentence for each overlapping pair: 3,000 buildings on one tile took 1.4 s and 447 MB, review R3-08). The first
+  // overlap of each building is reported, and no more than OVERLAPS_REPORTED in all.
+  const owner = new Map<number, string>();
+  let overlaps = 0;
+  for (const b of v.buildings) {
+    if (!data.buildings[b.type]) continue;
+    const r = footprint(b, data);
+    // Off the map is reported above; its tiles are not marked.
+    if (!Number.isInteger(r.x) || !Number.isInteger(r.y) || r.x < 0 || r.y < 0 || r.x + r.w > map || r.y + r.h > map) continue;
+    let hit: string | undefined;
+    for (let y = r.y; y < r.y + r.h; y++) {
+      for (let x = r.x; x < r.x + r.w; x++) {
+        const key = y * map + x;
+        const other = owner.get(key);
+        if (other !== undefined) hit ??= other;
+        else owner.set(key, b.id);
+      }
     }
+    if (hit !== undefined && overlaps++ < OVERLAPS_REPORTED) problems.push(`${hit} overlaps ${b.id}`);
   }
   return problems;
 }

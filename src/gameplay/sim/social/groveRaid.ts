@@ -190,7 +190,7 @@ export function settleRaids(state: VillageState, now: number, hall: number, data
     raid.result = { ours: score.ours, theirs: score.theirs, outcome };
     if (g.raid && g.raid.week === week) g.raid = raid;
     g.raidHistory.push({ week, ours: score.ours, theirs: score.theirs, outcome, reward: { ...chest } });
-    while (g.raidHistory.length > 8) g.raidHistory.shift();
+    if (g.raidHistory.length > 8) g.raidHistory.splice(0, g.raidHistory.length - 8);
     g.settledWeek = week;
     paid.push({ week, outcome, reward: chest });
   }

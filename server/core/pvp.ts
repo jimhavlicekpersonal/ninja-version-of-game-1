@@ -16,7 +16,7 @@ import { applyLootPenalty, hallWindow, powerSlackAt, recentRaidArmies } from '..
 import { defenseHonorLoss, lossTrophies, winTrophies } from '../../src/gameplay/sim/ranks';
 import { stakeMet, validStake } from '../../src/gameplay/sim/carry';
 import { deserialize } from '../../src/gameplay/sim/save';
-import { advance, foughtWithWarriors } from '../../src/gameplay/sim/village';
+import { advance, battleArmy, foughtWithWarriors } from '../../src/gameplay/sim/village';
 import { newRating, orderByRating, powerRating, rateBattle, type Rating } from '../../src/gameplay/sim/rating';
 import { troopLevelCapAt } from '../../src/gameplay/sim/research';
 import { sanitizeName } from '../../src/gameplay/sim/social/names';
@@ -437,7 +437,10 @@ export async function requireArmyOnServer(ctx: ServerContext, me: Player, army: 
   const row = await ctx.repo.getVillage(me.id);
   if (!row) return;
   // Settled to now first: warriors whose training ended are in the army (applyServerResult does the same).
-  const have = advance(deserialize(row.file, ctx.data), Math.max(row.at, ctx.now()), ctx.data).state.army;
+  // The reported army is the village's own plus the warriors its Alliance donated (`battleLoadout`), so it is
+  // compared with both (review R3-10: compared with the own army alone, every honest raid that brought Lodge
+  // warriors was refused). The exact split is checked when the battle is applied (`checkBattleSetup`).
+  const have = battleArmy(advance(deserialize(row.file, ctx.data), Math.max(row.at, ctx.now()), ctx.data).state);
   const short = Object.entries(army).find(([t, n]) => n > 0 && (have[t] ?? 0) < n);
   if (short) throw fail(400, 'bad_request', 'pvp.fewer_troops', { warrior: ctx.data.troops[short[0]]?.name ?? short[0] });
 }
