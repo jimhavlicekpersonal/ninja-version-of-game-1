@@ -39,7 +39,7 @@ import { bandChangeAllowed, isAgeBand, type AgeBand } from './age';
 // ---------- Commands ----------
 
 export type Command =
-  /** `pay: 'dew'`: pay a wall, trap, tower or support counter in Provisions instead of Coins (`economy.provisionsPayable`, save v21). */
+  /** `pay: 'dew'`: pay a wall or trap in Provisions instead of Coins (`economy.provisionsPayable`, save v21). */
   | { type: 'place'; buildingType: BuildingType; x: number; y: number; pay?: PayWith }
   | { type: 'move'; id: string; x: number; y: number }
   | { type: 'upgrade'; id: string; pay?: PayWith }

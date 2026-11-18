@@ -69,12 +69,12 @@
       "y": 25
     }
   ],
-  "collectorHoursCap": 8,
+  "$commentP301": "P3-01 (PAC-01, 2026-11-18): collectorHoursCap 8 -> 24 and raidableUncollectedFraction 0.5 -> 0.25 (with raids.shieldTiers 16/20/24 h): a once-a-day player banked 8 of 24 hours and lost half of it to raids, so the casual Keep 5 -> 6 stretch took 26 days. collectBubbleMinFraction 0.02 -> 0.007 keeps the first collect bubble near ten minutes.",
+  "collectorHoursCap": 24,
   "raidableStoredFraction": 0.2,
-  "raidableUncollectedFraction": 0.5,
+  "raidableUncollectedFraction": 0.25,
   "cancelRefundFraction": 0.5,
-  "$commentProvisionsPayable": "P2-13 (ECO-11, CU-1, 2026-11-18): towers and support counters join walls and traps. Coins bound 1.1-2.7x harder than Provisions at Keeps 3-12; the regular and casual model players' Keep days did not move (0%).",
-  "provisionsPayable": ["hedge", "trap", "defense", "support"],
+  "provisionsPayable": ["hedge", "trap"],
   "$commentGarrisonCrew": "P2-14 (2026-11-18): this many defense, trap or support builds at a time take no Village Artisan (sim/village.ts builderStatus), so fortifying does not stop the village growing. Free, never sold: no product, offer or Jade price. The lab's Rules 10 patch used 2.",
   "garrisonCrew": 2,
   "queuedArmies": 1,
@@ -82,7 +82,7 @@
   "maxTrainBatch": 200,
   "maxArmyPresets": 4,
   "welcomeBackMinAwaySeconds": 60,
-  "collectBubbleMinFraction": 0.02,
+  "collectBubbleMinFraction": 0.007,
   "minCollectAmount": 1,
   "builderHutCosts": [
     250,

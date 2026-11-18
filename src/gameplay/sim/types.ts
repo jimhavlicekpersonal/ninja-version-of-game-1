@@ -758,7 +758,7 @@ export interface EconomyDef {
   /** What players call each resource (messages from the sim; the HUD has its own labels). */
   resourceNames: Record<ResourceKind, string>;
   /**
-   * Either-currency defences (balance audit 2026-11-08; towers and support since P2-13): these categories may be paid in Provisions
+   * Either-currency defences (balance audit 2026-11-08): buildings of these categories may be paid in Provisions
    * instead of Coins, one for one (`place`/`upgrade` with `pay: 'dew'`), so a defender's idle Provisions build walls.
    */
   provisionsPayable?: string[];
