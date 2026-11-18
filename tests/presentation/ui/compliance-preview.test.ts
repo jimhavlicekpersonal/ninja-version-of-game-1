@@ -173,7 +173,8 @@ describe('terms of service gate (C14)', () => {
     expect(termsGate(undefined, kit)).toBeNull();
     expect(termsGate('soon', kit)).toBeNull();
     expect(termsGate('2027-01-15', kit)?.version).toBe('2027-01-15');
-    expect(readFileSync(join(__dirname, '../../../public/legal-config.js'), 'utf8')).toMatch(/termsEffective: '',/);
+    // P7-01: empty until the owner dates the terms, then a YYYY-MM-DD date (store-compliance checks the values).
+    expect(readFileSync(join(__dirname, '../../../public/legal-config.js'), 'utf8')).toMatch(/termsEffective: '(\d{4}-\d{2}-\d{2})?',/);
   });
 });
 

@@ -366,7 +366,7 @@ export function advance(state: VillageState, now: number, data: GameData): { sta
         // P1-08: upgrades that took a builder's time (an instant wall level is not one).
         if (u.endsAt > u.startedAt) next.stats.timedUpgradesDone = (next.stats.timedUpgradesDone ?? 0) + 1;
         // P1-21: when the Keep reached this level (a Bounty attack begun before it may use the Keep below).
-        if (buildingDef(data, b.type).category === 'hall') next.keepReachedAt = u.endsAt;
+        if (data.buildings[b.type]?.category === 'hall') next.keepReachedAt = u.endsAt;
       } });
     }
   }
@@ -836,7 +836,17 @@ function runCommand(s: VillageState, cmd: Command, now: number, data: GameData):
     case 'abandonBattle': {
       s.pendingBattle = null;
       const cleanAbandon = sanitizeBattleSetup(s, cmd.record.setup, data);
-      if ('error' in cleanAbandon) return { ok: true, state: s, events: [] };
+      if ('error' in cleanAbandon) {
+        // Independent review 2026-11-18: a setup the village cannot have (a forged hero, say) used to make the
+        // abandon a no-op, which kept the scouted opponent. Walking away from a scouted offline raid with
+        // anything deployed is still a lost attack.
+        if (!cmd.record.ticket && s.scout !== null && (cmd.record.deployments?.length ?? 0) > 0) {
+          s.trophies = Math.max(0, s.trophies - lossTrophies(s.trophies, s.trophies, data));
+          s.shieldUntil = Math.min(s.shieldUntil, now);
+          s.scout = null;
+        }
+        return { ok: true, state: s, events: [] };
+      }
       // Re-audit: no simulation here. An abandoned battle wins nothing, so it only has to spend the
       // warriors the player sent in: count the deployments (each warrior once, never more than the army
       // and the Lodge hold). Running the battle cost a server up to a second for a forged base.
@@ -2099,7 +2109,7 @@ function bountyEnd(s: VillageState, key: string, rec: Omit<BattleRecord, 'result
   // XPL-13 (P1-21): only then. The record must have begun before the Keep reached its level (save v24); the
   // easier fortress of the Keep below used to be the client's choice.
   const asked = rec.setup?.base?.hallLevel;
-  const baseKeep = asked === keep - 1 && s.keepReachedAt !== undefined && at < s.keepReachedAt ? asked : keep;
+  const baseKeep = asked === keep - 1 && s.keepReachedAt !== undefined && at < s.keepReachedAt && s.keepReachedAt <= now ? asked : keep;
   const clean = sanitizeBattleSetup(s, { ...rec.setup, base: bountyBase(s.seed, key, baseKeep, ev.goal, data) }, data);
   if ('error' in clean) return fail('INVALID_BATTLE', clean.error);
   const setup = clean.setup;
@@ -2216,10 +2226,11 @@ function groveBattleEnd(s: VillageState, target: number, rec: Omit<BattleRecord,
   const raid = ensureRaid(s, at, data)!;
   if (attacksLeft(s, phase.week, data) <= 0) return fail('NOT_AVAILABLE', 'You have used both Alliance War attacks.');
   // XPL-13 (P1-21): the base is the war's own (rebuilt for the target, never the client's), at the Keep the
-  // attack began with (this one, or the one below if a Keep upgrade finished mid-battle).
+  // attack began with (this one, or the one below only if a Keep upgrade finished after the attack began).
   const keep = hallLevel(s, data);
   const wantKeep = rec.setup?.base?.hallLevel;
-  const enemy = enemyGrove(s.grove.seed, phase.week, wantKeep !== undefined && wantKeep < keep && keep > 1 ? keep - 1 : keep, data);
+  const keepBelow = wantKeep !== undefined && wantKeep < keep && keep > 1 && s.keepReachedAt !== undefined && at < s.keepReachedAt && s.keepReachedAt <= now;
+  const enemy = enemyGrove(s.grove.seed, phase.week, keepBelow ? keep - 1 : keep, data);
   const warBase = Number.isInteger(target) ? enemy.bases[target] : undefined;
   if (!warBase) return fail('NOT_FOUND', 'No such enemy base.');
   const clean = sanitizeBattleSetup(s, { ...rec.setup, base: warBase }, data);

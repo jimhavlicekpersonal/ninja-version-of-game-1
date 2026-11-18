@@ -132,3 +132,23 @@ describe('PUB-02 / XPL-07: CI, the server image and the test runs share one exac
     }
   });
 });
+
+describe('PUB-04 (P7-01): the store-readiness preflight', () => {
+  const run = (args: string[], env: Record<string, string>) =>
+    new Promise<{ code: number; out: string }>((resolve) => {
+      const clean = Object.fromEntries(Object.entries(process.env).filter(([k]) => !['APP_ID', 'ALLOW_LEGACY_APP_ID', 'GITHUB_STEP_SUMMARY', 'VITE_SERVER_URL'].includes(k)));
+      execFile(process.execPath, ['tools/release/check-store-ready.mjs', ...args], { env: { ...clean, ...env } }, (err, stdout) => resolve({ code: err ? Number((err as { code?: number }).code ?? 1) : 0, out: stdout }));
+    });
+
+  it('lists what is missing as a notice, and fails a store build on the blocking items', async () => {
+    const notice = await run([], {});
+    expect(notice.code).toBe(0);
+    expect(notice.out).toMatch(/legal-config\.js operator: empty/);
+    expect(notice.out).toMatch(/Terms of service: draft/);
+    expect(notice.out).toMatch(/App id: APP_ID is not set/);
+    const store = await run(['--store'], { APP_ID: 'com.example.kagemura' });
+    expect(store.code).toBe(1);
+    expect(store.out).toMatch(/::error title=Not ready for a store build::/);
+    expect(store.out).not.toMatch(/✗ App id/);
+  });
+});

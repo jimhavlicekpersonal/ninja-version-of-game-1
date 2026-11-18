@@ -2,7 +2,7 @@
 import { scaleReward, topUpOne } from './economy';
 import { createRng, mixSeed, next } from './rng';
 import { localDayIndex } from './calendar';
-import { collectorRatePerHour, producedResource } from './resources';
+import { collectorRatePerHour } from './resources';
 import type { Cost, GameData, ResourceKind, Stats, TaskTemplate, VillageState } from './types';
 
 const DAY = 86_400_000;
@@ -261,7 +261,7 @@ function productionTarget(tpl: TaskTemplate, state: VillageState, data: GameData
   const kind = tpl.stat === 'collectedAcorns' ? 'acorns' : tpl.stat === 'collectedDew' ? 'dew' : null;
   if (!kind) return 0;
   let perHour = 0;
-  for (const b of state.buildings) if (b.level >= 1 && producedResource(b, data) === kind) perHour += collectorRatePerHour(b, b.level, data);
+  for (const b of state.buildings) if (b.level >= 1 && data.buildings[b.type]?.produces === kind) perHour += collectorRatePerHour(b, b.level, data);
   const want = perHour * 24 * tpl.ofDailyProduction;
   if (!(want > 0)) return 0;
   // Exact on every engine (no log10): the largest power of ten that leaves two significant digits.

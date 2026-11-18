@@ -274,3 +274,19 @@ describe('one app id variable (PUB-05, P7-02)', () => {
     expect(read('docs/SHIPPING.md')).toMatch(/custom_url_scheme/);
   });
 });
+
+describe('native projects list every Capacitor plugin the game depends on (PUB-06, P7-03)', () => {
+  it('each @capacitor/* and @capacitor-community/* plugin is in the Android settings, the app build and the iOS package', () => {
+    const pkg = JSON.parse(readFileSync('package.json', 'utf8')) as { dependencies: Record<string, string> };
+    const plugins = Object.keys(pkg.dependencies).filter((d) => /^@capacitor(-community)?\//.test(d) && !['@capacitor/core', '@capacitor/android', '@capacitor/ios', '@capacitor/cli'].includes(d));
+    expect(plugins.length).toBeGreaterThanOrEqual(5);
+    const settings = readFileSync('android/capacitor.settings.gradle', 'utf8');
+    const build = readFileSync('android/app/capacitor.build.gradle', 'utf8');
+    const swift = readFileSync('ios/App/CapApp-SPM/Package.swift', 'utf8');
+    for (const p of plugins) {
+      expect(settings, `${p}: run npm run build && npx cap sync`).toContain(`node_modules/${p}/`);
+      expect(build, p).toContain(`':${p.slice(1).replace('/', '-')}'`);
+      expect(swift, p).toContain(`node_modules/${p}"`);
+    }
+  });
+});

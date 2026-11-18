@@ -906,3 +906,75 @@ Each gap was revalidated against the code, then fixed with a test that failed on
 | 4 | Stats watermark missed commits later than lag + overlap | fixed | Watermark by writing transaction (`stats_events.txid` default `pg_current_xact_id()`, index) up to `pg_snapshot_xmin`: everything below has ended, later commits are always above; memory adapter numbers inserts; no lag window, one indexed range read per run | `last-gaps.test.ts` "a batch committed after a run read past its receipt time …" (memory, Postgres), "a run during an open insert leaves it for the next run" (Postgres) | Needs PostgreSQL 13+; a long-open transaction anywhere holds the horizon (events wait, never lost); events before the migration older than two days are read again only when their id sends again |
 
 Checks run on the final tree: `npm test`, `npm run test:slow`, `npm run lint`, `npm run build`, `npm run typecheck:server`, `npm run server:build`, `npm run i18n:check`, and every `tests/backend` file one at a time against a local Postgres 16 and Redis. Not run: CI, a multi-instance load test, a device, store or browser check.
+
+### 2026-11-18 replayability pass, Phases 0 and 1: green pipeline, exploits and honesty defects (integration session; agent prompt `docs/prompts/BEAST_MODE_2026-11-16.md`, evidence `docs/audit/understand-2026-11-16/`, ledger `docs/audit/understand-2026-11-16/PROGRESS.md`), commits `80d180d` to `2627bf6` on `claude/magical-cray-wkpcl1`
+
+**Read first: no build of this branch may be released yet.** The pass makes one save bump (`SAVE_VERSION` 24, introduced here); a village written by a v24 build never runs the v24 step again, so until the pass's last stored field lands (later phases), no build of this branch ships and no server holds villages written by it. When it does ship: the server deploys before the game (what the server replays changed), and older games meeting a v24 server village see "Update Kagemura".
+
+Each item was revalidated against the code first; each defect got a test that failed on the old code (checked by restoring the old file locally for the exploit tests). No battle rule changed (`SIM_RULES` unchanged; the combat fingerprint unchanged). Protocol: additive only (`CommandOutcome.chestSalt`, hello feature `chest-entropy`; `docs/PROTOCOL.md` "Exploit fixes 2026-11-18").
+
+| Item | Finding | Status | What changed | Evidence | Remaining limitations |
+|---|---|---|---|---|---|
+| P0-01 | baseline | done | `npm test` at the merge of main's `0c5eeb7`: 1 failure, caused by `0c5eeb7` itself (a relabelled verified purchase); fixed | `villageImport.test.ts` | — |
+| P0-02 | PUB-01 deploy check rejects every right-to-left page | fixed | `tools/release/page-language.mjs` reads `lang` and `dir` separately | `release-tools.test.ts`; the real checker passed all 49 translated languages of a local build (`vite preview`), the old one failed on `ar/community.html` | Not run against GitHub Pages |
+| P0-03 | PUB-03 Postgres tests time out at 5 s | fixed | 30 s test/hook timeout only with `TEST_DATABASE_URL`; two workers on the Postgres CI steps | three consecutive local runs (Postgres 16, Redis 7): 66 files, 692 tests each, all green | Not shown that 5 s fails on this machine; CI not run from here |
+| P0-04 | PUB-02 / XPL-07 matched test fails on CI only | cause not found, guarded | `.node-version` (24.22.3) read by every workflow, same as the Dockerfile; the test asserts levels and opponent Keep before stars and prints battle hashes; new `matchmaking-pins.test.ts`, run again in CI with `--no-turbofan --no-maglev` | `det.ts` byte-identical on Node 22.23.4 and 24.22.3 with and without TurboFan, Maglev, Sparkplug and the JIT | The GitHub runner itself could not be run here; the 2.2 gate's one-star margin is Phase 4 (P4-08) |
+| P1-11 | XPL-01 battle commands trust the client's setup | fixed | `sanitizeBattleSetup`: whitelist, Infiltration forced, the village's own hero at most at its level, no relay damage; clears/steps/wins need warriors | Keep 1 cleared Trials 1-40 with no army, before; refused after, also through `replayVillage` | Old records replay with their own setup by design |
+| P1-12 | XPL-02 record times bounded only above | fixed | lower bound (battle length + `raids.battleResumeHours` 72) and no older Bounty occurrence | 700 Jade in 20 commands, before; refused after | A cheater can still attack a Bounty up to 72 h after it ended, once |
+| P1-13 | XPL-03 import liabilities, attacker-sized loops | fixed (with main's `0c5eeb7`) | import strips top-up shares and `armyPaid`, clamps timer costs; league catch-up pays at most 2 seasons; war catch-up starts near now; `season`/`settledWeek` validated | forged file: 500 → 280,500 Jade before; capped after; season 0 settles in milliseconds | An honest player away for months now gets 2 league chests, not one per month |
+| P1-14 | XPL-04 top-up wipes a refund debt | fixed | no top-up while a needed resource is negative | test | — |
+| P1-15 | XPL-05 hero-only exits | fixed (server half in `0c5eeb7`) | hero-only battle or abandon of a scouted raid is a lost attack | tests; the DZ-3 test restated | — |
+| P1-16 | XPL-06 client picks tomorrow's chest | fixed | server entropy logged as replayed, `chestSalt` returned and adopted (`setChestSalt`, device-only) | `attacks-economy.test.ts` (main's version of it never applied the chest) | Older games keep their own next salt until the economy hash corrects them |
+| P1-17 | XPL-08 `Math.pow`/`log2` in Trials | fixed | repeated multiplication, exact `log2` for powers of two, safe floor | rewards at tiers 2/4/16/32/64 pinned | — |
+| P1-18 | XPL-09 Provisions top-up exchange | fixed | priced in the currency the action pays | test | — |
+| P1-19 | XPL-10 12 h backdating | fixed (backend decision) | timer commands dated at most 10 min back; others keep 12 h | `exploits-2026-11-16.test.ts` | A timer started offline counts from sync (corrected on the device) |
+| P1-20 | XPL-12 missed stake shields; fed honor | fixed | no shield or exhaustion without loot; ≤ 40 honor per attacker per defender per day | `balance-round2.test.ts` | — |
+| P1-21 | XPL-13 low-value holes | fixed | `setProfile` booleans only; whole donations; war base and target rebuilt; Bounty Keep-below only after a Keep upgrade mid-battle (`keepReachedAt`, save v24) | tests | — |
+| P1-22 | BNL-07 shared replay mastery | fixed | dropped unless `features.mastery`; hero validated | test | — |
+| P1-01 | RET-03/ECO-02 unclaimed Scroll rewards vanish | fixed | rollover grants unclaimed tiers (premium recorded on the purchase), `pass.lastSeason` in the welcome back | 20 tiers paid Jade +0 before; all granted after; refund takes premium back | — |
+| P1-02 | RET-04 the paid look repeats | fixed | 8 seasonal looks, 60 Jade for an owned one, estimate leaves owned looks out; LISTING.md and 49 store copies reworded | tests incl. the listing row against `pass.json` | 7 new looks are two colours and a name (no art) |
+| P1-03 | RET-02/ECO-03 tasks pay nothing past tier 30 | fixed | Keep-scaled resource bonus every 300 points, ≤ 17 a season, no Jade | test: a full season stays under the free track's supply | — |
+| P1-04 | ECO-05 Artisan's Bundle offered when hollow | fixed | only while its Jade buys the next hut | test | — |
+| P1-05 | ECO-06 Scroll estimate 65× the pack | first half fixed; open until P3-08 | pace-scaled reachable tiers; past 6× the pack only the Jade, supplies listed | Keep 15: 18,176 → 260 Jade + supplies listed | Second half (re-check after the top-up re-curve) open |
+| P1-06 | RET-06 the "endless" ladder ends; unreachable achievement | fixed | growth 0.06 → 0.02, rewards +0.3%/tier past 60, `trial_walker` last step 100 → 53 (measured cap 58 − 5), true intro text | measured: 2+ stars in ≥ 4/8 combos through tier 58 at every growth; tier 60 (maxed fortress, no growth) 2/8; achievement reachability test | The wall is the maxed Keep 15 fortress, not growth: only a stronger army moves it |
+| P1-07 | RET-07 Ironclad never meets walls | fixed | modifier offsets; three rival-temper modifiers | tests for tiers 1-120 | — |
+| P1-08 | RET-05 tasks done by one collect / wall taps | fixed | collect targets 25% of the village's daily output; upgrade tasks count timed upgrades | Keep 12 target 35,000 → 2,500,000 (424,000 an hour) | — |
+| P1-09 | English date in reminders | mostly no longer true | the date was already localized at delivery; now read without `Date.parse` | test with `Date.parse` disabled | — |
+| P1-10 | ECO-13 retired Rebuild Kit listed | fixed | removed from the product map (never sold), StoreKit 13 products | — | — |
+| P7-02 | PUB-05 legacy package name | fixed (owner chooses the id) | one `APP_ID`; signed jobs refuse the legacy id unless allowed | `release-config.test.ts` | Not built with Gradle or Xcode here |
+| P7-04 | PUB-07 / C05 age-rating answers | fixed | Contests Frequent, Age assurance present, Parental controls No, with reasoning | `store-compliance.test.ts` | Apple's page re-read by a helper from a page summary: re-read it in App Store Connect before submitting |
+| P7-08 | PUB-11 privacy date | fixed | `policyUpdated` 2026-11-14, tied to a hash of the English text | test | — |
+
+Free Jade: a returning Season Scroll buyer gets at most 60 Jade a season for a look they own (P1-02); nothing else in this phase pays Jade (the task bonus pays resources only). Translations: 17 strings and one listing sentence in 49 languages, machine translation by one agent per language, `npm run i18n:check` clean, then one reviewer per script group; not reviewed by native speakers.
+
+Campaign (`npm run balance:campaign`, all 13 gates pass): regular Keep 15 on day 113 (unchanged); casual Keep 15 on day 268 (was 246, a single seed; the Keep 13-14 stretch). Model-player outcomes are not observed retention or revenue.
+
+**Independent review (section 0.5 of the agent prompt), 2026-11-18.** A fresh reviewer read the diff and ran its own scripts against the committed tree. Findings and what was done:
+
+| # | Finding | Outcome |
+|---|---|---|
+| 1 | Two tests failed at the reviewed commit (P1-08 moved the tasks' counter; the restated tests were not yet committed), and this record was uncommitted | fixed in the next commit; full checks re-run (below) |
+| 2 | An abandon with a setup the village cannot have (a forged hero) skipped the lost-attack rule | fixed: a scouted offline raid abandoned with anything deployed is a lost attack whatever the setup; test |
+| 3 | The device can show a daily chest the server did not give: a retried batch returns no `chestSalt`, and two chests opened offline across midnight draw the second from the device's salt (`daily.salt` is outside the economy hash) | open, recorded: the economy is corrected, the chest screen and history are not; a full fix needs the chest to be drawn by the server or a salt-carrying hash |
+| 4 | The import kept `keepReachedAt` (Keep-below Bounty fortress forever with a forged value) | fixed: the import drops it, and the Keep-below choice also needs `keepReachedAt` ≤ now; test |
+| 5 | The import's cost clamp zeroed an honest Provisions-paid upgrade's refund; stripping `armyPaid` changes nothing (the catalog price is the same ceiling) | clamp fixed (Provisions up to the Coin price for Provisions-payable types); test. `armyPaid` strip left (harmless) |
+| 6 | Trial alternates put Ironclad Walls on wall-less layouts | fixed: `TrialModifierDef.layouts`; the walls test covers every alternate |
+| 7 | The Alliance War Keep-below base was still the client's choice | fixed with the same `keepReachedAt` rule (device-only path) |
+| 8 | Costs to honest players: a queue played offline whose second timer depends on the first finishing is refused after the 10-minute clamp (P1-19, R01 gets worse); a player away 3+ months gets 2 league chests (P1-13) | open, recorded: both are the conservative backend choices the prompt asked for; the P1-19 cost goes in `docs/backend/REQUESTS.md` for a better bound (for example, dating a refused timer command at the end of the timer that freed its builder) |
+
+### 2026-11-18 reassessment of open items (P7-10; source `docs/audit/understand-2026-11-16/publish.md` section 4)
+
+A dated reassessment, not an edit of the rows above. Where an earlier row and this table disagree, this table is the newer reading of the code; nothing here closes a finding that needs owner, store or device evidence.
+
+| Item | Earlier row said | Reading on 2026-11-18 | Still open |
+|---|---|---|---|
+| R05 languages | "The game still shows English only" (row of the 2026-11-05 fix pass) | 50 of 50 languages complete in every namespace (`npm run i18n:status`); right-to-left pages for Arabic, Hebrew and Urdu; the deploy check now accepts them (P0-02) | Native review of 49 machine-translated languages; RTL and other scripts on physical devices |
+| LISTING.md languages row | predates all 50 languages being complete | every language's store copy exists in `docs/store/<code>/`; the row's rule "do not list a language whose worksheets are incomplete" still applies | Owner chooses which storefronts to list |
+| GLOBAL-015 live pages | legal config test asserted empty values | pages still say "not published yet" for every missing publisher fact (correct); a store-readiness preflight is Phase 7's P7-01 | Every publisher fact (owner) |
+| R06 moderation | 30 English words | unchanged so far; per-language lists are Phase 7's P7-07 | Native review of the lists; staffing (owner) |
+| Server chest entropy (backend ask 2026-11-13) | open | done (`0c5eeb7`, `989ac53`) | — |
+| Postgres tests and the RTL deploy check (backend ask 2026-11-15) | open | done (`80d180d`) | CI itself not observed from here |
+| Squad orders on screen (art request 2026-11-15) | open | still open: Phase 6's P6-01 | — |
+| Built-not-live content | "when the designer makes them live" | measured not ready (heroes lose to the live hero, ten of fifteen counters change nothing): gated in Phase 4 (P4-10), not switched on | — |
+
+The request files now separate open asks from answered ones (`docs/backend/REQUESTS.md`, `docs/game-theory/REQUESTS.md`: "Done" sections with where each was done).

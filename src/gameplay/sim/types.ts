@@ -1208,6 +1208,8 @@ export interface TrialModifierDef {
   wallPower?: number;
   /** P1-07: the fortress is tempered as this rival clan tempers its outposts (`battle.json` `temper.rivals`), from the temper unlock Keep. */
   rival?: string;
+  /** P1-07: only on fortresses of these layouts (an alternate fortress of another layout does not carry it). */
+  layouts?: string[];
 }
 
 export interface TrialsDef {

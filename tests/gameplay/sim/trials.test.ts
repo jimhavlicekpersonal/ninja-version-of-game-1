@@ -65,13 +65,15 @@ describe('Shadow Trials ladder', () => {
     expect(trialInfo(5, data).modifiers).toEqual([]);
   });
 
-  it('a modifier that names walls lands on a fortress with walls, and no tier carries two (tiers 1-120)', () => {
+  it('a modifier that names walls lands on a fortress with walls, alternates included, and no tier carries two (tiers 1-120)', () => {
     for (let t = 1; t <= 120; t++) {
-      const info = trialInfo(t, data);
-      expect(info.modifiers.length, `tier ${t}`).toBeLessThanOrEqual(1);
-      if (info.modifiers.some((m) => m.wallPower)) {
-        const walls = trialBase(t, data).buildings.filter((b) => data.buildings[b.type]?.category === 'hedge').length;
-        expect(walls, `tier ${t} (${info.layout.id})`).toBeGreaterThan(0);
+      for (let v = 0; v <= data.trials.maxAlternates; v++) {
+        const info = trialInfo(t, data, v);
+        expect(info.modifiers.length, `tier ${t}`).toBeLessThanOrEqual(1);
+        if (info.modifiers.some((m) => m.wallPower)) {
+          const walls = trialBase(t, data, v).buildings.filter((b) => data.buildings[b.type]?.category === 'hedge').length;
+          expect(walls, `tier ${t} variant ${v} (${info.layout.id})`).toBeGreaterThan(0);
+        }
       }
     }
   });

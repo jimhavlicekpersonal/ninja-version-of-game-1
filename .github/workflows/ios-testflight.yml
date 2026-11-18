@@ -24,6 +24,15 @@ jobs:
           cache: npm
       - run: npm ci
       # PUB-05 (P7-02): the bundle id is the owner's choice; refuse the legacy one unless allowed on purpose.
+      # PUB-04 (P7-01): a store build needs the publisher facts, dated terms and the app id; the preflight lists
+      # everything still open and stops here on the blocking ones (docs/store/OWNER_CHECKLIST.md).
+      - name: Store readiness
+        run: node tools/release/check-store-ready.mjs --store
+        env:
+          APP_ID: ${{ vars.IOS_BUNDLE_ID || vars.APP_ID }}
+          ALLOW_LEGACY_APP_ID: ${{ vars.ALLOW_LEGACY_APP_ID }}
+          VITE_SERVER_URL: ${{ vars.VITE_SERVER_URL }}
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
       - name: Bundle id chosen
         run: node tools/release/check-app-id.mjs
         env:

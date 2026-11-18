@@ -34,6 +34,7 @@
     "brand": "node tools/brand/brand.mjs",
     "store:screenshots": "node tools/store/screenshots.mjs",
     "store:storekit": "node tools/store/storekit.mjs",
+    "release:preflight": "node tools/release/check-store-ready.mjs",
     "docs:progression": "node tools/progression/generate.mjs",
     "balance:armies": "node tools/balance/generate.mjs",
     "balance:campaign": "node tools/balance/run-campaigns.mjs",

@@ -71,9 +71,17 @@ describe('privacy, support and community pages (GLOBAL-015, R06)', () => {
     expect(html).not.toMatch(/&lt;(email|server|owner|date)|<(email|server|owner name|date)>/i);
     expect(html).not.toMatch(/@example\.|TODO/);
   });
-  it('the shared publisher config is empty until the owner fills it', () => {
-    const cfg = read('public/legal-config.js');
-    for (const k of ['operator', 'supportEmail', 'deletionUrl']) expect(cfg).toMatch(new RegExp(`${k}: ''`));
+  // PUB-04 (P7-01, 2026-11-18): empty (the honest "not decided yet") or well formed, read as values (the file's
+  // comments use example.com on purpose). The store preflight, not this test, stops a store build with empty facts.
+  it('the shared publisher config holds no placeholder: each fact is empty or well formed', async () => {
+    const { readLegalConfig, legalValueProblem } = await import('../../tools/release/legal-config.mjs');
+    const cfg = readLegalConfig(resolve(root, 'public/legal-config.js'));
+    for (const k of ['operator', 'supportEmail', 'deletionUrl', 'termsEffective', 'policyUpdated']) expect(k in cfg, k).toBe(true);
+    for (const [k, v] of Object.entries(cfg)) expect(legalValueProblem(k, v), k).toBeNull();
+    expect(legalValueProblem('supportEmail', 'support@example.com')).toMatch(/placeholder/);
+    expect(legalValueProblem('operator', '<owner name>')).toMatch(/placeholder/);
+    expect(legalValueProblem('deletionUrl', 'http://x.test/delete')).toMatch(/https/);
+    expect(legalValueProblem('termsEffective', 'soon')).toMatch(/date/);
     expect(existsSync(resolve(root, 'public/legal.js'))).toBe(true);
   });
   it('Settings links all three pages, with build overrides', () => {

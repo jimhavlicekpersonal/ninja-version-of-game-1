@@ -139,7 +139,8 @@ describe('F30: tasks only ask for what is still possible', () => {
   it('a maxed village is not asked to finish upgrades', () => {
     const { state } = newGame();
     const maxed: VillageState = { ...state, buildings: state.buildings.map((b) => ({ ...b, level: data.hall.levels[0].limits[b.type]?.maxLevel ?? b.level })) };
-    const tpl = data.pass.dailyTasks.find((t) => t.stat === 'upgradesDone')!;
+    // P1-08 (2026-11-18): the upgrade task counts timed finished upgrades (`timedUpgradesDone`).
+    const tpl = data.pass.dailyTasks.find((t) => t.stat === 'timedUpgradesDone')!;
     expect(taskEligible(tpl, 2, maxed, data, 1)).toBe(false);
   });
 

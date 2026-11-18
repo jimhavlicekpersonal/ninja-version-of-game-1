@@ -32,6 +32,8 @@ jobs:
         continue-on-error: true
         run: npm audit --omit=dev --audit-level=high
       - run: npm test
+      # PUB-04 (P7-01): what a store build would still need, as a notice on the web build (never fails it).
+      - run: npm run release:preflight
       # PUB-02 / XPL-07: the generated-base, matchmaking and bot-plan pins again with V8's optimising compilers
       # off. A difference between the two runs is an engine fault: the server must not run on that Node.
       - name: Determinism pins without optimising compilers

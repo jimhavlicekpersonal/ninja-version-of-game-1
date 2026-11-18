@@ -25,6 +25,7 @@ import { maxHousingAtHall, troopEarliestKeep } from '../../src/gameplay/sim/army
 import { villageToBase } from '../../src/gameplay/sim/defense';
 import { troopLevelCapAt, troopLevelOf } from '../../src/gameplay/sim/research';
 import { levelDef, troopLevel } from '../../src/gameplay/sim/data';
+import { payableInProvisions } from '../../src/gameplay/sim/village';
 import { capacity } from '../../src/gameplay/sim/resources';
 import { deserialize, serialize } from '../../src/gameplay/sim/save';
 import { economyHash } from '../../src/gameplay/sim/serverEconomy';
@@ -147,8 +148,12 @@ function stripImportedLiabilities(state: VillageState, data: GameData): void {
   for (const b of state.buildings) {
     if (!b.upgrade) continue;
     delete b.upgrade.topUp;
-    b.upgrade.cost = clampCost(b.upgrade.cost, levelDef(data, b.type, b.upgrade.toLevel)?.cost);
+    // A Provisions-paid upgrade (`pay: 'dew'`) paid the Coin price in Provisions: allow that much too.
+    const cat = levelDef(data, b.type, b.upgrade.toLevel)?.cost ?? {};
+    b.upgrade.cost = clampCost(b.upgrade.cost, { ...cat, dew: (cat.dew ?? 0) + (payableInProvisions(b.type, data) ? cat.acorns ?? 0 : 0) });
   }
+  // When the Keep reached its level is the save's word; it would choose the Keep-below Bounty fortress forever.
+  delete state.keepReachedAt;
   for (const q of state.training) {
     delete q.topUp;
     q.cost = data.troops[q.troop] ? clampCost(q.cost, troopLevel(data, q.troop, troopLevelOf(state, q.troop)).cost) : {};

@@ -25,7 +25,10 @@
       "offset": 2,
       "name": "Ironclad Walls",
       "description": "Walls have double HP.",
-      "wallPower": 2
+      "wallPower": 2,
+      "layouts": [
+        "walled_keep"
+      ]
     },
     {
       "id": "elite",

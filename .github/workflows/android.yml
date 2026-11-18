@@ -89,6 +89,16 @@ jobs:
       - if: steps.key.outputs.ready == 'true'
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       # PUB-05 (P7-02): never upload under the old game's package name by accident (Play never lets it change).
+      # PUB-04 (P7-01): a store build needs the publisher facts, dated terms and the app id; the preflight lists
+      # everything still open and stops here on the blocking ones (docs/store/OWNER_CHECKLIST.md).
+      - name: Store readiness
+        if: steps.key.outputs.ready == 'true'
+        run: node tools/release/check-store-ready.mjs --store
+        env:
+          APP_ID: ${{ vars.APP_ID }}
+          ALLOW_LEGACY_APP_ID: ${{ vars.ALLOW_LEGACY_APP_ID }}
+          VITE_SERVER_URL: ${{ vars.VITE_SERVER_URL }}
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
       - name: App id chosen
         if: steps.key.outputs.ready == 'true'
         run: node tools/release/check-app-id.mjs

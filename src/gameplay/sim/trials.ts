@@ -41,8 +41,8 @@ export function trialInfo(tier: number, data: GameData, variant = 0): TrialInfo 
   const beyond = Math.max(0, t - halls * cfg.tiersPerHall);
   // P1-07: each modifier on its own period and offset; a rival's tempers need the Keep that unlocks tempering.
   const temperKeep = data.battle.temper?.unlockKeep ?? Infinity;
-  const modifiers = cfg.modifiers.filter((m) => (t - (m.offset ?? 0)) % m.every === 0 && t >= (m.offset ?? 0) && (!m.rival || hall >= temperKeep));
   const layout = LAYOUTS[(t - 1 + Math.max(0, Math.floor(variant))) % LAYOUTS.length];
+  const modifiers = cfg.modifiers.filter((m) => (t - (m.offset ?? 0)) % m.every === 0 && t >= (m.offset ?? 0) && (!m.rival || hall >= temperKeep) && (!m.layouts || m.layouts.includes(layout.id)));
   // XPL-08 (P1-17): repeated multiplication, never Math.pow (engines need not agree on it to the last bit).
   let power = 1;
   for (let i = 0; i < beyond && power < cfg.maxPower; i++) power *= 1 + cfg.powerGrowthPerTier;
