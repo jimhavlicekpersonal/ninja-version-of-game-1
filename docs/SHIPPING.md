@@ -59,7 +59,7 @@ Apple only builds iPhone apps on a Mac. The **iOS TestFlight (manual)** workflow
 1. Join the **Apple Developer Program** ($99/year) at https://developer.apple.com/programs/.
 2. In **Certificates, Identifiers & Profiles → Identifiers**, register an App ID. Use `com.toadstoolkingdoms.app`, or your own ID. If you use your own, also change `appId` in `capacitor.config.ts` and add a repository variable `IOS_BUNDLE_ID` with the same value.
 3. In **App Store Connect → Apps**, create a new iOS app with that bundle ID.
-4. In the app's **Monetization → In-App Purchases**, add every product in the table in **section 3b** as a **Consumable**, using its **store id** (the first column: `jade_pinch`, `jade_pouch`, …, `season_scroll`, `clan_stipend`), never the game id (`moonstones_1`, `lantern_pass`, …). The game asks the App Store for the store ids (`store.json` `storeProductIds`), and App Store Connect never lets a product id be used again, even after deletion, so a product made with the wrong id is lost for good. `offer_rebuild` is retired (no longer offered); creating it is optional.
+4. In the app's **Monetization → In-App Purchases**, add every product in the table in **section 3b** as a **Consumable**, using its **store id** (the first column: `jade_pinch`, `jade_pouch`, …, `season_scroll`, `clan_stipend`), never the game id (`moonstones_1`, `lantern_pass`, …). The game asks the App Store for the store ids (`store.json` `storeProductIds`), and App Store Connect never lets a product id be used again, even after deletion, so a product made with the wrong id is lost for good. The retired Rebuild Kit (`offer_rebuild`) was removed from the product map on 2026-11-18 (P1-10): it was never sold (no store listing has existed), so do not create it.
 
 5. In **App Store Connect → Users and Access → Integrations → App Store Connect API**, create a key with the **App Manager** role. Download the `.p8` file (you can only download it once) and note the **Key ID** and the **Issuer ID**.
 6. Find your **Team ID** under **Membership** at developer.apple.com.
@@ -176,7 +176,6 @@ Create these in App Store Connect (In-App Purchases) and the Play Console (In-ap
 | `offer_starter` | `offer_starter` | Consumable (the game allows it once per account) | 1.99 | Starter offer |
 | `offer_builder` | `offer_builder` | Consumable | 4.99 | Builder offer |
 | `offer_war_prep` | `offer_war_prep` | Consumable | 2.99 | War prep offer |
-| `offer_rebuild` | `offer_rebuild` | Consumable | 2.99 | Rebuild offer |
 | `offer_keep` | `offer_keep` | Consumable | 4.99 | Keep Celebration offer: 300 Jade plus supplies sized for the buyer's Keep, offered when a Keep level is reached (report section 5 step 6) |
 | `clan_stipend` | `clan_stipend` | Consumable (describe it as "30 daily Jade payments", never "monthly": nothing renews) | 2.99 | Clan Stipend: 30 payments of 12 Jade (was 20 until report section 5 step 6; stipends bought before keep 20), one claimable per UTC day, none lost; buyable again once all are claimed |
 
