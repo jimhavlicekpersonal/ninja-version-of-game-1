@@ -133,7 +133,7 @@
   "pages.support.25": "You can complain about illegal content, content harmful to children, a moderation decision (a removed message, a mute, a suspension, or a report we did not act on), the age group the game uses, or how we follow our online safety duties, including under the UK Online Safety Act. You do not need an account. Email us at the address above with the subject {t0}Online safety complaint{t1}, what happened and, if you play online, your Player ID. We confirm that we received it, someone who did not take the original decision looks at it, and we tell you the outcome. If we got it wrong, we restore the message or the account.",
   "pages.support.26": "Delete my account",
   "pages.support.27": "In the game: Settings → Online play → Account → {t0}Delete online account{t1}. Without the game: {t2}{t3}, with your Player ID or name and a {t4}deletion code{t5}: get one in Settings → Online play → Account while you still have the game (it works once, for 30 days). Without a code we first have to check the account is yours. Your village on the device goes when you uninstall the app or clear the site's data. Details are in the {t6}privacy policy{t7}.",
-  "pages.support.28": "Kagemura: Ninja Clans · {t0}Privacy policy{t1} · {t2}Community rules{t3} · {t4}Terms of service{t5} · {t6}特定商取引法に基づく表記{t7} · {t8}資金決済法に基づく表示{t9}",
+  "pages.support.28": "Kagemura: Ninja Clans · {t0}Privacy policy{t1} · {t2}Community rules{t3} · {t4}Terms of service{t5} · {t6}特定商取引法に基づく表記{t7} · {t8}資金決済法に基づく表示{t9} · {t10}Third-party licences{t11}",
   "pages.support.29": "Kagemura pages",
   "pages.support.30": "contact address not published yet",
   "pages.support.31": "Report illegal or harmful content with the complaint form",
