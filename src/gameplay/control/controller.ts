@@ -557,12 +557,12 @@ export class GameController {
   }
 
   /** Bank a Shadow Trial attack (re-simulated against the tier's own base). */
-  finishTrial(tier: number, setup: BattleSetup, deployments: Deployment[], endTick: number | undefined): { record: BattleRecord; cleared: boolean; firstClear: boolean; reward: Cost } | null {
+  finishTrial(tier: number, setup: BattleSetup, deployments: Deployment[], endTick: number | undefined): { record: BattleRecord; cleared: boolean; firstClear: boolean; reward: Cost; skipped?: [number, number] } | null {
     const r = this.dispatch({ type: 'trialEnd', tier, record: { at: this.now(), opponentName: setup.base.name, setup, deployments, endTick } });
     if (!r.ok) return null;
     const e = r.events.find((x) => x.kind === 'trial_end');
     if (!e || e.kind !== 'trial_end') return null;
-    return { record: e.record, cleared: e.cleared, firstClear: e.firstClear, reward: e.reward };
+    return { record: e.record, cleared: e.cleared, firstClear: e.firstClear, reward: e.reward, ...(e.skipped ? { skipped: e.skipped } : {}) };
   }
 
   /** Earlier villages that can be restored, newest first. Ones that still can't be read stay kept but aren't offered. */

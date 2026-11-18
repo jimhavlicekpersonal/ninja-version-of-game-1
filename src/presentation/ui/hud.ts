@@ -46,7 +46,7 @@ import { Connection } from '../../backend/net/connection';
 import { attacksLeft, raidPhase } from '../../gameplay/sim/social/groveRaid';
 import { builderStatus, countOfType, hallLevel, limitFor, payableInProvisions, placeQuote, skipQuote, temperQuote, topUpQuote, upgradeQuote, type PayWith, type QuoteResult } from '../../gameplay/sim/village';
 import { TEMPER_AXES, temperAxes, temperable, temperDef } from '../../gameplay/sim/battle/temper';
-import { canTryAlternate, nextTrialTier, trialInfo, trialReward, trialVariant } from '../../gameplay/sim/trials';
+import { attemptTier, canTryAlternate, trialInfo, trialRewardsThrough, trialVariant } from '../../gameplay/sim/trials';
 import type { UiBus } from './bus';
 import { clear, h, icon } from './dom';
 import { formatCompact, formatDuration, formatNumber } from './format';
@@ -2155,7 +2155,8 @@ export class Hud {
   openTrials(): void {
     const gd = localizedData(this.c.data);
     const best = this.c.state.trials.best;
-    const next = nextTrialTier(best);
+    // P3-06: the tier to attempt may be the catch-up tier (the first of the Keep two below this one).
+    const next = attemptTier(this.c.state.trials, hallLevel(this.c.state, gd), gd);
     const info = trialInfo(next, gd, trialVariant(this.c.state.trials, next));
     const alternate = canTryAlternate(this.c.state.trials, gd);
     const body = h('div', {});
@@ -2173,7 +2174,7 @@ export class Hud {
           h('div', { class: 'small' }, i18nMessage(info.layout.tip)),
           ...info.modifiers.map((m) => h('div', { class: 'small' }, i18nText("ui.message_d2599d42d8", { arg1: m.name, arg2: m.description }))),
         ),
-        h('div', { class: 'cost' }, ...Object.entries(trialReward(next, gd)).map(([k, v]) => h('span', { class: 'chip good' }, icon(icons[k as 'acorns' | 'dew' | 'moonstones']), formatNumber(v ?? 0)))),
+        h('div', { class: 'cost' }, ...Object.entries(trialRewardsThrough(best, next, gd)).map(([k, v]) => h('span', { class: 'chip good' }, icon(icons[k as 'acorns' | 'dew' | 'moonstones']), formatNumber(v ?? 0)))),
       ),
       h('p', { class: 'muted small' }, best > 0 ? i18nText("ui.best_tier_you_can_replay_any_cleared_t_000ba0e5d5", { arg1: best }) : i18nText("ui.you_have_not_cleared_a_tier_yet_cb231a4e2d")),
     );

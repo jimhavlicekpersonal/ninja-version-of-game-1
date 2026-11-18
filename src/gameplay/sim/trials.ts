@@ -123,14 +123,40 @@ function log2Exact(n: number): number {
   return v === 1 ? p : p + Math.log2(v);
 }
 
-/** Whether the player may switch the next tier to an alternate fortress: after failing it, a few times per tier. */
+/** Whether the player may switch the tier it failed to an alternate fortress: after failing it, a few times per tier. */
 export function canTryAlternate(trials: { best: number; alternate?: number; failedTier?: number }, data: GameData): boolean {
-  return trials.failedTier === nextTrialTier(trials.best) && (trials.alternate ?? 0) < data.trials.maxAlternates;
+  return (trials.failedTier ?? 0) > trials.best && (trials.alternate ?? 0) < data.trials.maxAlternates;
 }
 
-/** The fortress variant the next tier uses for this player (0 unless they switched after a failure). */
-export function trialVariant(trials: { best: number; alternate?: number }, tier: number): number {
-  return tier === nextTrialTier(trials.best) ? trials.alternate ?? 0 : 0;
+/** The fortress variant a tier uses for this player (0 unless they switched it after failing it). */
+export function trialVariant(trials: { best: number; alternate?: number; failedTier?: number }, tier: number): number {
+  return tier === (trials.failedTier || nextTrialTier(trials.best)) ? trials.alternate ?? 0 : 0;
+}
+
+/**
+ * P3-06 (PAC-09): the first tier of the Keep `trials.catchUpKeepsBelow` below the village's own, when that is above
+ * the next uncleared tier (a late starter skips dozens of trivial tiers); else null. Tier 2 stays locked until tier 1
+ * is cleared for a Keep 1 village, and every tier pays once.
+ */
+export function trialCatchUpTier(trials: { best: number }, keep: number, data: GameData): number | null {
+  const below = data.trials.catchUpKeepsBelow;
+  if (!below) return null;
+  const k = Math.min(data.hall.levels.length, keep - below);
+  if (k < 2) return null;
+  const tier = (k - 1) * data.trials.tiersPerHall + 1;
+  return tier > nextTrialTier(trials.best) ? tier : null;
+}
+
+/** What clearing `tier` for the first time pays after `best`: every tier from the next uncleared one through it, once. */
+export function trialRewardsThrough(best: number, tier: number, data: GameData): Cost {
+  const out: Cost = {};
+  for (let t = nextTrialTier(best); t <= tier; t++) for (const [k, v] of Object.entries(trialReward(t, data)) as [keyof Cost, number][]) out[k] = (out[k] ?? 0) + v;
+  return out;
+}
+
+/** The highest tier this village may attempt now (the catch-up tier, else the next uncleared one). */
+export function attemptTier(trials: { best: number }, keep: number, data: GameData): number {
+  return trialCatchUpTier(trials, keep, data) ?? nextTrialTier(trials.best);
 }
 
 /** The next tier the player can earn a reward on. */

@@ -12,7 +12,7 @@ import { opponentFor } from './gameplay/sim/matchmaking';
 import { SIM_RULES } from './gameplay/sim/battle/battle';
 import { mixSeed } from './gameplay/sim/rng';
 import { battleArmy, battleLoadout, scoutFee } from './gameplay/sim/village';
-import { nextTrialTier, trialBase, trialInfo, trialReward, trialVariant } from './gameplay/sim/trials';
+import { trialBase, trialInfo, trialReward, trialRewardsThrough, trialVariant } from './gameplay/sim/trials';
 import { rematchBase, rematchStatus } from './gameplay/sim/rematch';
 import { hasAttacked, shieldAfterAttack } from './gameplay/sim/shield';
 import { totalLoot } from './gameplay/sim/battle/basegen';
@@ -286,8 +286,9 @@ export class App {
         trialTier !== undefined
           ? (() => {
               const info = trialInfo(trialTier, c.data, trialVariant(c.state.trials, trialTier));
-              const firstClear = trialTier === nextTrialTier(c.state.trials.best);
-              return { tier: trialTier, layout: info.layout.name, modifiers: info.modifiers.map((m) => m.name), reward: trialReward(trialTier, c.data), firstClear, starsToClear: c.data.trials.starsToClear };
+              // P3-06: a first clear may be the catch-up tier, which pays the skipped tiers too.
+              const firstClear = trialTier > c.state.trials.best;
+              return { tier: trialTier, layout: info.layout.name, modifiers: info.modifiers.map((m) => m.name), reward: firstClear ? trialRewardsThrough(c.state.trials.best, trialTier, c.data) : trialReward(trialTier, c.data), firstClear, starsToClear: c.data.trials.starsToClear };
             })()
           : undefined,
       troopThumb: this.d.troopThumb,
@@ -369,7 +370,7 @@ export class App {
           if (!t) return null;
           lastRecord = t.record;
           const note = t.firstClear
-            ? i18nText("ui.shadow_trial_cleared_trial_is_open_e3b0d0cafa", { arg1: trialTier, arg2: trialTier + 1 })
+            ? i18nText("ui.shadow_trial_cleared_trial_is_open_e3b0d0cafa", { arg1: trialTier, arg2: trialTier + 1 }) + (t.skipped ? ` ${i18nText('trials.caughtUp', { from: t.skipped[0], to: t.skipped[1] })}` : '')
             : t.cleared
               ? i18nText("ui.cleared_again_the_reward_for_this_tier_1b8920c6c4")
               : i18nText("ui.not_cleared_you_need_stars_27ca57d98e", { arg1: c.data.trials.starsToClear });

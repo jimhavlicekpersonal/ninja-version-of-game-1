@@ -195,6 +195,7 @@
   "unlock.later": "Later",
   "keep.armyBehind": "Your warriors' training is more than a Keep behind your village: a higher Keep meets stronger rivals and raiders. Research or train first?",
   "scout.lootWontFit": "Your storage cannot hold all the loot on offer: what does not fit is lost.",
+  "trials.caughtUp": "Tiers {from} to {to} are counted as cleared too, each paid once.",
   "scout.shieldEnds": "Your shield has {time} left: attacking ends it.",
   "tutorial.end.daily": "Your first daily chest is ready: Finish opens it.",
   "panel.loadFailed": "This could not open. Check your connection and try again.",

@@ -1251,6 +1251,8 @@ export interface TrialModifierDef {
 
 export interface TrialsDef {
   tiersPerHall: number;
+  /** P3-06: a village may attempt the first tier of the Keep this many below its own (`trialCatchUpTier`). */
+  catchUpKeepsBelow?: number;
   powerGrowthPerTier: number;
   maxPower: number;
   starsToClear: number;

@@ -3,7 +3,7 @@ import { defenseWinReward } from './defenseReward';
 import { hasAttacked, shieldAfterAttack } from './shield';
 import { awardMastery, masteryBonuses, masteryMatches, masteryOn } from './mastery';
 import { hallLevel } from './keep';
-import { canTryAlternate, nextTrialTier, trialBase, trialReward, trialVariant } from './trials';
+import { canTryAlternate, nextTrialTier, trialBase, trialCatchUpTier, trialRewardsThrough, trialVariant } from './trials';
 import { armyHousing, armyReadyAt, armyValue, takeFromArmy, barracksLevel, finishTraining, housingCapacity, queueEndsAt, queueFits, queueHousing, retimeQueue, trainingQueueLimit, trainSecondsFor } from './army';
 import { runBattle, SIM_RULES, SIM_RULES_COMPATIBLE } from './battle/battle';
 import type { BattleRecord, BattleResult, BattleSetup, Deployment } from './battle/types';
@@ -218,7 +218,7 @@ export type SimEvent =
   | { kind: 'daily_chest'; outcome: string; step: number; grants: Cost; skipped: number; steppedBack: number; overflow?: Cost }
   | { kind: 'scout'; seed: number; fee: number }
   | { kind: 'raid_end'; record: BattleRecord }
-  | { kind: 'trial_end'; record: BattleRecord; tier: number; cleared: boolean; firstClear: boolean; reward: Cost }
+  | { kind: 'trial_end'; record: BattleRecord; tier: number; cleared: boolean; firstClear: boolean; reward: Cost; /** P3-06: tiers counted as cleared by a catch-up clear, first and last. */ skipped?: [number, number] }
   /** A bounty attack: the ladder steps it newly reached and what they paid (`reward`, really added; `overflow` did not fit). */
   | { kind: 'bounty_end'; record: BattleRecord; eventKey: string; steps: number[]; reward: Cost; overflow?: Cost }
   | { kind: 'rematch_end'; record: BattleRecord; defenseId: string; won: boolean; reward: Cost; overflow?: Cost }
@@ -2100,7 +2100,10 @@ function logWarAttack(s: VillageState, rec: Omit<BattleRecord, 'result' | 'id' |
  */
 function trialEnd(s: VillageState, tier: number, rec: Omit<BattleRecord, 'result' | 'id' | 'kind'>, now: number, data: GameData): CommandResult {
   if (!Number.isInteger(tier) || tier < 1) return fail('INVALID_BATTLE', 'Unknown Shadow Trial.');
-  if (tier > nextTrialTier(s.trials.best)) return fail('LOCKED', `Clear Shadow Trial ${s.trials.best + 1} first.`, { tier: s.trials.best + 1 });
+  // P3-06: the next uncleared tier, or the catch-up tier (the first of the Keep two below this one), or a replay.
+  const catchUp = trialCatchUpTier(s.trials, hallLevel(s, data), data);
+  const next = nextTrialTier(s.trials.best);
+  if (tier > next && tier !== catchUp) return fail('LOCKED', `Clear Shadow Trial ${s.trials.best + 1} first.`, { tier: s.trials.best + 1 });
   // Relay damage is server-issued for Gang War tickets only. Trials must always
   // begin from the intact generated fortress.
   if (rec.setup?.startDamage && Object.keys(rec.setup.startDamage).length) return fail('INVALID_BATTLE', 'Trial fortress damage is not allowed.');
@@ -2112,20 +2115,24 @@ function trialEnd(s: VillageState, tier: number, rec: Omit<BattleRecord, 'result
   awardMastery(s, result, setup, data);
   // XPL-01: a clear needs warriors; the free hero alone clears nothing.
   const cleared = result.stars >= data.trials.starsToClear && foughtWithWarriors(result, setup);
-  const firstClear = cleared && tier === nextTrialTier(s.trials.best);
+  const firstClear = cleared && (tier === next || tier === catchUp);
   let reward: Cost = {};
   let overflow: Cost = {};
+  let skipped: [number, number] | undefined;
   if (firstClear) {
-    ({ granted: reward, overflow } = grantResources(s, trialReward(tier, data), data));
+    // P3-06: a catch-up clear pays every skipped tier's reward once, with its own.
+    if (tier > next) skipped = [next, tier - 1];
+    ({ granted: reward, overflow } = grantResources(s, trialRewardsThrough(s.trials.best, tier, data), data));
     s.trials = { best: tier, alternate: 0, failedTier: 0 };
     s.stats.trialsCleared++;
-  } else if (!cleared && tier === nextTrialTier(s.trials.best)) {
+  } else if (!cleared && (tier === next || tier === catchUp)) {
+    if (s.trials.failedTier !== tier) s.trials.alternate = 0;
     s.trials.failedTier = tier;
   }
   const record: BattleRecord = { ...rec, setup, opponentName: setup.base.name, id: `r${s.nextSeed++}`, kind: 'attack', at: rec.at ?? now, result: { ...result, loot: { ...result.loot } }, trophies: 0, banked: reward, rules: SIM_RULES, trial: tier, ...(hasAny(overflow) ? { overflow } : {}) };
   s.battleLog.push(record);
   trimLog(s.battleLog, data.battle.maxReplays);
-  return { ok: true, state: s, events: [{ kind: 'trial_end', record, tier, cleared, firstClear, reward }] };
+  return { ok: true, state: s, events: [{ kind: 'trial_end', record, tier, cleared, firstClear, reward, ...(skipped ? { skipped } : {}) }] };
 }
 
 /**

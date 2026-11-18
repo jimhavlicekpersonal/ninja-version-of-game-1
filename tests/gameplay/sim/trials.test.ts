@@ -3,9 +3,10 @@ import { describe, expect, it } from 'vitest';
 import { createBattle, deploy, runBattle } from '../../../src/gameplay/sim/battle/battle';
 import { LAYOUTS } from '../../../src/gameplay/sim/battle/basegen';
 import type { BaseLayout, Deployment } from '../../../src/gameplay/sim/battle/types';
-import { trialBase, trialInfo, trialReward } from '../../../src/gameplay/sim/trials';
+import { attemptTier, trialBase, trialCatchUpTier, trialInfo, trialReward, trialRewardsThrough } from '../../../src/gameplay/sim/trials';
 import { applyCommand } from '../../../src/gameplay/sim/village';
 import { migrate, SAVE_VERSION, serialize } from '../../../src/gameplay/sim/save';
+import type { VillageState } from '../../../src/gameplay/sim/types';
 import { data, newGame } from './helpers';
 
 /** Rough defensive strength: sum over defenses of HP x damage per tick. */
@@ -223,3 +224,32 @@ describe('Shadow Trials: a dependable climb (F33)', () => {
   });
 });
 
+
+describe('P3-06 (PAC-09): a late starter catches up', () => {
+  const keepAt = (s: VillageState, keep: number): VillageState => ({ ...s, buildings: s.buildings.map((b) => (data.buildings[b.type].category === 'hall' ? { ...b, level: keep } : b)) });
+
+  it('a Keep 10 village may attempt the first tier of Keep 8 with nothing cleared; a Keep 1 village may not skip', () => {
+    const { state } = newGame();
+    expect(trialCatchUpTier(state.trials, 1, data)).toBeNull();
+    expect(attemptTier(state.trials, 1, data)).toBe(1);
+    expect(attemptTier(state.trials, 3, data)).toBe(1);
+    expect(trialCatchUpTier(state.trials, 10, data)).toBe(7 * data.trials.tiersPerHall + 1);
+    // Already past it: no catch-up.
+    expect(trialCatchUpTier({ best: 40 }, 10, data)).toBeNull();
+  });
+
+  it('clearing the catch-up tier sets the best tier to it and pays every skipped tier once', () => {
+    const { state, clock } = newGame({ acorns: 0, dew: 0 });
+    const s0 = keepAt({ ...state, army: { hedgehog_roller: 400 } }, 10);
+    const tier = trialCatchUpTier(s0.trials, 10, data)!;
+    const want = trialRewardsThrough(0, tier, data);
+    let sum = 0;
+    for (let t = 1; t <= tier; t++) sum += trialReward(t, data).acorns ?? 0;
+    expect(want.acorns).toBe(sum);
+    // A tier between the next one and the catch-up tier stays locked.
+    const mid = applyCommand(s0, { type: 'trialEnd', tier: 5, record: { at: clock.now(), opponentName: 'x', setup: { seed: 1, base: trialBase(5, data, 0), army: s0.army }, deployments: [] } }, clock.now(), data);
+    expect(mid.ok).toBe(false);
+    const locked = applyCommand(s0, { type: 'trialEnd', tier: tier + 1, record: { at: clock.now(), opponentName: 'x', setup: { seed: 1, base: trialBase(tier + 1, data, 0), army: s0.army }, deployments: [] } }, clock.now(), data);
+    expect(locked.ok).toBe(false);
+  });
+});

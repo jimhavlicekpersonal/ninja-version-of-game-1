@@ -195,6 +195,7 @@
   "unlock.later": { "en": "Later", "text": "ପରେ" },
   "keep.armyBehind": { "en": "Your warriors' training is more than a Keep behind your village: a higher Keep meets stronger rivals and raiders. Research or train first?", "text": "" },
   "scout.lootWontFit": { "en": "Your storage cannot hold all the loot on offer: what does not fit is lost.", "text": "" },
+  "trials.caughtUp": { "en": "Tiers {from} to {to} are counted as cleared too, each paid once.", "text": "" },
   "scout.shieldEnds": { "en": "Your shield has {time} left: attacking ends it.", "text": "" },
   "tutorial.end.daily": { "en": "Your first daily chest is ready: Finish opens it.", "text": "ଆପଣଙ୍କ ପ୍ରଥମ ଦୈନିକ ସିନ୍ଦୁକ ପ୍ରସ୍ତୁତ: \"ଶେଷ\" ଏହାକୁ ଖୋଲେ।" },
   "panel.loadFailed": { "en": "This could not open. Check your connection and try again.", "text": "ଏହା ଖୋଲିହେଲା ନାହିଁ। ସଂଯୋଗ ଯାଞ୍ଚ କରି ପୁଣି ଚେଷ୍ଟା କରନ୍ତୁ।" },
