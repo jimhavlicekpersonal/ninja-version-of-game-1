@@ -19,7 +19,7 @@ function licenceText(name) {
   const dir = join(ROOT, 'node_modules', name);
   const file = readdirSync(dir).find((f) => /^licen[cs]e(\.md|\.txt)?$/i.test(f));
   if (!file) throw new Error(`${name}: no licence file in node_modules`);
-  return readFileSync(join(dir, file), 'utf8').trim();
+  return readFileSync(join(dir, file), 'utf8').replace(/\r\n?/g, '\n').trim();
 }
 
 export function licencesHtml() {
