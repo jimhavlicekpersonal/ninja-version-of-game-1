@@ -116,13 +116,13 @@ server's own row). The prompt's baseline (205 files, 1,934 tests) predates `0c5e
 | P6-17 | todo | | | | |
 | P6-18 | todo | | | | |
 | P7-01 | todo | | | | |
-| P7-02 | todo | | | | |
+| P7-02 | done | 7b6e7a4 | id in 5 places, signed Android job would upload com.toadstoolkingdoms.app → one APP_ID variable; signed jobs stop while unset/legacy unless ALLOW_LEGACY_APP_ID=1 |  | Not run: a Gradle build or Xcode (no Android SDK / Mac here). strings.xml and Xcode identifier stay legacy until the owner changes the id (SHIPPING 6) |
 | P7-03 | todo | | | | |
-| P7-04 | todo | | | | |
+| P7-04 | done | 2627bf6 | Contests None → Frequent; age assurance No → present; parental controls No (reasoning beside each) |  | Apple page re-read 2026-11-18 by a web-fetch helper whose read of the two sections came from a page summary (the body text was cut off): an owner must re-read the page in App Store Connect before submitting. No closure record for C05 yet: in the Phase 7 record |
 | P7-05 | todo | | | | |
 | P7-06 | todo | | | | |
 | P7-07 | todo | | | | |
-| P7-08 | todo | | | | |
+| P7-08 | done | 2627bf6 | policyUpdated 2026-11-05 (page changed 2026-11-14) → 2026-11-14; test ties it to a hash of the English privacy strings |  |  |
 | P7-09 | todo | | | | |
 | P7-10 | todo | | | | |
 | P7-11 | todo | | | | |
