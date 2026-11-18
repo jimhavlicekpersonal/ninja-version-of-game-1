@@ -84,7 +84,6 @@ export function masterySection(c: Pick<GameController, 'state' | 'data'>): HTMLE
     'div',
     { class: 'mastery-panel', 'data-id': 'mastery' },
     h('h3', {}, t('mastery.title')),
-    h('p', { class: 'muted small' }, t('preview.notLive')),
     rows.length
       ? h(
           'div',
@@ -94,7 +93,8 @@ export function masterySection(c: Pick<GameController, 'state' | 'data'>): HTMLE
               'div',
               { class: 'log-row', 'data-troop': r.troop },
               h('b', {}, gd.troops[r.troop]?.name ?? r.troop),
-              h('span', { class: 'small' }, t('mastery.row', { level: r.level, bonus: fmtPercent(r.bonus * 100, 1) })),
+              // P5-07: ranks carry no stat bonus, so the bonus row ("+X health and damage") is never shown for them.
+              h('span', { class: 'small' }, r.bonus > 0 ? t('mastery.row', { level: r.level, bonus: fmtPercent(r.bonus * 100, 1) }) : t('mastery.rank', { level: r.level })),
               h('span', { class: 'muted small' }, t('mastery.next', { xp: formatNumber(r.xp), need: formatNumber(r.next) })),
             ),
           ),

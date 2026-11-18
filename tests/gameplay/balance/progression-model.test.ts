@@ -175,18 +175,31 @@ describe('the 50-warrior design', () => {
 });
 
 describe('EXP and mastery', () => {
-  it('EXP needed grows without end while the bonus approaches its ceiling', () => {
+  // P5-07 (BNL-02, restated as the item authorises): mastery is ranks with no stat bonus.
+  it('EXP needed grows without end, the rank comes from the level curve, and no rank carries a bonus', () => {
     let last = 0;
     for (let m = 1; m < 200; m++) {
       const xp = masteryXpTotal(m);
       expect(xp).toBeGreaterThan(last);
       expect(Number.isFinite(xp)).toBe(true);
       last = xp;
-      expect(masteryBonus(m)).toBeGreaterThan(masteryBonus(m - 1));
-      expect(masteryBonus(m)).toBeLessThan(MODEL.mastery.maxBonus);
+      expect(masteryBonus(m)).toBe(0);
     }
+    expect(MODEL.mastery.maxBonus).toBe(0);
     expect(masteryLevelFor(masteryXpTotal(12))).toBe(12);
     expect(masteryLevelFor(masteryXpTotal(12) - 1)).toBe(11);
+  });
+
+  it('a month of play moves a rank visibly and a year does not exhaust it', () => {
+    // A warrior that is a quarter of a Keep 12 army (about 75 housing) at two stars a raid, eight raids a day.
+    const perRaid = 75 * MODEL.mastery.xpPerHousingUsed * (1 + 2 * MODEL.mastery.xpPerStar);
+    expect(masteryLevelFor(40 * perRaid)).toBeGreaterThanOrEqual(4);
+    expect(masteryLevelFor(40 * perRaid)).toBeLessThanOrEqual(6);
+    const month = masteryLevelFor(240 * perRaid);
+    const year = masteryLevelFor(2920 * perRaid);
+    expect(month).toBeGreaterThanOrEqual(8);
+    expect(year).toBeGreaterThan(month);
+    expect(year).toBeLessThan(40);
   });
 });
 

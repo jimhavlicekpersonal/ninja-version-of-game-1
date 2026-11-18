@@ -1,6 +1,6 @@
 /**
  * GUI for the content batch's non-live features and the compliance switches (2026-11-14):
- * - the Hero Hall's hero picker and the Warrior Mastery view appear only while the data flags are on
+ * - the Hero Hall's hero picker appears only while its data flag is on (Warrior Mastery ranks are live since P5-07)
  *   (`withPreview`, i.e. `?sandbox&preview`), and the picker changes state only through `chooseHero`;
  * - the EU real-money value of Jade, the terms gate and withheld chat lines.
  * No browser in `npm test`: a tiny element stub stands in for the DOM.
@@ -112,20 +112,22 @@ describe('the Hero Hall hero picker', () => {
 });
 
 describe('Warrior Mastery', () => {
-  it('is hidden with the shipped data, listed with preview data from the village EXP', () => {
-    const off = host(defaultData, 5, 0);
-    expect(masterySection(off.c)).toBeNull();
-    expect(masteryRows(off.c)).toEqual([]);
-    const on = host(P, 5, 0);
-    expect(masteryRows(on.c)).toEqual([]);
-    const troop = Object.keys(P.troops)[0];
-    on.state.mastery = { [troop]: 500 };
-    const rows = masteryRows(on.c);
-    expect(rows).toHaveLength(1);
-    expect(rows[0]).toMatchObject({ troop, xp: 500 });
-    expect(rows[0].level).toBeGreaterThan(0);
-    expect(rows[0].next).toBeGreaterThan(500);
-    expect((masterySection(on.c) as unknown as El).text).toContain(en['mastery.title']);
+  // P5-07 (restated): mastery ranks are live in the shipped data; a rank row, never "+X health and damage".
+  it('is shown with the shipped data as ranks, listed from the village EXP', () => {
+    for (const d of [defaultData, P]) {
+      const on = host(d, 5, 0);
+      expect(masteryRows(on.c)).toEqual([]);
+      const troop = Object.keys(d.troops)[0];
+      on.state.mastery = { [troop]: 5000 };
+      const rows = masteryRows(on.c);
+      expect(rows).toHaveLength(1);
+      expect(rows[0]).toMatchObject({ troop, xp: 5000, bonus: 0 });
+      expect(rows[0].level).toBeGreaterThan(0);
+      expect(rows[0].next).toBeGreaterThan(5000);
+      const text = (masterySection(on.c) as unknown as El).text;
+      expect(text).toContain(en['mastery.title']);
+      expect(text).not.toContain('health and damage');
+    }
   });
 
   it('the Codex shows it', () => {

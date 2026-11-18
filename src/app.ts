@@ -411,7 +411,9 @@ export class App {
               : i18nText("ui.not_cleared_you_need_stars_27ca57d98e", { arg1: c.data.trials.starsToClear });
           // P5-06: a Trial milestone's look.
           const trialLooks = (t.looks ?? []).map((id) => localizedData(c.data).cosmetics.hallSkins.find((k) => k.id === id)?.name ?? id);
-          return { result: t.record.result, banked: t.reward, overflow: t.record.overflow, trophies: 0, note: trialLooks.length ? `${note} ${i18nText('events.lookEarned', { name: i18nList(trialLooks) })}` : note };
+          const withLooks = trialLooks.length ? `${note} ${i18nText('events.lookEarned', { name: i18nList(trialLooks) })}` : note;
+          // P5-07: a tier's first clear pays mastery experience.
+          return { result: t.record.result, banked: t.reward, overflow: t.record.overflow, trophies: 0, note: t.record.masteryXp ? `${withLooks} ${i18nText('mastery.gained', { xp: t.record.masteryXp })}` : withLooks };
         }
         const ticket = this.ticket ?? undefined;
         // Online: recorded as pending; loot and honor arrive with the server's confirmation.
@@ -430,7 +432,7 @@ export class App {
         // P5-03: the daily contract the raid met (its multiplier is taken out of the diversity share shown).
         const met = contractById(out.record.contract, c.data);
         const metMult = met ? contractMultiplier(met, out.record.result, out.record.setup, out.record.stake, c.data, trainableRoles(c.state, c.data)) : 1;
-        return { result: out.record.result, banked: out.banked, overflow: out.record.overflow, trophies: out.record.trophies ?? 0, bonus: out.record.leagueBonus, eventBonus: out.record.eventBonus, stake: out.record.stake, diversity: diversityPartOf(out.record.carry, out.record.stake, out.record.result.stars, c.data, metMult), contract: met ? localizedData(c.data).raids.contracts!.list.find((x) => x.id === met.id)!.name : undefined };
+        return { result: out.record.result, banked: out.banked, overflow: out.record.overflow, trophies: out.record.trophies ?? 0, bonus: out.record.leagueBonus, eventBonus: out.record.eventBonus, stake: out.record.stake, diversity: diversityPartOf(out.record.carry, out.record.stake, out.record.result.stars, c.data, metMult), contract: met ? localizedData(c.data).raids.contracts!.list.find((x) => x.id === met.id)!.name : undefined, ...(out.record.masteryXp ? { note: i18nText('mastery.gained', { xp: out.record.masteryXp }) } : {}) };
       },
       onReplay: () => {
         if (lastRecord) this.replay(lastRecord);

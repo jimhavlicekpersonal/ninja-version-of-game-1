@@ -2021,7 +2021,7 @@ function battleEnd(s: VillageState, rec0: Omit<BattleRecord, 'result' | 'id' | '
   const carry = raidCarry(result, rec.setup, stake, data, roles, contract);
   const metContract = contractMultiplier(contract, result, rec.setup, stake, data, roles) > 1 ? contract!.id : undefined;
   const { banked, overflow, bonus, eventBonus } = bankRaidLoot(s, result, now, data, carry);
-  awardMastery(s, result, rec.setup, data);
+  const masteryXp = sumXp(awardMastery(s, result, rec.setup, data));
   const opp = rec.setup.base.trophies ?? s.trophies;
   const trophies = result.stars >= 1 ? winTrophies(s.trophies, opp, data) : -lossTrophies(s.trophies, opp, data);
   s.trophies = Math.max(0, s.trophies + trophies);
@@ -2033,12 +2033,18 @@ function battleEnd(s: VillageState, rec0: Omit<BattleRecord, 'result' | 'id' | '
   if (stake !== undefined) record.stake = stake;
   if (carry !== 1) record.carry = carry;
   if (metContract) record.contract = metContract;
+  if (masteryXp) record.masteryXp = masteryXp;
   if (hasAny(overflow)) record.overflow = overflow;
   if (hasAny(bonus)) record.leagueBonus = bonus;
   if (hasAny(eventBonus)) record.eventBonus = eventBonus;
   s.battleLog.push(record);
   trimLog(s.battleLog, data.battle.maxReplays);
   return { ok: true, state: s, events: [{ kind: 'raid_end', record }] };
+}
+
+/** P5-07: the experience an attack paid, all warrior types together (shown on the result screen). */
+function sumXp(gained: Record<string, number>): number {
+  return Object.values(gained).reduce((a, x) => a + x, 0);
 }
 
 /** P5-04: the counters a settled raid adds beyond wins, stars and destruction (three-star raids, stakes reached). */
@@ -2103,7 +2109,8 @@ function settleOnlineAttack(s: VillageState, cmd: Extract<Command, { type: 'sett
   if (contractMultiplier(contract, result, rec.setup, stake, data, roles) > 1) rec.contract = contract!.id;
   else delete rec.contract;
   const { banked, overflow, bonus, eventBonus } = bankRaidLoot(s, result, rec.at, data, carry);
-  awardMastery(s, result, rec.setup, data);
+  const masteryXp = sumXp(awardMastery(s, result, rec.setup, data));
+  if (masteryXp) rec.masteryXp = masteryXp;
   rec.result = { ...result, loot: { ...result.loot } };
   rec.banked = banked;
   if (stake !== undefined) rec.stake = stake;
@@ -2158,10 +2165,11 @@ function trialEnd(s: VillageState, tier: number, rec: Omit<BattleRecord, 'result
   const setup = clean.setup;
   const { result } = runBattle(setup, rec.deployments, data, rec.endTick);
   spendTroops(s, result.used, setup);
-  awardMastery(s, result, setup, data);
   // XPL-01: a clear needs warriors; the free hero alone clears nothing.
   const cleared = result.stars >= data.trials.starsToClear && foughtWithWarriors(result, setup);
   const firstClear = cleared && (tier === next || tier === catchUp);
+  // P5-07: mastery is paid for raids and a tier's first clear only (a replayed tier farmed experience).
+  const masteryXp = firstClear ? sumXp(awardMastery(s, result, setup, data)) : 0;
   const looks: string[] = [];
   let reward: Cost = {};
   let overflow: Cost = {};
@@ -2181,7 +2189,7 @@ function trialEnd(s: VillageState, tier: number, rec: Omit<BattleRecord, 'result
     }
     s.trials.failedTier = tier;
   }
-  const record: BattleRecord = { ...rec, setup, opponentName: setup.base.name, id: `r${s.nextSeed++}`, kind: 'attack', at: rec.at ?? now, result: { ...result, loot: { ...result.loot } }, trophies: 0, banked: reward, rules: SIM_RULES, trial: tier, ...(hasAny(overflow) ? { overflow } : {}) };
+  const record: BattleRecord = { ...rec, setup, opponentName: setup.base.name, id: `r${s.nextSeed++}`, kind: 'attack', at: rec.at ?? now, result: { ...result, loot: { ...result.loot } }, trophies: 0, banked: reward, rules: SIM_RULES, trial: tier, ...(hasAny(overflow) ? { overflow } : {}), ...(masteryXp ? { masteryXp } : {}) };
   s.battleLog.push(record);
   trimLog(s.battleLog, data.battle.maxReplays);
   return { ok: true, state: s, events: [{ kind: 'trial_end', record, tier, cleared, firstClear, reward, ...(skipped ? { skipped } : {}), ...(looks.length ? { looks } : {}) }] };

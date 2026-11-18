@@ -4,7 +4,7 @@
  */
 import { describe, expect, it } from 'vitest';
 import { generateOpponent } from '../../../src/gameplay/sim/battle/basegen';
-import { createBattle, deploy, runBattle } from '../../../src/gameplay/sim/battle/battle';
+import { createBattle, runBattle } from '../../../src/gameplay/sim/battle/battle';
 import { defaultData } from '../../../src/gameplay/sim/data';
 import { heroFor } from '../../../src/gameplay/sim/heroes';
 import { awardMastery, masteryBonuses } from '../../../src/gameplay/sim/mastery';
@@ -76,8 +76,9 @@ describe('the planned buildings', () => {
     const before = JSON.stringify(defaultData);
     const data = withPreview(defaultData);
     expect(JSON.stringify(defaultData)).toBe(before);
+    // P5-07: mastery (ranks, no bonus) is live; only the hero choice stays in the preview.
     expect(data.features).toEqual({ mastery: true, heroChoice: true });
-    expect(defaultData.features).toBeUndefined();
+    expect(defaultData.features).toEqual({ mastery: true });
     for (const keep of [5, 9, 14]) {
       const base = generateOpponent(4242 + keep, keep, defaultData);
       const army = { hedgehog_roller: 20, frog_lobber: 10, beetle_brute: 4, owl_bomber: 3 };
@@ -130,37 +131,35 @@ describe('Hero Hall: choosing a hero', () => {
   });
 });
 
-describe('Warrior Mastery (audit B4)', () => {
-  it('earns nothing and changes no battle in the shipped game', () => {
-    const s = village(8, defaultData);
-    expect(awardMastery(s, { used: { hedgehog_roller: 10 }, stars: 3 }, {}, defaultData)).toEqual({});
-    expect(s.mastery).toEqual({});
-    s.mastery = { hedgehog_roller: 1e6 };
-    expect(masteryBonuses(s, defaultData)).toEqual({});
-    expect(battleLoadout(s, defaultData).mastery).toBeUndefined();
+// P5-07 (BNL-02, restated as the item authorises): the ranks contract. Experience grows without end, the rank comes
+// from the level curve, masteryBonuses returns nothing and no battle setup the game builds carries mastery.
+describe('Warrior Mastery (audit B4): ranks with no stat bonus', () => {
+  it('the shipped game earns experience by housing and stars, own warriors only (not the hero or donated warriors)', () => {
+    for (const d of [defaultData, P]) {
+      const s = village(8, d);
+      const gained = awardMastery(s, { used: { hedgehog_roller: 10, beetle_brute: 2, shadow_captain: 1 }, stars: 2 }, { hero: { id: 'shadow_captain', level: 2 }, reinforcements: { beetle_brute: { count: 1, level: 3 } } }, d);
+      expect(gained).toEqual({ hedgehog_roller: battleMasteryXp(10, 2), beetle_brute: battleMasteryXp(d.troops.beetle_brute.housing, 2) });
+      expect(s.mastery).toEqual(gained);
+    }
   });
 
-  it('with the feature on: EXP per attack by housing and stars, own warriors only, and a bonus that never passes 30%', () => {
-    const s = village(8, P);
-    const gained = awardMastery(s, { used: { hedgehog_roller: 10, beetle_brute: 2, shadow_captain: 1 }, stars: 2 }, { hero: { id: 'shadow_captain', level: 2 }, reinforcements: { beetle_brute: { count: 1, level: 3 } } }, P);
-    expect(gained).toEqual({ hedgehog_roller: battleMasteryXp(10, 2), beetle_brute: battleMasteryXp(P.troops.beetle_brute.housing, 2) });
-    s.mastery = { hedgehog_roller: 2730, frog_lobber: 1e12 };
-    const bonus = masteryBonuses(s, P);
-    expect(bonus.hedgehog_roller).toBeCloseTo(masteryBonus(10), 4);
-    expect(bonus.frog_lobber).toBeLessThanOrEqual(0.3);
-    expect(battleLoadout(s, P).mastery).toEqual(bonus);
+  it('no rank carries a bonus: masteryBonuses is empty and no setup the game builds carries mastery', () => {
+    for (const d of [defaultData, P]) {
+      const s = village(8, d);
+      s.army = { hedgehog_roller: 5 };
+      s.mastery = { hedgehog_roller: 2730, frog_lobber: 1e12 };
+      expect(masteryBonus(40)).toBe(0);
+      expect(masteryBonuses(s, d)).toEqual({});
+      expect(battleLoadout(s, d).mastery).toBeUndefined();
+    }
   });
 
-  it('mastered warriors fight with the bonus, and a setup claiming more mastery than earned is refused', () => {
+  it('a setup claiming mastery is refused', () => {
     const s = village(8, P);
     s.army = { hedgehog_roller: 5 };
     s.mastery = { hedgehog_roller: 2730 };
     const loadout = battleLoadout(s, P);
     const base = generateOpponent(77, 8, P);
-    const sim = createBattle({ seed: 1, base, ...loadout }, P);
-    expect(deploy(sim, { tick: 0, troop: 'hedgehog_roller', x: sim.entry ? sim.entry.points[0].x : 1, y: sim.entry ? sim.entry.points[0].y : 1 })).toBe(true);
-    const lv = P.troops.hedgehog_roller.levels[0];
-    expect(sim.troops[0].maxHp).toBeCloseTo(lv.hp * (1 + loadout.mastery!.hedgehog_roller), 6);
     const cheat = { ...loadout, mastery: { hedgehog_roller: 0.3 } };
     const r = applyCommand(s, { type: 'battleEnd', record: { at: NOW, opponentName: 'x', setup: { seed: 1, base, ...cheat }, deployments: [] } }, NOW, P);
     expect(r.ok).toBe(false);

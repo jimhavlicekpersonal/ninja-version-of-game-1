@@ -38,6 +38,9 @@ export const defaultData: GameData = {
   events: events as unknown as GameData['events'],
   notifications: notifications as unknown as GameData['notifications'],
   trials: trials as unknown as GameData['trials'],
+  // P5-07: Warrior Mastery ranks are live (no stat bonus: progression.json mastery.maxBonus is 0, so no battle setup
+  // carries one). The Hero Hall's choice stays behind the preview (planned.json).
+  features: { mastery: true },
 };
 
 export function buildingDef(data: GameData, type: BuildingType): BuildingDef {
