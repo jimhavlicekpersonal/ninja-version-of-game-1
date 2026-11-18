@@ -97,39 +97,39 @@ server's own row). The prompt's baseline (205 files, 1,934 tests) predates `0c5e
 | P5-09 | done | af1cea6 | chest, skip week, stipend on the local day; the switch never gives a second chest in a UTC day (UTC+10, UTC-8 tested) | 1 sim message | west of UTC the switch may wait up to one more local day (review M2 fix d7cc5d7) |
 | P5-10 | done | c81e9f6 | 12 season names; recap at every Scroll rollover (league at season end, raids, stars, tiers) with a Share button | 12 names + season.* 4 |  |
 | P5-11 | done | 403372d | 6 Jade looks at 450/650/900 (Keeps 6-14): 13 looks for Jade, 3,900 Jade more | 6 names | open ideas recorded (queuedArmies 2, raider forecast, real-player revenge) |
-| P6-01 | todo | | | | |
-| P6-02 | todo | | | | |
-| P6-03 | todo | | | | |
-| P6-04 | todo | | | | |
-| P6-05 | todo | | | | |
-| P6-06 | todo | | | | |
-| P6-07 | done | 7a3268d | Watch replay / Return home only; missed stake 'no loot' under loot; 85% on 0 carried -> progress block + next actions; contradictions gone | result.leagueBonus | result-progress 2/2; result-screen DOM 3/3 |
-| P6-08 | todo | | | | |
+| P6-01 | done | c22a42d | squad orders: no screen -> row with formations, cycling order, Hold; reserve offered (best on 8/9/6 of 10 at K9/12/15) | squad.* 10 | squad.dom 3/3; surfaces --battle 4 sizes (landscape fixed after run: bottom 76px) |
+| P6-02 | done | 8e84cf0,d1db84a | no way to learn the entry point -> what-if review per point, real battle numbers; low-end longest task 129 ms (low) at CPU x6 | review.* 5 | what-if 2/2; result-screen DOM 4/4; lowend run recorded (emulation) |
+| P6-03 | done | bee88b5 | a held raid read 'took X' -> kept %, denied, entry, first to fall, reward; defendSide objective | defense.* 5, objective.defendSide | defense-report sim 4/4, DOM 3/3 |
+| P6-04 | done | 42e67a4 | no way to test a layout -> test raid replay + practice against a past raider's army | defense.test/testName/yourVillage/practiceAgainst | test-defense 1/1; DOM 4/4 |
+| P6-05 | done | 8adc9be | chip cut, no camera move, dead ends -> 5 new kinds, cost chips, 2 lines, camera focus | objective.claim | return-hooks 12/12 |
+| P6-06 | done | 246ebc3 | one tier shown, 'replay any' offered one -> ladder of 10 + stepper | trials.ladder, trials.cleared | trials-ladder DOM 1/1 |
+| P6-07 | done | 7a3268d | Watch replay / Return home only; missed stake 'no loot' under loot; 85% on 0 carried -> progress block + next actions; contradictions gone | result.leagueBonus | result-progress 2/2; result-screen DOM 4/4 |
+| P6-08 | done | 44ca965 | league/Keep/hero/tempering silent, no village haptics -> milestone card, offer waits, hero cards, callouts, pill count-up + haptics | milestone.* 4 | milestones DOM 3/3 |
 | P6-09 | done | 83c139a,ab4be0e | skip w/o confirm; ring through sheet; Upgrade off-box; raw ids; folded kind; stale Build; empty collect in News; 8 N/A cards -> fixed; all 4 sizes pass in en | kind.*,tutorial.skipAsk,sheet.unlocksWarriors | DOM 10/10; ui:surfaces en 4 sizes pass (objective chip cut at 320: P6-05); Keep-level moment: P6-08; ar/de after translation |
-| P6-10 | todo | | | | |
+| P6-10 | done | 19db200 | 5 leaks (pill English, raw Alliance War, replace('Needs '), dead plural args, dialogs by translated text) -> 0 | - | text-leaks 5/5 |
 | P6-11 | done | 1f9fc30 | zoom 0.14 whole fight; no speed live -> 0.25-0.36 action frame; speed after all deployed | - | speed.test 2/2 same hash; action-frame 3/3; surfaces --battle 4 sizes |
-| P6-12 | todo | | | | |
+| P6-12 | done | b5b9d1a | crew invisible -> builder panel with two queues, badge, first-build line | builders.* 3 | builders DOM 2/2; surfaces 320/844 village+builders |
 | P6-13 | done | 0e57e25 | stake downside in closed drawer, star not marked, share only after raid -> help under chips, drawer once, ring, preview | carry.preview | stake.dom 3/3 |
-| P6-14 | todo | | | | |
-| P6-15 | todo | | | | |
-| P6-16 | todo | | | | |
-| P6-17 | todo | | | | |
-| P6-18 | todo | | | | |
+| P6-14 | done | aeccadf | icon-only silent rail, shared icon, Events badge 0, rematch unadvertised, calendar buried, div pill -> fixed | - | discoverability DOM 3/3 |
+| P6-15 | done | 457f047,6ea0f13 | no test built the HUD -> harness + 70+ DOM tests (panels, tutorial, results x6, objective x11) + Playwright surfaces driver | - | tests/presentation/dom/* |
+| P6-16 | partial | 19c5f5a | disabled Attack/Next with no route, title-only help, no Esc/focus/hotkeys -> fixed | - | keyboard DOM 3/3; the other ~24 titles in village panels not reviewed one by one |
+| P6-17 | done | a474f99 | empty camps: Attack scouted an unwinnable raid -> drill / Try / next tier + countdown / bounty | battle.scoutAnyway | empty-camp DOM 3/3 |
+| P6-18 | partial | d06934f | no sentence on rival answers, exhaustion, counters -> Codex page; 5 of 18 live counter pairs confirmed in battle and shown | codex.* 5 | codex-rules DOM 1/1; counter check one-warrior armies: 13 pairs unconfirmed (effect never triggered), mixed-army check open |
 | P7-01 | done | b6845eb | a test required the publisher facts to be empty; nothing stopped a store build with 'not published yet' pages → facts must be empty or well formed (values parsed); npm run release:preflight lists 23 open items (6 blocking) and fails the signed Android/TestFlight jobs on blocking ones; notice on the web build |  | tools/release/check-store-ready.mjs, legal-config.mjs; test in release-tools.test.ts |
 | P7-02 | done | 7b6e7a4 | id in 5 places, signed Android job would upload com.toadstoolkingdoms.app → one APP_ID variable; signed jobs stop while unset/legacy unless ALLOW_LEGACY_APP_ID=1 |  | Not run: a Gradle build or Xcode (no Android SDK / Mac here). strings.xml and Xcode identifier stay legacy until the owner changes the id (SHIPPING 6) |
 | P7-03 | done | b6845eb | native lists lacked @capacitor/haptics and @capacitor-community/in-app-review → npx cap sync output committed; test checks every plugin dependency in the three native files |  | Not built with Gradle/Xcode here |
 | P7-04 | done | 2627bf6 | Contests None → Frequent; age assurance No → present; parental controls No (reasoning beside each) |  | Apple page re-read 2026-11-18 by a web-fetch helper whose read of the two sections came from a page summary (the body text was cut off): an owner must re-read the page in App Store Connect before submitting. No closure record for C05 yet: in the Phase 7 record |
 | P7-05 | todo | | | | |
-| P7-06 | todo | | | | |
+| P7-06 | done | c6750da | macos-15 + warning -> macos-26 + error below SDK 26 | - | release-config; workflow never run (owner) |
 | P7-07 | todo | | | | |
 | P7-08 | done | 2627bf6 | policyUpdated 2026-11-05 (page changed 2026-11-14) → 2026-11-14; test ties it to a hash of the English privacy strings |  |  |
 | P7-09 | todo | | | | |
 | P7-10 | done (docs) | b6845eb | REQUESTS 'Open' listed 9 backend + 7 game-theory entries, most answered → backend 2 open / 7 done, game theory 4 open / 3 done; dated reassessment table in WORLDWIDE_AUDIT |  | docs/art/REQUESTS.md left as is: its re-audit table is reference and the squad-orders ask is genuinely open (P6-01) |
-| P7-11 | todo | | | | |
-| P7-12 | todo | | | | |
+| P7-11 | done | ad7f0b4 | unset in every workflow -> repository variable, default 0, in 3 workflows | - | release-config 20/20 |
+| P7-12 | done | 12f24e1 | no way to play preview on a build -> manual workflow (artifact only), tester checklist | - | verification-client 8/8 |
 | P7-13 | todo | | | | |
 | P7-14 | todo | | | | |
-| P7-15 | todo | | | | |
+| P7-15 | done | 0e53a6c | audio category + marketing version set in text; privacy manifest and achievements plugin written down | - | release-config; nothing compiled or run on a device |
 | P7-16 | doing (draft) | b6845eb | docs/store/OWNER_CHECKLIST.md written from STATE_OF_THE_GAME 6, publish.md 4e and this pass; preflight checks the machine-checkable lines |  | Extend with later phases' owner items (festival names, preview URL decision, local-day stats) |
 
 ## New and changed locale keys (for section 13)

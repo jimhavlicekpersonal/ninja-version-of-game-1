@@ -28,6 +28,8 @@ export interface SquadOrderRow {
   keep: number;
   bases: number;
   bestBy: Record<WaveOrder, number>;
+  /** Bases where this order alone is best (no tie). */
+  strictBy: Record<WaveOrder, number>;
   mean: Record<WaveOrder, number>;
 }
 
@@ -38,6 +40,7 @@ export function measureSquadOrders(keeps = [9, 12, 15], bases = 10): SquadOrderR
     const levels: Record<string, number> = {};
     for (const t of Object.keys(army)) levels[t] = troopLevelCapAt(keep, data, t);
     const bestBy = { tanks: 0, rush: 0, reserve: 0 } as Record<WaveOrder, number>;
+    const strictBy = { tanks: 0, rush: 0, reserve: 0 } as Record<WaveOrder, number>;
     const sum = { tanks: 0, rush: 0, reserve: 0 } as Record<WaveOrder, number>;
     for (let b = 0; b < bases; b++) {
       const setup: BattleSetup = { seed: 9000 + keep * 31 + b, base: generateOpponent(keep * 104729 + b * 7919, keep, data), army, levels, infiltration: true };
@@ -52,8 +55,10 @@ export function measureSquadOrders(keeps = [9, 12, 15], bases = 10): SquadOrderR
       const max = Math.max(...ORDERS.map((o) => best[o]));
       // Ties count for every order that reaches the best.
       for (const o of ORDERS) if (best[o] === max) bestBy[o]++;
+      const leaders = ORDERS.filter((o) => best[o] === max);
+      if (leaders.length === 1) strictBy[leaders[0]]++;
     }
-    rows.push({ keep, bases, bestBy, mean: { tanks: sum.tanks / bases, rush: sum.rush / bases, reserve: sum.reserve / bases } });
+    rows.push({ keep, bases, bestBy, strictBy, mean: { tanks: sum.tanks / bases, rush: sum.rush / bases, reserve: sum.reserve / bases } });
   }
   return rows;
 }

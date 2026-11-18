@@ -1141,3 +1141,28 @@ No battle rule changed in this phase (the Phase 4 review fixes that ride rules 8
 
 Translations (section 13): `f777dc8` (the phase's 150 new strings into 49 languages), `bce783f` (six script-group reviewers, about 2,500 pairs; fixed ur, ru, uk, el, zh-Hant, kn and te errors listed in the commit). `i18n:check` passes for every language. Machine translation checked for structure, not reviewed by native speakers.
 
+
+### 2026-11-18 replayability pass, Phase 6: screens, so that what was built can be found and felt (integration session; agent prompt `docs/prompts/BEAST_MODE_2026-11-16.md` section 11, evidence `docs/audit/understand-2026-11-16/ui-surface.md`, `playthrough.md` and `phase6/`, ledger `docs/audit/understand-2026-11-16/PROGRESS.md`), commits `83c139a` to `f0ad1d4` on `claude/magical-cray-wkpcl1`
+
+No battle rule changed (speed scales real time only; squad orders and the review go through the ordinary deploy path) and no save field was added (only device `localStorage` keys: `tk.squad`, `tk.stakeHelpSeen`, `tk.crewSeen`, `tk.milestones`, `tk.railSeen`). `sim/objective.ts`, `sim/defenseReport.ts` and `sim/defenseTest.ts` are pure and device-side; the campaign fingerprint is unchanged (the test raid was moved out of `defense.ts` for that, `3356c96`). Browser checks use `tools/ui/surfaces.mjs` (`npm run ui:surfaces`, Playwright with Chromium, touch, hit tests at element centres): an estimate of phones, not device certification. Playwright itself could not be added as a development dependency here (the install was refused in this environment); the driver uses the globally installed one.
+
+| Item | Finding | Status | What changed | Evidence | Remaining limitations |
+|---|---|---|---|---|---|
+| P6-01 | CMB-09/UIS-03 squad orders had no screen | done | a row of formations (Together, Pincer, Single file) and one cycling wave-order chip, Hold with the waiting count; a ring tap sends the squad | three-tap raid replays to its hash; row fits at the four sizes | the reserve decision is under re-measurement (review M2, below) |
+| P6-02 | CMB-02 the entry point cannot be learned | done | "What if…" on the result screen: the same deployments through another point, a real battle in slices | equals `runBattle` with its deployments; CPU ×6 longest task 129 ms (low) | emulation, not a cheap phone |
+| P6-03 | defense report | done | kept share, stars denied, entry point, first to fall (replay, same rules only), reward; `defendSide` objective | sim and DOM tests | entry points only for records under today's rules |
+| P6-04 | test my defenses | done | a simulated test raid as a replay (labelled practice); practice against a past raider's army | pure; exact replay | — |
+| P6-05 | objective chip cut, dead ends | done | claim, rematch, goal event, drill, trial kinds; shortfall as cost chips; two lines; camera focus | return-hooks | — |
+| P6-06 | Trials ladder | done | ten tiers ahead with layout, modifiers and Jade; replay stepper | DOM | — |
+| P6-07 | result screen ends the loop | done | progress block (tasks, honor to next league, Scroll tier); Refill / Next / next tier / different fortress; contradictions fixed | DOM | — |
+| P6-08 | no moments | done | milestone card (Keep, hero, tempering, league), offers wait for it; hero cards; hero callouts; pill count-up and haptics | DOM | no new art |
+| P6-09 | playthrough defects | done | skip confirm, kind tags, sticky sheet, bubble placement, no ring through a sheet, Dojo unlocks row, Build redraw, unit names, banners after the tutorial, web Store, Army panel fit, chevrons | four sizes in English (`p6-09-surfaces-en.txt`); Arabic and German below | — |
+| P6-10 | text leaks | done | five leaks removed | source test | — |
+| P6-11 | tiny passive battles | done | action frame (0.14 → 0.25-0.49 zoom); live speed button | same hash at 1×/2×/4×/mixed | — |
+| P6-12 | garrison crew invisible | done | builder panel with two named queues; crew badge; one-time line | DOM; 320 and 844 wide | — |
+| P6-13 | blind bets | done | stake help under the chips, drawer once, staked star; carry share before the raid | DOM | — |
+| P6-14 | side modes hard to find | done | first-appearance labels, Trials icon, Events and log badges, calendar above the odds, Honor button | DOM | — |
+| P6-15 | no test built the HUD | done | happy-dom harness; panels, tutorial, six result kinds, eleven objective kinds; the Playwright driver | `tests/presentation/dom/` | — |
+| P6-16 | dead ends and keyboards | partial | no-army Attack and unaffordable Next explain; long press; dialog focus, Tab, Escape; hotkeys 1-9, S, Esc | DOM | the other ~24 `title` attributes in village panels not reviewed one by one |
+| P6-17 | nothing to play while training | done | empty-camp choices on Attack and the result screen | DOM | — |
+| P6-18 | rules no one can read | partial | Codex page; numbers from data; counter pairs only where confirmed in battle | 5 of 18 live pairs confirmed (`p6-18-counters.md`) | 13 pairs unconfirmed with one-warrior armies; a mixed-army check is open |
