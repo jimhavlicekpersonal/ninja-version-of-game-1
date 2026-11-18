@@ -29,7 +29,7 @@ a contract, a device or a decision.
 | Real-money equivalents for Jade in the EU (`EU_JADE_VALUE`) | EU | Variable set or left off on advice |
 | European Accessibility Act position (exemption or statement + WCAG 2.1 AA purchase flow) | EU | Decision recorded (an accessibility statement page is not built: C21) |
 | Apple `CONSUMPTION_REQUEST` policy; what counts as a "significant update" (iOS age range) | iOS | Server variables set |
-| Native-speaker review of the 49 machine-translated languages, of the chat word lists (P7-07) and of any festival names (Phase 5) | quality and cultural fit in each market | Reviews recorded in each `locales/<code>/REVIEW.json` |
+| Native-speaker review of the 49 machine-translated languages, of the chat word lists (P7-07) and of any festival names (Phase 5) | quality and cultural fit in each market | Reviews recorded in each `docs/localization/WORD_LISTS.md` |
 | Re-read Apple's age-rating definitions in App Store Connect before answering (prepared answers: `docs/store/PRIVACY.md`, rechecked 2026-11-18 only from a page summary) | App Store | Questionnaire submitted |
 
 ## 3. Store accounts, products and forms
@@ -37,6 +37,7 @@ a contract, a device or a decision.
 | Task | Blocks | Done when |
 |---|---|---|
 | Apple Developer Program (agreements, bank, tax, Small Business Program); App ID with Sign in with Apple, Game Center, Push, Declared Age Range; keys (Sign in with Apple, App Store Server API, APNs); server notification URLs; DSA trader declaration; privacy label | iOS | App Store Connect shows the app ready for TestFlight |
+| Apple signing in GitHub: `APPLE_TEAM_ID`, the App Store Connect API key (`ASC_KEY_ID`, issuer, key file) and the distribution certificate and profile secrets the TestFlight workflow reads | TestFlight uploads | `npm run release:preflight` lists none of them missing |
 | Google Play Console (identity, payments, package, Play App Signing, upload key secrets in GitHub, Data safety, deletion URL, target audience, IARC, Age Signals access, service account and RTDN, license testers, 12 testers × 14 days closed testing) | Android | The `aab` job builds and uploads **(preflight: signing secrets)** |
 | Create the 13 in-app products with the store ids in `store.json` (`docs/SHIPPING.md` 3b), regional price templates | purchases | Both consoles list them; `npm run store:storekit` matches |
 | Firebase/FCM, OAuth web client for Sign in with Google | push, Android sign-in | Build variables set |

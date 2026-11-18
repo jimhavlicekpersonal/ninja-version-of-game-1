@@ -1,3 +1,5 @@
 /** P7-05: tools/release/licenses.mjs. */
 export declare const FONTS: { name: string; file: string; copyright: string }[];
 export declare function licencesHtml(): string;
+export declare const SERVER_ONLY: string[];
+export declare const NATIVE: { name: string; where: string; source: string }[];

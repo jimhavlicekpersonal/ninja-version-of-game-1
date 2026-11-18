@@ -23,11 +23,11 @@ A composition takes the three newest unlocked troops of each family it uses:
 | Mixed (raid bot mix) | 56 (6%) | 62 (6%) | 74 (28%) | 66 (11%) | 71 (22%) | 67 (17%) | 84 (33%) |
 | Melee rush | 73 (33%) | 63 (11%) | 59 (22%) | 33 (17%) | 63 (6%) | 41 (6%) | 39 (0%) |
 | Artillery-heavy | 70 (11%) | 82 (39%) | 63 (6%) | 59 (6%) | 71 (17%) | 52 (0%) | 69 (22%) |
-| Support-heavy | 77 (44%) | 69 (33%) | 42 (6%) | 28 (0%) | 67 (11%) | 40 (0%) | 54 (6%) |
+| Support-heavy | 77 (44%) | 70 (28%) | 42 (6%) | 29 (0%) | 73 (17%) | 40 (0%) | 51 (0%) |
 | Air | 56 (6%) | 47 (0%) | 47 (0%) | 36 (0%) | 49 (0%) | 26 (0%) | 44 (0%) |
 | Shadow strike | 83 (39%) | 75 (28%) | 67 (22%) | 57 (6%) | 53 (6%) | 45 (0%) | 57 (6%) |
 | Siege | 78 (39%) | 68 (22%) | 50 (0%) | 42 (11%) | 46 (0%) | 33 (0%) | 37 (0%) |
-| Melee + ranged, light support | 78 (33%) | 80 (44%) | 53 (6%) | 53 (6%) | 80 (28%) | 45 (0%) | 51 (0%) |
+| Melee + ranged, light support | 75 (28%) | 82 (44%) | 55 (0%) | 54 (6%) | 75 (28%) | 46 (0%) | 50 (0%) |
 | Breach wedge | 65 (17%) | 80 (39%) | 58 (6%) | 61 (11%) | 70 (22%) | 45 (0%) | 53 (0%) |
 
 ## What the five live counters' effects cost each army
@@ -39,11 +39,11 @@ Destruction lost to the counter abilities: the same bases, deployments and Infil
 | Mixed (raid bot mix) | 0.0 | 0.0 | -3.4 | -0.4 | 0.0 | 2.0 | 1.5 |
 | Melee rush | 0.0 | -0.1 | -2.6 | 9.2 | 0.0 | 0.3 | 0.4 |
 | Artillery-heavy | 0.0 | 0.0 | -0.7 | -0.9 | 0.0 | 1.6 | -1.9 |
-| Support-heavy | 0.0 | -0.8 | -1.5 | -1.5 | -0.0 | 0.3 | 0.2 |
+| Support-heavy | 0.0 | 1.9 | -0.3 | -1.9 | 0.8 | 0.6 | 1.0 |
 | Air | 0.0 | 0.0 | -3.9 | -12.3 | -1.4 | -1.2 | -5.8 |
 | Shadow strike | 0.0 | 0.0 | -1.8 | -0.3 | 0.0 | 0.2 | 1.9 |
 | Siege | 0.0 | -0.1 | -1.4 | -1.0 | 0.0 | -0.2 | -2.2 |
-| Melee + ranged, light support | 0.0 | -0.4 | -0.8 | -1.6 | 0.0 | -1.2 | -4.6 |
+| Melee + ranged, light support | 0.0 | 0.0 | -3.1 | -2.1 | -0.4 | 0.1 | -5.0 |
 | Breach wedge | 0.0 | 0.0 | -3.4 | -0.6 | 0.0 | 0.7 | -2.3 |
 
 ## Investment per army

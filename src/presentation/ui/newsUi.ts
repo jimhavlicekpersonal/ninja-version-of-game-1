@@ -140,7 +140,8 @@ export function markNoticeSeen(text: string | null): void {
 /** The panel body. */
 export function newsBody(src: NewsSource): HTMLElement {
   const body = h('div', { class: 'news' });
-  body.append(h('p', { class: 'store-note whats-new', 'data-id': 'whats-new' }, t(WHATS_NEW.key)));
+  // Review M4: only until it has been seen once on this device.
+  if (whatsNewUnseen()) body.append(h('p', { class: 'store-note whats-new', 'data-id': 'whats-new' }, t(WHATS_NEW.key)));
   const section = (title: string, ...rows: (HTMLElement | null)[]) => {
     const list = rows.filter((r): r is HTMLElement => Boolean(r));
     if (list.length) body.append(h('h3', {}, title), ...list);

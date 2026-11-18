@@ -1,8 +1,9 @@
 # Content preview: tester checklist (P7-12)
 
-The built-but-not-live content (fifteen counters, the Hero Hall and three heroes, Warrior Mastery as a preview) can be
+The built-but-not-live content (fifteen counters, the Hero Hall and three heroes; Warrior Mastery ranks are live since this pass) can be
 played only in a **content preview build**: `.github/workflows/content-preview.yml`, started by hand with "build"
-ticked. It never runs on a push, never deploys and never touches the public site; it uploads `dist/` as the
+ticked. (Section 12 described a second web build under a preview path; this pass chose a downloadable artifact
+instead, so no preview address exists on the public host until the owner decides otherwise.) It never runs on a push, never deploys and never touches the public site; it uploads `dist/` as the
 artifact `kagemura-content-preview` (kept 14 days). Whether such a build may exist at all, and who tests it, is the
 owner's decision (`OWNER_CHECKLIST.md`).
 

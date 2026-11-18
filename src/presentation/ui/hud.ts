@@ -221,6 +221,8 @@ export class Hud {
     this.deps.groveSource.subscribe(() => this.refresh());
     // P6-08: an offer the same moment triggered (the Keep Celebration) waits until the milestone card is gone.
     this.c.onOffer((rule) => this.afterMilestones(() => this.econ.showOffer(rule)));
+    // P7-14 review M4: a player new in this version has nothing to compare: no "What's new" for them.
+    if (!this.c.state.tutorial.done) markWhatsNewSeen();
     // Report section 5 step 8 (growth 8): notifications stay off until the player says yes, but the
     // question is asked once at the moment it helps: right after the first long timer they start.
     this.c.onEvents((events) => {

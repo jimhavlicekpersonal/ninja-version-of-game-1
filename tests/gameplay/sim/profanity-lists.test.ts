@@ -18,6 +18,13 @@ const CORPUS: Record<string, string[]> = {
   ko: ['좋은 습격이었어요, 전사 고마워요!', '누가 궁수 좀 보내 줄 수 있나요?', '동쪽 문으로 가요, 성이 약해요.', '내일 또 같이 해요.'],
   'zh-Hans': ['打得好，谢谢你的战士！', '谁能派些弓箭手来？', '我妈的手机坏了，明天再玩。', '从东门进攻，城堡很弱。'],
   ar: ['غارة رائعة، شكرًا على المحاربين!', 'هل يمكن لأحد إرسال رماة؟', 'نهاجم البوابة الشرقية، القلعة ضعيفة.', 'الكلب الصغير يلعب في الحديقة.'],
+  // Review H1: launch languages without a list, with words that clash with other lists.
+  hr: ['Napadnite dva puta, prvi put s istoka.', 'Koliko puta si igrao danas?'],
+  ro: ['Ce pute aici? Ceva arde în sat.', 'Mulțumesc pentru războinici!'],
+  sl: ['Hvala za bojevnike, se vidimo jutri.'],
+  nb: ['Lykke til! Hell og lykke med raidet.'],
+  'de-more': ['Die Mauer ist dick, aber hell beleuchtet.'],
+  'ja-more': ['もう死ねないよ、まだ戦える。', 'この技で死ねば終わりだ。', 'ガイジンの忍者が来た。'],
   hi: ['बढ़िया हमला, योद्धाओं के लिए धन्यवाद!', 'क्या कोई तीरंदाज़ भेज सकता है?', 'पूर्वी द्वार से हमला करो, किला कमज़ोर है।', 'कल फिर खेलेंगे, शुभ रात्रि।'],
 };
 
@@ -47,7 +54,7 @@ describe('per-language word lists (P7-07)', () => {
       }
     }
     // Unspaced scripts match inside a run of text; spaced ones only at word edges.
-    expect(censorText('お前は死ねと言った', data)).not.toContain('死ね');
+    expect(censorText('お前なんか死ねよ', data)).not.toContain('死ねよ');
     expect(censorText('你这个傻逼啊', data)).not.toContain('傻逼');
     expect(censorText('Mierdas', data)).toBe('Mierdas');
   });

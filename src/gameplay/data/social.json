@@ -135,7 +135,6 @@
   },
   "profanity": [
     "damn",
-    "hell",
     "crap",
     "stupid",
     "idiot",
@@ -158,7 +157,6 @@
     "bastard",
     "shit",
     "fuck",
-    "dick",
     "piss",
     "slut",
     "whore",
@@ -166,9 +164,8 @@
     "cunt"
   ],
   "profanityByLanguage": {
-    "$comment": "P7-07 (PUB-10): conservative per-language lists for the ten largest launch languages, applied to every chat line and name together with `profanity` (chat mixes languages). Strong insults and slurs only; words that are ordinary in another launch language or inside common words (Japanese くそ in やくそく, Chinese 妈的 in 我妈的) are left out. Each list has a corpus of ordinary sentences that must pass unfiltered (tests/gameplay/sim/profanity-lists.test.ts). NOT reviewed by native speakers: docs/localization/WORD_LISTS.md. Changing a list changes the data the game and the server load: deploy them together.",
+    "$comment": "P7-07 (PUB-10): conservative per-language lists for the ten largest launch languages, applied to every chat line and name together with `profanity` (chat mixes languages). Strong insults and slurs only; words that are ordinary in another launch language or inside common words (Japanese くそ in やくそく and 死ね in 死ねない, Chinese 妈的 in 我妈的, Spanish puta = Croatian 'times', French pute = Romanian 'stinks'; English hell and dick are German words) are left out. Each list has a corpus of ordinary sentences that must pass unfiltered (tests/gameplay/sim/profanity-lists.test.ts). NOT reviewed by native speakers: docs/localization/WORD_LISTS.md. Changing a list changes the data the game and the server load: deploy them together.",
     "es": [
-      "puta",
       "puto",
       "pendejo",
       "pendeja",
@@ -197,7 +194,6 @@
       "connasse",
       "salope",
       "enculé",
-      "pute",
       "ta gueule",
       "fils de pute",
       "nique ta mère"
@@ -226,13 +222,13 @@
       "пидорас"
     ],
     "ja": [
-      "死ね",
       "クソ野郎",
       "くそ野郎",
       "バカ野郎",
       "ばか野郎",
       "ちんこ",
-      "ガイジ"
+      "死ねよ",
+      "死ねや"
     ],
     "ko": [
       "씨발",

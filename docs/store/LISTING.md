@@ -57,6 +57,8 @@ Kagemura is free to download and play: every building, warrior, Keep level and g
 
 ninja,clan,village,strategy,base builder,raid,defense,tower,shinobi,war,alliance,castle,samurai
 
+"castle" and "samurai" name things the game does not contain as such (a Clan Keep, ninja warriors): the owner decides whether to keep them (`docs/store/OWNER_CHECKLIST.md`).
+
 ## Categories and contact
 
 - **App Store:** Games → Strategy (secondary: Simulation).
@@ -91,7 +93,7 @@ ninja,clan,village,strategy,base builder,raid,defense,tower,shinobi,war,alliance
 | Shadow Captain at Keep 7 rallies the squad once a battle | `battle.json` `heroes.shadow_captain` (unlockKeep 7, `oncePerBattle`) | Other heroes (built, not live) |
 | "What the same army would have done through another point" | `control/whatIf.ts`; `tests/gameplay/control/what-if.test.ts` | That it says which point is best |
 | Defense report; test your defenses; practice against a raider | `sim/defenseReport.ts`, `sim/defenseTest.ts`, `app.ts` `practiceAgainst`; their tests | — |
-| Daily drill | `drill.json`/`sim/drill.ts`, `drillEnd` | — |
+| Daily drill | `daily.json` `drill`, `sim/drill.ts`, `drillEnd` | — |
 | Four-week event calendar, five festivals with an earnable look, weekly Gauntlet, daily contract | `events.json` (`dated`, goal events), `raids.json` `contracts`; `tests/gameplay/sim/contracts.test.ts` | Festivals tied to a real religious holiday (they are the game's own) |
 | Achievements, Keep seals, mastery ranks, earned looks | `achievements.json`, `sim/seals.ts`, `sim/mastery.ts` (ranks, no stat bonus), `cosmetics.json` `earned` | Mastery making warriors stronger (`mastery.maxBonus` 0) |
 | Alliance War weekly, Friends, Duels, Gangs of up to 4 | Server features (`/v1/hello`); offline the Alliance is a labelled bot Alliance | Online features in a build without a server |
