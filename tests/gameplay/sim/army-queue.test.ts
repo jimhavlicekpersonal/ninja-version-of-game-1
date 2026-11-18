@@ -11,7 +11,7 @@ import { deserialize, migrate, serialize, validateVillage } from '../../../src/g
 import type { TrainingItem } from '../../../src/gameplay/sim/types';
 import { advance, applyCommand, trainingSkipQuote } from '../../../src/gameplay/sim/village';
 import { capacity } from '../../../src/gameplay/sim/resources';
-import { data, must, newGame } from './helpers';
+import { data, must, newGame, pointDeploys } from './helpers';
 
 const SHINOBI = 'hedgehog_roller'; // housing 1, 20 s
 const ADEPT = 'frog_lobber';
@@ -387,7 +387,7 @@ describe('warriors over time', () => {
     s = advance(s, clock.now(), data).state;
     expect(s.training).toHaveLength(5);
     const base = { name: 'Dummy', hallLevel: 1, buildings: [{ id: 'h', type: 'elder_toadstool', level: 1, x: 18, y: 18 }] };
-    const deployments = Array.from({ length: 12 }, (_, i) => ({ tick: i, troop: SHINOBI, x: 25, y: 19 }));
+    const deployments = pointDeploys({ seed: 4, base, army: s.army }, SHINOBI, 12);
     s = must(s, { type: 'battleEnd', record: { at: clock.now(), opponentName: 'Dummy', setup: { seed: 4, base, army: s.army }, deployments } }, clock.now());
     expect(s.army[SHINOBI]).toBe(8);
     clock.advanceSeconds(1);

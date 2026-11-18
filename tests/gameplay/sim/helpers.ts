@@ -2,6 +2,8 @@ import { FakeClock } from '../../../src/gameplay/sim/clock';
 import { defaultData } from '../../../src/gameplay/sim/data';
 import { applyCommand, createNewVillage, type Command } from '../../../src/gameplay/sim/village';
 import type { VillageState } from '../../../src/gameplay/sim/types';
+import { createBattle } from '../../../src/gameplay/sim/battle/battle';
+import type { BattleSetup, Deployment } from '../../../src/gameplay/sim/battle/types';
 
 export const data = defaultData;
 
@@ -23,4 +25,22 @@ export function must(state: VillageState, cmd: Command, now: number): VillageSta
 
 export function find(state: VillageState, type: string) {
   return state.buildings.filter((b) => b.type === type);
+}
+
+/**
+ * `count` deployments of `troop` that the Infiltration Points rule accepts (every new battle command forces
+ * `infiltration: true`, P1-11): dealt round the base's points, each up to its cover, one per tick from `tick`.
+ */
+export function pointDeploys(setup: Omit<BattleSetup, 'infiltration'>, troop: string, count: number, tick = 0): Deployment[] {
+  const sim = createBattle({ ...setup, infiltration: true }, data);
+  const plan = sim.entry!;
+  const housing = data.troops[troop]?.housing ?? 1;
+  const used = plan.points.map(() => 0);
+  const out: Deployment[] = [];
+  for (let i = 0, p = 0; out.length < count && i < count * plan.points.length * 2; i++, p = (p + 1) % plan.points.length) {
+    if (used[p] + housing > plan.cover) continue;
+    used[p] += housing;
+    out.push({ tick: tick + out.length, troop, x: plan.points[p].x, y: plan.points[p].y });
+  }
+  return out;
 }

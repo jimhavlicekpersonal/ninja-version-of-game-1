@@ -46,6 +46,7 @@
   "slotMinutes": 60,
   "chancePerSlot": 0.12,
   "graceMinutes": 2,
+  "battleResumeHours": 72,
   "maxRaidsPerCatchUp": 24,
   "maxDefenseLog": 10,
   "botArmyMix": [

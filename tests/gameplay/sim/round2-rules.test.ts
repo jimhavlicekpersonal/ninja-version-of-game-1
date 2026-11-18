@@ -11,7 +11,7 @@ import { lootPenalty } from '../../../src/gameplay/sim/matchmaking';
 import { defenseHonorLoss, winTrophies } from '../../../src/gameplay/sim/ranks';
 import type { VillageState } from '../../../src/gameplay/sim/types';
 import { applyCommand, payableInProvisions, placeQuote, upgradeQuote } from '../../../src/gameplay/sim/village';
-import { data, newGame } from './helpers';
+import { data, newGame, pointDeploys } from './helpers';
 
 const H = 3_600_000;
 
@@ -108,7 +108,7 @@ describe('declared stakes', () => {
     const { state, clock } = newGame({ acorns: 0, dew: 0 });
     const s0: VillageState = { ...state, army: { hedgehog_roller: 20 } };
     const base = { name: 'Dummy', hallLevel: 1, buildings: [{ id: 'h', type: 'elder_toadstool', level: 1, x: 18, y: 18, loot: { dew: 100 } }] };
-    const deployments = Array.from({ length: 12 }, (_, i) => ({ tick: i, troop: 'hedgehog_roller', x: 25, y: 19 }));
+    const deployments = pointDeploys({ seed: 4, base, army: s0.army }, 'hedgehog_roller', 12);
     const win = applyCommand(s0, { type: 'battleEnd', record: { at: clock.now(), opponentName: 'Dummy', setup: { seed: 4, base, army: s0.army }, deployments, stake: 3 } }, clock.now(), data);
     expect(win.ok).toBe(true);
     if (!win.ok) return;
@@ -131,7 +131,7 @@ describe('declared stakes', () => {
     const { state, clock } = newGame({ acorns: 0, dew: 0 });
     const s0: VillageState = { ...state, army: { hedgehog_roller: 20 } };
     const base = { name: 'Dummy', hallLevel: 1, buildings: [{ id: 'h', type: 'elder_toadstool', level: 1, x: 18, y: 18, loot: { dew: 100 } }] };
-    const deployments = Array.from({ length: 12 }, (_, i) => ({ tick: i, troop: 'hedgehog_roller', x: 25, y: 19 }));
+    const deployments = pointDeploys({ seed: 4, base, army: s0.army }, 'hedgehog_roller', 12);
     const r = applyCommand(s0, { type: 'battleEnd', record: { at: clock.now(), opponentName: 'Dummy', setup: { seed: 4, base, army: s0.army }, deployments, stake: 9 } }, clock.now(), data);
     expect(r.ok && r.state.battleLog.at(-1)!.stake).toBeUndefined();
   });

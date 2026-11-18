@@ -317,7 +317,9 @@ export function validateVillage(v: VillageState, data: GameData): string[] {
   if (!Array.isArray(v.battleLog)) problems.push('battle log missing');
   if (!Number.isFinite(v.seed) || !Number.isFinite(v.nextSeed)) problems.push('bad seed');
   if (!Number.isFinite(v.trophies) || v.trophies < 0) problems.push('bad trophies');
-  if (!Number.isFinite(v.shieldUntil) || !Number.isFinite(v.season) || !Number.isFinite(v.raidCheckAt)) problems.push('bad rank fields');
+  if (!Number.isFinite(v.shieldUntil) || !Number.isInteger(v.season) || v.season < 0 || !Number.isFinite(v.raidCheckAt)) problems.push('bad rank fields');
+  // XPL-03: the war week is a whole number (a forged one only ever pays the last `settleWeeksMax` wars).
+  if (v.grove && v.grove.settledWeek !== undefined && !Number.isInteger(v.grove.settledWeek)) problems.push('bad alliance war week');
   if (!Array.isArray(v.defenseLog)) problems.push('defense log missing');
   if (!v.stats || !v.pass || !v.tasks || !v.cosmetics || !v.offers || !v.profile || !Array.isArray(v.purchases)) problems.push('economy fields missing');
   if (!v.grove || !Array.isArray(v.grove.chat)) problems.push('alliance missing');

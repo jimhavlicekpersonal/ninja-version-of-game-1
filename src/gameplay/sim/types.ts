@@ -824,6 +824,12 @@ export interface RanksDef {
   attackLoss: { base: number; perTrophyDiff: number; min: number; max: number };
   matchTrophyRange: number;
   seasonResetFloor: number;
+  /**
+   * Exploit audit XPL-03 (P1-13): at most this many ended seasons pay their league chest when a village catches
+   * up (the war has `settleWeeksMax`). Older ones still soften honor but pay nothing, and the loop no longer runs
+   * once per forged month. Absent: every season pays.
+   */
+  seasonCatchUpMax?: number;
   leagues: LeagueDef[];
   /**
    * Generated opponents and bot raiders are picked by trophies. Strength is
@@ -867,6 +873,12 @@ export interface RanksDef {
 
 export interface RaidsDef {
   newPlayerShieldHours: number;
+  /**
+   * Exploit audit XPL-02 (P1-12): how long after a battle could have ended its result is still accepted (an
+   * interrupted battle settles on the next launch). A record dated earlier than now − battle length − this is
+   * refused, so a past Bounty Hunt, rematch or Alliance War cannot be attacked later. Absent: no lower bound.
+   */
+  battleResumeHours?: number;
   /** Shield after a raid, by destruction (highest tier reached wins). */
   shieldTiers: { destruction: number; hours: number }[];
   /**

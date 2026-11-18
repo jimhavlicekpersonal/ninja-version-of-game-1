@@ -23,10 +23,10 @@ server's own row). The prompt's baseline (205 files, 1,934 tests) predates `0c5e
 
 | Item | Status | Commit | Before → after | Locale keys | Notes |
 |---|---|---|---|---|---|
-| P0-01 | done |  | 205 files/1,934 tests at 9bf76af → 204 passed + 1 failed (main's 0c5eeb7) → fixed |  | Baseline above; main's import regression fixed in the Phase 0 commit |
-| P0-02 | done |  | deploy check failed on ar/community.html → passes all 49 translated languages of a local build (vite preview) |  | tools/release/page-language.mjs; test in release-tools.test.ts |
-| P0-03 | done |  | Postgres suites: 3 consecutive runs, 66 files / 692 tests each, 87-94 s, all green (local Postgres 16 + Redis 7, --maxWorkers=2) |  | 30 s test/hook timeout only when TEST_DATABASE_URL is set; --maxWorkers=2 in deploy.yml and server.yml. Not done: a template schema per worker (not needed for green). Not shown here: that the old 5 s limit fails on this machine |
-| P0-04 | done (cause not found) |  | det.ts: Node 22.23.4, Node 24.22.3 (Dockerfile pin; also today's latest 24.x), 24.22.3 --no-turbofan --no-maglev, 24.22.3 --no-turbofan --no-maglev --no-sparkplug, 24.22.3 --jitless (bundled with esbuild) and 22 --jitless: all byte-identical to det-node22.txt (md5 231afcfc…). matched Keep 8 lag 0 = 2.167 |  | No engine fault found on any compiler tier of the pinned Node. .node-version (24.22.3) read by every workflow; Dockerfile pins the same (test). matched.test.ts asserts levels and opponent Keep before stars and prints each battle's hash. New pins tests/gameplay/battle/matchmaking-pins.test.ts, run a second time in CI with --no-turbofan --no-maglev. tk_desyncs_total alerts already existed. Step 6 (the 2.2 gate's one-star margin) is P4-08: not widened. Could not run: the GitHub runner itself (no Actions access from here) |
+| P0-01 | done | 80d180d | 205 files/1,934 tests at 9bf76af → 204 passed + 1 failed (main's 0c5eeb7) → fixed |  | Baseline above; main's import regression fixed in the Phase 0 commit |
+| P0-02 | done | 80d180d | deploy check failed on ar/community.html → passes all 49 translated languages of a local build (vite preview) |  | tools/release/page-language.mjs; test in release-tools.test.ts |
+| P0-03 | done | 80d180d | Postgres suites: 3 consecutive runs, 66 files / 692 tests each, 87-94 s, all green (local Postgres 16 + Redis 7, --maxWorkers=2) |  | 30 s test/hook timeout only when TEST_DATABASE_URL is set; --maxWorkers=2 in deploy.yml and server.yml. Not done: a template schema per worker (not needed for green). Not shown here: that the old 5 s limit fails on this machine |
+| P0-04 | done (cause not found) | 80d180d | det.ts: Node 22.23.4, Node 24.22.3 (Dockerfile pin; also today's latest 24.x), 24.22.3 --no-turbofan --no-maglev, 24.22.3 --no-turbofan --no-maglev --no-sparkplug, 24.22.3 --jitless (bundled with esbuild) and 22 --jitless: all byte-identical to det-node22.txt (md5 231afcfc…). matched Keep 8 lag 0 = 2.167 |  | No engine fault found on any compiler tier of the pinned Node. .node-version (24.22.3) read by every workflow; Dockerfile pins the same (test). matched.test.ts asserts levels and opponent Keep before stars and prints each battle's hash. New pins tests/gameplay/battle/matchmaking-pins.test.ts, run a second time in CI with --no-turbofan --no-maglev. tk_desyncs_total alerts already existed. Step 6 (the 2.2 gate's one-star margin) is P4-08: not widened. Could not run: the GitHub runner itself (no Actions access from here) |
 | P1-01 | todo | | | | |
 | P1-02 | todo | | | | |
 | P1-03 | todo | | | | |
@@ -37,14 +37,14 @@ server's own row). The prompt's baseline (205 files, 1,934 tests) predates `0c5e
 | P1-08 | todo | | | | |
 | P1-09 | todo | | | | |
 | P1-10 | todo | | | | |
-| P1-11 | todo | | | | |
-| P1-12 | todo | | | | |
-| P1-13 | todo | | | | |
-| P1-14 | todo | | | | |
-| P1-15 | todo | | | | |
+| P1-11 | done |  | Keep 1 village cleared Trial 1-40 with startDamage and no army; a level-9 hero at Keep 1 three-starred Trial 1 → both refused (INVALID_BATTLE), also through replayVillage |  | sanitizeBattleSetup (village.ts): whitelist seed/base/army/levels/reinforcements/mastery, infiltration forced, hero = heroFor at most at its level, startDamage dropped; used in trialEnd, bountyEnd, rematchEnd, groveBattleEnd, abandonBattle, ticketless battleEnd. Trial clear, Bounty step and rematch win need warriors. 8 old tests deployed off the points: moved to pointDeploys (tests/gameplay/sim/helpers.ts) |
+| P1-12 | done |  | 20 alternating commands on two old Bounty occurrences paid 700 Jade → refused |  | battleBegan(): record.at bounded below by battle length + raids.battleResumeHours (72; an interrupted Alliance War attack settles after the war, online-authority test). bountyEnd refuses an occurrence older than the stored one. rematchEnd and groveBattleEnd bounded too |
+| P1-13 | done |  | forged save: 500 Jade → 280,500 after two commands; 3,000,000 seasons 9.1 s → stipend refused (main 0c5eeb7), topUp/armyPaid stripped, timer cost clamped, at most seasonCatchUpMax (2) chests, season 0 settles in ms |  | ranks.seasonCatchUpMax 2 (honest: a long absence pays the last two seasons, not every month); validateVillage: season integer ≥ 0, grove.settledWeek integer; settleRaids starts near now |
+| P1-14 | done |  | Provisions −2,000 + 500 Jade → 0 + 500 Jade via top-up/train/cancel → top-up refused while a needed resource is negative |  |  |
+| P1-15 | done |  | hero-only battleEnd was practice (free Next), hero-only abandon kept opponent+seed → both lost attacks (honor, shield, scout) |  | Server attack() forfeit was done in main 0c5eeb7. DZ-3 test restated (authorised: P1-15 changes the rule it pinned) |
 | P1-16 | todo | | | | |
 | P1-17 | todo | | | | |
-| P1-18 | todo | | | | |
+| P1-18 | done |  | 3 Jade bought 50 Coins that stayed → the top-up buys Provisions for a Provisions-paid action |  |  |
 | P1-19 | todo | | | | |
 | P1-20 | todo | | | | |
 | P1-21 | todo | | | | |

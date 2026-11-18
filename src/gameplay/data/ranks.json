@@ -15,6 +15,7 @@
   },
   "matchTrophyRange": 80,
   "seasonResetFloor": 400,
+  "seasonCatchUpMax": 2,
   "leagues": [
     {
       "id": "sprout",

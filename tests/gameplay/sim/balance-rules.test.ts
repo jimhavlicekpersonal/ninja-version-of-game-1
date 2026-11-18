@@ -10,7 +10,8 @@ import { attackerStrength } from '../../../src/gameplay/sim/matchmaking';
 import { troopLevelCapAt } from '../../../src/gameplay/sim/research';
 import type { VillageState } from '../../../src/gameplay/sim/types';
 import { applyCommand, foughtWithWarriors } from '../../../src/gameplay/sim/village';
-import { data, newGame } from './helpers';
+import { data, newGame, pointDeploys } from './helpers';
+import { lossTrophies } from '../../../src/gameplay/sim/ranks';
 
 function atHall(state: VillageState, hall: number): VillageState {
   return { ...state, buildings: state.buildings.map((b) => (b.type === 'elder_toadstool' ? { ...b, level: hall } : b)) };
@@ -41,23 +42,31 @@ describe('matchmaking strength counts the army that fights (LD-1)', () => {
   });
 });
 
-describe('a battle with only the hero is practice (DZ-3)', () => {
-  it('banks nothing, moves no honor and keeps the shield', () => {
+describe('a battle with only the hero wins nothing (DZ-3) and is a lost attack (XPL-05, P1-15)', () => {
+  it('banks nothing; honor, the shield and the scouted opponent go', () => {
     const { state, clock } = newGame();
     const s: VillageState = { ...atHall(state, 9), trophies: 500, shieldUntil: clock.now() + 3_600_000, army: { wind_step_assassin: 5 } };
     const hero = heroAtKeep(9, data)!;
     const base = generateOpponent(77, 9, data, { levelBias: 0.5 });
     const setup = { seed: 5, base, army: s.army, levels: {}, infiltration: true, hero };
-    const r = applyCommand(s, { type: 'battleEnd', record: { at: clock.now(), opponentName: 'x', setup, deployments: [{ tick: 0, troop: hero.id, x: 0, y: 0 }] } }, clock.now(), data);
+    const at = pointDeploys(setup, hero.id, 1)[0];
+    const r = applyCommand({ ...s, scout: { seed: 1 } }, { type: 'battleEnd', record: { at: clock.now(), opponentName: 'x', setup, deployments: [{ ...at, tick: 0 }] } }, clock.now(), data);
     expect(r.ok).toBe(true);
     if (!r.ok) return;
     const rec = r.state.battleLog[r.state.battleLog.length - 1];
     expect(rec.rejected).toBe('no_warriors');
     expect(rec.banked).toEqual({});
-    expect(r.state.trophies).toBe(500);
+    expect(rec.result.used[hero.id]).toBe(1);
+    expect(r.state.trophies).toBe(500 - lossTrophies(500, base.trophies ?? 500, data));
+    expect(rec.trophies).toBe(-lossTrophies(500, base.trophies ?? 500, data));
     expect(r.state.resources.acorns).toBe(s.resources.acorns);
-    expect(r.state.shieldUntil).toBe(s.shieldUntil);
+    expect(r.state.shieldUntil).toBeLessThanOrEqual(clock.now());
+    expect(r.state.scout).toBeNull();
     expect(r.state.army).toEqual(s.army);
+    // A battle in which nobody went in at all still moves nothing.
+    const none = applyCommand(s, { type: 'battleEnd', record: { at: clock.now(), opponentName: 'x', setup, deployments: [] } }, clock.now(), data);
+    expect(none.ok && none.state.trophies).toBe(500);
+    expect(none.ok && none.state.shieldUntil).toBe(s.shieldUntil);
   });
 
   it('foughtWithWarriors ignores the hero only', () => {

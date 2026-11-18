@@ -4,7 +4,7 @@ import { capacity } from '../../../src/gameplay/sim/resources';
 import { generateOpponent } from '../../../src/gameplay/sim/battle/basegen';
 import { migrate } from '../../../src/gameplay/sim/save';
 import { advance, applyCommand } from '../../../src/gameplay/sim/village';
-import { data, find, must, newGame } from './helpers';
+import { data, find, must, newGame, pointDeploys } from './helpers';
 
 function withArmyBuildings() {
   const g = newGame({ acorns: 1500, dew: 1500 });
@@ -93,7 +93,7 @@ describe('scouting and battle results', () => {
     const { state, clock } = newGame({ acorns: 0, dew: 0 });
     const s0 = { ...state, army: { hedgehog_roller: 20 } };
     const base = { name: 'Dummy', hallLevel: 1, buildings: [{ id: 'h', type: 'elder_toadstool', level: 1, x: 18, y: 18, loot: { acorns: 5000, dew: 100 } }] };
-    const deployments = Array.from({ length: 12 }, (_, i) => ({ tick: i, troop: 'hedgehog_roller', x: 25, y: 19 }));
+    const deployments = pointDeploys({ seed: 4, base, army: s0.army }, 'hedgehog_roller', 12);
     const s1 = must(s0, { type: 'battleEnd', record: { at: clock.now(), opponentName: 'Dummy', setup: { seed: 4, base, army: s0.army }, deployments } }, clock.now());
     expect(s1.army.hedgehog_roller).toBe(8);
     expect(s1.resources.acorns).toBe(capacity(s0, data).acorns); // capped by storage

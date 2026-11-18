@@ -7,7 +7,7 @@ import { collectorAmount } from '../../../src/gameplay/sim/resources';
 import { migrate } from '../../../src/gameplay/sim/save';
 import { advance } from '../../../src/gameplay/sim/village';
 import type { VillageState } from '../../../src/gameplay/sim/types';
-import { data, find, must, newGame } from './helpers';
+import { data, find, must, newGame, pointDeploys } from './helpers';
 
 /** A small built-up village with no shield, ready to be raided. */
 function raidable(): { state: VillageState; t0: number } {
@@ -140,7 +140,7 @@ describe('leaf ranks', () => {
     const { state, clock } = newGame();
     const s0 = { ...state, army: { hedgehog_roller: 15 }, trophies: 100 };
     const base = { name: 'Dummy', hallLevel: 1, trophies: 120, buildings: [{ id: 'h', type: 'elder_toadstool', level: 1, x: 18, y: 18 }] };
-    const deps = Array.from({ length: 12 }, (_, i) => ({ tick: i, troop: 'hedgehog_roller', x: 25, y: 19 }));
+    const deps = pointDeploys({ seed: 4, base, army: s0.army }, 'hedgehog_roller', 12);
     const s1 = must(s0, { type: 'battleEnd', record: { at: clock.now(), opponentName: 'Dummy', setup: { seed: 4, base, army: s0.army }, deployments: deps } }, clock.now());
     expect(s1.trophies).toBe(100 + winTrophies(100, 120, data));
     expect(s1.battleLog[0].trophies).toBe(winTrophies(100, 120, data));

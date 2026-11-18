@@ -7,7 +7,7 @@ import { filterText, generateGrove, reinforcementCapacity } from '../../../src/g
 import { attacksLeft, enemyGrove, raidPhase, raidScore, raidWindow } from '../../../src/gameplay/sim/social/groveRaid';
 import { advance, applyCommand, battleArmy, hallLevel } from '../../../src/gameplay/sim/village';
 import type { VillageState } from '../../../src/gameplay/sim/types';
-import { must, newGame } from '../sim/helpers';
+import { must, newGame, pointDeploys } from '../sim/helpers';
 
 const HOUR = 3_600_000;
 
@@ -116,7 +116,7 @@ describe('Grove Raid (a full week, fast-forwarded)', () => {
     const army = { hedgehog_roller: 60 };
     const attack = (state: VillageState, target: number, at: number) => {
       const base = enemy.bases[target];
-      const deployments = Array.from({ length: 60 }, (_, i) => ({ tick: i, troop: 'hedgehog_roller', x: 1, y: 1 + (i % 38) }));
+      const deployments = pointDeploys({ seed: target + 1, base, army }, 'hedgehog_roller', 60);
       return applyCommand({ ...state, army: { ...army } }, { type: 'groveBattleEnd', target, record: { at, opponentName: base.name, setup: { seed: target + 1, base, army }, deployments } }, at, data);
     };
     expect(attack(s, 0, clock.now()).ok).toBe(false);
@@ -135,7 +135,7 @@ describe('Grove Raid (a full week, fast-forwarded)', () => {
     expect(attacksLeft(s, phase.week, data)).toBe(0);
     expect(attack(s, 2, clock.now() + 2000).ok).toBe(false);
     // The player's stars count toward the Grove score.
-    const myStars = runBattle({ seed: 1, base: enemy.bases[0], army }, Array.from({ length: 60 }, (_, i) => ({ tick: i, troop: 'hedgehog_roller', x: 1, y: 1 + (i % 38) })), data).result.stars;
+    const myStars = runBattle({ seed: 1, base: enemy.bases[0], army, infiltration: true }, pointDeploys({ seed: 1, base: enemy.bases[0], army }, 'hedgehog_roller', 60), data).result.stars;
     expect(s.grove.raid!.attacks[0].stars).toBe(myStars);
 
     // Fast-forward past the end: the chest is paid once.

@@ -166,7 +166,8 @@ export function settleRaids(state: VillageState, now: number, hall: number, data
   const paid: { week: number; outcome: 'win' | 'draw' | 'loss'; reward: Cost }[] = [];
   if (!g.joined) return paid;
   const def = data.social.groveRaid;
-  let lastEnded = g.settledWeek;
+  // XPL-03: start the search near now, so a forged `settledWeek` far in the past cannot size the loop.
+  let lastEnded = Math.max(g.settledWeek, raidWeek(now, data) - 2);
   while (raidWindow(lastEnded + 1, data).end <= now) lastEnded++;
   g.settledWeek = Math.max(g.settledWeek, lastEnded - def.settleWeeksMax);
   for (let week = g.settledWeek + 1; raidWindow(week, data).end <= now; week++) {

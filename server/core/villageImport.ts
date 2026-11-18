@@ -23,12 +23,13 @@
  */
 import { maxHousingAtHall, troopEarliestKeep } from '../../src/gameplay/sim/army';
 import { villageToBase } from '../../src/gameplay/sim/defense';
-import { troopLevelCapAt } from '../../src/gameplay/sim/research';
+import { troopLevelCapAt, troopLevelOf } from '../../src/gameplay/sim/research';
+import { levelDef, troopLevel } from '../../src/gameplay/sim/data';
 import { capacity } from '../../src/gameplay/sim/resources';
 import { deserialize, serialize } from '../../src/gameplay/sim/save';
 import { economyHash } from '../../src/gameplay/sim/serverEconomy';
 import { reinforcementHousing } from '../../src/gameplay/sim/social/grove';
-import type { GameData, VillageState } from '../../src/gameplay/sim/types';
+import type { Cost, GameData, VillageState } from '../../src/gameplay/sim/types';
 import { bindPlayer } from '../../src/gameplay/sim/net';
 import { hallLevel } from '../../src/gameplay/sim/village';
 import { productInfo } from '../../src/gameplay/sim/monetization';
@@ -92,6 +93,7 @@ export function checkProvenance(s: VillageState, now: number, data: GameData, cr
   // Per-save payout history is not trusted: the only safe bound is the total checked entitlement.
   state.stipend.left = Math.min(Math.max(0, state.stipend.left), verifiedStipend.payments);
   state.stipend.jade = Math.min(Math.max(0, state.stipend.jade), verifiedStipend.jade);
+  stripImportedLiabilities(state, data);
   const unconfirmed = state.purchases.filter((p) => !confirmed.some((c) => c.record.id === p.id)).map((p) => p.id);
   // Grant values in the imported record are editable, so authorize only the
   // catalog value for the product the store transaction actually verified.
@@ -123,6 +125,39 @@ export function checkProvenance(s: VillageState, now: number, data: GameData, cr
     if (passOnly.has(state.cosmetics.hallSkin)) state.cosmetics.hallSkin = state.cosmetics.owned[0] ?? 'classic';
   }
   return { state, held: jade || premium || unconfirmed.length ? { jade, premium, purchases: unconfirmed } : null };
+}
+
+/** Each resource of `cost`, never above the catalog's `cap` for it. */
+function clampCost(cost: Cost | undefined, cap: Cost | undefined): Cost {
+  const out: Cost = {};
+  for (const [k, v] of Object.entries(cost ?? {}) as [keyof Cost, number][]) {
+    const most = Math.max(0, cap?.[k] ?? 0);
+    if (Number.isFinite(v) && v > 0 && most > 0) out[k] = Math.min(v, most);
+  }
+  return out;
+}
+
+/**
+ * Exploit audit XPL-03 (P1-13): what a cancel or a dismiss would refund is the save's word, and the save is the
+ * player's. A forged `topUp` share on a timer was paid back as Jade (100,000 from one timer), a forged `armyPaid`
+ * as resources. The import drops both (an honest player loses only the Jade share of a top-up they might later
+ * cancel: the resources come back at the cancel rate) and clamps every timer's `cost` to the catalog. Mutates.
+ */
+function stripImportedLiabilities(state: VillageState, data: GameData): void {
+  for (const b of state.buildings) {
+    if (!b.upgrade) continue;
+    delete b.upgrade.topUp;
+    b.upgrade.cost = clampCost(b.upgrade.cost, levelDef(data, b.type, b.upgrade.toLevel)?.cost);
+  }
+  for (const q of state.training) {
+    delete q.topUp;
+    q.cost = data.troops[q.troop] ? clampCost(q.cost, troopLevel(data, q.troop, troopLevelOf(state, q.troop)).cost) : {};
+  }
+  for (const a of state.research.active) {
+    delete a.topUp;
+    a.cost = data.troops[a.troop] ? clampCost(a.cost, troopLevel(data, a.troop, a.toLevel).research?.cost) : {};
+  }
+  delete state.armyPaid;
 }
 
 /**
