@@ -42,6 +42,8 @@ a contract, a device or a decision.
 | Firebase/FCM, OAuth web client for Sign in with Google | push, Android sign-in | Build variables set |
 | Build variables: `VITE_SERVER_URL`, `VITE_PUBLIC_URL`, `VITE_APP_STORE_URL`, `VITE_PLAY_STORE_URL`, `VITE_SUPPORT_EMAIL`, legal page URLs | online play, links, "Update Kagemura" | **(preflight: server URL)** |
 | Territories (exclude where licensing is missing: mainland China, Vietnam, Indonesia until PSE, sanctioned markets) | listing | Store consoles configured |
+| First run of the iPhone release workflow on the `macos-26` image (P7-06; it has never run and stops below iOS SDK 26) | TestFlight | A TestFlight build exists |
+| Xcode-only steps this pass could not compile (P7-15): add an app-level `PrivacyInfo.xcprivacy` to the App target, check the ambient audio session on a device, build a Game Center / Play Games achievements plugin if wanted | App Review, device sound | Archive validates in Xcode; device check recorded |
 | Store copy: keywords that name things the game does not contain ("samurai", "castle") are the owner's call (`docs/store/LISTING.md`) | Apple 2.3.7 | Keywords decided |
 
 ## 4. Hosting and operations (blocks online play)
@@ -65,4 +67,5 @@ a contract, a device or a decision.
 | Signed-build store testing: purchases (pending, cancel, restore, refund, reversal), sign-in recovery, push and quiet hours, Android Back, app links, age signals | both stores | Test log kept |
 | Whether a preview URL for built-not-live content may exist, and who tests it (P7-12 prepares a manual workflow, off by default) | playtesting unfinished content | Decision recorded |
 | Real-player playtests of every number the 2026-11-16 pass changed (Scroll bonus, task targets, Trial growth, defense rewards and later phases) | knowing the changes are right | Playtest notes; model players are not players |
+| Mixed-army check of the remaining 13 counter pairs before the Codex may name them (P6-18; `tools/balance/run-counter-check.mjs`) | Codex accuracy | `src/gameplay/data/codex.json` lists every confirmed pair |
 | An artist and music (seasonal looks are two colours and a name today) | presentation | Art delivered |
