@@ -304,13 +304,14 @@ export function validateVillage(v: VillageState, data: GameData): string[] {
   const problems: string[] = [];
   if (!v || typeof v !== 'object') return ['village missing'];
   if (!Number.isFinite(v.createdAt) || !Number.isFinite(v.lastSeenAt)) problems.push('bad timestamps');
-  if (!v.resources) problems.push('resources missing');
+  // Jade may be negative: a refunded purchase whose Jade was already spent (a debt, re-audit).
+  // Save v17 (ledger audit A5): a refunded purchase leaves a debt (a negative balance) in any resource.
+  // (The `else` once hung on the trials check, so a village without resources threw instead of failing.)
+  if (!v.resources || typeof v.resources !== 'object') problems.push('resources missing');
+  else for (const k of RESOURCE_KINDS) if (!Number.isFinite(v.resources[k])) problems.push(`bad ${k}`);
   if (!v.trials || !Number.isInteger(v.trials.best) || v.trials.best < 0) problems.push('bad trials');
   // Save v24 (P3-07): the daily drill's last paid local day.
   if (v.drill !== undefined && (!v.drill || typeof v.drill !== 'object' || !Number.isInteger(v.drill.day))) problems.push('bad drill');
-  // Jade may be negative: a refunded purchase whose Jade was already spent (a debt, re-audit).
-  // Save v17 (ledger audit A5): a refunded purchase leaves a debt (a negative balance) in any resource.
-  else for (const k of RESOURCE_KINDS) if (!Number.isFinite(v.resources[k])) problems.push(`bad ${k}`);
   if (!Array.isArray(v.buildings)) return [...problems, 'buildings missing'];
   const map = data.economy.mapSize;
   const ids = new Set<string>();
