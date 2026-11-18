@@ -3,7 +3,8 @@
  * class in the roster with its icon, ability and what unlocks it.
  */
 import { displayData as localizedData, labelText as i18nLabel } from './i18n';
-import { t as i18nText } from './i18n';
+import { t as i18nText, fmtPercent, listText, t } from './i18n';
+import codex from '../../gameplay/data/codex.json';
 import type { GameController } from '../../gameplay/control/controller';
 import { troopUnlock } from '../../gameplay/sim/army';
 import { WARRIORS as CANONICAL_WARRIORS, MODEL as CANONICAL_MODEL } from '../../gameplay/sim/progression';
@@ -29,8 +30,40 @@ export interface CodexHost {
  * means trainable now: both the Clan Keep gate and the Training Dojo level
  * are met (the same check the Train button uses).
  */
+/**
+ * P6-18 (built-not-live section 4): rules no other screen states, with their numbers read from data: rival clans
+ * answer the player's last raids, a lost raid halves the next raider's take for a while, the three temper axes, each
+ * clan's leaning, and the counter pairs confirmed in battle for live buildings only (`data/codex.json`).
+ */
+function rulesSection(host: CodexHost): HTMLElement {
+  const gd = localizedData(host.c.data);
+  const temper = gd.battle.temper;
+  const ex = gd.raids.exhaustion;
+  const wrap = h('div', { class: 'codex-rules', 'data-id': 'codex-rules' });
+  if (temper?.offers.recentRaids) wrap.append(h('p', { class: 'small' }, t('codex.rivalsRule', { n: temper.offers.recentRaids, pct: fmtPercent(temper.offers.counterShare * 100) })));
+  if (ex) wrap.append(h('p', { class: 'small' }, t('codex.exhaustionRule', { hours: ex.windowHours, pct: fmtPercent(ex.factor * 100) })));
+  if (temper) {
+    wrap.append(h('p', { class: 'small' }, t('codex.temperRule', { level: temper.unlockKeep })));
+    // Each clan's leaning: the axis its home tempers weigh most.
+    for (const clan of gd.names.rivalClans ?? []) {
+      const tempers = temper.rivals?.[clan.id]?.tempers ?? {};
+      const sum: Record<string, number> = {};
+      for (const p of Object.values(tempers)) for (const [axis, v] of Object.entries(p ?? {})) sum[axis] = (sum[axis] ?? 0) + (v ?? 0);
+      const lean = Object.entries(sum).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))[0]?.[0];
+      if (lean) wrap.append(h('p', { class: 'small' }, i18nText("ui.message_d2599d42d8", { arg1: clan.name, arg2: t(`temper.axis.${lean}`) })));
+    }
+  }
+  for (const [type, troops] of Object.entries(codex.confirmedCounters)) {
+    if (!gd.buildings[type]) continue;
+    const names = troops.filter((x) => gd.troops[x]).map((x) => gd.troops[x].name);
+    if (names.length) wrap.append(h('p', { class: 'small' }, t('codex.counters', { building: gd.buildings[type].name, list: listText(names, 'conjunction') })));
+  }
+  return wrap;
+}
+
 export function openCodex(host: CodexHost): void {
   const gd = localizedData(host.c.data);
+  let rulesOpen = false;
   let tierFilter = 0;
   let roleFilter = '';
   let statusFilter: '' | 'unlocked' | 'locked' = '';
@@ -53,6 +86,13 @@ export function openCodex(host: CodexHost): void {
     const unlockedCount = rows.filter((r) => r.u?.unlocked).length;
     const nextUp = rows.filter((r) => r.u && !r.u.unlocked).sort((a, b) => a.keep - b.keep || a.w.tier - b.w.tier)[0];
     body.append(h('p', { class: 'muted small' }, i18nText("ui.of_classes_unlocked_a_class_unlocks_wh_856ddcc6ae", { arg1: unlockedCount, arg2: WARRIORS.length })));
+    const rulesBtn = h('button', { class: 'btn ghost small-btn', type: 'button', 'aria-expanded': String(rulesOpen), 'data-id': 'codex-rules-toggle' }, t('codex.rulesButton'));
+    rulesBtn.addEventListener('click', () => {
+      rulesOpen = !rulesOpen;
+      render();
+    });
+    body.append(rulesBtn);
+    if (rulesOpen) body.append(rulesSection(host));
     // Content batch 2026-11-14: Warrior Mastery, only while the data turns it on (preview).
     const mastery = masterySection(host.c);
     if (mastery) body.append(mastery);
