@@ -23,7 +23,7 @@
   "tutorial.end.button": { "en": "Finish", "text": "समाप्त" },
   "tutorial.skip": { "en": "Skip tutorial", "text": "ट्युटोरियल वगळा" },
   "kind.practice": { "en": "Practice", "text": "सराव" },
-  "whatsNew.0_1_0": { "en": "What's new: send your squad in with one order, watch the fight up close or faster, and see what another entry point would have done. Every raid on your village now has a report, and you can test your defenses. New: a four-week event calendar with festivals, a weekly Gauntlet, daily contracts, achievements, Keep seals and looks to earn.", "text": "" },
+  "whatsNew.0_1_0": { "en": "What's new: send your squad in with one order, watch the fight up close or faster, and see what another entry point would have done. Every raid on your village now has a report, and you can test your defenses. New: a four-week event calendar with festivals, a weekly Gauntlet, daily contracts, achievements, Keep seals and looks to earn.", "text": "नवे काय: एकाच आदेशाने तुमचे पथक आत पाठवा, लढाई जवळून किंवा वेगाने पाहा, आणि दुसऱ्या प्रवेश बिंदूतून काय झाले असते ते पाहा. तुमच्या गावावरील प्रत्येक छाप्याचा आता अहवाल मिळतो, आणि तुम्ही तुमची संरक्षणे तपासू शकता. नवे: उत्सवांसह चार आठवड्यांचे इव्हेंट कॅलेंडर, साप्ताहिक कसोटी, रोजचे करार, कामगिरी, किल्ल्यांचे शिक्के आणि मिळवण्यासाठी रूपे." },
   "trials.ladder": { "en": "The ladder ahead", "text": "पुढची शिडी" },
   "trials.cleared": { "en": "Cleared: tiers 1 to {best}", "text": "पार केलेले: टप्पे 1 ते {best}" },
   "milestone.keep": { "en": "Clan Keep Lv {level}!", "text": "कुळाचा किल्ला स्तर {level}!" },

@@ -23,7 +23,7 @@
   "tutorial.end.button": { "en": "Finish", "text": "ముగించు" },
   "tutorial.skip": { "en": "Skip tutorial", "text": "ట్యుటోరియల్ దాటవేయి" },
   "kind.practice": { "en": "Practice", "text": "అభ్యాసం" },
-  "whatsNew.0_1_0": { "en": "What's new: send your squad in with one order, watch the fight up close or faster, and see what another entry point would have done. Every raid on your village now has a report, and you can test your defenses. New: a four-week event calendar with festivals, a weekly Gauntlet, daily contracts, achievements, Keep seals and looks to earn.", "text": "" },
+  "whatsNew.0_1_0": { "en": "What's new: send your squad in with one order, watch the fight up close or faster, and see what another entry point would have done. Every raid on your village now has a report, and you can test your defenses. New: a four-week event calendar with festivals, a weekly Gauntlet, daily contracts, achievements, Keep seals and looks to earn.", "text": "కొత్తవి: ఒకే ఆదేశంతో మీ దళాన్ని లోపలికి పంపండి, పోరాటాన్ని దగ్గరగా లేదా వేగంగా చూడండి, వేరే ప్రవేశ స్థానం గుండా ఏమై ఉండేదో చూడండి. మీ గ్రామంపై జరిగే ప్రతి దాడికి ఇప్పుడు ఒక నివేదిక ఉంది, మీ రక్షణను పరీక్షించవచ్చు కూడా. కొత్తగా: పండుగలతో నాలుగు వారాల ఈవెంట్ క్యాలెండర్, వారపు అగ్నిపరీక్ష, రోజువారీ ఒప్పందాలు, విజయాలు, కోట ముద్రలు, సంపాదించగల రూపాలు." },
   "trials.ladder": { "en": "The ladder ahead", "text": "ముందున్న నిచ్చెన" },
   "trials.cleared": { "en": "Cleared: tiers 1 to {best}", "text": "పూర్తయినవి: అంచెలు 1 నుండి {best} వరకు" },
   "milestone.keep": { "en": "Clan Keep Lv {level}!", "text": "వంశ కోట స్థాయి {level}!" },

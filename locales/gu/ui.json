@@ -23,7 +23,7 @@
   "tutorial.end.button": { "en": "Finish", "text": "પૂરું કરો" },
   "tutorial.skip": { "en": "Skip tutorial", "text": "ટ્યુટોરિયલ છોડો" },
   "kind.practice": { "en": "Practice", "text": "અભ્યાસ" },
-  "whatsNew.0_1_0": { "en": "What's new: send your squad in with one order, watch the fight up close or faster, and see what another entry point would have done. Every raid on your village now has a report, and you can test your defenses. New: a four-week event calendar with festivals, a weekly Gauntlet, daily contracts, achievements, Keep seals and looks to earn.", "text": "" },
+  "whatsNew.0_1_0": { "en": "What's new: send your squad in with one order, watch the fight up close or faster, and see what another entry point would have done. Every raid on your village now has a report, and you can test your defenses. New: a four-week event calendar with festivals, a weekly Gauntlet, daily contracts, achievements, Keep seals and looks to earn.", "text": "નવું શું છે: એક જ આદેશથી તમારી ટુકડીને અંદર મોકલો, લડાઈ નજીકથી કે ઝડપથી જુઓ, અને બીજા પ્રવેશ બિંદુથી શું થયું હોત તે જુઓ. તમારા ગામ પરની દરેક ધાડનો હવે અહેવાલ મળે છે, અને તમે તમારાં સંરક્ષણ ચકાસી શકો છો. નવું: ઉત્સવો સાથે ચાર અઠવાડિયાનું ઇવેન્ટ કૅલેન્ડર, સાપ્તાહિક અગ્નિપરીક્ષા, દૈનિક કરાર, સિદ્ધિઓ, કિલ્લાની મહોરો અને મેળવવા જેવા દેખાવ." },
   "trials.ladder": { "en": "The ladder ahead", "text": "આગળની સીડી" },
   "trials.cleared": { "en": "Cleared: tiers 1 to {best}", "text": "પાર કર્યા: પડાવ 1 થી {best}" },
   "milestone.keep": { "en": "Clan Keep Lv {level}!", "text": "કુળ કિલ્લો સ્તર {level}!" },
