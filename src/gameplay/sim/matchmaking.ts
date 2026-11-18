@@ -10,7 +10,7 @@
  * pay less and losses cost more: trophies settle where the player wins about
  * as often as the trophy formula demands instead of climbing forever.
  */
-import { generateOpponent } from './battle/basegen';
+import { generateOpponent, LAYOUTS } from './battle/basegen';
 import type { BaseLayout } from './battle/types';
 import { maxHousingAtHall, troopUnlock } from './army';
 import { troopDef } from './data';
@@ -230,8 +230,14 @@ export function opponentForRank(seed: number, trophies: number, ownHall: number,
   const def = data.battle.temper;
   const clan = rivalFor(seed, data);
   const rival = def && clan && st.hall >= def.unlockKeep ? def.rivals[clan.id] : undefined;
-  const bias = rival ? Math.max(0, Math.min(1, st.bias + rival.biasShift)) : st.bias;
-  const base = generateOpponent(seed, st.hall, data, { levelBias: bias });
+  // P4-07 (CMB-08): from `layouts.fromKeep` a rival clan's outpost uses one of its home layouts, chosen by the seed,
+  // with that layout's level-bias offset (so no layout is far easier than another).
+  const lay = data.ranks.matchmaking.layouts;
+  const homes = lay && clan && st.hall >= lay.fromKeep ? lay.clanHome[clan.id] ?? [] : [];
+  const layout = homes.length ? LAYOUTS.find((l) => l.id === homes[(mixSeed(seed, 0x1a70) >>> 0) % homes.length]) : undefined;
+  const offset = layout ? lay!.biasOffset[layout.id] ?? 0 : 0;
+  const bias = Math.max(0, Math.min(1, (rival ? st.bias + rival.biasShift : st.bias) + offset));
+  const base = generateOpponent(seed, st.hall, data, { levelBias: bias, ...(layout ? { layout } : {}) });
   if (rival && rival.lootScale !== 1) {
     for (const b of base.buildings) {
       if (!b.loot) continue;

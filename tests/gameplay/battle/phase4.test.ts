@@ -1,9 +1,11 @@
 /** Phase 4 of the 2026-11-16 replayability pass (SIM_RULES 8): one test per combat hook. */
 import { describe, expect, it } from 'vitest';
 import { createBattle, deploymentsByTick, result, step } from '../../../src/gameplay/sim/battle/battle';
-import { generateOpponent } from '../../../src/gameplay/sim/battle/basegen';
+import { generateOpponent, LAYOUTS } from '../../../src/gameplay/sim/battle/basegen';
 import { defaultData } from '../../../src/gameplay/sim/data';
 import { botDeployments } from '../../../src/gameplay/sim/defense';
+import { opponentForRank } from '../../../src/gameplay/sim/matchmaking';
+import { rivalFor } from '../../../src/gameplay/sim/rivals';
 import { createRng } from '../../../src/gameplay/sim/rng';
 import type { GameData } from '../../../src/gameplay/sim/types';
 
@@ -32,5 +34,24 @@ describe('P4-01 (CMB-01): support warriors in position strike', () => {
       without += fight(off, army, 4, seed).r.destruction;
     }
     expect(on).toBeGreaterThan(without);
+  });
+});
+
+describe('P4-07 (CMB-08): raid bases use the rival clans\' home layouts', () => {
+  it('from layouts.fromKeep every rival outpost uses one of its clan\'s home layouts; below it, the ring generator', () => {
+    const lay = defaultData.ranks.matchmaking.layouts!;
+    const names = Object.fromEntries(LAYOUTS.map((l) => [l.name, l.id]));
+    const seen = new Set<string>();
+    for (let i = 0; i < 60; i++) {
+      const seed = 9000 + i;
+      const high = opponentForRank(seed, 12 * defaultData.ranks.matchmaking.trophiesPerHall, 12, defaultData, 11.5, []);
+      const clan = rivalFor(seed, defaultData)!;
+      const id = names[high.practice ?? ''];
+      expect(lay.clanHome[clan.id]).toContain(id);
+      seen.add(id);
+      const low = opponentForRank(seed, 0, 3, defaultData, 0, []);
+      expect(low.practice).toBeUndefined();
+    }
+    expect(seen.size).toBe(5);
   });
 });

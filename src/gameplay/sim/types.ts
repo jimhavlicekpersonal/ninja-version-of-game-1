@@ -888,6 +888,8 @@ export interface RanksDef {
      * deployed at least `minDeployShare` of the army's housing count (`lossStreakSlack` in sim/matchmaking.ts).
      */
     lossStreakSlack?: { perLoss: number; max: number; minDeployShare: number };
+    /** P4-07 (CMB-08): rival clans' home layouts for raid bases from `fromKeep`, and each layout's level-bias offset. */
+    layouts?: { fromKeep: number; clanHome: Record<string, string[]>; biasOffset: Record<string, number> };
     /** Earned strength reads research behind the caps as earlier Keeps, but never more than this many below the own Keep (design re-audit). */
     researchFloorKeeps?: number;
     /**

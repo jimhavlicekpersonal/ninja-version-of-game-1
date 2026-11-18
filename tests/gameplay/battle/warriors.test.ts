@@ -185,17 +185,21 @@ describe('support and companions', () => {
   it('heals allies over time, without healing dead warriors', () => {
     const sim = arena('herbalist', 'hedgehog_roller');
     sim.troops[1].hp = 10; step(sim);
-    expect(sim.troops[1].hp).toBeCloseTo(10 + sim.troops[1].maxHp * .025);
+    // P4-01 (SIM_RULES 8, restated): the heal is data (0.025 -> 0.015).
+    expect(sim.troops[1].hp).toBeCloseTo(10 + sim.troops[1].maxHp * data.troops.herbalist.kit!.strength!);
     sim.troops[1].dead = true; sim.troops[1].hp = 0; advance(sim, 10);
     expect(sim.troops[1].hp).toBe(0);
   });
   it('haste and resistance auras do not stack', () => {
-    const sim = arena('drum_monk', 'drum_monk', 'iron_monk', 'iron_monk', 'hedgehog_roller');
+    // P4-01 (restated): haste speeds attacks in whole ticks, so the 12% drum shortens a 10-tick interval to 9 (it cannot
+    // shorten the Shinobi's 8 ticks); the target is a Twin-Fang Dancer.
+    const sim = arena('drum_monk', 'drum_monk', 'iron_monk', 'iron_monk', 'twin_fang_dancer');
     const target = sim.troops[4];
-    expect(auraStrength(sim, target, 'haste')).toBe(.25);
+    // P4-01 (SIM_RULES 8, restated): the haste is data (0.25 -> 0.12).
+    expect(auraStrength(sim, target, 'haste')).toBe(data.troops.drum_monk.kit!.strength);
     expect(auraStrength(sim, target, 'resist')).toBe(.15);
-    step(sim); advance(sim, 7);
-    expect(target.hits).toBe(2); // base interval is 8 ticks, reduced by haste
+    step(sim); advance(sim, 9);
+    expect(target.hits).toBe(2); // hits on ticks 1 and 10: the 10-tick interval is 9 with haste (10 without)
   });
   it('Bell Warden takes targeting priority over a closer warrior', () => {
     const sim = arena('hedgehog_roller', 'bell_warden');
