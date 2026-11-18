@@ -90,7 +90,7 @@ const SEEN_KEY = 'tk.newsSeen';
 export const WHATS_NEW = { version: '0.1.0', key: 'whatsNew.0_1_0' } as const;
 const WHATS_NEW_KEY = 'tk.whatsNewSeen';
 
-export function whatsNewUnseen(): boolean {
+function whatsNewUnseen(): boolean {
   try {
     return localStorage.getItem(WHATS_NEW_KEY) !== WHATS_NEW.version;
   } catch {

@@ -49,9 +49,10 @@ describe('Grove', () => {
     expect(filterText('have a lovely day', data)).toBe('have a lovely day');
     const { state, clock } = newGame();
     let s = must(state, { type: 'joinGrove' }, clock.now());
-    s = must(s, { type: 'chat', text: 'what the hell' }, clock.now());
+    // Restated for P7-07 (review H1): "hell" left the list (it is ordinary German, "bright"); "damn" stays.
+    s = must(s, { type: 'chat', text: 'damn this wall' }, clock.now());
     const mine = s.grove.chat.filter((c) => c.from === -1);
-    expect(mine[mine.length - 1].text).not.toMatch(/hell/i);
+    expect(mine[mine.length - 1].text).not.toMatch(/damn/i);
   });
 
   it('donating costs the troops and gives XP only (no instant troop swap)', () => {
