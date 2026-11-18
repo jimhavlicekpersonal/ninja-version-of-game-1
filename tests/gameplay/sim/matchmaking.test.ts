@@ -233,8 +233,14 @@ describe('matchmaking follows earned power, not only honor (audit F22)', () => {
     // Fully researched new tier: the top of Keep 7.
     const maxed = { ...fresh, research: { levels: { wind_step_assassin: troopLevelCapAt(7, data, 'wind_step_assassin') }, active: [] } };
     expect(attackerStrength(maxed, data)).toBeCloseTo(7, 5);
-    // So researched Keep 7 attackers meet Keep 7 bases, not the Keep 6 bases they used to flatten.
-    for (let seed = 1; seed <= 20; seed++) expect(opponentFor(seed, { ...maxed, trophies: 0 }, data).hallLevel).toBe(7);
+    // So researched Keep 7 attackers meet Keep 7 bases, not the Keep 6 bases they used to flatten. (Restated with the
+    // rules-8 matchmaking change: Keep 7's power slack is 0 since the Phase 5 campaign, so a Keep 8 base, one above as
+    // `hallsAbove` allows, can come too.)
+    for (let seed = 1; seed <= 20; seed++) {
+      const k = opponentFor(seed, { ...maxed, trophies: 0 }, data).hallLevel;
+      expect(k).toBeGreaterThanOrEqual(7);
+      expect(k).toBeLessThanOrEqual(7 + data.ranks.matchmaking.hallsAbove);
+    }
   });
 });
 
