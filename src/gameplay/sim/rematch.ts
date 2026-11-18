@@ -33,6 +33,8 @@ export function rematchStatus(state: VillageState, recordId: string, now: number
   if (!cfg || !record || record.kind !== 'defense' || !record.raider || !record.simulated) return { ok: false, message: 'This raid cannot be answered.' };
   if (record.rematch) return { ok: false, message: 'You already settled the score with this raider.' };
   if (now - record.at > cfg.windowHours * HOUR) return { ok: false, message: 'Too long ago: the raider has moved on.' };
+  // A record dated after now is not a raid that happened (a forged save would keep it answerable forever).
+  if (record.at > now) return { ok: false, message: 'This raid cannot be answered.' };
   return { ok: true, record };
 }
 
@@ -52,8 +54,12 @@ export function rematchReward(stars: number, keep: number, data: GameData, took:
   const out: Cost = {};
   if (fixed > 0) out.acorns = out.dew = fixed;
   const recover = cfg?.recoverShare ?? 0;
-  for (const [k, v] of Object.entries(took) as [keyof Cost, number][]) {
-    const back = Math.floor(((v ?? 0) * recover * s) / 3);
+  // Independent review 2026-11-18: only what a raid can take (Coins and Provisions), and never more than a raid on this
+  // Keep could take (twice the storage loot cap, storages plus collectors): a forged record pays nothing extra.
+  const caps = data.raids.storageLootCapByHall;
+  const most = 2 * (caps[Math.max(1, Math.min(caps.length, keep)) - 1] ?? 0);
+  for (const k of ['acorns', 'dew'] as const) {
+    const back = Math.floor((Math.min(most, Math.max(0, took[k] ?? 0)) * recover * s) / 3);
     if (back > (out[k] ?? 0)) out[k] = back;
   }
   return out;

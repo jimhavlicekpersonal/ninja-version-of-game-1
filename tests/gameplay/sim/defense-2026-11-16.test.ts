@@ -6,7 +6,8 @@ import { describe, expect, it } from 'vitest';
 import { generateOpponent } from '../../../src/gameplay/sim/battle/basegen';
 import { diversityPartOf, raidCarry, trainableRoles } from '../../../src/gameplay/sim/carry';
 import { raidVillage, simulateOfflineRaids } from '../../../src/gameplay/sim/defense';
-import { rematchReward } from '../../../src/gameplay/sim/rematch';
+import { rematchReward, rematchStatus } from '../../../src/gameplay/sim/rematch';
+import { maxHousingAtHall } from '../../../src/gameplay/sim/army';
 import { attackerFor, botArmy, lossStreakSlack, strengthFloor } from '../../../src/gameplay/sim/matchmaking';
 import { capacity } from '../../../src/gameplay/sim/resources';
 import { createRng } from '../../../src/gameplay/sim/rng';
@@ -159,9 +160,12 @@ describe('P2-09 (DEF-10, ECO-08): the league win bonus matters at every Keep', (
 });
 
 describe('P2-10 (DEF-12): a losing streak lowers the opponents, and cannot be farmed', () => {
-  const army = { hedgehog_roller: 10 };
+  // Raids count against the Keep's camps (independent review: not the army brought): a new village's camps hold
+  // `camps` warriors, so "10" below means the whole camp.
+  const camps = maxHousingAtHall(1, data);
+  const army = { hedgehog_roller: camps };
   const raid = (stars: number, sent: number): VillageState['battleLog'][number] =>
-    ({ id: `r${stars}${sent}`, kind: 'attack', at: 0, opponentName: 'x', setup: { seed: 1, base: { name: 'x', hallLevel: 5, buildings: [] }, army }, deployments: [], result: { stars, destruction: 0, loot: {}, used: { hedgehog_roller: sent } }, trophies: 0 }) as unknown as VillageState['battleLog'][number];
+    ({ id: `r${stars}${sent}`, kind: 'attack', at: 0, opponentName: 'x', setup: { seed: 1, base: { name: 'x', hallLevel: 5, buildings: [] }, army }, deployments: [], result: { stars, destruction: 0, loot: {}, used: { hedgehog_roller: Math.round((sent * camps) / 10) } }, trophies: 0 }) as unknown as VillageState['battleLog'][number];
   const at = (log: VillageState['battleLog']) => ({ ...createNewVillage(0, data), battleLog: log });
   const cfg = data.ranks.matchmaking.lossStreakSlack!;
 
@@ -172,6 +176,11 @@ describe('P2-10 (DEF-12): a losing streak lowers the opponents, and cannot be fa
     expect(lossStreakSlack(at(Array.from({ length: 9 }, () => raid(0, 10))), data)).toBe(cfg.max);
     expect(lossStreakSlack(at([raid(0, 10), raid(0, 10), raid(1, 10)]), data)).toBe(0);
     expect(lossStreakSlack(at([raid(1, 10), raid(0, 10)]), data)).toBe(cfg.perLoss);
+  });
+
+  it('a one-warrior army sent in full does not count (independent review)', () => {
+    const tiny = (): VillageState['battleLog'][number] => ({ ...raid(0, 10), setup: { ...raid(0, 10).setup, army: { hedgehog_roller: 1 } }, result: { ...raid(0, 10).result, used: { hedgehog_roller: 1 } } }) as VillageState['battleLog'][number];
+    expect(lossStreakSlack(at([tiny(), tiny(), tiny(), tiny()]), data)).toBe(0);
   });
 
   it('a loss that sent under 80% of the army neither counts nor resets', () => {
@@ -203,5 +212,32 @@ describe('P2-03 (DEF-05): raiders bring more than one army', () => {
     for (let i = 0; i < 40; i++) armies.add(Object.keys(attackerFor(createRng(i), keep9, data).army).sort().join(','));
     expect(armies.size).toBeGreaterThanOrEqual(3);
     expect(Object.keys(botArmy(9, 0.5, data)).sort()).toEqual(Object.keys(data.raids.botArmyMix[8]).sort());
+  });
+});
+
+describe('independent review 2026-11-18: Phase 2 holes', () => {
+  it('a forged defense record cannot make Settle the score pay Jade or more than a raid could take', () => {
+    const forged = rematchReward(3, 12, data, { moonstones: 123_456, acorns: 1e12, dew: 1e12 } as never);
+    expect(forged.moonstones).toBeUndefined();
+    expect(forged.acorns!).toBeLessThanOrEqual(2 * data.raids.storageLootCapByHall[11]);
+  });
+
+  it('a defense record dated in the future cannot be answered', () => {
+    const v = createNewVillage(0, data);
+    const rec = { id: 'd1', kind: 'defense', at: 10 * 86_400_000, simulated: true, raider: { seed: 1, hall: 3, bias: 0.5 }, opponentName: 'x', setup: { seed: 1, base: { name: 'x', hallLevel: 3, buildings: [] }, army: {} }, deployments: [], result: { stars: 3, destruction: 100, loot: { acorns: 5 }, used: {} }, trophies: 0 } as unknown as VillageState['defenseLog'][number];
+    const s: VillageState = { ...v, defenseLog: [rec] };
+    expect(rematchStatus(s, 'd1', 1000, data).ok).toBe(false);
+    expect(rematchStatus(s, 'd1', 10 * 86_400_000 + 1000, data).ok).toBe(true);
+  });
+
+  it('a real raid pays the hold reward only when the server says so', () => {
+    const v = createNewVillage(0, data);
+    const record = { id: 'pv1', kind: 'defense', at: 1, opponentName: 'alt', setup: { seed: 1, base: { name: 'x', hallLevel: 1, buildings: [] }, army: {} }, deployments: [], result: { stars: 0, destruction: 5, loot: {}, used: {} }, trophies: 0 } as unknown as VillageState['defenseLog'][number];
+    const paid = applyCommand(v, { type: 'applyDefense', record, lost: {}, trophies: 0, shieldUntil: 0 }, 1000, data);
+    const unpaid = applyCommand(v, { type: 'applyDefense', record, lost: {}, trophies: 0, shieldUntil: 0, holdReward: false }, 1000, data);
+    expect(paid.ok && unpaid.ok).toBe(true);
+    if (!paid.ok || !unpaid.ok) return;
+    expect(paid.state.defenseLog.at(-1)!.banked).toBeDefined();
+    expect(unpaid.state.defenseLog.at(-1)!.banked).toBeUndefined();
   });
 });

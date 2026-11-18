@@ -126,7 +126,7 @@ export type Command =
   | { type: 'markPrepOffer'; week: number }
   | { type: 'tutorial'; step: number; done?: boolean }
   /** `fallen`: server only, the buildings its own simulation saw destroyed and their loot (saves re-running the raid). */
-  | { type: 'applyDefense'; record: BattleRecord; lost: Cost; trophies: number; shieldUntil: number; fallen?: { id: string; loot: Cost }[] }
+  | { type: 'applyDefense'; record: BattleRecord; lost: Cost; trophies: number; shieldUntil: number; fallen?: { id: string; loot: Cost }[]; /** The server's verdict on the per-star hold reward (false: this attacker already raided this defender today). Absent: paid. */ holdReward?: boolean }
   | { type: 'syncRank'; trophies: number; shieldUntil?: number }
   // Multiplayer server results (see sim/net.ts); each is safe to apply twice.
   | { type: 'netBind'; playerId: string }
@@ -476,6 +476,13 @@ export function onGarrisonCrew(type: string, data: GameData): boolean {
   return (data.economy.garrisonCrew ?? 0) > 0 && GARRISON_CATEGORIES.includes(data.buildings[type]?.category ?? '');
 }
 
+/** Whether a build of `type` just started took a Village Artisan (not a crew build, or the crew was already full). */
+function tookArtisan(state: VillageState, type: string, now: number, data: GameData): boolean {
+  if (!onGarrisonCrew(type, data)) return true;
+  const onCrew = state.buildings.filter((b) => b.upgrade && b.upgrade.endsAt > now && onGarrisonCrew(b.type, data)).length;
+  return onCrew > (data.economy.garrisonCrew ?? 0);
+}
+
 export function builderStatus(state: VillageState, data: GameData, now: number, forType?: string): { total: number; busy: number; free: number } {
   // `economy.garrisonCrew` (P2-14, from the lab's Rules 10): that many defense, trap or support builds at a time are
   // done by the garrison and take no Village Artisan, so fortifying the village does not stop it from growing.
@@ -641,7 +648,7 @@ function afterCommand(s: VillageState, events: SimEvent[], cmd: Command, moonBef
       if (e.seconds > 3600 && (!s.flags.longWaitSeen || data.offers.rules.some((r) => r.trigger === 'first_long_wait' && offerCanStillShow(s, data, r.id)))) events.push({ kind: 'trigger', trigger: 'first_long_wait' });
       // The Artisan's Bundle is Jade for another Artisan's Hut: only offer it while one can still be hired.
       // P2-14: a garrison-crew build took no artisan, so it is no reason to offer one.
-      if (e.seconds > 0 && !onGarrisonCrew(e.buildingType, data) && builderStatus(s, data, now).free === 0 && canHireArtisan(s, data)) events.push({ kind: 'trigger', trigger: 'all_builders_busy' });
+      if (e.seconds > 0 && tookArtisan(s, e.buildingType, now, data) && builderStatus(s, data, now).free === 0 && canHireArtisan(s, data)) events.push({ kind: 'trigger', trigger: 'all_builders_busy' });
     } else if (e.kind === 'raid_end' && e.record.kind === 'attack' && e.record.settlement !== 'pending') {
       // Online attacks count once the server has confirmed them (see settleOnlineAttack).
       if (e.record.result.stars >= 1) s.stats.raidsWon++;
@@ -813,7 +820,9 @@ function runCommand(s: VillageState, cmd: Command, now: number, data: GameData):
       // every star denied pays the defender the same per-star reward a bot raid does (storage-capped, reported).
       const pvpRecord = { ...cmd.record };
       const stars = pvpRecord.result?.stars ?? 3;
-      if (!pvpRecord.simulated && data.raids.defenseWin?.perStar && stars < 3) {
+      // Independent review 2026-11-18: the server pays it once per attacker per defender per UTC day (`holdReward`), so
+      // an alternate account's 0-star raids cannot mint it.
+      if (!pvpRecord.simulated && cmd.holdReward !== false && data.raids.defenseWin?.perStar && stars < 3) {
         const { added, overflow } = defenseWinReward(s, data, (3 - stars) / 3);
         if (Object.keys(added).length) pvpRecord.banked = added;
         if (Object.keys(overflow).length) pvpRecord.overflow = overflow;

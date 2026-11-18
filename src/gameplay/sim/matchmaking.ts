@@ -163,19 +163,20 @@ export function powerSlackAt(hall: number, data: GameData): number {
 /**
  * P2-10 (DEF-12): the slack a losing streak earns. Counts the player's latest raids (generated or real opponents;
  * not Trials, wars, bounties or rematches), newest first: a raid with stars ends the streak; a lost raid counts only
- * when it deployed at least `minDeployShare` of the army's housing (a one-warrior loss neither counts nor resets).
+ * when it deployed at least `minDeployShare` of the Keep's camp housing (a one-warrior loss neither counts nor resets).
  */
 export function lossStreakSlack(state: VillageState, data: GameData): number {
   const cfg = data.ranks.matchmaking.lossStreakSlack;
   if (!cfg) return 0;
   let losses = 0;
+  const camps = maxHousingAtHall(hallLevel(state, data), data);
   const log = state.battleLog ?? [];
   for (let i = log.length - 1; i >= 0 && losses * cfg.perLoss < cfg.max; i--) {
     const r = log[i];
     if (r.kind !== 'attack' || r.war || r.trial !== undefined || r.goalEvent || r.rematch || r.settlement === 'rejected' || r.settlement === 'pending') continue;
     if (r.result.stars > 0) break;
-    let army = 0;
-    for (const [t, n] of Object.entries(r.setup.army)) army += (data.troops[t]?.housing ?? 0) * n;
+    // Independent review 2026-11-18: against the camps, not the army brought (a one-warrior "army" sent in full).
+    const army = camps;
     let sent = 0;
     for (const [t, n] of Object.entries(r.result.used)) sent += (data.troops[t]?.housing ?? 0) * n;
     if (army > 0 && sent >= cfg.minDeployShare * army) losses++;
@@ -189,16 +190,19 @@ export function strengthFloor(state: VillageState, data: GameData): number {
 }
 
 /**
- * The Keep a player's next generated opponent will have, before the base is known (P2-11, DEF-13): the strength
- * `opponentFor` asks for (honor, raised to the earned-strength floor `attackerStrength - powerSlackAt`, clamped to
- * the hall window) without the random jitter, read as a Keep the way `matchStrength` does (`floor(s) + 1`).
+ * The Keep a player's next generated opponent will usually have, before the base is known (P2-11, DEF-13): the
+ * earned-strength floor `opponentFor` uses (`attackerStrength - powerSlackAt`, clamped to the hall window), read as a
+ * Keep the way `matchStrength` does (`floor(s) + 1`). Honor can only raise the match above it.
  */
 export function matchedKeep(state: VillageState, data: GameData): number {
   const mm = data.ranks.matchmaking;
   const own = hallLevel(state, data);
   const hi = Math.min(maxHall(data), own + mm.hallsAbove) - 1e-6;
-  const lo = Math.min(hi, Math.max(0, own - mm.hallsBelow - 1, strengthFloor(state, data)));
-  const s = Math.max(lo, Math.min(hi, strengthFor(state.trophies, data)));
+  // Independent review 2026-11-18: only state the server's copy and the device always share (the Keep, the army and
+  // research): honor (moved on the player row by a forfeit) and the losing streak (pending vs settled records) are
+  // left out, so a replayed Next is priced the same on both sides.
+  const floor = attackerStrength(state, data) - powerSlackAt(own, data);
+  const s = Math.min(hi, Math.max(0, own - mm.hallsBelow - 1, floor));
   return Math.max(1, Math.min(own, Math.floor(s) + 1));
 }
 
@@ -285,7 +289,7 @@ export function botArmy(hall: number, bias: number, data: GameData): Record<stri
 }
 
 /** A full army for a hall level from one mix (troop -> housing share), the rounding filled with its cheapest troop. */
-export function armyFromMix(mix: Record<string, number>, hall: number, bias: number, data: GameData): Record<string, number> {
+function armyFromMix(mix: Record<string, number>, hall: number, bias: number, data: GameData): Record<string, number> {
   const housing = Math.floor(maxHousingAtHall(hall, data) * (0.85 + 0.15 * bias));
   const army: Record<string, number> = {};
   let used = 0;
