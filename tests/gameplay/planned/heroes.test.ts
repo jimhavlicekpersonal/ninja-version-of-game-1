@@ -138,8 +138,11 @@ describe('Rally: once per battle or on every target (RM-3 flag)', () => {
     attackDamage(s, t, s.buildings[2]);
     return { first, second: t.rallyUntil };
   };
-  it('re-arms on every new target by default (today\'s rules, unchanged)', () => {
-    const r = rallies(defaultData);
+  // P4-02 (CMB-05, SIM_RULES 8, restated): the shipped Rally is once per battle; without the flag it re-arms.
+  it('re-arms on every new target without the flag', () => {
+    const data = structuredClone(defaultData);
+    delete data.battle.heroes!.shadow_captain.kit!.oncePerBattle;
+    const r = rallies(data);
     expect(r.second).toBeGreaterThan(r.first!);
   });
   it('fires only once with kit.oncePerBattle', () => {
@@ -148,7 +151,8 @@ describe('Rally: once per battle or on every target (RM-3 flag)', () => {
     const r = rallies(data);
     expect(r.second).toBe(r.first);
   });
-  it('the shipped data does not set the flag', () => {
-    expect(defaultData.battle.heroes!.shadow_captain.kit!.oncePerBattle).toBeUndefined();
+  it('the shipped data sets the flag (P4-02): once per battle, as the text says', () => {
+    expect(defaultData.battle.heroes!.shadow_captain.kit!.oncePerBattle).toBe(true);
+    expect(rallies(defaultData).second).toBe(rallies(defaultData).first);
   });
 });

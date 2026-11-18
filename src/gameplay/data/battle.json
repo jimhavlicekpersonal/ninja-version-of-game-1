@@ -127,6 +127,7 @@
   },
   "warriorRules": {
     "supportIntervalTicks": 10,
+    "supportStrike": 1,
     "supportAllyTries": 3,
     "defaultAuraRadius": 3,
     "abilityCooldownTicks": 60,
@@ -138,9 +139,9 @@
   },
   "heroes": {
     "shadow_captain": {
-      "$comment": "Report section 5 step 8 (growth 5): the first playable hero (roster.json heroes[0]). Joins every attack from Keep 7 for free (not trained, no housing, one per battle); its level follows the Keep (Keep 7 = 1 ... Keep 15 = 9); stats are the Wind-Step Assassin at the Keep's research cap, HP x10 and damage x3. Rally: on its first hit, warriors within 4 tiles deal 30% more damage for 8 seconds, once per battle.",
+      "$comment": "Report section 5 step 8 (growth 5): the first playable hero (roster.json heroes[0]). Joins every attack from Keep 7 for free (not trained, no housing, one per battle); its level follows the Keep (Keep 7 = 1 ... Keep 15 = 9); stats are the Wind-Step Assassin at the Keep's research cap, HP x10 and damage x3. Rally: on its first hit, warriors within 4 tiles deal 30% more damage for 8 seconds, once per battle. P4-02 (CMB-05, 2026-11-18, SIM_RULES 8): Rally is once per battle (kit.oncePerBattle), 50% for 15 seconds, across the whole field (radius 99 tiles). Measured over 20 battles a cell (bot mix, Keeps 7/10/15): +7.9/+3.8/+5.9 points over Rally at 0; sent with the main squad it beats being sent first by +1.6/+3.2/+8.0. The old 4-tile aura re-armed on every new target and changed nothing (-0.7/-1.0/+4.1).",
       "name": "Shadow Captain",
-      "description": "Clan hero. On his first strike he rallies nearby warriors: 30% more damage for 8 seconds, once per battle.",
+      "description": "Clan hero. On his first strike he rallies the whole squad: 50% more damage for 15 seconds, once per battle. Send him in with your main squad.",
       "housing": 0,
       "attackIntervalTicks": 10,
       "range": 0.8,
@@ -154,9 +155,10 @@
       "ability": "rally",
       "kit": {
         "aura": "rally",
-        "radius": 4,
-        "strength": 0.3,
-        "durationTicks": 80
+        "radius": 99,
+        "strength": 0.5,
+        "durationTicks": 150,
+        "oncePerBattle": true
       },
       "levels": [
         {

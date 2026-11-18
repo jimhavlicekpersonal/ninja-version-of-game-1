@@ -549,7 +549,7 @@
       "ability": {
         "id": "war_drum",
         "name": "War Drum",
-        "text": "Nearby warriors move and attack 25% faster within 3 tiles. Multiple drums do not stack."
+        "text": "Nearby warriors move and attack 12% faster within 3 tiles. Multiple drums do not stack."
       },
       "look": {
         "gi": "#7a3f2a",
@@ -882,7 +882,7 @@
       "ability": {
         "id": "rally",
         "name": "Rally",
-        "text": "Nearby warriors fight 30% harder for 8 seconds. Recharges each battle."
+        "text": "The whole squad fights 50% harder for 15 seconds, once per battle."
       },
       "look": {
         "gi": "#141a22",

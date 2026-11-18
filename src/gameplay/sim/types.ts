@@ -661,6 +661,8 @@ export interface BattleDef {
   heroes?: Record<string, TroopDef & { unlockKeep: number }>;
   warriorRules: {
     supportIntervalTicks: number;
+    /** P4-01: share of its damage a support warrior in position strikes with (absent or 0: it never strikes). */
+    supportStrike?: number;
     /** A support troop tries this many of the nearest allies for one it can reach without breaking a wall. */
     supportAllyTries: number;
     defaultAuraRadius: number;

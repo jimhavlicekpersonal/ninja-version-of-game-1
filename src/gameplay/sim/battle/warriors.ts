@@ -165,6 +165,30 @@ export function stepWarriorEffects(sim: BattleSim, actions: Actions): void {
 }
 
 /** Support, path opening and movement abilities happen before normal targeting/attacking. */
+/**
+ * P4-01 (CMB-01, SIM_RULES 8): a support warrior in position with its allies strikes the nearest non-wall building
+ * within its own range, at `warriorRules.supportStrike` of its damage (absent or 0: it never strikes, as before).
+ * Its cooldown is the usual one; nearest by distance to the building's footprint, ties by index (deterministic).
+ */
+function supportStrike(sim: BattleSim, t: SimTroop, range: number, interval: number, actions: Actions): void {
+  const share = sim.data.battle.warriorRules.supportStrike ?? 0;
+  if (!(share > 0) || t.cooldown > 0) return;
+  let best = -1;
+  let bestD = 0;
+  sim.buildings.forEach((b, i) => {
+    if (b.destroyed || b.kind === 'hedge') return;
+    const d = distToRect(t.x, t.y, shape(b));
+    if (d <= range && (best < 0 || d < bestD)) {
+      best = i;
+      bestD = d;
+    }
+  });
+  if (best < 0) return;
+  t.cooldown = interval;
+  t.attacking = true;
+  resolveWarriorHit(sim, t, best, attackDamage(sim, t, sim.buildings[best]) * share, actions);
+}
+
 export function beforeWarriorAction(sim: BattleSim, t: SimTroop, actions: Actions): boolean {
   const def = troopDef(sim.data, t.type);
   if (!def.kit || t.summoned) return false;
@@ -243,6 +267,7 @@ export function beforeWarriorAction(sim: BattleSim, t: SimTroop, actions: Action
   if (t.slowTicks > 0) t.slowTicks--;
   if (distance(t.x, t.y, candidates[0].x, candidates[0].y) <= radius / 2) {
     t.path = null;
+    supportStrike(sim, t, def.range, def.attackIntervalTicks, actions);
     return true;
   }
   const n = sim.grid.size;
