@@ -14,7 +14,8 @@ jobs:
       APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
       ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
       ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
-      BUNDLE_ID: ${{ vars.IOS_BUNDLE_ID || 'com.toadstoolkingdoms.app' }}
+      BUNDLE_ID: ${{ vars.IOS_BUNDLE_ID || vars.APP_ID || 'com.toadstoolkingdoms.app' }}
+      APP_ID: ${{ vars.IOS_BUNDLE_ID || vars.APP_ID }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
@@ -22,6 +23,11 @@ jobs:
           node-version-file: .node-version
           cache: npm
       - run: npm ci
+      # PUB-05 (P7-02): the bundle id is the owner's choice; refuse the legacy one unless allowed on purpose.
+      - name: Bundle id chosen
+        run: node tools/release/check-app-id.mjs
+        env:
+          ALLOW_LEGACY_APP_ID: ${{ vars.ALLOW_LEGACY_APP_ID }}
       - name: Server first (roadmap step 74)
         run: node tools/release/check-server-rules.mjs
         env:

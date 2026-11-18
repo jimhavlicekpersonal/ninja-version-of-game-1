@@ -6,7 +6,7 @@ android {
     namespace = "com.toadstoolkingdoms.app"
     compileSdk = rootProject.ext.compileSdkVersion
     defaultConfig {
-        applicationId "com.toadstoolkingdoms.app"
+        applicationId project.ext.tkApplicationId
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode project.ext.tkVersionCode

@@ -253,3 +253,24 @@ describe('the Dockerfile parses (A26 follow-up)', () => {
     expect(list.at(-1)!.op).toBe('CMD');
   });
 });
+
+describe('one app id variable (PUB-05, P7-02)', () => {
+  it('capacitor, gradle and both signed workflows read APP_ID and refuse the legacy id unless allowed', async () => {
+    const { appIdProblem, LEGACY_APP_ID } = await import('../../tools/release/app-id.mjs');
+    expect(appIdProblem(undefined)).toMatch(/APP_ID is not set/);
+    expect(appIdProblem(LEGACY_APP_ID)).toMatch(/legacy/);
+    expect(appIdProblem(LEGACY_APP_ID, true)).toBeNull();
+    expect(appIdProblem(undefined, true)).toBeNull();
+    expect(appIdProblem('com.Example.App')).toMatch(/not a valid/);
+    expect(appIdProblem('com.example.kagemura')).toBeNull();
+    const read = (p: string) => readFileSync(p, 'utf8');
+    expect(read('capacitor.config.ts')).toContain('process.env.APP_ID || LEGACY_APP_ID');
+    expect(read('android/app/release.gradle')).toMatch(/readProp\('tkApplicationId', 'APP_ID'\)/);
+    expect(read('android/app/build.gradle')).toContain('applicationId project.ext.tkApplicationId');
+    expect(read('.github/workflows/android.yml')).toContain('node tools/release/check-app-id.mjs');
+    expect(read('.github/workflows/ios-testflight.yml')).toContain('node tools/release/check-app-id.mjs');
+    // strings.xml keeps the legacy package_name and custom_url_scheme (cap sync does not rewrite them): listed in
+    // docs/SHIPPING.md section 6 as staying until the owner moves to the new id.
+    expect(read('docs/SHIPPING.md')).toMatch(/custom_url_scheme/);
+  });
+});
