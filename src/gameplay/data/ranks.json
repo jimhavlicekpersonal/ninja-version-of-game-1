@@ -1,4 +1,5 @@
 {
+  "$commentWinBonusShare": "P2-09 (DEF-10, ECO-08, 2026-11-18): winBonusShare per league, a share of the Keep's lowest generated raid loot (Coins and Provisions), larger of it and winBonus, x stars/3. Fitted to the regular campaign: 6.7-17.6% of an average raid's banked loot at Keeps 5-15 (was 22% at Keep 5 falling to 0.7% at Keep 15). Iron's flat winBonus 5000 -> 4000 each so Keep 5 stays under 20%.",
   "startingTrophies": 0,
   "attackWin": {
     "base": 24,
@@ -30,6 +31,7 @@
     },
     {
       "id": "fern",
+      "winBonusShare": 0.02,
       "name": "Cedar League",
       "min": 400,
       "chest": {
@@ -44,6 +46,7 @@
     },
     {
       "id": "oak",
+      "winBonusShare": 0.09,
       "name": "Iron League",
       "min": 1000,
       "chest": {
@@ -52,12 +55,13 @@
         "moonstones": 50
       },
       "winBonus": {
-        "acorns": 5000,
-        "dew": 5000
+        "acorns": 4000,
+        "dew": 4000
       }
     },
     {
       "id": "elder",
+      "winBonusShare": 0.1,
       "name": "Obsidian League",
       "min": 2000,
       "chest": {
@@ -72,6 +76,7 @@
     },
     {
       "id": "jade",
+      "winBonusShare": 0.11,
       "name": "Ember League",
       "min": 2800,
       "chest": {
@@ -86,6 +91,7 @@
     },
     {
       "id": "storm",
+      "winBonusShare": 0.115,
       "name": "Storm League",
       "min": 3600,
       "chest": {
@@ -100,6 +106,7 @@
     },
     {
       "id": "shadow",
+      "winBonusShare": 0.13,
       "name": "Shadow League",
       "min": 4400,
       "chest": {
@@ -114,6 +121,7 @@
     },
     {
       "id": "kage",
+      "winBonusShare": 0.15,
       "name": "Kage League",
       "min": 5200,
       "chest": {

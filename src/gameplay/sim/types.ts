@@ -799,6 +799,11 @@ export interface LeagueDef {
   chest: Cost;
   /** Extra loot for a won attack in this league (paid in full at 3 stars, a third per star). */
   winBonus: Cost;
+  /**
+   * P2-09 (DEF-10): a share of the attacker's Keep's lowest generated raid loot (`battle.generatedLootByHall[keep-1].min`)
+   * in Coins and Provisions; the bonus is the larger of this and `winBonus`, per resource, x stars/3. Absent: 0.
+   */
+  winBonusShare?: number;
 }
 
 /** Settings for the hidden Attack and Base Ratings (ranks.json `rating`). */

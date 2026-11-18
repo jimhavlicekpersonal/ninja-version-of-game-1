@@ -30,7 +30,7 @@ import { attacksLeft, enemyGrove, ensureRaid, raidPhase, settleRaids } from './s
 import { bindPlayer, claimGangChest, claimRaidChest, emptyNet, receiveDonations, spendDonation, type ServerDonation } from './net';
 import { canPlace } from './grid';
 import { addCapped, canAfford, capacity, collectorAmount, effectiveLevel, missingFor, subtractCost } from './resources';
-import type { Building, BuildingLimit, BuildingType, Cost, GameData, PurchaseRecord, PurchaseRefund, ResourceKind, Temper, TopUpPaid, TrainingItem, VillageState, PendingBattle } from './types';
+import type { Building, BuildingLimit, BuildingType, Cost, GameData, LeagueDef, PurchaseRecord, PurchaseRefund, ResourceKind, Temper, TopUpPaid, TrainingItem, VillageState, PendingBattle } from './types';
 import { normalizeTemper, sameTemper, temperable, temperDef, validTemper } from './battle/temper';
 import { carriedLoot, raidCarry, trainableRoles, validStake } from './carry';
 import { RESOURCE_KINDS } from './types';
@@ -1899,12 +1899,23 @@ function applyDefenseLosses(s: VillageState, record: BattleRecord, lost: Cost, n
 }
 
 /** League bonus for a won attack: the full bonus at 3 stars, a third per star. */
-export function leagueWinBonus(trophies: number, stars: number, data: GameData): Cost {
-  const bonus = leagueFor(trophies, data).winBonus ?? {};
+export function leagueWinBonus(trophies: number, stars: number, keep: number, data: GameData): Cost {
+  return leagueBonusOf(leagueFor(trophies, data), stars, keep, data);
+}
+
+/**
+ * A league's win bonus at a Keep for this many stars: per resource the larger of the flat `winBonus` and (P2-09,
+ * DEF-10) `winBonusShare` of the Keep's lowest generated raid loot in Coins and Provisions, both x stars/3.
+ */
+export function leagueBonusOf(league: LeagueDef, stars: number, keep: number, data: GameData): Cost {
   const out: Cost = {};
   if (stars < 1) return out;
-  for (const [k, v] of Object.entries(bonus) as [ResourceKind, number][]) {
-    const amt = Math.floor((v * stars) / 3);
+  const s = Math.min(3, stars);
+  const share = Math.floor((league.winBonusShare ?? 0) * (data.battle.generatedLootByHall[keep - 1]?.min ?? 0));
+  const full: Cost = { ...(league.winBonus ?? {}) };
+  for (const k of ['acorns', 'dew'] as const) if (share > (full[k] ?? 0)) full[k] = share;
+  for (const [k, v] of Object.entries(full) as [ResourceKind, number][]) {
+    const amt = Math.floor((v * s) / 3);
     if (amt > 0) out[k] = amt;
   }
   return out;
@@ -1993,7 +2004,7 @@ function bankRaidLoot(s: VillageState, result: BattleResult, at: number, data: G
   if (byStars) carry *= byStars[result.stars] ?? 1;
   const loot = carriedLoot(result.loot, carry);
   const fromBattle = addCapped(s.resources, loot, cap);
-  const bonusWanted = leagueWinBonus(s.trophies, result.stars, data);
+  const bonusWanted = leagueWinBonus(s.trophies, result.stars, hallLevel(s, data), data);
   const bonus = positive(addCapped(s.resources, bonusWanted, cap));
   const lootBonus = result.stars >= 1 ? eventEffect(at, data).raidLootBonus : 0;
   const eventWanted: Cost = {};

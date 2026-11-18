@@ -138,11 +138,11 @@ describe('matchmaking by trophies (#3)', () => {
   });
 
   it('higher leagues add a bonus to won attacks', () => {
-    expect(leagueWinBonus(0, 3, data)).toEqual({});
-    expect(leagueWinBonus(2100, 0, data)).toEqual({});
-    const elder = leagueWinBonus(2100, 3, data);
-    expect(elder.acorns!).toBeGreaterThan(leagueWinBonus(1100, 3, data).acorns!);
-    expect(leagueWinBonus(2100, 1, data).acorns).toBe(Math.floor(elder.acorns! / 3));
+    expect(leagueWinBonus(0, 3, 5, data)).toEqual({});
+    expect(leagueWinBonus(2100, 0, 5, data)).toEqual({});
+    const elder = leagueWinBonus(2100, 3, 5, data);
+    expect(elder.acorns!).toBeGreaterThan(leagueWinBonus(1100, 3, 5, data).acorns!);
+    expect(leagueWinBonus(2100, 1, 5, data).acorns).toBe(Math.floor(elder.acorns! / 3));
   });
 });
 

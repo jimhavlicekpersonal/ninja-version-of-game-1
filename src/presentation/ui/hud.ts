@@ -33,7 +33,7 @@ import { askAgeBand } from './ageScreen';
 import { bandFromProfile } from '../../gameplay/sim/age';
 import { nextObjective } from '../../gameplay/sim/objective';
 import { calendarView } from '../../gameplay/sim/calendar';
-import { advance } from '../../gameplay/sim/village';
+import { advance, leagueBonusOf } from '../../gameplay/sim/village';
 import { EconomyUi } from './economyUi';
 import { DailyUi } from './dailyUi';
 import { chestReady } from '../../gameplay/sim/daily';
@@ -1987,7 +1987,9 @@ export class Hud {
       h('p', { class: 'muted small' }, i18nText("ui.sized_for_your_clan_keep_level_won_att_efc90477c4", { arg1: hallLevel(s, gd) })),
     );
     for (const l of gd.ranks.leagues) {
-      const bonus = Object.keys(l.winBonus ?? {}).length ? h('div', { class: 'muted small' }, i18nText("ui.win_bonus_76ff020d10"), costChips(l.winBonus)) : null;
+      // P2-09: the three-star bonus at this Keep (flat or a share of the Keep's raid loot, whichever is larger).
+      const lb = leagueBonusOf(l, 3, hallLevel(s, gd), gd);
+      const bonus = Object.keys(lb).length ? h('div', { class: 'muted small' }, i18nText("ui.win_bonus_76ff020d10"), costChips(lb)) : null;
       body.append(h('div', { class: `log-row${l.id === cur.id ? ' current' : ''}` }, h('div', {}, h('b', {}, l.name), h('div', { class: 'muted small' }, i18nText("ui.honor_47034117c2", { arg1: l.min })), bonus), costChips(leagueChest(l, hallLevel(s, gd), gd))));
     }
     body.append(h('p', { class: 'muted small' }, i18nText("ui.win_raids_to_earn_honor_lose_it_when_y_a98b0bc1b5")));

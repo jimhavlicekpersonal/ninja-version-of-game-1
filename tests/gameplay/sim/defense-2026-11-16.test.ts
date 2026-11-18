@@ -11,7 +11,10 @@ import { attackerFor } from '../../../src/gameplay/sim/matchmaking';
 import { capacity } from '../../../src/gameplay/sim/resources';
 import { createRng } from '../../../src/gameplay/sim/rng';
 import type { VillageState } from '../../../src/gameplay/sim/types';
-import { applyCommand, createNewVillage, hallLevel } from '../../../src/gameplay/sim/village';
+import { applyCommand, createNewVillage, hallLevel, leagueBonusOf } from '../../../src/gameplay/sim/village';
+import campaignJson from '../../../docs/game-theory/campaign.json';
+
+const campaign = campaignJson as { results: { id: string; byKeep: { keep: number; honor: number; stars: number; loot: number }[] }[] };
 import { data } from './helpers';
 
 const NOW = Date.UTC(2026, 5, 1, 12);
@@ -137,5 +140,20 @@ describe('P2-15 (UIS-07): the diversity carry waits until the village has a choi
     // The result screen reads the record's carry with the stake taken out.
     expect(diversityPartOf(1.3 * 0.85, 2, 2, data)).toBeCloseTo(0.85, 9);
     expect(diversityPartOf(undefined, undefined, 3, data)).toBe(1);
+  });
+});
+
+describe('P2-09 (DEF-10, ECO-08): the league win bonus matters at every Keep', () => {
+  it('is 5-20% of an average raid\'s banked loot at Keeps 5-15 at the regular model\'s league', () => {
+    const regular = campaign.results.find((r) => r.id === 'regular')!;
+    for (const k of regular.byKeep.filter((x) => x.keep >= 5)) {
+      const league = [...data.ranks.leagues].reverse().find((l) => k.honor >= l.min)!;
+      const b = leagueBonusOf(league, 3, k.keep, data);
+      // Paid x stars/3 on a win: the model's average stars per raid (0 on a loss) give the expected bonus.
+      const perRaid = (((b.acorns ?? 0) + (b.dew ?? 0)) * k.stars) / 3;
+      const share = perRaid / k.loot;
+      expect(share, `Keep ${k.keep} (${league.id})`).toBeGreaterThanOrEqual(0.05);
+      expect(share, `Keep ${k.keep} (${league.id})`).toBeLessThanOrEqual(0.2);
+    }
   });
 });
