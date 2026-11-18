@@ -1028,6 +1028,8 @@ export interface PassDef {
   seasonSkins?: string[];
   /** P1-02: Jade for a look tier when the buyer already owns this season's look. */
   repeatJade?: number;
+  /** P1-03: past the last tier, every `everyPoints` pay `reward` (resources only, Keep-scaled), at most `maxPerSeason`. */
+  bonus?: { everyPoints: number; reward: Cost; maxPerSeason: number };
   dailyTaskPoints: number;
   weeklyChallengePoints: number;
   dailyTasks: TaskTemplate[];

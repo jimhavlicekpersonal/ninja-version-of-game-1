@@ -270,5 +270,7 @@
   "replays.allowBase.label": { "en": "Allow my base in other players' shared replays", "text": "Kwe ka obodo m pụta na nlọghachi ndị egwuregwu ndị ọzọ kerịtara" },
   "replays.allowBase.detail": { "en": "When someone shares a replay of a raid on your village, it shows your base layout (never your name). Turn this off and your base is never shown, and shares already made of it are removed.", "text": "Mgbe mmadụ kerịtara nlọghachi nke mwakpo na obodo gị, ọ na-egosi nhazi obodo gị (ọ bụghị aha gị). Gbanyụọ nke a, a gaghị egosi obodo gị ma ọlị, a ga-ewepụkwa nkerịta e merelarị ya." },
   "significantUpdate.description": { "en": "This update changes how Kagemura works. A parent or guardian can review it before it is used.", "text": "Mmelite a na-agbanwe otú Kagemura si arụ ọrụ. Nne na nna ma ọ bụ onye nlekọta nwere ike inyocha ya tupu e jiri ya." },
-  "welcome.scrollEnded": { "en": "The Season Scroll ended, and the rewards you had not claimed were added:", "text": "" }
+  "welcome.scrollEnded": { "en": "The Season Scroll ended, and the rewards you had not claimed were added:", "text": "" },
+  "pass.bonus.title": { "en": "Bonus", "text": "" },
+  "pass.bonus.detail": { "en": "{left, plural, =0 {All {max} bonuses collected this season ({got} of {max})} one {Every task still pays: the next bonus in # point ({got} of {max} this season)} other {Every task still pays: the next bonus in # points ({got} of {max} this season)}}", "text": "" }
 }

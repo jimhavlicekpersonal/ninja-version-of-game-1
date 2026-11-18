@@ -270,5 +270,7 @@
   "replays.allowBase.label": { "en": "Allow my base in other players' shared replays", "text": "பிற ஆட்டக்காரர்கள் பகிரும் மறுஒளிபரப்புகளில் என் தளத்தை அனுமதி" },
   "replays.allowBase.detail": { "en": "When someone shares a replay of a raid on your village, it shows your base layout (never your name). Turn this off and your base is never shown, and shares already made of it are removed.", "text": "உங்கள் கிராமத்தின் மீதான தாக்குதலின் மறுஒளிபரப்பை யாராவது பகிரும்போது, அது உங்கள் தள அமைப்பைக் காட்டும் (உங்கள் பெயரை ஒருபோதும் இல்லை). இதை முடக்கினால் உங்கள் தளம் ஒருபோதும் காட்டப்படாது; ஏற்கெனவே செய்த பகிர்வுகள் அகற்றப்படும்." },
   "significantUpdate.description": { "en": "This update changes how Kagemura works. A parent or guardian can review it before it is used.", "text": "இந்தப் புதுப்பிப்பு Kagemura இயங்கும் விதத்தை மாற்றுகிறது. பயன்படுத்தும் முன் பெற்றோர் அல்லது பாதுகாவலர் இதைப் பரிசீலிக்கலாம்." },
-  "welcome.scrollEnded": { "en": "The Season Scroll ended, and the rewards you had not claimed were added:", "text": "" }
+  "welcome.scrollEnded": { "en": "The Season Scroll ended, and the rewards you had not claimed were added:", "text": "" },
+  "pass.bonus.title": { "en": "Bonus", "text": "" },
+  "pass.bonus.detail": { "en": "{left, plural, =0 {All {max} bonuses collected this season ({got} of {max})} one {Every task still pays: the next bonus in # point ({got} of {max} this season)} other {Every task still pays: the next bonus in # points ({got} of {max} this season)}}", "text": "" }
 }

@@ -6,6 +6,17 @@ import type { Cost, GameData, ResourceKind, Stats, TaskTemplate, VillageState } 
 
 const DAY = 86_400_000;
 
+/**
+ * P1-03: how many past-the-last-tier bonuses these points have reached (no state: it follows from the points).
+ * A task claimed after the last tier used to add points to nothing while the button showed "+100".
+ */
+export function passBonusCount(points: number, data: GameData): number {
+  const b = data.pass.bonus;
+  if (!b || !(b.everyPoints > 0)) return 0;
+  const over = points - data.pass.tiers.length * data.pass.pointsPerTier;
+  return over <= 0 ? 0 : Math.min(b.maxPerSeason, Math.floor(over / b.everyPoints));
+}
+
 /** P1-02: the Season Scroll's look this season (the tier's own `skin` when no list is set). */
 export function passSeasonSkin(season: number, data: GameData, fallback?: string): string | undefined {
   const list = data.pass.seasonSkins;

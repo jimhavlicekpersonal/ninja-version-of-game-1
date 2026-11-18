@@ -270,5 +270,7 @@
   "replays.allowBase.label": { "en": "Allow my base in other players' shared replays", "text": "ఇతర ఆటగాళ్లు పంచుకునే రీప్లేలలో నా స్థావరాన్ని అనుమతించు" },
   "replays.allowBase.detail": { "en": "When someone shares a replay of a raid on your village, it shows your base layout (never your name). Turn this off and your base is never shown, and shares already made of it are removed.", "text": "ఎవరైనా మీ గ్రామంపై జరిగిన దాడి రీప్లేను పంచుకున్నప్పుడు, అది మీ స్థావర అమరికను చూపుతుంది (మీ పేరు ఎప్పుడూ కాదు). దీన్ని ఆఫ్ చేస్తే మీ స్థావరం ఎప్పుడూ చూపబడదు, ఇప్పటికే చేసిన షేర్‌లు తొలగించబడతాయి." },
   "significantUpdate.description": { "en": "This update changes how Kagemura works. A parent or guardian can review it before it is used.", "text": "ఈ అప్‌డేట్ Kagemura పనిచేసే విధానాన్ని మారుస్తుంది. వాడే ముందు తల్లిదండ్రులు లేదా సంరక్షకులు దీన్ని సమీక్షించవచ్చు." },
-  "welcome.scrollEnded": { "en": "The Season Scroll ended, and the rewards you had not claimed were added:", "text": "" }
+  "welcome.scrollEnded": { "en": "The Season Scroll ended, and the rewards you had not claimed were added:", "text": "" },
+  "pass.bonus.title": { "en": "Bonus", "text": "" },
+  "pass.bonus.detail": { "en": "{left, plural, =0 {All {max} bonuses collected this season ({got} of {max})} one {Every task still pays: the next bonus in # point ({got} of {max} this season)} other {Every task still pays: the next bonus in # points ({got} of {max} this season)}}", "text": "" }
 }

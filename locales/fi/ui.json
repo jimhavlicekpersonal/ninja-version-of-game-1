@@ -270,5 +270,7 @@
   "replays.allowBase.label": { "en": "Allow my base in other players' shared replays", "text": "Salli tukikohtani muiden pelaajien jakamissa uusinnoissa" },
   "replays.allowBase.detail": { "en": "When someone shares a replay of a raid on your village, it shows your base layout (never your name). Turn this off and your base is never shown, and shares already made of it are removed.", "text": "Kun joku jakaa uusinnan kylääsi vastaan tehdystä ryöstöretkestä, siinä näkyy tukikohtasi asettelu (ei koskaan nimeäsi). Jos poistat tämän käytöstä, tukikohtaasi ei koskaan näytetä, ja siitä jo tehdyt jaot poistetaan." },
   "significantUpdate.description": { "en": "This update changes how Kagemura works. A parent or guardian can review it before it is used.", "text": "Tämä päivitys muuttaa Kagemuran toimintaa. Vanhempi tai huoltaja voi tarkistaa sen ennen käyttöönottoa." },
-  "welcome.scrollEnded": { "en": "The Season Scroll ended, and the rewards you had not claimed were added:", "text": "" }
+  "welcome.scrollEnded": { "en": "The Season Scroll ended, and the rewards you had not claimed were added:", "text": "" },
+  "pass.bonus.title": { "en": "Bonus", "text": "" },
+  "pass.bonus.detail": { "en": "{left, plural, =0 {All {max} bonuses collected this season ({got} of {max})} one {Every task still pays: the next bonus in # point ({got} of {max} this season)} other {Every task still pays: the next bonus in # points ({got} of {max} this season)}}", "text": "" }
 }

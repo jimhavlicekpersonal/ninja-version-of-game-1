@@ -270,5 +270,7 @@
   "replays.allowBase.label": { "en": "Allow my base in other players' shared replays", "text": "इतर खेळाडूंच्या सामायिक रिप्लेमध्ये माझा तळ दाखवू द्या" },
   "replays.allowBase.detail": { "en": "When someone shares a replay of a raid on your village, it shows your base layout (never your name). Turn this off and your base is never shown, and shares already made of it are removed.", "text": "कोणी तुमच्या गावावरील छाप्याचा रिप्ले सामायिक करते तेव्हा त्यात तुमच्या तळाची मांडणी दिसते (तुमचे नाव कधीच नाही). हे बंद केल्यास तुमचा तळ कधीच दाखवला जात नाही, आणि त्याचे आधीच केलेले सामायिकरण काढून टाकले जाते." },
   "significantUpdate.description": { "en": "This update changes how Kagemura works. A parent or guardian can review it before it is used.", "text": "हे अपडेट Kagemura कसे चालते ते बदलते. ते वापरण्यापूर्वी पालक किंवा संरक्षक त्याचे पुनरावलोकन करू शकतात." },
-  "welcome.scrollEnded": { "en": "The Season Scroll ended, and the rewards you had not claimed were added:", "text": "" }
+  "welcome.scrollEnded": { "en": "The Season Scroll ended, and the rewards you had not claimed were added:", "text": "" },
+  "pass.bonus.title": { "en": "Bonus", "text": "" },
+  "pass.bonus.detail": { "en": "{left, plural, =0 {All {max} bonuses collected this season ({got} of {max})} one {Every task still pays: the next bonus in # point ({got} of {max} this season)} other {Every task still pays: the next bonus in # points ({got} of {max} this season)}}", "text": "" }
 }

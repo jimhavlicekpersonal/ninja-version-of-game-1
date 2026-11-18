@@ -21,7 +21,7 @@ import { rematchBase, rematchReward, rematchStatus } from './rematch';
 import { scatterObstacles } from './obstacles';
 import { offerCanStillShow, triggerOffer } from './offers';
 import { claimCalendarDay, emptyCalendar, setLocalTime } from './calendar';
-import { buildTimeFactor, currentTasks, dayIndex, passSeason, passSeasonSkin, rollPeriods, unlockedTier } from './pass';
+import { buildTimeFactor, currentTasks, dayIndex, passBonusCount, passSeason, passSeasonSkin, rollPeriods, unlockedTier } from './pass';
 import { emptyStats, type OfferTrigger } from './types';
 import { advanceGrove, canRequest, donate as donateTroops, emptyGrove, joinGrove, requestTroops, sendChat } from './social/grove';
 import { attacksLeft, enemyGrove, ensureRaid, raidPhase, settleRaids } from './social/groveRaid';
@@ -1390,6 +1390,16 @@ function claimTask(s: VillageState, id: string, kind: 'daily' | 'weekly', data: 
   // Balance audit CU-6 (save v22): a tier's resources scale by the Keep it unlocked at, not the Keep at claim time.
   const keep = hallLevel(s, data);
   for (let t = tierBefore + 1; t <= unlockedTier(s, data); t++) (s.pass.tierKeep ??= [])[t - 1] = keep;
+  // P1-03: past the last tier, each newly reached bonus pays through the normal grant path (Keep-scaled, no Jade).
+  const bonuses = passBonusCount(s.pass.points, data) - passBonusCount(s.pass.points - task.points, data);
+  if (bonuses > 0 && data.pass.bonus) {
+    let wanted: Cost = {};
+    const one = scaleReward({ ...data.pass.bonus.reward, moonstones: 0 }, keep, data);
+    delete one.moonstones;
+    for (let i = 0; i < bonuses; i++) wanted = sumCost(wanted, one);
+    const { granted, overflow } = grantResources(s, wanted, data);
+    return { ok: true, state: s, events: [{ kind: 'reward', source: `task:${id}`, grants: granted, ...(hasAny(overflow) ? { overflow } : {}) }] };
+  }
   return { ok: true, state: s, events: [{ kind: 'reward', source: `task:${id}`, grants: {} }] };
 }
 

@@ -11,10 +11,11 @@ import { askAgeBand } from './ageScreen';
 import { canPurchase, productGrantsFor, productInfo, spentThisMonth, spentTotal, storeProductId } from '../../gameplay/sim/monetization';
 import { stipendStatus } from '../../gameplay/sim/stipend';
 import type { StorePrice } from '../../backend/payments/provider';
-import { currentTasks, passPremiumValue, passSaleOpen, passSeasonEndsAt, passSeasonSkin, unlockedTier } from '../../gameplay/sim/pass';
+import { currentTasks, passBonusCount, passPremiumValue, passSaleOpen, passSeasonEndsAt, passSeasonSkin, unlockedTier } from '../../gameplay/sim/pass';
 import type { Cost, OfferRule, ResourceKind } from '../../gameplay/sim/types';
 import { RESOURCE_KINDS } from '../../gameplay/sim/types';
 import { hallLevel, passTierReward, rewardOverflow } from '../../gameplay/sim/village';
+import { scaleReward } from '../../gameplay/sim/economy';
 import { clear, h, icon } from './dom';
 import { formatDuration, formatNumber } from './format';
 import { icons } from './icons';
@@ -499,6 +500,14 @@ export class EconomyUi {
         h('p', { class: 'muted' }, i18nText("ui.season_ends_in_complete_tasks_to_earn__300938261c", { arg1: formatDuration(passSeasonEndsAt(this.c.now(), d) - this.c.now()) })),
         h('div', { class: 'progress-row' }, h('div', { class: 'progress' }, h('i', { style: `width:${tier >= d.pass.tiers.length ? 100 : (into / d.pass.pointsPerTier) * 100}%` })), h('span', {}, i18nText("ui.tier_pts_805378a19e", { arg1: tier, arg2: d.pass.tiers.length, arg3: s.pass.points }))),
       );
+      // P1-03: past the last tier, tasks keep paying a bonus (Keep-scaled resources) every `everyPoints`.
+      const bonus = d.pass.bonus;
+      if (bonus && tier >= d.pass.tiers.length) {
+        const got = passBonusCount(s.pass.points, d);
+        const left = got >= bonus.maxPerSeason ? 0 : bonus.everyPoints - ((s.pass.points - d.pass.tiers.length * d.pass.pointsPerTier) % bonus.everyPoints);
+        const one = scaleReward({ ...bonus.reward }, hallLevel(s, d), d);
+        body.append(h('div', { class: 'pass-premium' }, h('div', {}, h('b', {}, i18nText('pass.bonus.title')), h('div', { class: 'muted small' }, i18nText('pass.bonus.detail', { got, max: bonus.maxPerSeason, left }))), rewardChips(one)));
+      }
       if (!s.pass.premium) {
         body.append(
           h(

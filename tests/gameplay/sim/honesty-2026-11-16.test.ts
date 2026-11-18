@@ -3,7 +3,7 @@
  * each as a test that failed on the code it describes.
  */
 import { describe, expect, it } from 'vitest';
-import { passPremiumValue, passSeason, passSeasonEndsAt, unlockedTier } from '../../../src/gameplay/sim/pass';
+import { currentTasks, passBonusCount, passPremiumValue, passSeason, passSeasonEndsAt, unlockedTier } from '../../../src/gameplay/sim/pass';
 import { advance, applyCommand, passTierReward } from '../../../src/gameplay/sim/village';
 import { migrate, SAVE_VERSION, serialize, deserialize } from '../../../src/gameplay/sim/save';
 import { data, newGame } from './helpers';
@@ -109,5 +109,28 @@ describe('RET-04 (P1-02): the paid look changes each season, and an owned one pa
     expect(r.moonstones).toBe(data.pass.repeatJade);
     state.pass.points = data.pass.tiers.length * data.pass.pointsPerTier;
     expect(passPremiumValue(state, clock.now(), data).skins).not.toContain(look);
+  });
+});
+
+describe('RET-02 / ECO-03 (P1-03): tasks keep paying after the last tier', () => {
+  it('a task claimed past tier 30 pays a visible bonus, and a full season stays under the free track supply', () => {
+    const { state, clock } = newGame({ acorns: 0, dew: 0 });
+    const top = data.pass.tiers.length * data.pass.pointsPerTier;
+    const b = data.pass.bonus!;
+    expect(passBonusCount(top, data)).toBe(0);
+    expect(passBonusCount(top + b.everyPoints, data)).toBe(1);
+    expect(passBonusCount(top + 1e9, data)).toBe(b.maxPerSeason);
+    const free = data.pass.tiers.reduce((sum, t) => sum + (t.free.acorns ?? 0), 0);
+    expect(b.reward.acorns! * b.maxPerSeason).toBeLessThanOrEqual(free);
+    expect(b.reward.moonstones ?? 0).toBe(0);
+    // Claim a real task with the points just below a bonus.
+    state.pass.points = top + b.everyPoints - 1;
+    const task = currentTasks(state, 1, data)[0];
+    state.stats[task.stat as keyof typeof state.stats] = (state.tasks.dayBaseline[task.stat as keyof typeof state.stats] ?? 0) + task.target;
+    const r = applyCommand(state, { type: 'claimTask', id: task.id, kind: task.kind }, clock.now(), data);
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    const ev = r.events.find((e) => e.kind === 'reward')!;
+    expect(ev.kind === 'reward' && (ev.grants.acorns ?? 0) + (ev.grants.dew ?? 0)).toBeGreaterThan(0);
   });
 });
