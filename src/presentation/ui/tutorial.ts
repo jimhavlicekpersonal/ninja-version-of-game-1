@@ -107,8 +107,10 @@ const STEPS: Step[] = [
     text: () => t('tutorial.end'),
     button: () => t('tutorial.end.button'),
     mood: 'smile',
-    // Retention audit G6: the last step points at the daily chest (and Finish opens it while it is ready).
-    targets: ['.side-rail .round-btn[data-id="daily"]'],
+    // Retention audit G6 / P3-11 (PLY-04): the last step points at the Keep first (after the first raid storage is often
+    // nearly full) and the daily chest second: its line says Finish opens it while it is ready.
+    targets: [`.sheet[data-type="${HALL}"] .btn.upgrade:not(:disabled)`],
+    mapTarget: HALL,
     extra: (s, c) => (chestReady(s, c.now(), localizedData(c.data)) ? t('tutorial.end.daily') : ''),
     after: (c) => {
       if (chestReady(c.state, c.now(), localizedData(c.data))) document.querySelector<HTMLElement>('.side-rail .round-btn[data-id="daily"]:not([hidden])')?.click();

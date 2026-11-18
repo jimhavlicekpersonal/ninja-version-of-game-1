@@ -12,7 +12,8 @@ import { armyHousing, housingCapacity, queueHousing } from './army';
 import { chestReady } from './daily';
 import { calendarView } from './calendar';
 import { buildingDef, levelDef, maxDefinedLevel } from './data';
-import { canAfford, missingFor } from './resources';
+import { attackerStrength } from './matchmaking';
+import { canAfford, capacity, missingFor } from './resources';
 import type { Building, Cost, GameData, VillageState } from './types';
 import { researchLanes } from './research';
 import { builderStatus, hallLevel, onGarrisonCrew, lastAttackArmy, limitFor, researchStartQuoteOn, trainQuoteOn } from './village';
@@ -78,15 +79,44 @@ function trainGoal(state: VillageState, now: number, data: GameData): Objective 
   return troop ? { kind: 'train', space, troop } : null;
 }
 
+/**
+ * P3-09 (ECO-10, E06): the army's strength is more than one Keep behind the village (a rushed Keep meets stronger
+ * bases and raiders). The objective then prefers research or training to the Keep, and the Keep's sheet says so.
+ */
+export function armyBehindKeep(state: VillageState, data: GameData): boolean {
+  return attackerStrength(state, data) < hallLevel(state, data) - 1;
+}
+
+/** P3-11 (PLY-04): Coins or Provisions at 90% of storage or more. */
+function storageNearlyFull(state: VillageState, data: GameData): boolean {
+  const cap = capacity(state, data);
+  return (['acorns', 'dew'] as const).some((k) => cap[k] > 0 && state.resources[k] >= 0.9 * cap[k]);
+}
+
 /** The one thing to do next. `state` should be settled up to `now` (`advance`). */
 export function nextObjective(state: VillageState, now: number, data: GameData): Objective {
+  const list = candidates(state, data);
+  const builders = builderStatus(state, data, now);
+  // P3-11: storage nearly full, so an affordable Keep or storage upgrade comes before the chest (whose contents
+  // would not fit) and before a raid (whose loot would not).
+  const behind = armyBehindKeep(state, data);
+  if (builders.free > 0 && storageNearlyFull(state, data)) {
+    // (P3-09: not the Keep while the army is behind it: a storage then.)
+    const room = list.filter((c) => canAfford(state.resources, c.cost) && (behind ? ['storage'] : ['hall', 'storage']).includes(buildingDef(data, c.b.type).category));
+    const pick = room.find((c) => buildingDef(data, c.b.type).category === 'hall') ?? room[0];
+    if (pick) return { kind: 'upgrade', buildingId: pick.b.id, type: pick.b.type, toLevel: pick.toLevel, keep: buildingDef(data, pick.b.type).category === 'hall' };
+  }
   if (chestReady(state, now, data) || calendarView(state, now, 1, data)?.ready) return { kind: 'chest' };
   const cap = housingCapacity(state, data);
   if (cap > 0 && armyHousing(state.army, data) >= cap) return { kind: 'raid' };
-  const list = candidates(state, data);
-  const builders = builderStatus(state, data, now);
+  // P3-09: a Keep rushed ahead of its army: research or train first (the choice stays the player's).
+  if (behind) {
+    const army = researchGoal(state, now, data) ?? trainGoal(state, now, data);
+    if (army) return army;
+  }
   if (builders.free > 0) {
-    const affordable = list.filter((c) => canAfford(state.resources, c.cost));
+    // P3-09: while the army is behind, the chip does not suggest the Keep (the player still can).
+    const affordable = list.filter((c) => canAfford(state.resources, c.cost) && !(behind && buildingDef(data, c.b.type).category === 'hall'));
     const keep = affordable.find((c) => buildingDef(data, c.b.type).category === 'hall');
     const pick = keep ?? affordable[0];
     if (pick) return { kind: 'upgrade', buildingId: pick.b.id, type: pick.b.type, toLevel: pick.toLevel, keep: Boolean(keep) };

@@ -4,7 +4,8 @@
 import { describe, expect, it } from 'vitest';
 import { calendarView, localDayIndex, LOCAL_TIME_CHANGE_DAYS } from '../../../src/gameplay/sim/calendar';
 import { defaultData as data } from '../../../src/gameplay/sim/data';
-import { nextObjective } from '../../../src/gameplay/sim/objective';
+import { armyBehindKeep, nextObjective } from '../../../src/gameplay/sim/objective';
+import { capacity } from '../../../src/gameplay/sim/resources';
 import { migrate, serialize } from '../../../src/gameplay/sim/save';
 import { PLAYER_COMMANDS } from '../../../src/gameplay/sim/serverEconomy';
 import type { VillageState } from '../../../src/gameplay/sim/types';
@@ -94,5 +95,27 @@ describe('growth 7: the next objective', () => {
     // Nothing affordable: what is missing for the cheapest upgrade.
     s.resources = { ...s.resources, acorns: 0, dew: 0 };
     expect(nextObjective(s, T, data).kind).toBe('save');
+  });
+
+  it('P3-11: with storage at 90% an affordable Keep upgrade comes before the chest', () => {
+    const s = createNewVillage(T, data);
+    expect(nextObjective(s, T, data).kind).toBe('chest');
+    const cap = capacity(s, data);
+    const full: VillageState = { ...s, resources: { ...s.resources, acorns: Math.floor(cap.acorns * 0.95), dew: Math.floor(cap.dew * 0.95) } };
+    const o = nextObjective(full, T, data);
+    expect(o.kind).toBe('upgrade');
+    if (o.kind === 'upgrade') expect(['hall', 'storage']).toContain(data.buildings[o.type].category);
+  });
+
+  it('P3-09: a Keep more than one Keep ahead of its army points at research or training, not the Keep', () => {
+    let s = createNewVillage(T, data);
+    s = run(s, { type: 'openDailyChest' }, T);
+    s = run(s, { type: 'claimCalendar' }, T);
+    // Level 1 Shinobi at a Keep 6: research reads 1.5 Keeps behind (the floor of `researchFloorKeeps`).
+    const rushed: VillageState = { ...s, army: { hedgehog_roller: 20 }, resources: { ...s.resources, acorns: 1e7, dew: 1e7 }, buildings: s.buildings.map((b) => (data.buildings[b.type].category === 'hall' ? { ...b, level: 6 } : b)) };
+    expect(armyBehindKeep(rushed, data)).toBe(true);
+    expect(armyBehindKeep({ ...s, army: { hedgehog_roller: 20 } }, data)).toBe(false);
+    const o = nextObjective(rushed, T, data);
+    if (o.kind === 'upgrade') expect(data.buildings[o.type].category).not.toBe('hall');
   });
 });

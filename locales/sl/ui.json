@@ -193,6 +193,8 @@
   "unlock.title": { "en": "{n, plural, one {New warrior unlocked!} other {New warriors unlocked!}}", "text": "{n, plural, one {Odklenjen je nov bojevnik!} two {Odklenjena sta nova bojevnika!} few {Odklenjeni so novi bojevniki!} other {Odklenjeni so novi bojevniki!}}" },
   "unlock.train": { "en": "Train", "text": "Uri" },
   "unlock.later": { "en": "Later", "text": "Pozneje" },
+  "keep.armyBehind": { "en": "Your warriors' training is more than a Keep behind your village: a higher Keep meets stronger rivals and raiders. Research or train first?", "text": "" },
+  "scout.lootWontFit": { "en": "Your storage cannot hold all the loot on offer: what does not fit is lost.", "text": "" },
   "scout.shieldEnds": { "en": "Your shield has {time} left: attacking ends it.", "text": "" },
   "tutorial.end.daily": { "en": "Your first daily chest is ready: Finish opens it.", "text": "Tvoja prva dnevna skrinja je nared: odpre jo »Končaj«." },
   "panel.loadFailed": { "en": "This could not open. Check your connection and try again.", "text": "Tega ni bilo mogoče odpreti. Preveri povezavo in poskusi znova." },

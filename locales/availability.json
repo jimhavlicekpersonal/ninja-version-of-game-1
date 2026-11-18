@@ -2,8 +2,8 @@
   "en": {
     "coverage": 1,
     "ready": true,
-    "hash": "645c164e24d52b2f",
-    "keys": 3076,
+    "hash": "750d424b85b2dff4",
+    "keys": 3078,
     "namespaces": {
       "boot": {
         "total": 17,
@@ -22,13 +22,13 @@
         "translated": 335
       },
       "ui": {
-        "total": 275,
-        "translated": 275
+        "total": 277,
+        "translated": 277
       }
     }
   },
   "es": {
-    "coverage": 0.9991204925241864,
+    "coverage": 0.9985350131848814,
     "ready": false,
     "hash": "7657b19ccd14b445",
     "keys": 3073,
@@ -51,13 +51,13 @@
         "translated": 335
       },
       "ui": {
-        "total": 275,
+        "total": 277,
         "translated": 274
       }
     }
   },
   "pt": {
-    "coverage": 0.9991204925241864,
+    "coverage": 0.9985350131848814,
     "ready": false,
     "hash": "ad74ae41e0c81b0f",
     "keys": 3073,
@@ -80,13 +80,13 @@
         "translated": 335
       },
       "ui": {
-        "total": 275,
+        "total": 277,
         "translated": 274
       }
     }
   },
   "fr": {
-    "coverage": 0.9991204925241864,
+    "coverage": 0.9985350131848814,
     "ready": false,
     "hash": "00aa5cfd767caa47",
     "keys": 3073,
@@ -109,13 +109,13 @@
         "translated": 335
       },
       "ui": {
-        "total": 275,
+        "total": 277,
         "translated": 274
       }
     }
   },
   "de": {
-    "coverage": 0.9991204925241864,
+    "coverage": 0.9985350131848814,
     "ready": false,
     "hash": "5b7d6599831d8d75",
     "keys": 3073,
@@ -138,13 +138,13 @@
         "translated": 335
       },
       "ui": {
-        "total": 275,
+        "total": 277,
         "translated": 274
       }
     }
   },
   "ar": {
-    "coverage": 0.9991204925241864,
+    "coverage": 0.9985350131848814,
     "ready": false,
     "hash": "fde493859984102a",
     "keys": 3073,
@@ -167,13 +167,13 @@
         "translated": 335
       },
       "ui": {
-        "total": 275,
+        "total": 277,
         "translated": 274
       }
     }
   },
   "zh-Hans": {
-    "coverage": 0.9991204925241864,
+    "coverage": 0.9985350131848814,
     "ready": false,
     "hash": "fd577fa5e1523ef9",
     "keys": 3073,
@@ -196,13 +196,13 @@
         "translated": 335
       },
       "ui": {
-        "total": 275,
+        "total": 277,
         "translated": 274
       }
     }
   },
   "zh-Hant": {
-    "coverage": 0.9991204925241864,
+    "coverage": 0.9985350131848814,
     "ready": false,
     "hash": "7befd070d93eca22",
     "keys": 3073,
@@ -225,13 +225,13 @@
         "translated": 335
       },
       "ui": {
-        "total": 275,
+        "total": 277,
         "translated": 274
       }
     }
   },
   "ja": {
-    "coverage": 0.9991204925241864,
+    "coverage": 0.9985350131848814,
     "ready": false,
     "hash": "4c4e1ee24df69f74",
     "keys": 3073,
@@ -254,13 +254,13 @@
         "translated": 335
       },
       "ui": {
-        "total": 275,
+        "total": 277,
         "translated": 274
       }
     }
   },
   "ko": {
-    "coverage": 0.9991204925241864,
+    "coverage": 0.9985350131848814,
     "ready": false,
     "hash": "b5c958a3f6d22f51",
     "keys": 3073,
@@ -283,13 +283,13 @@
         "translated": 335
       },
       "ui": {
-        "total": 275,
+        "total": 277,
         "translated": 274
       }
     }
   },
   "id": {
-    "coverage": 0.9991204925241864,
+    "coverage": 0.9985350131848814,
     "ready": false,
     "hash": "eda8d56a8f10c140",
     "keys": 3073,
@@ -312,13 +312,13 @@
         "translated": 335
       },
       "ui": {
-        "total": 275,
+        "total": 277,
         "translated": 274
       }
     }
   },
   "ru": {
-    "coverage": 0.9991204925241864,
+    "coverage": 0.9985350131848814,
     "ready": false,
     "hash": "0941b344ecdf53f2",
     "keys": 3073,
@@ -341,13 +341,13 @@
         "translated": 335
       },
       "ui": {
-        "total": 275,
+        "total": 277,
         "translated": 274
       }
     }
   },
   "hi": {
-    "coverage": 0.9991204925241864,
+    "coverage": 0.9985350131848814,
     "ready": false,
     "hash": "c9ba613b10dee7f4",
     "keys": 3073,
@@ -370,13 +370,13 @@
         "translated": 335
       },
       "ui": {
-        "total": 275,
+        "total": 277,
         "translated": 274
       }
     }
   },
   "tr": {
-    "coverage": 0.9991204925241864,
+    "coverage": 0.9985350131848814,
     "ready": false,
     "hash": "c0da8c5cb2f620dc",
     "keys": 3073,
@@ -399,13 +399,13 @@
         "translated": 335
       },
       "ui": {
-        "total": 275,
+        "total": 277,
         "translated": 274
       }
     }
   },
   "vi": {
-    "coverage": 0.9991204925241864,
+    "coverage": 0.9985350131848814,
     "ready": false,
     "hash": "d5942a9a3654f6f6",
     "keys": 3073,
@@ -428,13 +428,13 @@
         "translated": 335
       },
       "ui": {
-        "total": 275,
+        "total": 277,
         "translated": 274
       }
     }
   },
   "th": {
-    "coverage": 0.9991204925241864,
+    "coverage": 0.9985350131848814,
     "ready": false,
     "hash": "9384479cd5a16e7a",
     "keys": 3073,
@@ -457,13 +457,13 @@
         "translated": 335
       },
       "ui": {
-        "total": 275,
+        "total": 277,
         "translated": 274
       }
     }
   },
   "it": {
-    "coverage": 0.9991204925241864,
+    "coverage": 0.9985350131848814,
     "ready": false,
     "hash": "a12b3b329c66345a",
     "keys": 3073,
@@ -486,13 +486,13 @@
         "translated": 335
       },
       "ui": {
-        "total": 275,
+        "total": 277,
         "translated": 274
       }
     }
   },
   "pl": {
-    "coverage": 0.9991204925241864,
+    "coverage": 0.9985350131848814,
     "ready": false,
     "hash": "725c730338581d30",
     "keys": 3073,
@@ -515,13 +515,13 @@
         "translated": 335
       },
       "ui": {
-        "total": 275,
+        "total": 277,
         "translated": 274
       }
     }
   },
   "uk": {
-    "coverage": 0.9991204925241864,
+    "coverage": 0.9985350131848814,
     "ready": false,
     "hash": "08930c6f0dfa0bf2",
     "keys": 3073,
@@ -544,13 +544,13 @@
         "translated": 335
       },
       "ui": {
-        "total": 275,
+        "total": 277,
         "translated": 274
       }
     }
   },
   "nl": {
-    "coverage": 0.9991204925241864,
+    "coverage": 0.9985350131848814,
     "ready": false,
     "hash": "d90e49e250f4abc7",
     "keys": 3073,
@@ -573,13 +573,13 @@
         "translated": 335
       },
       "ui": {
-        "total": 275,
+        "total": 277,
         "translated": 274
       }
     }
   },
   "ms": {
-    "coverage": 0.9991204925241864,
+    "coverage": 0.9985350131848814,
     "ready": false,
     "hash": "36e693cff3a83a4c",
     "keys": 3073,
@@ -602,13 +602,13 @@
         "translated": 335
       },
       "ui": {
-        "total": 275,
+        "total": 277,
         "translated": 274
       }
     }
   },
   "bn": {
-    "coverage": 0.9991204925241864,
+    "coverage": 0.9985350131848814,
     "ready": false,
     "hash": "f9130c7f63e0bc67",
     "keys": 3073,
@@ -631,13 +631,13 @@
         "translated": 335
       },
       "ui": {
-        "total": 275,
+        "total": 277,
         "translated": 274
       }
     }
   },
   "ur": {
-    "coverage": 0.9991204925241864,
+    "coverage": 0.9985350131848814,
     "ready": false,
     "hash": "99ea99b364c6f5f2",
     "keys": 3073,
@@ -660,13 +660,13 @@
         "translated": 335
       },
       "ui": {
-        "total": 275,
+        "total": 277,
         "translated": 274
       }
     }
   },
   "sw": {
-    "coverage": 0.9991204925241864,
+    "coverage": 0.9985350131848814,
     "ready": false,
     "hash": "b21fca5533d91789",
     "keys": 3073,
@@ -689,13 +689,13 @@
         "translated": 335
       },
       "ui": {
-        "total": 275,
+        "total": 277,
         "translated": 274
       }
     }
   },
   "ha": {
-    "coverage": 0.9991204925241864,
+    "coverage": 0.9985350131848814,
     "ready": false,
     "hash": "5da4c1c66264135e",
     "keys": 3073,
@@ -718,13 +718,13 @@
         "translated": 335
       },
       "ui": {
-        "total": 275,
+        "total": 277,
         "translated": 274
       }
     }
   },
   "yo": {
-    "coverage": 0.9991204925241864,
+    "coverage": 0.9985350131848814,
     "ready": false,
     "hash": "489a46c62cf1cd5a",
     "keys": 3073,
@@ -747,13 +747,13 @@
         "translated": 335
       },
       "ui": {
-        "total": 275,
+        "total": 277,
         "translated": 274
       }
     }
   },
   "am": {
-    "coverage": 0.9991204925241864,
+    "coverage": 0.9985350131848814,
     "ready": false,
     "hash": "62dc9823582d59e7",
     "keys": 3073,
@@ -776,13 +776,13 @@
         "translated": 335
       },
       "ui": {
-        "total": 275,
+        "total": 277,
         "translated": 274
       }
     }
   },
   "zu": {
-    "coverage": 0.9991204925241864,
+    "coverage": 0.9985350131848814,
     "ready": false,
     "hash": "74ece2220a9fe179",
     "keys": 3073,
@@ -805,13 +805,13 @@
         "translated": 335
       },
       "ui": {
-        "total": 275,
+        "total": 277,
         "translated": 274
       }
     }
   },
   "ig": {
-    "coverage": 0.9991204925241864,
+    "coverage": 0.9985350131848814,
     "ready": false,
     "hash": "2effe83aee40aca8",
     "keys": 3073,
@@ -834,13 +834,13 @@
         "translated": 335
       },
       "ui": {
-        "total": 275,
+        "total": 277,
         "translated": 274
       }
     }
   },
   "mr": {
-    "coverage": 0.9991204925241864,
+    "coverage": 0.9985350131848814,
     "ready": false,
     "hash": "7ceb3538f1ca43f7",
     "keys": 3073,
@@ -863,13 +863,13 @@
         "translated": 335
       },
       "ui": {
-        "total": 275,
+        "total": 277,
         "translated": 274
       }
     }
   },
   "te": {
-    "coverage": 0.9991204925241864,
+    "coverage": 0.9985350131848814,
     "ready": false,
     "hash": "8b52b4966788953d",
     "keys": 3073,
@@ -892,13 +892,13 @@
         "translated": 335
       },
       "ui": {
-        "total": 275,
+        "total": 277,
         "translated": 274
       }
     }
   },
   "ta": {
-    "coverage": 0.9991204925241864,
+    "coverage": 0.9985350131848814,
     "ready": false,
     "hash": "1f707ae100033a25",
     "keys": 3073,
@@ -921,13 +921,13 @@
         "translated": 335
       },
       "ui": {
-        "total": 275,
+        "total": 277,
         "translated": 274
       }
     }
   },
   "gu": {
-    "coverage": 0.9991204925241864,
+    "coverage": 0.9985350131848814,
     "ready": false,
     "hash": "4fff28a4bc760131",
     "keys": 3073,
@@ -950,13 +950,13 @@
         "translated": 335
       },
       "ui": {
-        "total": 275,
+        "total": 277,
         "translated": 274
       }
     }
   },
   "kn": {
-    "coverage": 0.9991204925241864,
+    "coverage": 0.9985350131848814,
     "ready": false,
     "hash": "5ec4ded6a2e34477",
     "keys": 3073,
@@ -979,13 +979,13 @@
         "translated": 335
       },
       "ui": {
-        "total": 275,
+        "total": 277,
         "translated": 274
       }
     }
   },
   "ml": {
-    "coverage": 0.9991204925241864,
+    "coverage": 0.9985350131848814,
     "ready": false,
     "hash": "da78e58df54a54de",
     "keys": 3073,
@@ -1008,13 +1008,13 @@
         "translated": 335
       },
       "ui": {
-        "total": 275,
+        "total": 277,
         "translated": 274
       }
     }
   },
   "pa": {
-    "coverage": 0.9991204925241864,
+    "coverage": 0.9985350131848814,
     "ready": false,
     "hash": "975d0c8c6568274a",
     "keys": 3073,
@@ -1037,13 +1037,13 @@
         "translated": 335
       },
       "ui": {
-        "total": 275,
+        "total": 277,
         "translated": 274
       }
     }
   },
   "ro": {
-    "coverage": 0.9991204925241864,
+    "coverage": 0.9985350131848814,
     "ready": false,
     "hash": "9881d35ea0b0aac0",
     "keys": 3073,
@@ -1066,13 +1066,13 @@
         "translated": 335
       },
       "ui": {
-        "total": 275,
+        "total": 277,
         "translated": 274
       }
     }
   },
   "cs": {
-    "coverage": 0.9991204925241864,
+    "coverage": 0.9985350131848814,
     "ready": false,
     "hash": "a6b5da1034bdd712",
     "keys": 3073,
@@ -1095,13 +1095,13 @@
         "translated": 335
       },
       "ui": {
-        "total": 275,
+        "total": 277,
         "translated": 274
       }
     }
   },
   "el": {
-    "coverage": 0.9991204925241864,
+    "coverage": 0.9985350131848814,
     "ready": false,
     "hash": "7b693908e5e6c567",
     "keys": 3073,
@@ -1124,13 +1124,13 @@
         "translated": 335
       },
       "ui": {
-        "total": 275,
+        "total": 277,
         "translated": 274
       }
     }
   },
   "he": {
-    "coverage": 0.9991204925241864,
+    "coverage": 0.9985350131848814,
     "ready": false,
     "hash": "a1724504e206fbc3",
     "keys": 3073,
@@ -1153,13 +1153,13 @@
         "translated": 335
       },
       "ui": {
-        "total": 275,
+        "total": 277,
         "translated": 274
       }
     }
   },
   "hu": {
-    "coverage": 0.9991204925241864,
+    "coverage": 0.9985350131848814,
     "ready": false,
     "hash": "3b7eadae1e254953",
     "keys": 3073,
@@ -1182,13 +1182,13 @@
         "translated": 335
       },
       "ui": {
-        "total": 275,
+        "total": 277,
         "translated": 274
       }
     }
   },
   "sv": {
-    "coverage": 0.9991204925241864,
+    "coverage": 0.9985350131848814,
     "ready": false,
     "hash": "1ccea65aaa95d9af",
     "keys": 3073,
@@ -1211,13 +1211,13 @@
         "translated": 335
       },
       "ui": {
-        "total": 275,
+        "total": 277,
         "translated": 274
       }
     }
   },
   "ca": {
-    "coverage": 0.9991204925241864,
+    "coverage": 0.9985350131848814,
     "ready": false,
     "hash": "9f796908d6f19d56",
     "keys": 3073,
@@ -1240,13 +1240,13 @@
         "translated": 335
       },
       "ui": {
-        "total": 275,
+        "total": 277,
         "translated": 274
       }
     }
   },
   "hr": {
-    "coverage": 0.9991204925241864,
+    "coverage": 0.9985350131848814,
     "ready": false,
     "hash": "59a741b55da06449",
     "keys": 3073,
@@ -1269,13 +1269,13 @@
         "translated": 335
       },
       "ui": {
-        "total": 275,
+        "total": 277,
         "translated": 274
       }
     }
   },
   "da": {
-    "coverage": 0.9991204925241864,
+    "coverage": 0.9985350131848814,
     "ready": false,
     "hash": "263158615e0446b6",
     "keys": 3073,
@@ -1298,13 +1298,13 @@
         "translated": 335
       },
       "ui": {
-        "total": 275,
+        "total": 277,
         "translated": 274
       }
     }
   },
   "fi": {
-    "coverage": 0.9991204925241864,
+    "coverage": 0.9985350131848814,
     "ready": false,
     "hash": "f955a74302f05dfb",
     "keys": 3073,
@@ -1327,13 +1327,13 @@
         "translated": 335
       },
       "ui": {
-        "total": 275,
+        "total": 277,
         "translated": 274
       }
     }
   },
   "nb": {
-    "coverage": 0.9991204925241864,
+    "coverage": 0.9985350131848814,
     "ready": false,
     "hash": "8f8b8b4e82cd5997",
     "keys": 3073,
@@ -1356,13 +1356,13 @@
         "translated": 335
       },
       "ui": {
-        "total": 275,
+        "total": 277,
         "translated": 274
       }
     }
   },
   "sk": {
-    "coverage": 0.9991204925241864,
+    "coverage": 0.9985350131848814,
     "ready": false,
     "hash": "4ea707315d9fdb5b",
     "keys": 3073,
@@ -1385,13 +1385,13 @@
         "translated": 335
       },
       "ui": {
-        "total": 275,
+        "total": 277,
         "translated": 274
       }
     }
   },
   "sl": {
-    "coverage": 0.9991204925241864,
+    "coverage": 0.9985350131848814,
     "ready": false,
     "hash": "2c57de6df0faa99c",
     "keys": 3073,
@@ -1414,13 +1414,13 @@
         "translated": 335
       },
       "ui": {
-        "total": 275,
+        "total": 277,
         "translated": 274
       }
     }
   },
   "or": {
-    "coverage": 0.9991204925241864,
+    "coverage": 0.9985350131848814,
     "ready": false,
     "hash": "3e0420005c79c17b",
     "keys": 3073,
@@ -1443,7 +1443,7 @@
         "translated": 335
       },
       "ui": {
-        "total": 275,
+        "total": 277,
         "translated": 274
       }
     }

@@ -193,6 +193,8 @@
   "unlock.title": { "en": "{n, plural, one {New warrior unlocked!} other {New warriors unlocked!}}", "text": "{n, plural, one {Nový bojovník odomknutý!} few {Noví bojovníci odomknutí!} many {Noví bojovníci odomknutí!} other {Noví bojovníci odomknutí!}}" },
   "unlock.train": { "en": "Train", "text": "Cvičiť" },
   "unlock.later": { "en": "Later", "text": "Neskôr" },
+  "keep.armyBehind": { "en": "Your warriors' training is more than a Keep behind your village: a higher Keep meets stronger rivals and raiders. Research or train first?", "text": "" },
+  "scout.lootWontFit": { "en": "Your storage cannot hold all the loot on offer: what does not fit is lost.", "text": "" },
   "scout.shieldEnds": { "en": "Your shield has {time} left: attacking ends it.", "text": "" },
   "tutorial.end.daily": { "en": "Your first daily chest is ready: Finish opens it.", "text": "Tvoja prvá denná truhlica je pripravená: tlačidlo Dokončiť ju otvorí." },
   "panel.loadFailed": { "en": "This could not open. Check your connection and try again.", "text": "Nepodarilo sa to otvoriť. Skontroluj pripojenie a skús to znova." },

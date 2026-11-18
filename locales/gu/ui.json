@@ -193,6 +193,8 @@
   "unlock.title": { "en": "{n, plural, one {New warrior unlocked!} other {New warriors unlocked!}}", "text": "{n, plural, one {નવો યોદ્ધો અનલૉક થયો!} other {નવા યોદ્ધા અનલૉક થયા!}}" },
   "unlock.train": { "en": "Train", "text": "તાલીમ" },
   "unlock.later": { "en": "Later", "text": "પછી" },
+  "keep.armyBehind": { "en": "Your warriors' training is more than a Keep behind your village: a higher Keep meets stronger rivals and raiders. Research or train first?", "text": "" },
+  "scout.lootWontFit": { "en": "Your storage cannot hold all the loot on offer: what does not fit is lost.", "text": "" },
   "scout.shieldEnds": { "en": "Your shield has {time} left: attacking ends it.", "text": "" },
   "tutorial.end.daily": { "en": "Your first daily chest is ready: Finish opens it.", "text": "તમારી પહેલી દૈનિક પેટી તૈયાર છે: પૂરું કરો દબાવતાં તે ખૂલે છે." },
   "panel.loadFailed": { "en": "This could not open. Check your connection and try again.", "text": "આ ખૂલી શક્યું નહીં. તમારું કનેક્શન તપાસો અને ફરી પ્રયાસ કરો." },

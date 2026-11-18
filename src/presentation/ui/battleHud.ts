@@ -13,7 +13,7 @@ import { isAbility } from '../../gameplay/sim/battle/battle';
 import { pointIntel, scoutReport } from '../../gameplay/sim/battle/scout';
 import { closeCalls } from '../../gameplay/sim/battle/closecall';
 import { lossTrophies, winTrophies } from '../../gameplay/sim/ranks';
-import type { BattleResult } from '../../gameplay/sim/battle/types';
+import type { BaseLayout, BattleResult } from '../../gameplay/sim/battle/types';
 import type { Cost, ResourceKind } from '../../gameplay/sim/types';
 import { RESOURCE_KINDS } from '../../gameplay/sim/types';
 import { clear, h, icon } from './dom';
@@ -44,6 +44,8 @@ interface BattleHudDeps {
   trial?: { tier: number; layout: string; modifiers: string[]; reward: Cost; firstClear: boolean; starsToClear: number };
   troopThumb(type: string): string | null;
   scoutFee: number;
+  /** P3-11: whether this base's loot would not fit in storage (raids only). */
+  lootWontFit?: (base: BaseLayout) => boolean;
   /** P3-12: the time left on a shield this raid would end (absent: none, or the first attack keeps it). */
   shieldLeftMs?: number;
   canPayFee(): boolean;
@@ -387,7 +389,9 @@ export class BattleHud {
     });
     // P3-12: one line while a shield is running that this attack would end.
     const shieldNote = this.deps.shieldLeftMs && this.deps.shieldLeftMs > 0 ? h('p', { class: 'small shield-note' }, t('scout.shieldEnds', { time: formatDuration(this.deps.shieldLeftMs) })) : null;
-    this.scoutEl = h('div', { class: `panel scout-report${this.scoutOpen ? ' open' : ''}` }, h('div', { class: 'scout-row' }, toggle, ...this.pointChips()), shieldNote, ...this.stakeRow(), more);
+    // P3-11 (PLY-04): say when the loot on offer will not fit.
+    const roomNote = this.deps.lootWontFit?.(this.s.setup.base) ? h('p', { class: 'small room-note' }, t('scout.lootWontFit')) : null;
+    this.scoutEl = h('div', { class: `panel scout-report${this.scoutOpen ? ' open' : ''}` }, h('div', { class: 'scout-row' }, toggle, ...this.pointChips()), shieldNote, roomNote, ...this.stakeRow(), more);
     this.deps.root.insertBefore(this.scoutEl, this.troopsEl);
   }
 

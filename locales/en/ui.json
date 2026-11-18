@@ -193,6 +193,8 @@
   "unlock.title": "{n, plural, one {New warrior unlocked!} other {New warriors unlocked!}}",
   "unlock.train": "Train",
   "unlock.later": "Later",
+  "keep.armyBehind": "Your warriors' training is more than a Keep behind your village: a higher Keep meets stronger rivals and raiders. Research or train first?",
+  "scout.lootWontFit": "Your storage cannot hold all the loot on offer: what does not fit is lost.",
   "scout.shieldEnds": "Your shield has {time} left: attacking ends it.",
   "tutorial.end.daily": "Your first daily chest is ready: Finish opens it.",
   "panel.loadFailed": "This could not open. Check your connection and try again.",

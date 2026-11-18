@@ -31,7 +31,7 @@ import { PROVIDER_NAMES, storeAgeSignal } from '../../backend/platform/auth';
 import type { AgeBand } from '../../gameplay/sim/age';
 import { askAgeBand } from './ageScreen';
 import { bandFromProfile } from '../../gameplay/sim/age';
-import { nextObjective } from '../../gameplay/sim/objective';
+import { armyBehindKeep, nextObjective } from '../../gameplay/sim/objective';
 import { calendarView } from '../../gameplay/sim/calendar';
 import { advance, leagueBonusOf } from '../../gameplay/sim/village';
 import { EconomyUi } from './economyUi';
@@ -1462,6 +1462,8 @@ export class Hud {
     if (def.category === 'hall' && hallUnlocks(level, gd).length) {
       this.sheet.append(h('button', { class: 'btn ghost small-btn', type: 'button', onclick: () => this.openUnlocks() }, icon(icons.toadstool), i18nText("ui.what_keep_lv_unlocks_ced96de6b4", { arg1: level + 1 })));
     }
+    // P3-09 (ECO-10): one plain line when the army is more than a Keep behind the village (no forced prerequisite).
+    if (def.category === 'hall' && armyBehindKeep(this.c.state, gd)) this.sheet.append(h('p', { class: 'note keep-rush' }, t('keep.armyBehind')));
 
     // Upgrade in progress
     if (b.upgrade && now < b.upgrade.endsAt) {
