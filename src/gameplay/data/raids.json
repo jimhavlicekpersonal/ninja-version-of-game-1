@@ -152,6 +152,24 @@
       "ghost_engineer": 0.1
     }
   ],
+  "$commentRaiderMixes": "P2-03 (DEF-05, 2026-11-18): alternates beside botArmyMix per raider Keep (index = Keep - 1): an air raid and a shadow and siege raid, picked with today's line by the raid's seed (attackerFor). Keeps 1-6 keep today's line only.",
+  "raiderMixes": [
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [{"crane_glider": 0.4, "owl_bomber": 0.2, "wind_step_assassin": 0.25, "drum_monk": 0.15}, {"mirage_twin": 0.35, "fire_monk": 0.3, "bell_warden": 0.2, "gearbreaker": 0.15}],
+    [{"crane_glider": 0.4, "owl_bomber": 0.2, "wind_step_assassin": 0.25, "drum_monk": 0.15}, {"mirage_twin": 0.35, "fire_monk": 0.3, "bell_warden": 0.2, "gearbreaker": 0.15}],
+    [{"crane_glider": 0.4, "owl_bomber": 0.2, "wind_step_assassin": 0.25, "drum_monk": 0.15}, {"mirage_twin": 0.35, "fire_monk": 0.3, "bell_warden": 0.2, "gearbreaker": 0.15}],
+    [{"lantern_balloon": 0.45, "crane_glider": 0.15, "moonblade_master": 0.25, "mist_weaver": 0.15}, {"night_blade": 0.35, "bomb_carrier": 0.3, "mountain_shield": 0.2, "fuse_master": 0.15}],
+    [{"lantern_balloon": 0.45, "crane_glider": 0.15, "moonblade_master": 0.25, "mist_weaver": 0.15}, {"night_blade": 0.35, "bomb_carrier": 0.3, "mountain_shield": 0.2, "fuse_master": 0.15}],
+    [{"lantern_balloon": 0.45, "crane_glider": 0.15, "moonblade_master": 0.25, "mist_weaver": 0.15}, {"night_blade": 0.35, "bomb_carrier": 0.3, "mountain_shield": 0.2, "fuse_master": 0.15}],
+    [{"thunder_kite": 0.45, "lantern_balloon": 0.1, "storm_sovereign": 0.25, "spirit_caller": 0.2}, {"void_walker": 0.35, "siege_bombardier": 0.3, "oni_breaker": 0.2, "ghost_engineer": 0.15}],
+    [{"thunder_kite": 0.45, "lantern_balloon": 0.1, "storm_sovereign": 0.25, "spirit_caller": 0.2}, {"void_walker": 0.35, "siege_bombardier": 0.3, "oni_breaker": 0.2, "ghost_engineer": 0.15}],
+    [{"thunder_kite": 0.45, "lantern_balloon": 0.1, "storm_sovereign": 0.25, "spirit_caller": 0.2}, {"void_walker": 0.35, "siege_bombardier": 0.3, "oni_breaker": 0.2, "ghost_engineer": 0.15}]
+  ],
   "storageLootCapByHall": [
     1500,
     4000,

@@ -7,7 +7,7 @@ import { generateOpponent } from '../../../src/gameplay/sim/battle/basegen';
 import { diversityPartOf, raidCarry, trainableRoles } from '../../../src/gameplay/sim/carry';
 import { raidVillage, simulateOfflineRaids } from '../../../src/gameplay/sim/defense';
 import { rematchReward } from '../../../src/gameplay/sim/rematch';
-import { attackerFor, lossStreakSlack, strengthFloor } from '../../../src/gameplay/sim/matchmaking';
+import { attackerFor, botArmy, lossStreakSlack, strengthFloor } from '../../../src/gameplay/sim/matchmaking';
 import { capacity } from '../../../src/gameplay/sim/resources';
 import { createRng } from '../../../src/gameplay/sim/rng';
 import type { VillageState } from '../../../src/gameplay/sim/types';
@@ -182,5 +182,26 @@ describe('P2-10 (DEF-12): a losing streak lowers the opponents, and cannot be fa
   it('lowers the strength floor by the streak', () => {
     const v = at([raid(0, 10), raid(0, 10)]);
     expect(strengthFloor(at([]), data) - strengthFloor(v, data)).toBeCloseTo(2 * cfg.perLoss, 9);
+  });
+});
+
+describe('P2-03 (DEF-05): raiders bring more than one army', () => {
+  it('Keeps 7-15 have an air raid and a shadow and siege raid beside today\'s line, all trainable at that Keep', () => {
+    for (let k = 7; k <= 15; k++) {
+      const alts = data.raids.raiderMixes![k - 1];
+      expect(alts.length, `Keep ${k}`).toBeGreaterThanOrEqual(2);
+      expect(Object.keys(alts[0]).some((t) => data.troops[t].air), `Keep ${k} air raid`).toBe(true);
+      for (const mix of alts) for (const t of Object.keys(mix)) expect(data.troops[t].unlockKeep ?? 1, `${t} at Keep ${k}`).toBeLessThanOrEqual(k);
+    }
+    for (let k = 1; k <= 6; k++) expect(data.raids.raiderMixes![k - 1]).toEqual([]);
+  });
+
+  it('the raid\'s seed picks the line or an alternate, and botArmy is unchanged', () => {
+    const v = createNewVillage(0, data);
+    const keep9: VillageState = { ...v, stats: { ...v.stats, defensesFaced: 99 }, buildings: v.buildings.map((b) => (b.type === 'elder_toadstool' ? { ...b, level: 9 } : b)) };
+    const armies = new Set<string>();
+    for (let i = 0; i < 40; i++) armies.add(Object.keys(attackerFor(createRng(i), keep9, data).army).sort().join(','));
+    expect(armies.size).toBeGreaterThanOrEqual(3);
+    expect(Object.keys(botArmy(9, 0.5, data)).sort()).toEqual(Object.keys(data.raids.botArmyMix[8]).sort());
   });
 });

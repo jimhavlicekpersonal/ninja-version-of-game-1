@@ -281,7 +281,11 @@ export interface BotAttacker {
 /** A full army for a bot at a hall level, made from that hall's mix in raids.json. */
 export function botArmy(hall: number, bias: number, data: GameData): Record<string, number> {
   const mixes = data.raids.botArmyMix;
-  const mix = mixes[Math.max(1, Math.min(mixes.length, hall)) - 1];
+  return armyFromMix(mixes[Math.max(1, Math.min(mixes.length, hall)) - 1], hall, bias, data);
+}
+
+/** A full army for a hall level from one mix (troop -> housing share), the rounding filled with its cheapest troop. */
+export function armyFromMix(mix: Record<string, number>, hall: number, bias: number, data: GameData): Record<string, number> {
   const housing = Math.floor(maxHousingAtHall(hall, data) * (0.85 + 0.15 * bias));
   const army: Record<string, number> = {};
   let used = 0;
@@ -323,7 +327,10 @@ export function attackerFor(rng: Rng, state: VillageState, data: GameData): BotA
   const soft = data.raids.newPlayerRaids;
   const softened = Boolean(soft && (state.stats?.defensesFaced ?? 0) < soft.count);
   const lvl = Math.max(1, cap - (st.bias < 0.5 ? 1 : 0) - (softened ? soft!.levelsBelowCap : 0));
-  const full = botArmy(st.hall, st.bias, data);
+  // P2-03 (DEF-05): with `raids.raiderMixes` for this Keep, the raid's seed picks today's line or an alternate.
+  const alts = data.raids.raiderMixes?.[st.hall - 1] ?? [];
+  const pick = alts.length && !softened ? Math.floor(next(rng) * (alts.length + 1)) : 0;
+  const full = pick ? armyFromMix(alts[pick - 1], st.hall, st.bias, data) : botArmy(st.hall, st.bias, data);
   const army: Record<string, number> = {};
   if (softened) {
     for (const [t, n] of Object.entries(full)) {

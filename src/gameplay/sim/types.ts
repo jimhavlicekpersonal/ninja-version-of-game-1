@@ -925,6 +925,11 @@ export interface RaidsDef {
   maxDefenseLog: number;
   /** Bot army make-up by attacker hall level: share of housing per troop. */
   botArmyMix: Record<string, number>[];
+  /**
+   * P2-03 (DEF-05): alternate raider armies per Keep (index = the raider's Keep - 1), beside `botArmyMix` (today's
+   * line): an air raid and a shadow and siege raid. `attackerFor` picks one of the line and these by the raid's seed.
+   */
+  raiderMixes?: Record<string, number>[][];
   /** Most of each resource raiders can take from storages, by the defender's hall level. */
   storageLootCapByHall: number[];
   /** The first `count` bot raids a village faces bring `housingShare` of a full army, `levelsBelowCap` levels under the research cap. */
