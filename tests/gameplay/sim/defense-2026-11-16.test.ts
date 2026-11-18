@@ -110,3 +110,14 @@ describe('P2-07 (DEF-08, ECO-07): Settle the score pays back what the raid took'
     expect(rematchReward(0, 12, data, took)).toEqual({});
   });
 });
+
+describe('P2-08 (DEF-09): a declared stake is a skill bet a good player can win', () => {
+  it('break-even hit rates are 77% for two stars and 57% for three', () => {
+    const by = data.raids.stakes!.byStars;
+    expect(1 / by['2']).toBeCloseTo(0.77, 2);
+    expect(1 / by['3']).toBeCloseTo(0.57, 2);
+    // Four hits in five at two stars gains; the bot plan's 60% does not.
+    expect(0.8 * by['2']).toBeGreaterThan(1);
+    expect(0.6 * by['2']).toBeLessThan(1);
+  });
+});

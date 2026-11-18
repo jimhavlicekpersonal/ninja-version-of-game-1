@@ -34,7 +34,8 @@
   },
   "stakes": {
     "$comment": "Balance audit 2026-11-08 (declared stakes, opt-in): before a raid the attacker may declare 2 or 3 stars; reaching it carries the loot x byStars[stake], missing it carries nothing and a real defender keeps it. Without a declaration a raid carries its loot as before.",
-    "byStars": { "2": 1.1, "3": 1.25 }
+    "$commentP208": "P2-08 (DEF-09, 2026-11-18): 1.1/1.25 -> 1.3/1.75 (break-even hit rates 91%/80% -> 77%/57%). Regular campaign, raid-weighted Keeps 5-15, bot plan: two-star stake 0.78 of not declaring (a skill bet), gains only at Keeps 5 and 9; a player who hits two stars four times in five gets 1.04.",
+    "byStars": { "2": 1.3, "3": 1.75 }
   },
   "shieldTiers": [
     {
