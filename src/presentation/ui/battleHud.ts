@@ -911,7 +911,7 @@ export class BattleHud {
         const slice = () => {
           const t0 = performance.now();
           // ~8 ms of work a slice, then give the frame back.
-          while (!run.advance(20) && performance.now() - t0 < 8);
+          while (!run.advance(4) && performance.now() - t0 < 6);
           if (!run.sim.ended) {
             running = window.setTimeout(slice, 0);
             return;
