@@ -7479,7 +7479,7 @@
   },
   "drum_monk": {
     "name": "Drum Monk",
-    "description": "Nearby warriors move and attack 12% faster within 3 tiles. Multiple drums do not stack.",
+    "description": "Nearby warriors move and attack 10% faster within 3 tiles. Multiple drums do not stack.",
     "housing": 3,
     "attackIntervalTicks": 10,
     "range": 3,
@@ -7495,7 +7495,7 @@
     "kit": {
       "aura": "haste",
       "radius": 3,
-      "strength": 0.12
+      "strength": 0.1
     },
     "levels": [
       {

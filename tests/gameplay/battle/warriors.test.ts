@@ -191,15 +191,15 @@ describe('support and companions', () => {
     expect(sim.troops[1].hp).toBe(0);
   });
   it('haste and resistance auras do not stack', () => {
-    // P4-01 (restated): haste speeds attacks in whole ticks, so the 12% drum shortens a 10-tick interval to 9 (it cannot
-    // shorten the Shinobi's 8 ticks); the target is a Twin-Fang Dancer.
-    const sim = arena('drum_monk', 'drum_monk', 'iron_monk', 'iron_monk', 'twin_fang_dancer');
+    // P4-01/P4-08 (restated): haste speeds attacks in whole ticks, so the 10% drum shortens a 12-tick interval to 11 (it
+    // cannot shorten 8- or 10-tick ones); the target is an Armored Guardian.
+    const sim = arena('drum_monk', 'drum_monk', 'iron_monk', 'iron_monk', 'beetle_brute');
     const target = sim.troops[4];
     // P4-01 (SIM_RULES 8, restated): the haste is data (0.25 -> 0.12).
     expect(auraStrength(sim, target, 'haste')).toBe(data.troops.drum_monk.kit!.strength);
     expect(auraStrength(sim, target, 'resist')).toBe(.15);
-    step(sim); advance(sim, 9);
-    expect(target.hits).toBe(2); // hits on ticks 1 and 10: the 10-tick interval is 9 with haste (10 without)
+    step(sim); advance(sim, 11);
+    expect(target.hits).toBe(2); // hits on ticks 1 and 12: the 12-tick interval is 11 with haste (12 without)
   });
   it('Bell Warden takes targeting priority over a closer warrior', () => {
     const sim = arena('hedgehog_roller', 'bell_warden');

@@ -551,7 +551,7 @@
       "ability": {
         "id": "war_drum",
         "name": "War Drum",
-        "text": "Nearby warriors move and attack 12% faster within 3 tiles. Multiple drums do not stack."
+        "text": "Nearby warriors move and attack 10% faster within 3 tiles. Multiple drums do not stack."
       },
       "look": {
         "gi": "#7a3f2a",
