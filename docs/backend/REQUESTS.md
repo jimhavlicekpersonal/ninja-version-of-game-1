@@ -4,6 +4,8 @@ Other compartments write here instead of editing `src/backend/` or `server/` (AG
 
 ## Open
 
+- **2026-11-18 (P7-07, word lists):** `social.json` gains `profanityByLanguage` (ten launch languages), applied by `censorText` to every chat line and name together with `profanity`. The server censors names and chat with the same function and data: deploy the server with the game that carries it (the data version changes; nothing else does). Native review status: `docs/localization/WORD_LISTS.md`.
+
 - **2026-11-18 (INTEGRATION, Phase 5 retention, `docs/audit/understand-2026-11-16/PROGRESS.md`; no `SIM_RULES` change):** what the server replays changed; **deploy the server before the game.**
   - **Events (P5-01, P5-02):** `events.json` is a 28-day loop with new goal ids and five dated festivals (`events.dated`). `bountyEnd` now takes any running goal event by key, including the weekly Gauntlet (`goal.kind: 'gauntlet'`, base from the key and the Keep, `sim/goalEvents.ts` `gauntletBase`) and festivals whose top step grants a look (`cosmetics.owned`). Save v24 turns `goalEvent` into `goalEvents` (per occurrence). An `EVENT_SCHEDULE_FILE` that names `bounty_hunt` or `raiders_moon_2` is refused at start (unknown id): rewrite it with the new ids before deploying. `applyEventSchedule` keeps `dated`.
   - **Daily contract (P5-03):** `battleEnd` and `settleOnlineAttack` multiply the carry by the contract of the UTC day of the raid's own `at` (`contractFor`) and cap the whole at `raids.carryCap` (2.2). The server needs no new code (shared `applyCommand`); records may carry `contract` (the id met).

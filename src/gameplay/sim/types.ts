@@ -1184,6 +1184,8 @@ export interface SocialDef {
   xpLevels: number[];
   chatLines: Record<'random' | 'greet' | 'thanks' | 'raidStart' | 'raidEnd' | 'reply' | 'donated', string[]>;
   profanity: string[];
+  /** P7-07: per-language lists, applied to every line together with `profanity` (`$comment` holds the note). */
+  profanityByLanguage?: Record<string, string[] | string>;
   groveRaid: {
     epoch: number;
     durationHours: number;

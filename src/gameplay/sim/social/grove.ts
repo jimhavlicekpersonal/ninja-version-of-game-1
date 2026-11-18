@@ -97,7 +97,9 @@ export function hasContact(text: string): boolean {
 /** Censor without chat's length limit: names already have a grapheme width cap. */
 export function censorText(text: string, data: GameData): string {
   let out = text.normalize('NFC');
-  for (const word of data.social.profanity) {
+  // P7-07: the per-language lists apply to every line (chat and names mix languages).
+  const byLanguage = Object.entries(data.social.profanityByLanguage ?? {}).flatMap(([k, v]) => (k.startsWith('$') || !Array.isArray(v) ? [] : v));
+  for (const word of [...data.social.profanity, ...byLanguage]) {
     if (!word.trim()) continue;
     const body = word.normalize('NFC').replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/ /g, '\\s+');
     // Word edges in every script; scripts written without spaces (Chinese, Japanese, Thai…) match anywhere.
