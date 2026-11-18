@@ -26,6 +26,7 @@ import { localDayIndex } from '../../src/gameplay/sim/calendar';
 import { buildingDef, levelDef, troopLevel } from '../../src/gameplay/sim/data';
 import { villageToBase } from '../../src/gameplay/sim/defense';
 import { topUpOne, topUpScale } from '../../src/gameplay/sim/economy';
+import { leavesEntryRoom } from '../../src/gameplay/sim/entryRoom';
 import { troopLevelCapAt } from '../../src/gameplay/sim/research';
 import { capacity } from '../../src/gameplay/sim/resources';
 import { deserialize, serialize } from '../../src/gameplay/sim/save';
@@ -291,6 +292,8 @@ export function importProblem(s: VillageState, now: number, data: GameData): str
     if (def.category !== 'hall' && (counts[b.type] > lim.count || target > lim.maxLevel)) return `Buildings: more or higher ${def.name} than this Keep allows.`;
     if (def.category === 'hall' && target > keep + 1) return 'Buildings: a Keep upgrade that skips a level.';
   }
+  // Attackers must be able to get in (sim/entryRoom.ts): a layout that closes the map to them is not a village.
+  if (!leavesEntryRoom(s.buildings, data)) return 'Buildings: the layout leaves attackers no way in.';
   // A village starts with its obstacles and never gains one (each cleared one pays a little Jade).
   if (obstacles > data.economy.obstacles.count) return 'Buildings: more obstacles than a village starts with.';
   const cap = capacity(s, data);

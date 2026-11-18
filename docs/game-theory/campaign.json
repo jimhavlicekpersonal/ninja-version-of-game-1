@@ -1,6 +1,6 @@
 {
  "$generated": "npm run balance:campaign (tools/balance/run-campaigns.mjs); do not edit",
- "fingerprint": "0aa51e29c7c86272",
+ "fingerprint": "dff0dcaf8e79eac5",
  "results": [
   {
    "id": "regular",
@@ -307,7 +307,7 @@
      "honor": 228.66666666666666,
      "defenses": 2,
      "held": 0.5,
-     "stolen": 3831.5,
+     "stolen": 3816,
      "defenseHonor": 12.5
     },
     {
@@ -323,7 +323,7 @@
      "honor": 499.1666666666667,
      "defenses": 8,
      "held": 0,
-     "stolen": 8357.25,
+     "stolen": 8325.625,
      "defenseHonor": 0
     },
     {
@@ -339,7 +339,7 @@
      "honor": 1078.0833333333333,
      "defenses": 10,
      "held": 0,
-     "stolen": 55772.6,
+     "stolen": 55766.8,
      "defenseHonor": 0
     },
     {
@@ -355,7 +355,7 @@
      "honor": 1620.4545454545455,
      "defenses": 13,
      "held": 0,
-     "stolen": 123358.38461538461,
+     "stolen": 123357.38461538461,
      "defenseHonor": 0
     },
     {
@@ -381,7 +381,7 @@
      "threeStar": 0.2413793103448276,
      "won": 0.8275862068965517,
      "destruction": 68.20689655172414,
-     "loot": 286057.3793103448,
+     "loot": 286057.4137931034,
      "opponentKeep": 7.448275862068965,
      "strength": 7.563052831264792,
      "honor": 2245.6206896551726,
@@ -505,9 +505,9 @@
    ],
    "defenses": 255,
    "totals": {
-    "looted": 1545608511,
-    "stolen": 966402221,
-    "defenseRewards": 3036
+    "looted": 1545608512,
+    "stolen": 966401866,
+    "defenseRewards": 2532
    }
   },
   {
@@ -555,13 +555,13 @@
      "threeStar": 0,
      "won": 0,
      "destruction": 38.5,
-     "loot": 250,
+     "loot": 283.5,
      "opponentKeep": 2.5,
      "strength": 2.90625,
      "honor": 163,
      "defenses": 5,
      "held": 0.2,
-     "stolen": 6737.2,
+     "stolen": 6718.6,
      "defenseHonor": 6.4
     },
     {
@@ -577,7 +577,7 @@
      "honor": 316.57142857142856,
      "defenses": 11,
      "held": 0,
-     "stolen": 16757.545454545456,
+     "stolen": 16757.363636363636,
      "defenseHonor": 0
     },
     {
@@ -759,9 +759,9 @@
    ],
    "defenses": 298,
    "totals": {
-    "looted": 351699060,
-    "stolen": 548722799,
-    "defenseRewards": 3352
+    "looted": 351699127,
+    "stolen": 548722704,
+    "defenseRewards": 2800
    }
   },
   {
@@ -1332,13 +1332,13 @@
      "threeStar": 0.2857142857142857,
      "won": 0.42857142857142855,
      "destruction": 51,
-     "loot": 9764.57142857143,
+     "loot": 9777.285714285714,
      "opponentKeep": 3.4285714285714284,
      "strength": 3.3582832531223987,
      "honor": 299.7142857142857,
      "defenses": 10,
      "held": 0,
-     "stolen": 16545.1,
+     "stolen": 16521.4,
      "defenseHonor": 0
     },
     {
@@ -1504,9 +1504,9 @@
    ],
    "defenses": 452,
    "totals": {
-    "looted": 291230587,
-    "stolen": 863430609,
-    "defenseRewards": 2876
+    "looted": 291230676,
+    "stolen": 863430372,
+    "defenseRewards": 2400
    }
   }
  ]

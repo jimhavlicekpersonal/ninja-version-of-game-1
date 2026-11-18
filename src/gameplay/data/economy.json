@@ -6,6 +6,11 @@
     "moonstones": "Jade"
   },
   "mapSize": 40,
+  "entryRoom": {
+    "$comment": "Defense review 2026-11-17: a layout must leave attackers a way in. No tile within battle.deployMarginTiles of a building or wall can be deployed on, so buildings spread one tile apart closed the whole map and no raid could bring a warrior (sim/entryRoom.ts). At least `approaches` of the eight compass approaches (map corners and edge midpoints) must have a deployable tile within `tiles`. Checked by place and move, when a village moves to the server and when a device sends its base; never inside a battle.",
+    "tiles": 5,
+    "approaches": 6
+  },
   "startingResources": {
     "acorns": 2500,
     "dew": 2500,

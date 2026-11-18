@@ -17,6 +17,7 @@ import { defenseHonorLoss, lossTrophies, winTrophies } from '../../src/gameplay/
 import { stakeMet, validStake } from '../../src/gameplay/sim/carry';
 import { deserialize } from '../../src/gameplay/sim/save';
 import { advance, battleArmy, foughtWithWarriors } from '../../src/gameplay/sim/village';
+import { leavesEntryRoom } from '../../src/gameplay/sim/entryRoom';
 import { newRating, orderByRating, powerRating, rateBattle, type Rating } from '../../src/gameplay/sim/rating';
 import { troopLevelCapAt } from '../../src/gameplay/sim/research';
 import { sanitizeName } from '../../src/gameplay/sim/social/names';
@@ -257,6 +258,8 @@ export async function uploadBase(ctx: ServerContext, me: Player, req: UploadBase
   const n = normalizeBase(structuredClone(req?.base), rulesData);
   if ('error' in n) throw detailError(400, 'bad_request', n.error);
   const base = n.base;
+  // A base others are sent to raid must let them in (sim/entryRoom.ts; an older game's rules have no such rule).
+  if (!leavesEntryRoom(base.buildings, rulesData)) throw detailError(400, 'bad_request', 'the layout leaves attackers no way in');
   capBaseLoot(base, rulesData);
   base.name = me.name;
   await ctx.repo.updatePlayer(me.id, { base, hallLevel: base.hallLevel, updatedAt: ctx.now(), ...layoutReset(ctx, me, base) });

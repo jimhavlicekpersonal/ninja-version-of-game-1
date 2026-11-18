@@ -17,6 +17,7 @@ import { scaleReward, skipCost, topUpCost, trainingSkipCost } from './economy';
 import { canPurchase, productGrantsFor, productInfo } from './monetization';
 import { addStipend, claimStipend, emptyStipend } from './stipend';
 import { activeGoalEvent, bountyBase, goalEventByKey, ladderReward, recordBountyResult } from './goalEvents';
+import { leavesEntryRoom } from './entryRoom';
 import { rematchBase, rematchKeep, rematchReward, rematchStatus } from './rematch';
 import { scatterObstacles } from './obstacles';
 import { offerCanStillShow, triggerOffer } from './offers';
@@ -2191,6 +2192,7 @@ function place(s: VillageState, type: BuildingType, x: number, y: number, now: n
   const q = placeQuote(s, data, type, now, pay === 'dew' ? 'dew' : 'acorns');
   if (!q.ok) return q;
   if (!canPlace(s, data, type, x, y).ok) return fail('INVALID_PLACEMENT', "That spot isn't free.");
+  if (closesEntry(s, data, { type, x, y })) return fail('INVALID_PLACEMENT', "That spot isn't free.");
   const def = buildingDef(data, type);
   const { cost, seconds } = q.quote;
   subtractCost(s.resources, cost);
@@ -2244,10 +2246,24 @@ function temper(s: VillageState, type: BuildingType, next: Temper, now: number, 
   return { ok: true, state: s, events: [{ kind: 'temper', buildingType: type, temper: t ?? {}, cost: q.cost }] };
 }
 
+/**
+ * Whether putting this building here would close the village to attackers (sim/entryRoom.ts). A layout that is
+ * already closed (built before the rule) is not frozen: only a change that closes an open village is refused.
+ * The refusal reuses the one placement sentence the game has; a sentence of its own needs every language.
+ */
+function closesEntry(s: VillageState, data: GameData, change: { id?: string; type: BuildingType; x: number; y: number }): boolean {
+  if (!data.economy.entryRoom) return false;
+  const c = buildingDef(data, change.type).category;
+  if (c === 'trap' || c === 'decor' || c === 'obstacle') return false;
+  if (!leavesEntryRoom(s.buildings, data)) return false;
+  return !leavesEntryRoom([...s.buildings.filter((b) => b.id !== change.id), change], data);
+}
+
 function move(s: VillageState, id: string, x: number, y: number, data: GameData): CommandResult {
   const b = s.buildings.find((v) => v.id === id);
   if (!b) return fail('NOT_FOUND', 'Building not found.');
   if (!canPlace(s, data, b.type, x, y, id).ok) return fail('INVALID_PLACEMENT', "That spot isn't free.");
+  if (closesEntry(s, data, { id, type: b.type, x, y })) return fail('INVALID_PLACEMENT', "That spot isn't free.");
   b.x = x;
   b.y = y;
   return { ok: true, state: s, events: [{ kind: 'move', buildingType: b.type, id }] };
