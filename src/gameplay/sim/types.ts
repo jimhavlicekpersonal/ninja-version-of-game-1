@@ -762,6 +762,11 @@ export interface EconomyDef {
    * instead of Coins, one for one (`place`/`upgrade` with `pay: 'dew'`), so a defender's idle Provisions build walls.
    */
   provisionsPayable?: string[];
+  /**
+   * P2-14 (built-not-live opportunity 4): the garrison crew. That many builds at a time of the `garrisonCategories`
+   * (defense, trap and support: every counter) take no Village Artisan. Free and never sold. Absent or 0: as before.
+   */
+  garrisonCrew?: number;
   mapSize: number;
   startingResources: Resources;
   startingLayout: StartingBuilding[];

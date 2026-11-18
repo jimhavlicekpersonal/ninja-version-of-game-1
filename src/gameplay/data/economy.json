@@ -74,6 +74,8 @@
   "raidableUncollectedFraction": 0.5,
   "cancelRefundFraction": 0.5,
   "provisionsPayable": ["hedge", "trap"],
+  "$commentGarrisonCrew": "P2-14 (2026-11-18): this many defense, trap or support builds at a time take no Village Artisan (sim/village.ts builderStatus), so fortifying does not stop the village growing. Free, never sold: no product, offer or Jade price. The lab's Rules 10 patch used 2.",
+  "garrisonCrew": 2,
   "queuedArmies": 1,
   "dismissRefundFraction": 0.5,
   "maxTrainBatch": 200,

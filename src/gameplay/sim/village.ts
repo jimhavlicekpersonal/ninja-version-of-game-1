@@ -468,11 +468,20 @@ export function hallLevelRequiredFor(data: GameData, type: BuildingType, test: (
   return null;
 }
 
+/** The building categories the garrison crew builds (P2-14: every counter, so `support` too). */
+const GARRISON_CATEGORIES: readonly string[] = ['defense', 'trap', 'support'];
+
+/** Whether the garrison crew builds this type (with `economy.garrisonCrew` on). */
+export function onGarrisonCrew(type: string, data: GameData): boolean {
+  return (data.economy.garrisonCrew ?? 0) > 0 && GARRISON_CATEGORIES.includes(data.buildings[type]?.category ?? '');
+}
+
 export function builderStatus(state: VillageState, data: GameData, now: number, forType?: string): { total: number; busy: number; free: number } {
-  // Rules 10 (lab): `economy.garrisonCrew` — that many defence or trap builds at a time are done by the garrison
-  // and take no Village Artisan, so fortifying the village does not stop the rest of it from growing.
-  const crew = (data.economy as { garrisonCrew?: number }).garrisonCrew ?? 0;
-  const garrison = (type: string) => crew > 0 && (buildingDef(data, type).category === 'defense' || buildingDef(data, type).category === 'trap');
+  // `economy.garrisonCrew` (P2-14, from the lab's Rules 10): that many defense, trap or support builds at a time are
+  // done by the garrison and take no Village Artisan, so fortifying the village does not stop it from growing.
+  // `forType`: the building about to start (a crew build may start while every artisan is busy).
+  const crew = data.economy.garrisonCrew ?? 0;
+  const garrison = (type: string) => onGarrisonCrew(type, data);
   let total = 0;
   let busy = 0;
   let onCrew = 0;
@@ -631,7 +640,8 @@ function afterCommand(s: VillageState, events: SimEvent[], cmd: Command, moonBef
       // A village that lost it that way before this fix (flag set, offer never shown) gets it back too.
       if (e.seconds > 3600 && (!s.flags.longWaitSeen || data.offers.rules.some((r) => r.trigger === 'first_long_wait' && offerCanStillShow(s, data, r.id)))) events.push({ kind: 'trigger', trigger: 'first_long_wait' });
       // The Artisan's Bundle is Jade for another Artisan's Hut: only offer it while one can still be hired.
-      if (e.seconds > 0 && builderStatus(s, data, now).free === 0 && canHireArtisan(s, data)) events.push({ kind: 'trigger', trigger: 'all_builders_busy' });
+      // P2-14: a garrison-crew build took no artisan, so it is no reason to offer one.
+      if (e.seconds > 0 && !onGarrisonCrew(e.buildingType, data) && builderStatus(s, data, now).free === 0 && canHireArtisan(s, data)) events.push({ kind: 'trigger', trigger: 'all_builders_busy' });
     } else if (e.kind === 'raid_end' && e.record.kind === 'attack' && e.record.settlement !== 'pending') {
       // Online attacks count once the server has confirmed them (see settleOnlineAttack).
       if (e.record.result.stars >= 1) s.stats.raidsWon++;
@@ -1051,16 +1061,17 @@ function shortfallQuote(s: VillageState, cost: Cost, data: GameData): { missing:
 /** What `action` would cost if resources were the only thing missing (null when something else blocks it). */
 function topUpTarget(s: VillageState, action: TopUpAction, now: number, data: GameData): Cost | null {
   const short = (q: QuoteResult) => (!q.ok && q.code === 'NOT_ENOUGH_RESOURCES' && q.quote ? q.quote : null);
-  const builderFree = (seconds: number) => seconds <= 0 || builderStatus(s, data, now).free >= 1;
+  // P2-14: the building's type decides whether the garrison crew can take it while every artisan is busy.
+  const builderFree = (seconds: number, type?: string) => seconds <= 0 || builderStatus(s, data, now, type).free >= 1;
   switch (action.type) {
     case 'upgrade': {
       // XPL-09 (P1-18): priced in the currency the action really pays (`pay: 'dew'`), or the bought Coins stayed.
       const q = short(upgradeQuote(s, action.id, data, now, action.pay === 'dew' ? 'dew' : 'acorns'));
-      return q && builderFree(q.seconds) ? q.cost : null;
+      return q && builderFree(q.seconds, s.buildings.find((b) => b.id === action.id)?.type) ? q.cost : null;
     }
     case 'place': {
       const q = short(placeQuote(s, data, action.buildingType, now, action.pay === 'dew' ? 'dew' : 'acorns'));
-      return q && builderFree(q.seconds) ? q.cost : null;
+      return q && builderFree(q.seconds, action.buildingType) ? q.cost : null;
     }
     case 'research':
       return short(researchStartQuoteOn(s, action.troop, now, data))?.cost ?? null;

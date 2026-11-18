@@ -15,7 +15,7 @@ import { buildingDef, levelDef, maxDefinedLevel } from './data';
 import { canAfford, missingFor } from './resources';
 import type { Building, Cost, GameData, VillageState } from './types';
 import { researchLanes } from './research';
-import { builderStatus, hallLevel, lastAttackArmy, limitFor, researchStartQuoteOn, trainQuoteOn } from './village';
+import { builderStatus, hallLevel, onGarrisonCrew, lastAttackArmy, limitFor, researchStartQuoteOn, trainQuoteOn } from './village';
 
 export type Objective =
   | { kind: 'chest' }
@@ -95,6 +95,9 @@ export function nextObjective(state: VillageState, now: number, data: GameData):
     const cheapest = list.find((c) => !c.cost.moonstones);
     if (cheapest) return { kind: 'save', buildingId: cheapest.b.id, type: cheapest.b.type, toLevel: cheapest.toLevel, missing: missingFor(state.resources, cheapest.cost) };
   } else {
+    // P2-14: every artisan is busy, but the garrison crew may still take a defense, trap or support build.
+    const crew = list.find((c) => onGarrisonCrew(c.b.type, data) && canAfford(state.resources, c.cost) && builderStatus(state, data, now, c.b.type).free > 0);
+    if (crew) return { kind: 'upgrade', buildingId: crew.b.id, type: crew.b.type, toLevel: crew.toLevel, keep: false };
     const army = researchGoal(state, now, data) ?? trainGoal(state, now, data);
     if (army) return army;
     const ends = state.buildings.map((b) => b.upgrade?.endsAt ?? Infinity).filter((t) => t > now);
