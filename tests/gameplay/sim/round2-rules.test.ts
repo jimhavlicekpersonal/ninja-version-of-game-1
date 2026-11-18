@@ -144,16 +144,18 @@ describe('declared stakes', () => {
 });
 
 describe('either-currency walls and traps', () => {
-  it('walls and traps may be paid in Provisions one for one; towers may not', () => {
+  it('walls and traps may be paid in Provisions one for one; the Dojo may not', () => {
+    // P2-13 (2026-11-18, restated): towers and support counters joined walls and traps.
     expect(payableInProvisions('bramble_hedge', data)).toBe(true);
     expect(payableInProvisions('thorn_snare', data)).toBe(true);
-    expect(payableInProvisions('acorn_cannon', data)).toBe(false);
+    expect(payableInProvisions('acorn_cannon', data)).toBe(true);
+    expect(payableInProvisions('burrow_barracks', data)).toBe(false);
     const { state, clock } = newGame({ acorns: 0, dew: 1_000_000 });
     const coins = data.buildings.bramble_hedge.levels[0].cost.acorns!;
     const q = placeQuote(state, data, 'bramble_hedge', clock.now(), 'dew');
     expect(q.ok && q.quote.cost).toEqual({ dew: coins });
     expect(placeQuote(state, data, 'bramble_hedge', clock.now()).ok).toBe(false);
-    expect(placeQuote(state, data, 'acorn_cannon', clock.now(), 'dew').ok).toBe(false);
+    expect(placeQuote(state, data, 'burrow_barracks', clock.now(), 'dew').ok).toBe(false);
   });
 
   it('place and upgrade with pay: dew spend Provisions, and a cancel refunds them', () => {
