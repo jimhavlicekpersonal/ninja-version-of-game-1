@@ -19,7 +19,7 @@ import { rematchBase, rematchStatus } from './gameplay/sim/rematch';
 import { hasAttacked, shieldAfterAttack } from './gameplay/sim/shield';
 import { totalLoot } from './gameplay/sim/battle/basegen';
 import { capacity } from './gameplay/sim/resources';
-import { armyDiversity, diversityPartOf, diversityShare, trainableRoles } from './gameplay/sim/carry';
+import { armyDiversity, contractById, contractMultiplier, diversityPartOf, diversityShare, trainableRoles } from './gameplay/sim/carry';
 import { BattleHud } from './presentation/ui/battleHud';
 import { sound } from './presentation/audio/sound';
 import type { Hud } from './presentation/ui/hud';
@@ -425,7 +425,10 @@ export class App {
         lastRecord = out.record;
         // P2-15: the share the raid carries comes from the sim (the record's `carry`; pending: what it will settle with).
         if (out.record.settlement === 'pending') return { result: out.record.result, banked: {}, trophies: 0, pending: true, diversity: diversityShare(armyDiversity(out.record.result.used, session.setup, c.data), c.data, trainableRoles(c.state, c.data)) };
-        return { result: out.record.result, banked: out.banked, overflow: out.record.overflow, trophies: out.record.trophies ?? 0, bonus: out.record.leagueBonus, eventBonus: out.record.eventBonus, stake: out.record.stake, diversity: diversityPartOf(out.record.carry, out.record.stake, out.record.result.stars, c.data) };
+        // P5-03: the daily contract the raid met (its multiplier is taken out of the diversity share shown).
+        const met = contractById(out.record.contract, c.data);
+        const metMult = met ? contractMultiplier(met, out.record.result, out.record.setup, out.record.stake, c.data, trainableRoles(c.state, c.data)) : 1;
+        return { result: out.record.result, banked: out.banked, overflow: out.record.overflow, trophies: out.record.trophies ?? 0, bonus: out.record.leagueBonus, eventBonus: out.record.eventBonus, stake: out.record.stake, diversity: diversityPartOf(out.record.carry, out.record.stake, out.record.result.stars, c.data, metMult), contract: met ? localizedData(c.data).raids.contracts!.list.find((x) => x.id === met.id)!.name : undefined };
       },
       onReplay: () => {
         if (lastRecord) this.replay(lastRecord);

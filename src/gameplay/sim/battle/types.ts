@@ -111,6 +111,8 @@ export interface BattleRecord {
   leagueBonus?: Cost;
   /** Limited-time event bonus included in the banked loot. */
   eventBonus?: Cost;
+  /** P5-03: the daily contract this raid met (its id), when it carried more for it. */
+  contract?: string;
   /** A raid made up by the offline raid simulation (not a real player). */
   simulated?: boolean;
   /**

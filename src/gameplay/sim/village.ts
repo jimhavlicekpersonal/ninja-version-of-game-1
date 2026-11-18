@@ -34,7 +34,7 @@ import { canPlace } from './grid';
 import { accrueRestart, addCapped, canAfford, capacity, collectorAmount, effectiveLevel, missingFor, subtractCost } from './resources';
 import type { Building, BuildingLimit, BuildingType, Cost, GameData, LeagueDef, PurchaseRecord, PurchaseRefund, ResourceKind, Temper, TopUpPaid, TrainingItem, VillageState, PendingBattle } from './types';
 import { normalizeTemper, sameTemper, temperable, temperDef, validTemper } from './battle/temper';
-import { carriedLoot, raidCarry, trainableRoles, validStake } from './carry';
+import { cappedCarry, carriedLoot, contractFor, contractMultiplier, raidCarry, trainableRoles, validStake } from './carry';
 import { RESOURCE_KINDS } from './types';
 import { bandChangeAllowed, isAgeBand, type AgeBand } from './age';
 
@@ -2000,7 +2000,11 @@ function battleEnd(s: VillageState, rec0: Omit<BattleRecord, 'result' | 'id' | '
   // really reached storage. Whatever was won but did not fit is kept as
   // `overflow`, so the results screen can say so precisely.
   const stake = validStake(rec.stake, data) ? rec.stake : undefined;
-  const carry = raidCarry(result, rec.setup, stake, data, trainableRoles(s, data));
+  // P5-03: the contract of the day the raid began (its own time, never later than now: browser and server agree).
+  const contract = contractFor(Math.min(now, rec.at ?? now), data);
+  const roles = trainableRoles(s, data);
+  const carry = raidCarry(result, rec.setup, stake, data, roles, contract);
+  const metContract = contractMultiplier(contract, result, rec.setup, stake, data, roles) > 1 ? contract!.id : undefined;
   const { banked, overflow, bonus, eventBonus } = bankRaidLoot(s, result, now, data, carry);
   awardMastery(s, result, rec.setup, data);
   const opp = rec.setup.base.trophies ?? s.trophies;
@@ -2013,6 +2017,7 @@ function battleEnd(s: VillageState, rec0: Omit<BattleRecord, 'result' | 'id' | '
   delete record.stake;
   if (stake !== undefined) record.stake = stake;
   if (carry !== 1) record.carry = carry;
+  if (metContract) record.contract = metContract;
   if (hasAny(overflow)) record.overflow = overflow;
   if (hasAny(bonus)) record.leagueBonus = bonus;
   if (hasAny(eventBonus)) record.eventBonus = eventBonus;
@@ -2036,11 +2041,14 @@ function bankRaidLoot(s: VillageState, result: BattleResult, at: number, data: G
   // broke open, by the stars you won.
   const byStars = data.raids.attackCarryByStars;
   if (byStars) carry *= byStars[result.stars] ?? 1;
+  // P5-03: contract x stake x diversity x event bonus stop at `raids.carryCap` times the plain loot.
+  const capped = cappedCarry(carry, result.stars >= 1 ? eventEffect(at, data).raidLootBonus : 0, data);
+  carry = capped.carry;
   const loot = carriedLoot(result.loot, carry);
   const fromBattle = addCapped(s.resources, loot, cap);
   const bonusWanted = leagueWinBonus(s.trophies, result.stars, hallLevel(s, data), data);
   const bonus = positive(addCapped(s.resources, bonusWanted, cap));
-  const lootBonus = result.stars >= 1 ? eventEffect(at, data).raidLootBonus : 0;
+  const lootBonus = capped.eventBonus;
   const eventWanted: Cost = {};
   if (lootBonus > 0) for (const [k, v] of Object.entries(loot) as [ResourceKind, number][]) if (v > 0) eventWanted[k] = Math.floor(v * lootBonus);
   const eventBonus = positive(addCapped(s.resources, eventWanted, cap));
@@ -2067,7 +2075,12 @@ function settleOnlineAttack(s: VillageState, cmd: Extract<Command, { type: 'sett
   // Only the stake the server settled with counts (it was fixed when the raid started); a server without
   // stakes settles with none, whatever this game recorded.
   const stake = validStake(cmd.stake, data) ? cmd.stake : undefined;
-  const carry = raidCarry(result, rec.setup, stake, data, trainableRoles(s, data));
+  // P5-03: the contract of the day the raid began (`rec.at`, the same time the server settles with).
+  const contract = contractFor(rec.at, data);
+  const roles = trainableRoles(s, data);
+  const carry = raidCarry(result, rec.setup, stake, data, roles, contract);
+  if (contractMultiplier(contract, result, rec.setup, stake, data, roles) > 1) rec.contract = contract!.id;
+  else delete rec.contract;
   const { banked, overflow, bonus, eventBonus } = bankRaidLoot(s, result, rec.at, data, carry);
   awardMastery(s, result, rec.setup, data);
   rec.result = { ...result, loot: { ...result.loot } };

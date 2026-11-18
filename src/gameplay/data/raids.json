@@ -189,5 +189,17 @@
     3062556,
     5428078,
     9600185
-  ]
+  ],
+  "$commentContracts": "P5-03 (RET-11, 2026-11-18): one contract a UTC day, the same for everyone (list[day mod 6]); it changes only what a won raid carries home, never the battle. carryCap: contract x stake x diversity x event bonus never carries more than 2.2x the plain loot (tests/gameplay/sim/contracts.test.ts).",
+  "contracts": {
+    "list": [
+      { "id": "crimson_lotus_hunt", "name": "Crimson Lotus hunt", "text": "Won raids on Crimson Lotus outposts carry 20% more today.", "kind": "rival", "clan": "crimson_lotus", "bonus": 0.2 },
+      { "id": "bold_words", "name": "Bold words", "text": "A declared stake that you reach carries 15% more today.", "kind": "stakes", "bonus": 0.15 },
+      { "id": "many_hands", "name": "Many hands", "text": "Today the mix of your army counts double toward what a won raid carries.", "kind": "diversity" },
+      { "id": "iron_tide_hunt", "name": "Iron Tide hunt", "text": "Won raids on Iron Tide outposts carry 20% more today.", "kind": "rival", "clan": "iron_tide", "bonus": 0.2 },
+      { "id": "clean_sweep", "name": "Clean sweep", "text": "Three-star raids carry 15% more today.", "kind": "threeStar", "bonus": 0.15 },
+      { "id": "moon_veil_hunt", "name": "Moon Veil hunt", "text": "Won raids on Moon Veil outposts carry 20% more today.", "kind": "rival", "clan": "moon_veil", "bonus": 0.2 }
+    ]
+  },
+  "carryCap": 2.2
 }

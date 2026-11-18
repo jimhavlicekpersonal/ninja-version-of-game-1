@@ -9,6 +9,7 @@ import { t as i18nText, fmtPercent } from './i18n';
 import { t } from './i18n';
 import { chestContents, chestOdds, chestReady, nextChestAt, streakAfterClaim, streakJadeDue } from '../../gameplay/sim/daily';
 import { activeEvents, upcomingEvents, type EventWindow } from '../../gameplay/sim/events';
+import { contractEndsAt, contractFor } from '../../gameplay/sim/carry';
 import { goalEventViews } from '../../gameplay/sim/goalEvents';
 import type { BaseLayout } from '../../gameplay/sim/battle/types';
 import { dayIndex } from '../../gameplay/sim/pass';
@@ -231,6 +232,9 @@ export class DailyUi {
       );
       if (this.opts.onBounty) body.append(h('div', { class: 'actions' }, attack));
     }
+    // P5-03: the daily contract (the same for everyone; it changes only what a won raid carries home).
+    const contract = contractFor(now, gd);
+    if (contract) body.append(h('h3', {}, t('contract.title', { name: contract.name })), h('p', { class: 'small' }, contract.text), h('p', { class: 'muted small' }, t('contract.about', { time: formatDuration(contractEndsAt(now) - now) })));
     // Growth batch 2026-11-14 (G10): the calendar of the next 4 weeks, from the schedule in force.
     body.append(h('h3', {}, t('events.calendar.title')));
     const windows = calendarWindows(now, gd);

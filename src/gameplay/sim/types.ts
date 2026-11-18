@@ -994,6 +994,24 @@ export interface RaidsDef {
    * the loot. Without a declaration the loot is carried as before.
    */
   stakes?: { byStars: Record<string, number> };
+  /**
+   * P5-03 (RET-11): one contract a UTC day, the same for everyone (`contractFor`): what a won raid carries home that
+   * day, never the battle. `list[day mod length]`.
+   */
+  contracts?: { list: ContractDef[] };
+  /** P5-03: a raid carries at most this many times its plain loot (contract x stake x diversity x event bonus). */
+  carryCap?: number;
+}
+
+/** A daily contract (P5-03): `rival` (outposts of `clan`), `stakes` (a met declared stake), `diversity` (diversity counts double), `threeStar`. */
+export interface ContractDef {
+  id: string;
+  name: string;
+  text: string;
+  kind: 'rival' | 'stakes' | 'diversity' | 'threeStar';
+  clan?: string;
+  /** Extra share of the loot when the contract is met (not used by `diversity`). */
+  bonus?: number;
 }
 
 export interface PackDef {

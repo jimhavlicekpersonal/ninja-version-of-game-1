@@ -55,7 +55,7 @@ interface BattleHudDeps {
   onAttack(): boolean | Promise<boolean>;
   /** Called once when a live battle ends; returns the loot actually banked. */
   /** `banked` is what reached storage (bonuses included); `overflow` is what was won but did not fit. */
-  onFinished(): { result: BattleResult; banked: Cost; trophies: number; bonus?: Cost; eventBonus?: Cost; overflow?: Cost; note?: string; pending?: boolean; stake?: number; /** The diversity share the raid carried (sim/carry.ts; absent = 1). */ diversity?: number } | null;
+  onFinished(): { result: BattleResult; banked: Cost; trophies: number; bonus?: Cost; eventBonus?: Cost; overflow?: Cost; note?: string; pending?: boolean; stake?: number; /** The diversity share the raid carried (sim/carry.ts; absent = 1). */ diversity?: number; /** P5-03: the daily contract it met (its name). */ contract?: string } | null;
   /** A raid that may declare a stake (sim/carry.ts): offline, or on a server with the `stakes` feature. */
   stakes?: boolean;
   onReplay(): void;
@@ -589,7 +589,7 @@ export class BattleHud {
       this.finished = true;
       if (this.s.mode === 'live') {
         const out = this.deps.onFinished();
-        if (out) this.showResults(out.result, out.banked, out.trophies, out.bonus, out.eventBonus, out.note, out.overflow, out.pending, out.stake, out.diversity);
+        if (out) this.showResults(out.result, out.banked, out.trophies, out.bonus, out.eventBonus, out.note, out.overflow, out.pending, out.stake, out.diversity, out.contract);
       } else {
         this.toast(i18nText("ui.replay_finished_c807fbe581"));
       }
@@ -632,7 +632,7 @@ export class BattleHud {
     );
   }
 
-  private showResults(r: BattleResult, banked: Cost, trophies: number, bonus?: Cost, eventBonus?: Cost, note?: string, overflow?: Cost, pending = false, stake?: number, diversity?: number): void {
+  private showResults(r: BattleResult, banked: Cost, trophies: number, bonus?: Cost, eventBonus?: Cost, note?: string, overflow?: Cost, pending = false, stake?: number, diversity?: number, contract?: string): void {
     // Result feel (re-audit design item 11): stars slam in one by one with a sound and haptic each, a banner for a
     // flawless raid, and the loot counts up. Reduced motion shows the end state at once.
     celebrate(r.stars > 0 ? 'victory' : 'defeat');
@@ -663,6 +663,7 @@ export class BattleHud {
           : h('p', {}, this.deps.trial || this.deps.special ? i18nLabel('Reward: ') : i18nLabel('Loot: '), countingChips(banked, still ? 0 : 250 + r.stars * STAR_GAP * 1000)),
       this.deps.grove || this.deps.trial || this.deps.practice || this.deps.special || pending ? '' : h('p', {}, i18nLabel('Honor: '), h('span', { class: `chip ${trophies >= 0 ? 'good' : 'short'}` }, icon(icons.leaf), `${trophies >= 0 ? '+' : ''}${trophies}`)),
       ...this.carryNotes(r, stake, pending, diversity),
+      contract ? h('p', { class: 'note good' }, t('contract.met', { name: contract })) : null,
       bonus && Object.keys(bonus).length ? h('p', { class: 'muted small' }, i18nText("ui.includes_your_league_bonus_b40d9ae1a0"), lootChips(bonus)) : null,
       eventBonus && Object.keys(eventBonus).length ? h('p', { class: 'muted small' }, i18nText("ui.includes_the_event_bonus_8c87bb2bac"), lootChips(eventBonus)) : null,
       ...closeCalls(this.s.sim, localizedData(this.s.data)).map((cc) => h('p', { class: 'close-call' }, i18nMessage(cc.text))),
