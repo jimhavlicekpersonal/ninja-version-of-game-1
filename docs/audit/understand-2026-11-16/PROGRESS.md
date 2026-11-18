@@ -115,22 +115,22 @@ server's own row). The prompt's baseline (205 files, 1,934 tests) predates `0c5e
 | P6-16 | todo | | | | |
 | P6-17 | todo | | | | |
 | P6-18 | todo | | | | |
-| P7-01 | done |  | a test required the publisher facts to be empty; nothing stopped a store build with 'not published yet' pages → facts must be empty or well formed (values parsed); npm run release:preflight lists 23 open items (6 blocking) and fails the signed Android/TestFlight jobs on blocking ones; notice on the web build |  | tools/release/check-store-ready.mjs, legal-config.mjs; test in release-tools.test.ts |
+| P7-01 | done | b6845eb | a test required the publisher facts to be empty; nothing stopped a store build with 'not published yet' pages → facts must be empty or well formed (values parsed); npm run release:preflight lists 23 open items (6 blocking) and fails the signed Android/TestFlight jobs on blocking ones; notice on the web build |  | tools/release/check-store-ready.mjs, legal-config.mjs; test in release-tools.test.ts |
 | P7-02 | done | 7b6e7a4 | id in 5 places, signed Android job would upload com.toadstoolkingdoms.app → one APP_ID variable; signed jobs stop while unset/legacy unless ALLOW_LEGACY_APP_ID=1 |  | Not run: a Gradle build or Xcode (no Android SDK / Mac here). strings.xml and Xcode identifier stay legacy until the owner changes the id (SHIPPING 6) |
-| P7-03 | done |  | native lists lacked @capacitor/haptics and @capacitor-community/in-app-review → npx cap sync output committed; test checks every plugin dependency in the three native files |  | Not built with Gradle/Xcode here |
+| P7-03 | done | b6845eb | native lists lacked @capacitor/haptics and @capacitor-community/in-app-review → npx cap sync output committed; test checks every plugin dependency in the three native files |  | Not built with Gradle/Xcode here |
 | P7-04 | done | 2627bf6 | Contests None → Frequent; age assurance No → present; parental controls No (reasoning beside each) |  | Apple page re-read 2026-11-18 by a web-fetch helper whose read of the two sections came from a page summary (the body text was cut off): an owner must re-read the page in App Store Connect before submitting. No closure record for C05 yet: in the Phase 7 record |
 | P7-05 | todo | | | | |
 | P7-06 | todo | | | | |
 | P7-07 | todo | | | | |
 | P7-08 | done | 2627bf6 | policyUpdated 2026-11-05 (page changed 2026-11-14) → 2026-11-14; test ties it to a hash of the English privacy strings |  |  |
 | P7-09 | todo | | | | |
-| P7-10 | done (docs) |  | REQUESTS 'Open' listed 9 backend + 7 game-theory entries, most answered → backend 2 open / 7 done, game theory 4 open / 3 done; dated reassessment table in WORLDWIDE_AUDIT |  | docs/art/REQUESTS.md left as is: its re-audit table is reference and the squad-orders ask is genuinely open (P6-01) |
+| P7-10 | done (docs) | b6845eb | REQUESTS 'Open' listed 9 backend + 7 game-theory entries, most answered → backend 2 open / 7 done, game theory 4 open / 3 done; dated reassessment table in WORLDWIDE_AUDIT |  | docs/art/REQUESTS.md left as is: its re-audit table is reference and the squad-orders ask is genuinely open (P6-01) |
 | P7-11 | todo | | | | |
 | P7-12 | todo | | | | |
 | P7-13 | todo | | | | |
 | P7-14 | todo | | | | |
 | P7-15 | todo | | | | |
-| P7-16 | doing (draft) |  | docs/store/OWNER_CHECKLIST.md written from STATE_OF_THE_GAME 6, publish.md 4e and this pass; preflight checks the machine-checkable lines |  | Extend with later phases' owner items (festival names, preview URL decision, local-day stats) |
+| P7-16 | doing (draft) | b6845eb | docs/store/OWNER_CHECKLIST.md written from STATE_OF_THE_GAME 6, publish.md 4e and this pass; preflight checks the machine-checkable lines |  | Extend with later phases' owner items (festival names, preview URL decision, local-day stats) |
 
 ## New and changed locale keys (for section 13)
 
