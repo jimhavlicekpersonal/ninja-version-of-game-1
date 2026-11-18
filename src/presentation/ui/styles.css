@@ -1191,3 +1191,8 @@ html[dir="rtl"] .training .actions.army-filters select { padding: 6px 8px 6px 20
 @media (max-height: 480px) {
   #battle-hud .squad-row { bottom: calc(76px + var(--safe-b)); left: calc(158px + var(--safe-l)); transform: none; max-width: calc(100% - 316px - var(--safe-l) - var(--safe-r)); }
 }
+/* P6-02: the post-raid review, one row per point. */
+.what-if { display: grid; gap: 6px; margin-top: 6px; }
+.what-if-row { display: flex; align-items: center; gap: 10px; }
+.what-if-row .btn { min-width: 56px; }
+.what-if-btn { margin-top: 8px; }

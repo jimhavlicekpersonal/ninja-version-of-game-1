@@ -143,6 +143,41 @@ async function startBattle() {
   return placed;
 }
 
+/** End the practice battle, open "What if…" on its result screen and review one other point; longest task in ms. */
+async function reviewSample() {
+  const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+  const scene = window.tk.game.scene.getScene('battle');
+  if (!scene?.session) return null;
+  scene.session.surrender();
+  let btn = null;
+  for (let i = 0; i < 100 && !(btn = document.querySelector('[data-id="what-if"]')); i++) await wait(100);
+  if (!btn) return { error: 'no What if button' };
+  btn.click();
+  await wait(300);
+  const point = document.querySelector('[data-id="what-if-1"]');
+  if (!point) return { error: 'no point to review' };
+  let longest = 0;
+  const tasks = [];
+  const obs = new PerformanceObserver((list) => {
+    for (const e of list.getEntries()) {
+      longest = Math.max(longest, e.duration);
+      tasks.push(Math.round(e.duration));
+    }
+  });
+  try {
+    obs.observe({ type: 'longtask', buffered: false });
+  } catch {
+    /* no Long Tasks API: longest stays 0 */
+  }
+  const t0 = performance.now();
+  point.click();
+  for (let i = 0; i < 1200 && point.disabled; i++) await wait(50);
+  const ms = Math.round(performance.now() - t0);
+  await wait(200);
+  obs.disconnect();
+  return { reviewMs: ms, longestTaskMs: Math.round(longest), longTasks: tasks.length, result: point.parentElement.querySelector('.what-if-out')?.textContent ?? '' };
+}
+
 async function qualityRun(label, { query = '', deviceMemory, cores } = {}) {
   const ctx = await browser.newContext({ viewport: { width: 360, height: 640 }, deviceScaleFactor: 3, isMobile: true, hasTouch: true, serviceWorkers: 'block' });
   if (deviceMemory !== undefined || cores !== undefined) {
@@ -166,9 +201,13 @@ async function qualityRun(label, { query = '', deviceMemory, cores } = {}) {
   await page.waitForTimeout(1000);
   const battleFrames = await page.evaluate(frameSample, 5000);
   const afterBattle = await page.evaluate(textureReport);
+  // P6-02: one post-raid review battle on the result screen at CPU x6; the longest main-thread task while it runs.
+  await cdp.send('Emulation.setCPUThrottlingRate', { rate: 6 });
+  const review = await page.evaluate(reviewSample);
+  await cdp.send('Emulation.setCPUThrottlingRate', { rate: 4 });
   const heapMB = await page.evaluate(() => (performance.memory ? Math.round(performance.memory.usedJSHeapSize / 1048576) : null));
   await ctx.close();
-  return { label, readyMs, canvas, village, villageFrames, deployed, battleFrames, afterBattleTextureMB: afterBattle.textureMB, afterBattleTextures: afterBattle.textures, heapMB };
+  return { label, readyMs, canvas, village, villageFrames, deployed, battleFrames, afterBattleTextureMB: afterBattle.textureMB, afterBattleTextures: afterBattle.textures, heapMB, review };
 }
 
 if (qualityMode) {

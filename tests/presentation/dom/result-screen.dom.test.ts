@@ -76,3 +76,39 @@ describe('the result screen (P6-07)', () => {
     expect(clicked()).toBe('Next');
   });
 });
+
+describe('the post-raid review (P6-02)', () => {
+  it('is offered after a raid, runs one point on demand, and shows a real battle result', async () => {
+    document.body.innerHTML = '<div id="battle-hud"></div>';
+    const setup = { seed: 3, base: generateOpponent(77, 5, data), army: { beetle_brute: 5, hedgehog_roller: 8 }, levels: { beetle_brute: 1, hedgehog_roller: 1 }, infiltration: true };
+    const session = new BattleSession(structuredClone(setup), data, 'live');
+    session.orderSquad({ point: 0, formation: 'file', order: 'rush' });
+    for (let i = 0; i < 6000 && !session.sim.ended; i++) session.update(100);
+    hud = new BattleHud({
+      root: document.getElementById('battle-hud')!,
+      session,
+      myTrophies: 400,
+      troopThumb: () => null,
+      scoutFee: 0,
+      canPayFee: () => true,
+      onHome: () => undefined,
+      onNext: () => undefined,
+      onAttack: () => true,
+      onReplay: () => undefined,
+      onFinished: () => ({ result: session.result(), banked: {}, trophies: 0 }),
+    });
+    (hud as unknown as { tick(): void }).tick();
+    (document.querySelector('[data-id="what-if"]') as HTMLButtonElement).click();
+    const btn = document.querySelector('[data-id="what-if-1"]') as HTMLButtonElement;
+    expect(document.querySelector('.modal-backdrop:last-child')?.textContent).toMatch(/Simulated/);
+    btn.click();
+    for (let i = 0; i < 400 && btn.disabled; i++) await new Promise((r) => setTimeout(r, 0));
+    const out = btn.parentElement!.querySelector('.what-if-out')!.textContent!;
+    const { WhatIfRun } = await import('../../../src/gameplay/control/whatIf');
+    const run = new WhatIfRun(setup, session.deployments, 1, data, session.endTick);
+    while (!run.advance(100));
+    const r = run.outcome().result;
+    expect(out).toContain(`${r.stars}★`);
+    expect(out).toContain(String(r.destruction));
+  });
+});

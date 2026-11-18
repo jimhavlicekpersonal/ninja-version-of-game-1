@@ -1,6 +1,7 @@
 import { displayData as localizedData, messageText as ownedText, generatedName } from './i18n';
 import { unitName } from './unitName';
 import type { ProgressLine } from './resultProgress';
+import { WhatIfRun } from '../../gameplay/control/whatIf';
 import { messageText as i18nMessage, listText as i18nList } from './i18n';
 import { labelText as i18nLabel } from './i18n';
 import { t as i18nText } from './i18n';
@@ -851,6 +852,10 @@ export class BattleHud {
       // The settlement says exactly what did not fit; nothing is inferred from totals.
       overflow && Object.values(overflow).some((v) => (v ?? 0) > 0) ? h('p', { class: 'note' }, i18nText("ui.did_not_fit_in_your_storage_e281ba747c"), lootChips(overflow)) : null,
       this.progressBlock(progress),
+      // P6-02 (CMB-02): the review, after the raid only, on demand.
+      this.s.sim.entry && this.s.sim.entry.points.length > 1 && this.s.deployments.some((d) => this.s.data.troops[d.troop])
+        ? h('button', { class: 'btn ghost small-btn what-if-btn', type: 'button', 'data-id': 'what-if', onclick: () => this.openWhatIf() }, t('review.button'))
+        : null,
     );
     const next = this.deps.nextActions?.(r) ?? [];
     this.modal(title, body, [
@@ -866,6 +871,56 @@ export class BattleHud {
         },
       },
     ], false);
+  }
+
+  /**
+   * P6-02 (CMB-02): the same army and orders sent through another open point, simulated one point at a time on demand
+   * in slices (the result screen stays responsive on a cheap phone). Said for what it is; never advice, never before.
+   */
+  private openWhatIf(): void {
+    const s = this.s;
+    const entry = s.sim.entry;
+    if (!entry) return;
+    const setup = s.setup;
+    const deployments = [...s.deployments];
+    const endTick = s.endTick;
+    const list = h('div', { class: 'what-if' });
+    let running: number | null = null;
+    entry.points.forEach((p, i) => {
+      const out = h('span', { class: 'small what-if-out', 'aria-live': 'polite' });
+      const btn = h('button', { class: 'btn ghost', type: 'button', 'data-id': `what-if-${i}` }, pointLabel(p.label)) as HTMLButtonElement;
+      btn.addEventListener('click', () => {
+        if (running !== null) return;
+        btn.disabled = true;
+        out.textContent = '…';
+        const run = new WhatIfRun(setup, deployments, i, s.data, endTick);
+        const slice = () => {
+          const t0 = performance.now();
+          // ~8 ms of work a slice, then give the frame back.
+          while (!run.advance(20) && performance.now() - t0 < 8);
+          if (!run.sim.ended) {
+            running = window.setTimeout(slice, 0);
+            return;
+          }
+          running = null;
+          btn.disabled = false;
+          const o = run.outcome();
+          out.textContent = t('review.result', { stars: o.result.stars, pct: fmtPercent(o.result.destruction) });
+          if (o.sent < o.total) out.append(h('span', { class: 'muted' }, ` · ${t('review.fit', { sent: o.sent, total: o.total })}`));
+        };
+        running = window.setTimeout(slice, 0);
+      });
+      list.append(h('div', { class: 'what-if-row' }, btn, out));
+    });
+    const close = this.modal(t('review.title'), h('div', {}, h('p', { class: 'muted small' }, t('review.about')), list), [
+      {
+        label: i18nText("ui.close_7d9eb7acb1"),
+        onClick: () => {
+          if (running !== null) window.clearTimeout(running);
+          close();
+        },
+      },
+    ]);
   }
 
   /** P6-07: the tasks this battle moved, honor to the next league and the Scroll's next tier (only what moved). */
