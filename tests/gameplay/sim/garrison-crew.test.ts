@@ -74,7 +74,8 @@ describe('P2-14: the garrison crew', () => {
     const { clock } = newGame();
     const b = busyVillage(clock.now());
     // Today's chest and calendar day already opened (they come first).
-    const s: VillageState = { ...b, daily: { ...b.daily, lastDay: 1e9 }, calendar: { ...(b.calendar ?? { claimed: 0, lastDay: 0 }), lastDay: 1e9 } as VillageState['calendar'] };
+    // Restated for P6-05 (earned rewards come right after the chest): this Keep 6 village's achievements are claimed.
+    const s: VillageState = { ...b, daily: { ...b.daily, lastDay: 1e9 }, calendar: { ...(b.calendar ?? { claimed: 0, lastDay: 0 }), lastDay: 1e9 } as VillageState['calendar'], achievements: Object.fromEntries(data.achievements.map((a) => [a.id, a.tiers.length])) };
     const o = nextObjective(s, clock.now(), withCrew(2));
     expect(o.kind).toBe('upgrade');
     if (o.kind === 'upgrade') expect(onGarrisonCrew(o.type, data)).toBe(true);

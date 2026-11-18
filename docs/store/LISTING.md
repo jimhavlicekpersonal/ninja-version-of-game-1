@@ -1,6 +1,6 @@
 # Store listing texts (step 49, draft)
 
-Check every claim against the build you submit. Keep names as in the game ("Kagemura", "Clan Keep", "Jade"). Never mention another game. The claims below were checked against the code on 2026-11-05 (worldwide audit GLOBAL-020); "Claims checked" at the end says what each rests on and what must not be claimed.
+Check every claim against the build you submit. Keep names as in the game ("Kagemura", "Clan Keep", "Jade"). Never mention another game. The claims below were checked against the code on 2026-11-05 (worldwide audit GLOBAL-020) and again on 2026-11-18 after the replayability pass (P7-13); "Claims checked" at the end says what each rests on and what must not be claimed.
 
 ## Names
 
@@ -24,8 +24,14 @@ Lead a ninja clan. Build a hidden village in the mountains, train fifty kinds of
 
 **Raid with a plan**
 - Warriors enter only through a base's Infiltration Points: scout the paths and the towers that cover them.
-- Throw Smoke Bombs as your warriors walk into tower range, and send Saboteurs to jam a defense.
+- Send your squad in with one order (together, a pincer or single file; tanks first or a rush), or place every warrior by hand.
+- Throw Smoke Bombs as your warriors walk into tower range, and send Saboteurs to jam a defense. From Clan Keep 7 the Shadow Captain rallies your whole squad once a battle.
+- After a raid, see what the same army would have done through another point.
 - A planned attack beats a big one.
+
+**Hold your village**
+- Every raid on your village comes with a report: what you kept, the stars you denied, where the raider broke in.
+- Test your defenses against a simulated raider, and practice against the army that beat you.
 
 **Play together** (online)
 - Join an Alliance: chat, ask for warriors and send them to your clanmates.
@@ -34,7 +40,11 @@ Lead a ninja clan. Build a hidden village in the mountains, train fifty kinds of
 - Climb the Honor leagues and the Power Ranking.
 
 **The Shadow Trials**
-- An endless ladder of fortresses. Each tier pays out once, and gets harder.
+- An endless ladder of fortresses. Each tier pays out once, and gets harder. A daily drill lets you practice while your army trains.
+
+**Something new every day**
+- Events on a fixed four-week calendar, five yearly festivals with a fortress and a Keep look to earn, a weekly Gauntlet, and a daily contract.
+- Achievements, Keep seals, warrior mastery ranks and looks you earn by playing.
 
 **Fair play**
 - A free daily chest, with its odds shown before you open it. Nothing random is ever sold.
@@ -77,6 +87,13 @@ ninja,clan,village,strategy,base builder,raid,defense,tower,shinobi,war,alliance
 | No ads | No ad SDK in the code | — |
 | Nothing random is sold | Only the free daily chest is random (`daily.json`), odds shown first | — |
 | Fifty warriors, Keep 1 to 15, Shadow Trials | `troops.json`/`roster.json`, `hall.json`, `trials.json` | — |
+| Squad orders (three formations, two wave orders) | `ui/battleHud.ts` squad row; `control/squadPlan.ts`; `tests/presentation/dom/squad.dom.test.ts` | "Hold a reserve" (not offered: `phase6/p6-01-squad-orders.md`) |
+| Shadow Captain at Keep 7 rallies the squad once a battle | `battle.json` `heroes.shadow_captain` (unlockKeep 7, `oncePerBattle`) | Other heroes (built, not live) |
+| "What the same army would have done through another point" | `control/whatIf.ts`; `tests/gameplay/control/what-if.test.ts` | That it says which point is best |
+| Defense report; test your defenses; practice against a raider | `sim/defenseReport.ts`, `sim/defenseTest.ts`, `app.ts` `practiceAgainst`; their tests | — |
+| Daily drill | `drill.json`/`sim/drill.ts`, `drillEnd` | — |
+| Four-week event calendar, five festivals with an earnable look, weekly Gauntlet, daily contract | `events.json` (`dated`, goal events), `raids.json` `contracts`; `tests/gameplay/sim/contracts.test.ts` | Festivals tied to a real religious holiday (they are the game's own) |
+| Achievements, Keep seals, mastery ranks, earned looks | `achievements.json`, `sim/seals.ts`, `sim/mastery.ts` (ranks, no stat bonus), `cosmetics.json` `earned` | Mastery making warriors stronger (`mastery.maxBonus` 0) |
 | Alliance War weekly, Friends, Duels, Gangs of up to 4 | Server features (`/v1/hello`); offline the Alliance is a labelled bot Alliance | Online features in a build without a server |
 | Under-18 spending limit | `store.json` `minorMonthlyCapUsd` | Age-appropriate social protections beyond that (audit R07), until the fix release with the age screen ships; even then do not claim age verification (the age band is self-declared) |
 | A Keep look that changes each season | `pass.json` `seasonSkins` (8 looks, one per season in turn; `cosmetics.json` `passOnly`), `repeatJade` for a look already owned | Done (P1-02, 2026-11-18): the Store names this season's look from the data (`ui/economyUi.ts` `passLookName` → `passSeasonSkin`); `tests/presentation/store-compliance.test.ts` checks this row against `pass.json`. Do not name one look in the description |

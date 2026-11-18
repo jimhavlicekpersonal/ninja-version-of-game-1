@@ -435,7 +435,7 @@ export class Hud {
 
   /** P6-14: once per device and button, a label beside a rail button that just appeared. */
   private introduceRailButton(label: string, b: HTMLElement): void {
-    let seen: string[] = [];
+    let seen: string[];
     try {
       seen = JSON.parse(localStorage.getItem('tk.railSeen') ?? '[]') as string[];
     } catch {
@@ -2336,7 +2336,7 @@ export class Hud {
     const now = this.c.now();
     const crew = crewStatus(this.c.state, gd, now);
     const used = crew.busy > 0;
-    let seen = false;
+    let seen: boolean;
     try {
       seen = localStorage.getItem('tk.crewSeen') === '1';
       if (used && !seen) localStorage.setItem('tk.crewSeen', '1');
