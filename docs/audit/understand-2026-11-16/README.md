@@ -91,9 +91,51 @@ Each report's own first section says which script produced which table.
 - Where two reports propose different values for the same number, the prompt's Appendix B says which was chosen and
   why.
 
+Found by the second review of the prompt (below):
+
+- `defense-raids.md` (DEF-01, section 2): under the proposed rules a Keep 5 base at caps still loses about 4 k a
+  raid, which is −38% of a hold's reward, not a gain. The "today" reward column of `def_econ.ts` is the harness's
+  own arithmetic as well, and it starts every storage full, where the game's reward is capped at what the raid took
+  (−88% to −25% of a hold at caps). DEF-01 was scoped to offline raids: paid on raids by real players without
+  limits, the reward can be farmed by two accounts.
+- Harness limits: `pacing/trialcap.mjs` scans tiers 53 to 76 with one seed and prints the best of five fortresses;
+  `defense-raids/next_offers.ts` reads the fee of the player's own Keep and never calls `scoutFee`;
+  `retention/r1.mjs` counts every task template as eligible; in `combat/t10.ts` the variants that set
+  `battle.warriorRules` flags need a patched copy of `src/gameplay`, while the data-only ones measure correctly
+  against the real tree.
+- `combat.md` (CMB-01, CMB-12): the light-support mix at Keep 10 is over the army lab's upper gate on live rules
+  (92.2%, 67% three stars) before any support change. At four seeds the lab's cells move on untouched data
+  (`support@7` 32.3%, `melee@8` 27.3%, the ranged-over-balanced gap at Keep 15 21.3 points).
+- `pacing.md` (PAC-01, PAC-04, PAC-09): the slow suite holds the regular model's Keep 6 at 9 days or more. It is
+  9.42 days today, 9.19 with the three casual keys, and exactly 9.00 with a 60-second Keep 2 and tier-1 training
+  halved on top. Tiers skipped by a Trial catch-up are not counted in `stats.trialsCleared`, which the Trial Walker
+  achievement reads. Nothing pins a tier-1 warrior's `trainSeconds`.
+- `retention.md`: the league season is a UTC calendar month and the Scroll season is 30 days from its epoch, so
+  "the season" is two things. The task-repetition figures assume every template is eligible; about six of eight
+  daily templates are at Keep 15.
+
 ## How the prompt was checked
 
-Four independent reviewers checked about 900 claims of the prompt against the repository and these reports
-(sections 0 to 6; Phases 2 and 3; Phases 4 and 5; Phases 6 and 7 with the appendices) and returned 85 corrections:
-3 instructions that could not be executed as written, 24 major errors or omissions and 58 minor ones. All were
-applied. Two further reviews (invariants and sequencing; completeness and executability) could not be run.
+Two rounds, each by four independent reviewers working against the repository and these reports.
+
+- First round: about 900 claims, split by part of the prompt (sections 0 to 6; Phases 2 and 3; Phases 4 and 5;
+  Phases 6 and 7 with the appendices). 85 corrections: 3 instructions that could not be executed as written, 24
+  major errors or omissions and 58 minor ones.
+- Second round: about 1,175 checks, each reviewer reading the whole corrected prompt for one question. 82 issues:
+  6 blockers, 31 major and 45 minor.
+
+| Second-round reviewer | Checks | Issues | Blockers |
+|---|---|---|---|
+| Invariants and sequencing | 165 | 23 | 1 |
+| Completeness against the ten reports | 445 | 23 | 2 |
+| Executability, read as the agent who must do the work | 330 | 23 | 2 |
+| The first round's corrections | 236 | 13 | 1 |
+
+All six blockers were in one work item, P2-01, and were the same two problems seen from four sides: a reward for
+stars denied that two accounts could farm on raids by real players, and an acceptance result with a sign error
+that no value could meet. Both rounds are applied. Where two reviewers proposed different fixes for one passage,
+the prompt's Appendix B says which was chosen and why. The second round added one work item (P6-19) and two
+protected items (57 and 58).
+
+What neither round did: run the campaigns, the full test suite on a changed tree, Postgres, or the Node build the
+server image pins. The tests the prompt names as pinned are the ones the reviewers found, not a complete list.

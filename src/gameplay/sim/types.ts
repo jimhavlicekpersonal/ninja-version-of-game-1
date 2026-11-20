@@ -807,6 +807,11 @@ export interface EconomyDef {
    */
   garrisonCrew?: number;
   mapSize: number;
+  /**
+   * A layout must leave attackers a way in (sim/entryRoom.ts): at least `approaches` of the eight compass
+   * approaches keep a deployable tile within `tiles`. Absent: no such rule.
+   */
+  entryRoom?: { tiles: number; approaches: number };
   startingResources: Resources;
   startingLayout: StartingBuilding[];
   /** Report section 5 step 8 (art F13): decor around the Keep in a new village (movable; skipped where it does not fit). */

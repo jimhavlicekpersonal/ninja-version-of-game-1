@@ -230,9 +230,13 @@ export function raidVillage(s: VillageState, t: number, rng: Rng, data: GameData
       }
     }
   });
+  // Defense review 2026-11-17: a raider that could bring no warrior onto the map (a layout that leaves no tile
+  // to deploy on) was not held off by anything. Such a raid moves no honor, pays no reward and is no defense won.
+  const fought = Object.values(result.used).some((n) => n > 0);
   let delta: number;
   // Staked honor: a lost defence costs `defenseHonorLossShare` of what the raider gained (none by default).
-  if (result.stars >= 1) delta = -defenseHonorLoss(winTrophies(attackerTrophies, s.trophies, data), data);
+  if (!fought) delta = 0;
+  else if (result.stars >= 1) delta = -defenseHonorLoss(winTrophies(attackerTrophies, s.trophies, data), data);
   else delta = lossTrophies(attackerTrophies, s.trophies, data);
   s.trophies = Math.max(0, s.trophies + delta);
   const shield = shieldHoursFor(result.destruction, data);
@@ -240,12 +244,13 @@ export function raidVillage(s: VillageState, t: number, rng: Rng, data: GameData
   s.stats.defensesFaced = (s.stats.defensesFaced ?? 0) + 1;
   // A held defense (no star lost) pays a little, and counts (save v16).
   let defenseReward: Cost = {};
-  if (result.stars === 0) s.stats.defensesWon = (s.stats.defensesWon ?? 0) + 1;
+  if (result.stars === 0 && fought) s.stats.defensesWon = (s.stats.defensesWon ?? 0) + 1;
+  // A raid that brought no warrior pays nothing (defense audit 2026-11-17: closed layouts were paid as holds).
   // Rules 9 (lab): with `raids.defenseWin.perStar`, every star the base denies pays a third of the reward,
   // so each defence upgrade earns something instead of nothing until the raid is held outright.
   let defenseOverflow: Cost = {};
   const perStar = data.raids.defenseWin?.perStar === true;
-  if (result.stars === 0 || (perStar && result.stars < 3)) ({ added: defenseReward, overflow: defenseOverflow } = defenseWinReward(s, data, perStar ? (3 - result.stars) / 3 : 1));
+  if (fought && (result.stars === 0 || (perStar && result.stars < 3))) ({ added: defenseReward, overflow: defenseOverflow } = defenseWinReward(s, data, perStar ? (3 - result.stars) / 3 : 1));
   const record: BattleRecord = {
     id: `d${s.nextSeed++}`,
     at: t,

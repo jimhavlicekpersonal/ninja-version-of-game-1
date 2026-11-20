@@ -43,6 +43,7 @@ export interface GameLink {
   onCommand?: SyncGame['onCommand'];
   adoptEconomy?: SyncGame['adoptEconomy'];
   adoptVillage?: SyncGame['adoptVillage'];
+  replace?: SyncGame['replace'];
 }
 
 /** Where the stable installation id lives (third verification fixes 2026-11-14; `Connection.installId`). */

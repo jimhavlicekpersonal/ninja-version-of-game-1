@@ -38,10 +38,12 @@ export interface SyncGame {
   readonly data: GameData;
   readonly state: VillageState;
   onCommand(fn: (cmd: Command, at: number) => void): () => void;
-  adoptEconomy(economy: Economy, replay: { command: Command; t: number }[]): void;
+  adoptEconomy(economy: Economy, replay: { command: Command; t: number }[], seasons?: Pick<VillageState, 'pass' | 'season' | 'seasonLog'>): void;
   adoptVillage(state: VillageState): Promise<void>;
   /** P1-16: put the server's daily-chest salt in place (`CommandOutcome.chestSalt`). Optional for older hosts. */
   adoptChestSalt?(salt: number): void;
+  /** Put a village in place with no backup (the server's copy of the village that was just moved there). */
+  replace?(state: VillageState): Promise<void>;
 }
 
 export interface SyncStore {
@@ -200,15 +202,20 @@ export class VillageSync {
     const port = this.port();
     if (!port) throw new Error('No server configured.');
     if (how === 'move') {
-      // This village goes to the server (roadmap step 25); its economy is unchanged, so there is nothing to adopt.
+      // This village goes to the server (roadmap step 25). The server's copy is the village from now on, and it is
+      // not quite the file that was sent: rewards not yet collected count as taken there (Season Scroll tiers,
+      // today's tasks, chest and calendar day). So its copy is taken whole. Keeping the one here announced Scroll
+      // rewards at the season's end that the server then did not pay (review SCR-08).
       const v = await port.importVillage(serialize(this.game.state, this.game.state.lastSeenAt));
       this.stored = this.fresh(true, v.seq);
+      const server = deserialize(v.file, this.game.data);
       if (v.importHeld) {
-        // GLOBAL-002: the server held back paid value it could not confirm. Take its village
-        // whole (Jade and the Scroll included); the one here is kept as a backup for support.
+        // GLOBAL-002: the server held back paid value it could not confirm. The village here is kept as a
+        // backup for support.
         this.importHeld = v.importHeld;
-        await this.game.adoptVillage(deserialize(v.file, this.game.data));
-      } else if (economyHash(this.game.state) !== v.stateHash) this.adopt(economyOf(deserialize(v.file, this.game.data)));
+        await this.game.adoptVillage(server);
+      } else if (this.game.replace) await this.game.replace(server);
+      else await this.game.adoptVillage(server);
       this.persist();
       return;
     }
@@ -243,7 +250,13 @@ export class VillageSync {
     if (this.stored.seq < v.seq) this.stored = { ...this.stored, seq: v.seq };
     this.persist();
     if (this.stored.queue.length) await this.flush();
-    else if (economyHash(this.game.state) !== v.stateHash) this.adopt(economyOf(deserialize(v.file, this.game.data)));
+    else if (economyHash(this.game.state) !== v.stateHash) {
+      // The stored village may be from before a season ended that this device has already settled. Its Scroll
+      // and league season come with its economy, so the device settles again on its next tick (review SCR-01:
+      // with the economy alone the payout vanished here until the next action).
+      const server = deserialize(v.file, this.game.data);
+      this.adopt(economyOf(server), { pass: server.pass, season: server.season, seasonLog: server.seasonLog });
+    }
   }
 
   /** Send everything waiting, a batch at a time. Concurrent calls share one run. */
@@ -296,10 +309,10 @@ export class VillageSync {
   }
 
   /** Put the server's economy in place and replay what is still waiting on top of it. */
-  private adopt(economy: Economy): void {
+  private adopt(economy: Economy, seasons?: Pick<VillageState, 'pass' | 'season' | 'seasonLog'>): void {
     this.corrections++;
     const rest = this.stored.queue;
-    this.game.adoptEconomy(economy, rest.map((q) => ({ command: q.command, t: q.t })));
+    this.game.adoptEconomy(economy, rest.map((q) => ({ command: q.command, t: q.t })), seasons);
     // Hashes along the replayed queue are unknown now; the last one is the village as it stands.
     rest.forEach((q, i) => (q.hash = i === rest.length - 1 ? economyHash(this.game.state) : ''));
     this.persist();

@@ -1,0 +1,24 @@
+K2: the Keep's building counts cannot close every deploy tile (greedy packer)
+K3: the Keep's building counts cannot close every deploy tile (greedy packer)
+K4: the Keep's building counts cannot close every deploy tile (greedy packer)
+K5: the Keep's building counts cannot close every deploy tile (greedy packer)
+K6: 131 buildings placed (all level 1 except the Keep), 36 walls and 0 buildings to spare; deployable tiles 0; infiltration points 0; validateVillage: ok
+   one raid: deployments 0, stars 0, destruction 0%, end time, loot {}, banked {"acorns":9600,"dew":9600}, shield false, honor 40
+   never opens the game for the whole span  raids/day 2.83 held 100% (no warrior deployed in 68/68) | lost/day 0.00M reward/day 0.00M | full hold 0.02M | collectors/day 0.06M | storage cap 0.01M each
+   one visit a day                          raids/day 2.53 held 100% (no warrior deployed in 152/152) | lost/day 0.00M reward/day 0.02M | full hold 0.02M | collectors/day 0.06M | storage cap 0.01M each
+   four visits a day                        raids/day 2.53 held 100% (no warrior deployed in 152/152) | lost/day 0.00M reward/day 0.04M | full hold 0.02M | collectors/day 0.06M | storage cap 0.01M each
+K9: 131 buildings placed (all level 1 except the Keep), 37 walls and 0 buildings to spare; deployable tiles 0; infiltration points 0; validateVillage: ok
+   one raid: deployments 0, stars 0, destruction 0%, end time, loot {}, banked {"acorns":41739,"dew":41739}, shield false, honor 40
+   never opens the game for the whole span  raids/day 1.96 held 100% (no warrior deployed in 47/47) | lost/day 0.00M reward/day 0.01M | full hold 0.09M | collectors/day 0.06M | storage cap 0.04M each
+   one visit a day                          raids/day 2.42 held 100% (no warrior deployed in 145/145) | lost/day 0.00M reward/day 0.08M | full hold 0.09M | collectors/day 0.06M | storage cap 0.04M each
+   four visits a day                        raids/day 2.33 held 100% (no warrior deployed in 140/140) | lost/day 0.00M reward/day 0.16M | full hold 0.09M | collectors/day 0.06M | storage cap 0.04M each
+K12: 130 buildings placed (all level 1 except the Keep), 41 walls and 0 buildings to spare; deployable tiles 0; infiltration points 0; validateVillage: ok
+   one raid: deployments 0, stars 0, destruction 0%, end time, loot {}, banked {"acorns":143172,"dew":143172}, shield false, honor 40
+   never opens the game for the whole span  raids/day 2.79 held 100% (no warrior deployed in 67/67) | lost/day 0.00M reward/day 0.04M | full hold 0.35M | collectors/day 0.06M | storage cap 0.14M each
+   one visit a day                          raids/day 2.78 held 100% (no warrior deployed in 167/167) | lost/day 0.00M reward/day 0.28M | full hold 0.35M | collectors/day 0.06M | storage cap 0.14M each
+   four visits a day                        raids/day 2.77 held 100% (no warrior deployed in 166/166) | lost/day 0.00M reward/day 0.56M | full hold 0.35M | collectors/day 0.06M | storage cap 0.14M each
+K15: 129 buildings placed (all level 1 except the Keep), 43 walls and 0 buildings to spare; deployable tiles 0; infiltration points 0; validateVillage: ok
+   one raid: deployments 0, stars 0, destruction 0%, end time, loot {}, banked {"acorns":520899,"dew":520899}, shield false, honor 40
+   never opens the game for the whole span  raids/day 2.17 held 100% (no warrior deployed in 52/52) | lost/day 0.00M reward/day 0.13M | full hold 2.30M | collectors/day 0.06M | storage cap 0.52M each
+   one visit a day                          raids/day 2.55 held 100% (no warrior deployed in 153/153) | lost/day 0.00M reward/day 0.99M | full hold 2.30M | collectors/day 0.06M | storage cap 0.52M each
+   four visits a day                        raids/day 2.53 held 100% (no warrior deployed in 152/152) | lost/day 0.00M reward/day 1.96M | full hold 2.30M | collectors/day 0.06M | storage cap 0.52M each

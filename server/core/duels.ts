@@ -1,3 +1,4 @@
+import { leavesEntryRoom } from '../../src/gameplay/sim/entryRoom';
 import { isolateName } from '../../src/gameplay/sim/social/names';
 /**
  * Friendly Duels (roadmap step 62; design in docs/backend/PVP_ROADMAP.md 5.3).
@@ -173,6 +174,8 @@ export async function setDuelLayout(ctx: ServerContext, me: Player, req: Partial
   const rulesData = engineForClient(ctx, client).data;
   const n = normalizeBase(structuredClone(req.base), rulesData);
   if ('error' in n) throw detailError(400, 'bad_request', n.error);
+  // A friend must be able to attack it (sim/entryRoom.ts).
+  if (!leavesEntryRoom(n.base.buildings, rulesData)) throw detailError(400, 'bad_request', 'the layout leaves attackers no way in');
   const base = capBaseLoot(n.base, rulesData);
   for (const b of base.buildings) b.loot = {};
   if (base.hallLevel > me.hallLevel) throw fail(400, 'bad_request', 'duel.layout_keep');

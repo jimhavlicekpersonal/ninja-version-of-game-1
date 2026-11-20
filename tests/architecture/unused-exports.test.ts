@@ -88,7 +88,6 @@ const ALLOWED = new Set<string>([
   'src/gameplay/sim/social/contactFilter.ts#strongerMatch',
   'src/gameplay/sim/social/grove.ts#groveSeedFor',
   'src/gameplay/sim/social/groveRaid.ts#botAttacks',
-  'src/gameplay/sim/social/groveRaid.ts#raidWeek',
   'src/gameplay/sim/suggest.ts#suggestedShares',
   'src/gameplay/sim/trials.ts#defenseStrength',
   'src/gameplay/sim/types.ts#PassReward',

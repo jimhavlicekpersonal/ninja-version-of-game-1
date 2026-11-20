@@ -70,6 +70,22 @@ You are the **GAME THEORY AI**. You own `src/gameplay/` (`sim/`, `data/`, `contr
 - Battle: `BattleSim.auraSources` (quality 28) is exact; `aura-cache.test.ts` pins 18 aura battles (re-pin only with a SIM_RULES bump).
 - Gates: army-lab per-family floor (30 %, known gaps listed in `KNOWN_BELOW`), campaign policies `regular_rusher` and `regular_sandbagger` with gates in `campaign-gates.test.ts`.
 
+## Exploit, Scroll and defense fixes 2026-11-17 (branch `gracious-meitner`, merged 2026-11-20)
+
+This branch fixed the same 2026-11-16 audit items as the replayability pass in parallel. At the merge the pass's
+implementations were kept for the duplicates; what remains from this branch is listed here.
+
+- **Kept from the pass instead:** `sanitizeBattleSetup`/`ownedBattleSetup` (not `trustedSetup`), `battleBegan(rec, now, data)` (now also refusing a non-finite time), `ranks.seasonCatchUpMax` (not `settleSeasonsMax`), the counted war week in `settleRaids`, and `claimSeasonLeftovers` with `pass.lastSeason` for the Season Scroll (not `settlePassSeason` and `advance` returning `rewards`).
+- **Defense protects loot (DEF-01):** `carryByStars` and `defenseWin.perStar` as in the pass, at the pass's share (0.15, with real raids paying once per attacker per defender a day). This branch measured 0.10 against a maxed base raided twice a day (`docs/audit/understand-2026-11-16/scripts/defense-raids/daily_live.ts`); the share is an owner decision recorded in the merge record. A simulated raid that brought no warrior moves no honor and pays nothing (`raidVillage`, `fought`). Tests: `tests/gameplay/sim/defense-loot.test.ts` (seeds picked per star count).
+
+## Review fixes 2026-11-18 (no save, SIM_RULES or protocol change)
+
+- **A layout must leave attackers a way in:** `sim/entryRoom.ts` (`openApproaches`, `leavesEntryRoom`), `economy.json` `entryRoom`. `place` and `move` refuse the building that would leave fewer than six of the eight approaches a deployable tile within five tiles (`closesEntry`); a layout already closed is not frozen. Never move this into the battle: it is a rule about layouts, and `createBattle` is unchanged. Generated bases leave all eight open (`tests/gameplay/sim/entry-room.test.ts` holds that; re-check after changing `basegen.ts`).
+- **`checkBattleSetup`:** the part of an army not declared in `reinforcements` must come from the own army (a setup with no `reinforcements` field spends the Lodge first, as before). `claimTier` takes only `free` and `premium`. `rematchKeep` (the raider's Keep plus one at most) and a raid dated after now cannot be answered.
+- **Bounded work:** `validateVillage` marks tiles (no pair loop) and refuses more buildings than the map has tiles; `trimLog` and the war history trim in one pass. Do not add a loop or a payout sized by a list in the save.
+- **Season Scroll notices:** `GameController.tick` settles before `checkPrepOffer`; `adoptEconomy(economy, replay, seasons)` takes the stored village's `pass`, `season` and `seasonLog` with its economy (SCR-01); after a move the server's copy replaces the device's (`replace`, SCR-08); a summary with a `scroll` payout is always returned by `start` (SCR-07). SCR-04's in-session toast went with the event-based payout at the merge: a season that ends while the game is open is reported in the next welcome-back summary only (open).
+- Tests: `tests/gameplay/sim/exploit-review.test.ts`, `entry-room.test.ts`, `tests/gameplay/control/scroll-notice.test.ts`.
+
 ## Content batch 2026-11-14 (save v23, no SIM_RULES change): built but not live
 
 - **Where it lives:** `data/planned.json` (no player-visible text: names and descriptions come from the catalog and `roster.json`, already translated) and `sim/plannedContent.ts` `withPreview(data)`, which returns a copy of the data with the fifteen non-live counters, the Hero Hall (`hero_shrine`), the Iron Matriarch, Sky Admiral and Grand Sensei and `features: { mastery, heroChoice }` merged in. The shipped data (`defaultData`) holds none of it, so the combat fingerprint, `dataVersionOf`, generated bases, bot plans, the campaign and the shop are unchanged. Level tables and hero levels are derived at load from a reference live building/warrior (`ref`, `hpMult`, `damageMult`, `costMult`; heroes per housing ×10 HP, ×3 damage, the rule that reproduces the Shadow Captain exactly); the `$comment`s give each derivation. Hall limits follow `buildingMaxLevelAt`.

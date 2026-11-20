@@ -63,6 +63,8 @@
   "$commentCatchUp": "P2-05 (DEF-06, 2026-11-18): at most this many raids in one catch-up after an absence (was 24: thirty days away emptied 94-97% of what was stored).",
   "maxRaidsPerCatchUp": 3,
   "maxDefenseLog": 10,
+  "$commentResume": "Exploit audit 2026-11-16 (XPL-02): an interrupted Bounty Hunt attack or rematch still counts as begun when its record says for battleResumeHours after it would have ended; an older record is refused (the record's time is the game's to send).",
+  "battleResumeHours": 72,
   "botArmyMix": [
     {
       "hedgehog_roller": 0.7,

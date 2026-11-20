@@ -11,6 +11,7 @@
  */
 import { generateOpponent } from './battle/basegen';
 import type { BaseLayout, BattleRecord } from './battle/types';
+import { hallLevel } from './keep';
 import type { Cost, GameData, VillageState } from './types';
 
 const HOUR = 3_600_000;
@@ -32,6 +33,8 @@ export function rematchStatus(state: VillageState, recordId: string, now: number
   const record = state.defenseLog.find((d) => d.id === recordId);
   if (!cfg || !record || record.kind !== 'defense' || !record.raider || !record.simulated) return { ok: false, message: 'This raid cannot be answered.' };
   if (record.rematch) return { ok: false, message: 'You already settled the score with this raider.' };
+  // Review 2026-11-17 (R3-04): a raid dated after `now` has not happened; such a record could be answered for ever.
+  if (!Number.isFinite(record.at) || record.at > now) return { ok: false, message: 'This raid cannot be answered.' };
   if (now - record.at > cfg.windowHours * HOUR) return { ok: false, message: 'Too long ago: the raider has moved on.' };
   // A record dated after now is not a raid that happened (a forged save would keep it answerable forever).
   if (record.at > now) return { ok: false, message: 'This raid cannot be answered.' };
@@ -41,6 +44,17 @@ export function rematchStatus(state: VillageState, recordId: string, now: number
 /** The defenses that can be answered now, newest first. */
 export function rematchable(state: VillageState, now: number, data: GameData): BattleRecord[] {
   return state.defenseLog.filter((d) => rematchStatus(state, d.id, now, data).ok).reverse();
+}
+
+/**
+ * The Keep a rematch's reward is read at: the player's, but never more than one above the raider's own. A raider
+ * comes from the player's Keep or the one below, so this is the player's Keep for every raid the game sends; it
+ * stops a record naming a Keep 1 raider from paying a Keep 15 reward for beating a Keep 1 base (review R3-04).
+ */
+export function rematchKeep(state: VillageState, record: BattleRecord, data: GameData): number {
+  const own = hallLevel(state, data);
+  const raider = Number.isFinite(record.raider?.hall) ? Math.max(1, Math.floor(record.raider!.hall)) : 1;
+  return Math.min(own, raider + 1);
 }
 
 /**

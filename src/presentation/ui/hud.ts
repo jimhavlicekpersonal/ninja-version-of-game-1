@@ -2309,8 +2309,8 @@ export class Hud {
         : null;
       // Attacks show what reached storage; old records stored that in result.loot.
       const loot = r.kind === 'attack' ? r.banked ?? r.result.loot : r.result.loot;
-      // A held defense pays a small reward (`banked` on the defense record).
-      const held = r.kind === 'defense' && r.banked && Object.values(r.banked).some((v) => (v ?? 0) > 0) ? h('span', { class: 'chip good held' }, i18nText("ui.held_f2e1e705b1"), costChips(r.banked)) : null;
+      // A defense pays a reward for every star it denied (`banked`). Only a raid that won no star is called held.
+      const held = r.kind === 'defense' && r.banked && Object.values(r.banked).some((v) => (v ?? 0) > 0) ? h('span', { class: 'chip good held' }, r.result.stars === 0 ? i18nText("ui.held_f2e1e705b1") : i18nLabel('Reward: '), costChips(r.banked)) : null;
       // P6-03: the defense report (what holding kept, stars denied, the reward, where the raider came in, and on
       // demand the first buildings to fall, replayed only under the rules the raid was fought with).
       const report = r.kind === 'defense' ? this.defenseReportLine(r) : null;
