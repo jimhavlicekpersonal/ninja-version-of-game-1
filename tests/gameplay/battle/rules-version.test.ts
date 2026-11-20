@@ -10,7 +10,7 @@ import { SIM_RULES } from '../../../src/gameplay/sim/battle/battle';
 import { defaultData as data } from '../../../src/gameplay/sim/data';
 
 // Text, prices and timers never change how a recorded battle plays out.
-const TEXT = new Set(['name', 'description', 'text', 'summary', 'look', 'tip', '$comment', 'research', 'cost', 'trainSeconds', 'buildSeconds', 'unlockKeep', 'barracksLevel', 'levelCapOffset', 'ratePerHour', 'storage', 'trainingSpeed', 'reinforcement', 'inShop', 'clear', 'scoutFeeByHall', 'generatedLootByHall', 'maxReplays']);
+const TEXT = new Set(['name', 'description', 'text', 'summary', 'look', 'tip', '$comment', 'research', 'cost', 'trainSeconds', 'buildSeconds', 'buildCapSeconds', 'unlockKeep', 'barracksLevel', 'levelCapOffset', 'ratePerHour', 'storage', 'trainingSpeed', 'reinforcement', 'inShop', 'clear', 'scoutFeeByHall', 'generatedLootByHall', 'maxReplays']);
 
 function strip(v: unknown): unknown {
   if (Array.isArray(v)) return v.map(strip);
@@ -33,6 +33,6 @@ function combatFingerprint(): string {
 
 describe('battle rules version', () => {
   it('combat data has not changed without a SIM_RULES bump', () => {
-    expect({ rules: SIM_RULES, fingerprint: combatFingerprint() }).toEqual({ rules: 7, fingerprint: '66975486' });
+    expect({ rules: SIM_RULES, fingerprint: combatFingerprint() }).toEqual({ rules: 8, fingerprint: '6adcad45' });
   });
 });

@@ -1,0 +1,10 @@
+const W = 1000;
+const bub = () => page.evaluate(() => { const b = document.querySelector('.tut-bubble'); return b && !b.hidden ? b.innerText.replace(/\n/g, ' ').slice(0, 300) : '(bubble hidden)'; });
+await ft('.modal-backdrop:last-child .btn.primary', 1500);
+await shot('r34-home-after-raid-1.5s');
+await sleep(2000);
+await shot('r35-home-after-raid-3.5s');
+log(elapsed(), 'taps', s.taps, await bub());
+await toasts();
+await dump(40);
+newLogs();

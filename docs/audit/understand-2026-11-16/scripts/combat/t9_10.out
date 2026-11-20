@@ -1,0 +1,2 @@
+Keep 10 bias 0.5: mean point 82.2%, best point 98.4% (2.90*), point the scout intel favours (fewest covering defences) 84.7%; intel picks the best point 5% (chance 17%); corr(defences on the walk, destruction) -0.25
+Keep 10 bias 1: mean point 52.9%, best point 72.0% (2.10*), point the scout intel favours (fewest covering defences) 50.6%; intel picks the best point 15% (chance 17%); corr(defences on the walk, destruction) 0.16

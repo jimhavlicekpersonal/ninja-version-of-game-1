@@ -718,6 +718,8 @@ export interface AttackResponse {
   playerTrophies: number;
   /** Protocol 11: the stake the raid was settled with (absent: none). */
   stake?: number;
+  /** P5-03: the time whose UTC day picks the daily contract (the ticket's start, server clock; absent: no contract). */
+  contractAt?: number;
 }
 
 export interface DefenseView {
@@ -985,6 +987,12 @@ export interface CommandOutcome {
    */
   type?: string;
   at?: number;
+  /**
+   * P1-16 (exploit audit XPL-06, 2026-11-18, additive, hello feature `chest-entropy`): an applied `openDailyChest`
+   * is replayed with entropy the server draws (the game's own value is ignored, so it cannot pick tomorrow's
+   * chest); this is the chest salt that left the village with. The game puts it in place (`setChestSalt`).
+   */
+  chestSalt?: number;
 }
 
 export interface CommandBatchResponse {

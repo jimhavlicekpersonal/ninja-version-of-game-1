@@ -1,0 +1,333 @@
+{
+ "problems": [
+  {
+   "id": "PUB-01",
+   "title": "The deploy check rejects every right-to-left language, so the web deploy has reported failure since 4dbd3c7",
+   "severity": "critical",
+   "verified": "read-in-code",
+   "evidence": "tools/release/check-published-game.mjs:40 requires the exact text `<html lang=\"${code}\">`. tools/i18n/pages.mjs:119 writes `<html lang=\"ar\" dir=\"rtl\">` for right-to-left languages; public/ar/community.html:2, and the he and ur pages, carry it. 4dbd3c7 made all 50 languages ready (locales/availability.json: 50 of 50), so the check now reaches ar and fails with `ar/community.html: wrong language` (runs 43672412208, 43786329852, 43789242271 in docs/backend/REQUESTS.md). No test covers the checker. docs/backend/REQUESTS.md says the published game is still at 148d49a, 174 commits behind HEAD; I did not fetch the live site.",
+   "whyItMatters": "The Pages site is where the privacy, support, community and terms URLs for both store listings live. A deploy that reports failure cannot be trusted as published, and every later main run is red for this alone.",
+   "proposedFix": "In tools/release/check-published-game.mjs match `<html lang=\"code\"` followed by a space or `>` (or check lang and dir separately against locales/languages.json). Add a test under tests/backend/ that applies the same assertion to public/<code>/*.html for every ready language, so a page-format change fails before deploy.",
+   "fixCost": "S",
+   "touches": [
+    "DOCS"
+   ],
+   "needsOwner": false
+  },
+  {
+   "id": "PUB-02",
+   "title": "`npm test` fails on main's CI in matched.test.ts (Keep 8: 2.75 stars against a 2.2 ceiling) but passes on three engines here; cause not found",
+   "severity": "high",
+   "verified": "measured",
+   "evidence": "CI at 9bf76af, runs 43817743888 (main) and 43817738958 (theory/rules10): `AssertionError: Keep 8: expected 2.75 to be less than or equal to 2.2` at tests/gameplay/balance/matched.test.ts:27. CI ten minutes earlier at 9bb9a44 (run 43816597555) passed `npm test`; the two commits differ only in docs/backend/REQUESTS.md. Here the same tree passes on Node 22.23.4 and Node 24.22.1. My script (scratchpad docs/audit/understand-2026-11-16/scripts/publish/det.ts) hashes each generated base, bot deployment list and result for the test's 48 lag-0 raids: output is byte-identical on Node 22.23.4 (V8 12.4), Node 24.22.1 (V8 13.6) and Bun 1.4.4 (JavaScriptCore), with Keep 8 at 2.167 (26 stars over 12 raids, 0.033 under the gate). I found no clock, random, environment or CPU-count input on that code path. Not tested: Node 24.22.3, which Dockerfile:10 pins for the production server and which `node-version: 24` in the workflows can resolve to; downloading it was not permitted here. The combat fingerprint and the 18 pinned aura battles passed in the same failing CI run.",
+   "whyItMatters": "Main cannot go green, so nothing deploys. If the difference turns out to be the Node patch version, the production server (pinned to 24.22.3) could re-simulate honest battles differently from players' devices; that is unproven and needs one run to settle.",
+   "proposedFix": "1) Run docs/audit/understand-2026-11-16/scripts/publish/det.ts on Node 24.22.3 and diff against det-node22.txt to find which stage differs (base, deployments or battle). 2) Add a `.node-version` file and use `node-version-file` in all four workflows so CI and Dockerfile run one exact Node. 3) Add a small cross-engine fixture test (hash of a few generated bases plus raids) so an engine change fails loudly instead of through a balance band. 4) Only then decide whether the Keep 8 ceiling needs more seeds or a wider band in matched.test.ts (a balance-gate decision).",
+   "fixCost": "M",
+   "touches": [
+    "BALANCE_GATES",
+    "DOCS"
+   ],
+   "needsOwner": false
+  },
+  {
+   "id": "PUB-03",
+   "title": "Postgres-backed tests time out at Vitest's default 5 s on CI, which skips the deploy job",
+   "severity": "high",
+   "verified": "measured",
+   "evidence": "Run 43817743888: job `server`, step `npx vitest run tests/backend/server tests/backend/net tests/backend/contract` failed; the same commit's branch run passed that step. docs/backend/REQUESTS.md (2026-11-15) lists three different tests timing out on three runs, each `Test timed out in 5000ms`. tests/backend/server/pg.ts:19-33 creates a new schema and runs all 42 migrations for every Postgres-backed test, with files in parallel on one database. vite.config.ts:161-163 sets no testTimeout or hookTimeout. docs/store/WORLDWIDE_AUDIT.md line 791 already noted the same timeouts locally.",
+   "whyItMatters": "`deploy` needs `server`, so a random timeout blocks publishing; the Server release workflow runs the same suites before building the image.",
+   "proposedFix": "In vite.config.ts set testTimeout and hookTimeout to 30 s when TEST_DATABASE_URL is set; add `--maxWorkers=2` to the Postgres step in .github/workflows/deploy.yml and the `npm test` step in server.yml. Later (M): migrate one template schema per worker in tests/backend/server/pg.ts and clone it per test.",
+   "fixCost": "S",
+   "touches": [
+    "DOCS"
+   ],
+   "needsOwner": false
+  },
+  {
+   "id": "PUB-04",
+   "title": "A test requires the publisher facts to be empty, and nothing stops a store build shipping with \"not published yet\" pages",
+   "severity": "high",
+   "verified": "read-in-code",
+   "evidence": "tests/presentation/store-compliance.test.ts:76 asserts `operator: ''`, `supportEmail: ''` and `deletionUrl: ''` in public/legal-config.js. The owner's first publishing step (filling that file) therefore turns `npm test` red and blocks deploy. In the other direction, .github/workflows/android.yml (aab job) and ios-testflight.yml build commercial apps with no check on those fields; the shipped pages would show \"not published yet\" (public/legal.js:11-25) and a \"Draft for legal review\" banner (public/terms.html:17), which Apple 1.2 and 5.1.1 reviewers see from Settings.",
+   "whyItMatters": "It is the one code-side trap on the path every listing depends on, and a likely first rejection reason.",
+   "proposedFix": "Change the test to accept either an empty value or a well-formed one (no example.com, no angle-bracket placeholders). Add tools/release/check-store-ready.mjs that reads legal-config.js and the build variables and prints one table: error in the aab and TestFlight jobs when operator, supportEmail, deletionUrl or termsEffective are empty, notice for the web build (reuse tools/release/ci-note.mjs). Test it in tests/backend/server/release-tools.test.ts.",
+   "fixCost": "S",
+   "touches": [
+    "DOCS"
+   ],
+   "needsOwner": false
+  },
+  {
+   "id": "PUB-05",
+   "title": "The signed Android job would upload the old game's package name, which Google Play never lets you change",
+   "severity": "high",
+   "verified": "read-in-code",
+   "evidence": "`com.toadstoolkingdoms.app` is hard-coded in capacitor.config.ts:11, android/app/build.gradle:6 and 9, android/app/src/main/res/values/strings.xml:5-6, ios/App/App.xcodeproj/project.pbxproj:434 and 456, and the default in ios-testflight.yml:16 (only iOS has a variable, IOS_BUNDLE_ID). The aab job in android.yml builds a release the moment the four signing secrets exist, with that applicationId.",
+   "whyItMatters": "The first AAB uploaded fixes the Play package name for the life of the listing; the root brief says the id is the old one only until new listings exist.",
+   "proposedFix": "Read the app id from one place: an APP_ID repository variable consumed by capacitor.config.ts and by android/app/release.gradle (applicationId only; the Java namespace can stay). Make the aab and TestFlight jobs fail with a clear message while APP_ID is unset or still the Toadstool id, unless an explicit ALLOW_LEGACY_APP_ID=1 is set. Cover it in tests/backend/release-config.test.ts. Choosing the id is the owner's decision.",
+   "fixCost": "M",
+   "touches": [
+    "SERVER",
+    "DOCS"
+   ],
+   "needsOwner": true
+  },
+  {
+   "id": "PUB-06",
+   "title": "Committed native project files do not list two plugins the game depends on",
+   "severity": "medium",
+   "verified": "read-in-code",
+   "evidence": "package.json:61-65 depends on @capacitor-community/in-app-review and @capacitor/haptics. android/capacitor.settings.gradle, android/app/capacitor.build.gradle and ios/App/CapApp-SPM/Package.swift list only app, local-notifications and push-notifications. Both plugins ship a Package.swift, so a sync would add them. CI runs `npx cap sync` before building, so runner builds are complete; a local Xcode or Android Studio build is not, and src/backend/platform/native.ts:50 then returns null for the review sheet. tests/backend/release-config.test.ts has no check for this.",
+   "whyItMatters": "The review prompt after a win and haptics silently do nothing in any build made without a sync, and the committed files misstate what ships.",
+   "proposedFix": "Run `npm run build && npx cap sync` and commit the regenerated android/ and ios/ plugin lists. Add a test in tests/backend/release-config.test.ts that every @capacitor* dependency in package.json appears in all three files.",
+   "fixCost": "S",
+   "touches": [
+    "DOCS"
+   ],
+   "needsOwner": false
+  },
+  {
+   "id": "PUB-07",
+   "title": "The prepared Apple age-rating answers are wrong on two questions",
+   "severity": "medium",
+   "verified": "read-in-code",
+   "evidence": "docs/store/PRIVACY.md:106 answers \"Simulated gambling, contests: None\" and line 111 answers \"No\" for age assurance. The compliance audit (docs/audit/areas/05-07-store-compliance-and-international.md, C05) found Apple's questionnaire counts leagues, rankings and wars as \"Contests: Frequent\", and the app now calls Apple's Declared Age Range and Play Age Signals (ios/App/App/TkAgePlugin.swift, android TkAgePlugin.java), which is \"Age assurance: Present\". No closure record covers C05.",
+   "whyItMatters": "The owner pastes these answers into App Store Connect; a wrong declaration is a rejection or later enforcement risk. The expected rating stays 13+.",
+   "proposedFix": "Correct both rows in docs/store/PRIVACY.md with the reasoning and Apple's definitions page as source, and add a closure record for C05 in docs/store/WORLDWIDE_AUDIT.md. Extend tests/presentation/store-compliance.test.ts to pin the two answers.",
+   "fixCost": "S",
+   "touches": [
+    "DOCS"
+   ],
+   "needsOwner": false
+  },
+  {
+   "id": "PUB-08",
+   "title": "No third-party licence notices ship with the game",
+   "severity": "medium",
+   "verified": "measured",
+   "evidence": "public/ has no licences or notices page, and Settings has no licences entry. The built Phaser chunk (dist/assets/phaser-*.js) contains 0 occurrences of \"Copyright\", \"@license\" or \"MIT License\". The game ships Phaser and Capacitor plugins (MIT) and two fonts under the SIL Open Font License (src/presentation/ui/fonts/README.md:7-10); both licences require the notice to travel with copies.",
+   "whyItMatters": "A distribution-licence gap in every store build and on the web; cheap to close and commonly checked in publisher due diligence.",
+   "proposedFix": "Add a small generator (tools/release/licenses.mjs) that writes public/licenses.html from the shipped dependencies in package.json plus the two fonts, with full licence texts in English. Link it from public/support.html through tools/i18n/pages.mjs (one new page string). Add a test that every runtime dependency appears on the page.",
+   "fixCost": "M",
+   "touches": [
+    "I18N",
+    "DOCS"
+   ],
+   "needsOwner": false
+  },
+  {
+   "id": "PUB-09",
+   "title": "The iPhone release workflow runs on an image that may not carry the SDK Apple requires",
+   "severity": "medium",
+   "verified": "read-in-code",
+   "evidence": ".github/workflows/ios-testflight.yml:12 is `runs-on: macos-15`; line 52 only warns when the iOS SDK is older than 26 and itself suggests `macos-26`. The compliance audit (C07) records Apple's rule that uploads since 2026-04-28 need Xcode 26, and that the age-range APIs in ios/App/App/TkAgePlugin.swift need the 26.x SDKs. No closure record changed the runner.",
+   "whyItMatters": "The first TestFlight upload could be refused, or build without the age-range code paths that sit behind `#if canImport`.",
+   "proposedFix": "Set `runs-on: macos-26` and turn the SDK warning into an error below 26. The workflow has never run, so the first run is still the owner's.",
+   "fixCost": "S",
+   "touches": [
+    "DOCS"
+   ],
+   "needsOwner": false
+  },
+  {
+   "id": "PUB-10",
+   "title": "The chat word filter is 30 English words for a game shipped in 50 languages",
+   "severity": "medium",
+   "verified": "measured",
+   "evidence": "src/gameplay/data/social.json `profanity` has 30 entries, all English (counted today); src/gameplay/sim/social/grove.ts:100 is the only list the filter reads. `npm run i18n:status` shows all 50 languages complete, so chat and names now arrive in every script. Audit items R06 and C23 are still open; the contact filter (links, handles) was broadened but the word list was not.",
+   "whyItMatters": "Google Play's user-content policy and the UK Online Safety duties rest on this list plus the three-report auto-hide; a reviewer or regulator testing in Spanish, Arabic or Hindi finds no filter.",
+   "proposedFix": "Add per-language lists (for example locales/<code>/blocklist.json, merged into the filter in sim/social/grove.ts and re-exported to the server), starting with the ten largest launch languages, each with a test corpus of clean sentences that must pass. Mark them for native review in each locales/<code>/REVIEW.json. Deploy the server with the game.",
+   "fixCost": "L",
+   "touches": [
+    "DATA_ONLY",
+    "SERVER",
+    "DOCS"
+   ],
+   "needsOwner": false
+  },
+  {
+   "id": "PUB-11",
+   "title": "The privacy page shows a \"last updated\" date older than its last change",
+   "severity": "low",
+   "verified": "read-in-code",
+   "evidence": "public/legal-config.js sets `policyUpdated: '2026-11-05'`. public/privacy.html was changed on 2026-11-14 (commits 20a89d0 and 03bdfe0: the statistics UTC offset and the installation id). public/privacy.html:14 prints the config value.",
+   "whyItMatters": "A privacy policy whose stated date predates new data items is a small but visible accuracy fault for reviewers and regulators.",
+   "proposedFix": "Set policyUpdated to the date of the last text change and add a test that compares it with a hash of the English privacy page strings in locales/en/pages.json, failing when the text changes without the date.",
+   "fixCost": "S",
+   "touches": [
+    "DOCS"
+   ],
+   "needsOwner": false
+  },
+  {
+   "id": "PUB-12",
+   "title": "Shared links unfurl without an image and the web install prompt has no screenshots",
+   "severity": "low",
+   "verified": "read-in-code",
+   "evidence": "index.html:19 and 26 give `./icons/icon-512.png` as og:image and twitter:image with no og:url; crawlers need absolute addresses. public/manifest.webmanifest has no `screenshots` entry. VITE_PUBLIC_URL exists for the native builds but .github/workflows/deploy.yml does not pass it and vite.config.ts does not use it. `npm run store:screenshots` already renders real screens.",
+   "whyItMatters": "Friend links and shared replays are the game's free acquisition path; a bare link converts worse than a card with a picture.",
+   "proposedFix": "In vite.config.ts add a transformIndexHtml step that, when VITE_PUBLIC_URL is set, writes absolute og:image, twitter:image and og:url; pass the variable in deploy.yml. Commit two compressed screenshots under public/screens/, list them in the manifest (and the localized manifests from tools/i18n/build.mjs) and exclude them from the service worker precache list (NOT_PRECACHED in vite.config.ts).",
+   "fixCost": "M",
+   "touches": [
+    "DOCS"
+   ],
+   "needsOwner": false
+  },
+  {
+   "id": "PUB-13",
+   "title": "Open-item documents contradict the code, so sessions redo closed work and miss open work",
+   "severity": "low",
+   "verified": "read-in-code",
+   "evidence": "docs/backend/REQUESTS.md \"Open\" still lists four answered asks (server error codes, refusedLog, the review plugin, per-Keep slack). docs/store/WORLDWIDE_AUDIT.md's R05 row says \"The game still shows English only\" while `npm run i18n:status` reports 50 of 50 complete at 3,394 entries each. docs/store/LISTING.md's \"do not claim: Languages\" row predates that. Of the cheap wins this task's brief listed as undone, eight of ten are already in code (nonces, token rotation and sign-out, refusal amounts, the age re-ask, the localized complaint form, StoreKit configuration, minimum WebView, the review policy).",
+   "whyItMatters": "The project's own state-of-the-game report named stale documents as its main source of wrong beliefs; this pass confirmed it.",
+   "proposedFix": "Move answered entries in docs/backend/REQUESTS.md under a \"Done\" heading with their commits, update the R05 row and the LISTING languages row, and add the open-item table from my notes (understand/publish.md, section 4) to the audit as a dated reassessment.",
+   "fixCost": "S",
+   "touches": [
+    "DOCS"
+   ],
+   "needsOwner": false
+  },
+  {
+   "id": "PUB-14",
+   "title": "Retention statistics by the player's local day are built but switched off in every build",
+   "severity": "low",
+   "verified": "read-in-code",
+   "evidence": "src/main.ts:287 sends the UTC offset only when VITE_STATS_TZ is '1'; no workflow sets it (grep over .github finds none). The reason given for waiting (WORLDWIDE_AUDIT growth batch) was that public/privacy.html had to name the offset first; it now does (pages.privacy.50, commit 20a89d0).",
+   "whyItMatters": "Day-1 and day-7 return rates are the numbers a soft launch is judged on; counted on UTC days they are wrong for most of the target markets.",
+   "proposedFix": "Set VITE_STATS_TZ: '1' in the build steps of deploy.yml, android.yml and ios-testflight.yml and note it in docs/SHIPPING.md 3k. Still opt-in for adults only.",
+   "fixCost": "S",
+   "touches": [
+    "DOCS"
+   ],
+   "needsOwner": false
+  }
+ ],
+ "geniusElements": [
+  {
+   "title": "Legal pages that say \"not published yet\" instead of inventing facts",
+   "where": "public/legal-config.js, public/legal.js, public/*.html, vite.config.ts termsEffective()",
+   "whyKeep": "One config file fills every page in 50 languages; an empty value shows an honest note, never a placeholder. Setting termsEffective removes the draft banner and switches on the terms-acceptance screen at build time. The owner fills one file and the whole compliance surface follows."
+  },
+  {
+   "title": "Battle simulator that gives identical results on different JavaScript engines",
+   "where": "src/gameplay/sim/rng.ts, src/gameplay/sim/battle/, src/gameplay/sim/matchmaking.ts",
+   "whyKeep": "Only + − × ÷ and √, an integer mulberry32 generator and tie-broken sorts. I measured 48 generated bases, deployment lists and battle results byte-identical on Node 22 (V8 12.4), Node 24.22.1 (V8 13.6) and Bun (JavaScriptCore, the iPhone engine family). Server re-simulation depends on exactly this."
+  },
+  {
+   "title": "Server-first release gate with archived, digested battle rules",
+   "where": "tools/release/check-server-rules.mjs, server/rules/manifest.json, tools/release/rules-snapshot.mjs, tools/release/previous-client-contract.mjs",
+   "whyKeep": "A game build cannot ship to a server that does not list its battle rules, old rules are frozen with sha256 digests so old replays stay checkable, and the previous release's client is contract-tested against the new server. It turns \"deploy the server before the game\" from a habit into a check."
+  },
+  {
+   "title": "CI that says what it did not do",
+   "where": "tools/release/ci-note.mjs, tools/release/deploy.mjs, .github/workflows/server.yml:128-132 and 161-165, android.yml:82-89",
+   "whyKeep": "Missing deploy hook, missing staging server and missing signing key each produce a warning and a job-summary line; a production deploy without a hook fails. A green badge cannot be mistaken for a release."
+  },
+  {
+   "title": "Android release job with real gates",
+   "where": ".github/workflows/android.yml (aab job), android/app/release.gradle",
+   "whyKeep": "versionCode from the run number plus an offset, a check that the resolved Play Billing is 8 or later, a signature check with the certificate printed for comparison with Play Console, a listing of native libraries for the 16 KB page-size rule, and the key removed afterwards. Each closes a known Play rejection path."
+  },
+  {
+   "title": "Compliance mechanisms behind owner switches, each defaulting to the safest setting",
+   "where": "docs/SHIPPING.md 3l; UNDER13_MODE, EU_JADE_VALUE, APPLE_CONSUMPTION_RESPONSE, SIGNIFICANT_UPDATE_BUILD in server/config.ts and src/backend/net/compliance.ts",
+   "whyKeep": "The code does not decide legal policy; it makes each policy a tested switch. Under-13 handling, EU price equivalents and Apple consumption answers can change per market without a rewrite."
+  },
+  {
+   "title": "Listing claims tied to data and tests, with a \"do not claim\" column",
+   "where": "docs/store/LISTING.md \"Claims checked\", tests/presentation/store-compliance.test.ts, tests/backend/release-config.test.ts",
+   "whyKeep": "Every sentence in the store text names the data file it rests on, and the tests fail on the known overclaims (for example \"everything can be earned\"). I rechecked the claims against today's data and found none overstated."
+  },
+  {
+   "title": "Closure records with a \"remaining limitations\" column and a generated status table",
+   "where": "docs/store/WORLDWIDE_AUDIT.md closure tables, docs/STATUS.md with tests/architecture/status.test.ts",
+   "whyKeep": "Each fix records its commit, its evidence and what it did not prove (devices, stores, legal review). The status table is generated and tested, so version numbers cannot drift. This is why a revalidation like this one can be done in hours."
+  }
+ ],
+ "opportunities": [
+  {
+   "title": "One store-readiness preflight command",
+   "description": "`npm run release:check` prints a single table of everything still missing for a store build: empty publisher facts, draft terms, legacy bundle id, missing signing secrets and server URL, products in the shipping table, stale policy date, unsynced native plugins. Commercial jobs run it as a gate; the web build as notices.",
+   "where": "tools/release/check-store-ready.mjs, tools/release/ci-note.mjs, android.yml, ios-testflight.yml, docs/store/RELEASE.md",
+   "cost": "M",
+   "touches": [
+    "DOCS"
+   ],
+   "expectedEffect": "The owner sees the whole remaining list in one place instead of across nine documents; a build with reviewer-visible gaps cannot be uploaded by accident."
+  },
+  {
+   "title": "Cross-engine determinism check in CI",
+   "description": "Run a short fixture (generated bases plus raids, hashed) under Node and under Bun in the build job and fail on any difference; pin Node from one `.node-version` file shared with the Dockerfile.",
+   "where": "tests/gameplay/ (new fixture), .github/workflows/deploy.yml, Dockerfile, new .node-version",
+   "cost": "M",
+   "touches": [
+    "DOCS"
+   ],
+   "expectedEffect": "An engine or Node update that changes battle results is caught before it reaches the server, where it would reject honest players' battles."
+  },
+  {
+   "title": "Put squad orders on screen",
+   "description": "Formation and wave-order pickers plus a Hold button in the raid screen. The logic is built and tested (tests/gameplay/control/squad.test.ts) and records ordinary deployments, so replays and the server check are unchanged. The lab measured about 7 points of destruction from formation and 6 from wave order at Keep 12.",
+   "where": "src/presentation/ui/battleHud.ts, locales/en/ui.json (about 12 strings), docs/art/REQUESTS.md",
+   "cost": "M",
+   "touches": [
+    "UI",
+    "I18N"
+   ],
+   "expectedEffect": "A real skill decision in every raid for players who do not hand-place 40 warriors; more reason to retry a base."
+  },
+  {
+   "title": "Game Center and Play Games achievements",
+   "description": "The id map and the once-per-device reporter exist; write the native TkAchievements plugin (GameKit on iOS first) and register it beside TkStore.",
+   "where": "ios/App/App/ (new TkAchievementsPlugin.swift, TkViewController.swift), src/backend/platform/achievements.ts, achievementIds.json",
+   "cost": "L",
+   "touches": [
+    "DOCS"
+   ],
+   "expectedEffect": "Achievements appear on the player's platform profile, an honest return reason and a store-feature checkbox. Cannot be compiled here; the first Xcode build is the owner's."
+  },
+  {
+   "title": "\"What's new\" in the News panel and prepared store release notes",
+   "description": "A short per-version entry shown once in the existing News and messages panel, with the same text kept as the stores' \"What's New\" copy.",
+   "where": "src/presentation/ui/newsUi.ts, locales/en/ui.json, docs/store/RELEASE.md",
+   "cost": "M",
+   "touches": [
+    "UI",
+    "I18N"
+   ],
+   "expectedEffect": "Returning players see what changed (new warriors live, events), and each release has listing text ready in 50 languages."
+  },
+  {
+   "title": "Refresh the listing in all 50 languages",
+   "description": "Add the Shadow Captain, the 28-day calendar, shared replays and the language list to docs/store/LISTING.md and regenerate docs/store/<code>/LISTING.md; drop keywords the game does not contain.",
+   "where": "docs/store/LISTING.md, docs/store/<code>/",
+   "cost": "M",
+   "touches": [
+    "DOCS"
+   ],
+   "expectedEffect": "The store page sells what the game now has; still every claim checked against data."
+  },
+  {
+   "title": "Faster, steadier Postgres tests through a template schema",
+   "description": "Migrate once per worker and clone for each test instead of running 42 migrations per test.",
+   "where": "tests/backend/server/pg.ts",
+   "cost": "M",
+   "touches": [
+    "DOCS"
+   ],
+   "expectedEffect": "The server job stops flaking and runs in a fraction of the time, so main stays deployable."
+  },
+  {
+   "title": "Tag releases so the previous-client contract test has something to test",
+   "description": "Create a `v*` tag from the release checklist (or a small workflow_dispatch job) at each store submission; the contract step already checks out the latest tag.",
+   "where": ".github/workflows/, docs/store/RELEASE.md, tools/release/previous-client-contract.mjs",
+   "cost": "S",
+   "touches": [
+    "DOCS"
+   ],
+   "expectedEffect": "From the second release on, CI proves that players who have not updated can still play against the new server."
+  }
+ ],
+ "reportPath": "docs/audit/understand-2026-11-16/scripts/publish.md",
+ "summary": "Main's CI is red for three separate reasons, and all three can be worked on from this repository. First, the deploy check rejects right-to-left pages (tools/release/check-published-game.mjs:40 against the `dir=\"rtl\"` that tools/i18n/pages.mjs:119 writes), which has failed every deploy since all 50 languages became ready. Second, the Postgres suites time out at Vitest's default 5 s because each test runs 42 migrations. Third, tests/gameplay/balance/matched.test.ts fails on CI with 2.75 stars at Keep 8 against a 2.2 ceiling, yet passes here on Node 22.23.4, Node 24.22.1 and Bun with byte-identical battle hashes (2.167). I did not find the cause of the third; the untested suspect is Node 24.22.3, which the production Dockerfile pins, so it needs one run of my script on that version before anyone trusts it. Of the cheap wins the brief listed as undone, eight of ten are already in code; the documents that say otherwise are stale. The cheap wins that are actually open are a test that requires the publisher facts to be empty, an Android release job that would bind the Play listing to the old Toadstool package name, native project files missing two plugins, two wrong Apple age-rating answers, a stale privacy-policy date, no third-party licence notices and an outdated iOS runner image. The store listing makes no overclaim against today's data, and the legal pages show honest \"not published yet\" notes rather than placeholders; filling them is the owner's job, as are accounts, devices, hosting and legal review. I would change three things first: fix the RTL deploy check with a test; add the Postgres timeouts and pin CI's Node to the Dockerfile's version while settling the matched-raids failure; and replace the \"must be empty\" test with a store-readiness preflight that commercial builds run, guarding the bundle id in the same pass."
+}

@@ -26,8 +26,15 @@ Hola isizwe se-ninja. Yakha isigodi esifihlekile ezintabeni, uqeqeshe izinhlobo 
 **Gasela ngecebo**
 
 - Amaqhawe angena kuphela ngaMaphuzu Okungena esigodi: hlola izindlela nemibhoshongo ezivikelayo.
-- Phonsa Ibhomu Lentuthu lapho amaqhawe akho engena ebangeni lombhoshongo, uthumele uMonakalisi ukuze amise isivikelo.
+- Thumela iqembu lakho ngomyalo owodwa (ndawonye, ngezimpondo noma ngomugqa; abaqinile kuqala noma ngokuphuthuma), noma ubeke iqhawe ngalinye ngesandla.
+- Phonsa Ibhomu Lentuthu lapho amaqhawe akho engena ebangeni lombhoshongo, uthumele uMonakalisi ukuze amise isivikelo. Kusukela eNqabeni Yesizwe yezinga 7, Ukaputeni Wesithunzi uqoqa iqembu lakho lonke kanye ngempi.
+- Ngemva kokugasela, bona ukuthi ibutho elifanayo belizokwenzani ngelinye iphuzu.
 - Ukuhlasela okuhlelwe kahle kunqoba ibutho elikhulu.
+
+**Vikela isigodi sakho**
+
+- Konke ukugasela esigodini sakho kuza nombiko: okugciniwe, izinkanyezi ezivinjiwe, nalapho umgaseli angene khona.
+- Hlola izivikelo zakho ngokumelene nomgaseli olingisiwe, futhi uzijwayeze ngokumelene nebutho elikunqobile.
 
 **Dlalani ndawonye** (ku-inthanethi)
 
@@ -38,7 +45,12 @@ Hola isizwe se-ninja. Yakha isigodi esifihlekile ezintabeni, uqeqeshe izinhlobo 
 
 **Izivivinyo Zesithunzi**
 
-- Uchungechunge lwezinqaba olungapheli. Izinga ngalinye likhokha kanye kuphela, futhi liba nzima kakhulu.
+- Uchungechunge lwezinqaba olungapheli. Izinga ngalinye likhokha kanye kuphela, futhi liba nzima kakhulu. Ukuzijwayeza kwansuku zonke kukuvumela ukuthi uzijwayeze ngenkathi ibutho lakho liqeqeshwa.
+
+**Okuthile okusha nsuku zonke**
+
+- Imicimbi ekhalendeni elinqunyiwe lamaviki amane, imikhosi emihlanu yonyaka enenqaba nokubukeka kweNqaba ongakuzuza, uMzila Wezinselelo wamasonto onke, nesivumelwano sansuku zonke.
+- Izimpumelelo, izigxivizo zeNqaba, izikhundla zobungcweti bamaqhawe nokubukeka okuzuza ngokudlala.
 
 **Ukudlala ngokulungile**
 
@@ -46,7 +58,7 @@ Hola isizwe se-ninja. Yakha isigodi esifihlekile ezintabeni, uqeqeshe izinhlobo 
 - Izitha ezenziwe yikhompyutha zihlala zibhalwe kanjalo.
 - Imikhawulo yokusebenzisa imali kubadlali abangaphansi kweminyaka eyi-18, nezikhumbuzi ozikhethayo (zivaliwe uze uzivule).
 
-I-Kagemura imahhala ukuyilanda nokuyidlala. Zonke izakhiwo, amaqhawe, amazinga eNqaba nezindlela zokudlala kungafinyelelwa ngaphandle kokukhokha, futhi azikho izikhangiso. Ijeyidi, imali ekhethekile, litholakala kancane ngokudlala (izimpumelelo, amaligi, ibhokisi lansuku zonke nomzila wamahhala woMqulu Wesizini) futhi lingathengwa. Ezinye izinto zithengiswa ngemali yangempela kuphela: umzila okhethekile woMqulu Wesizini (imiklomelo eyengeziwe, ukwakha okusheshayo isizini yonke nokubukeka kweNqaba "Umkhosi Wamalambu") namaphakethe ejeyidi nezinsiza esikhathi esilinganiselwe.
+I-Kagemura imahhala ukuyilanda nokuyidlala. Zonke izakhiwo, amaqhawe, amazinga eNqaba nezindlela zokudlala kungafinyelelwa ngaphandle kokukhokha, futhi azikho izikhangiso. Ijeyidi, imali ekhethekile, litholakala kancane ngokudlala (izimpumelelo, amaligi, ibhokisi lansuku zonke nomzila wamahhala woMqulu Wesizini) futhi lingathengwa. Ezinye izinto zithengiswa ngemali yangempela kuphela: umzila okhethekile woMqulu Wesizini (imiklomelo eyengeziwe, ukwakha okusheshayo isizini yonke nokubukeka kweNqaba okushintsha isizini ngayinye) namaphakethe ejeyidi nezinsiza esikhathi esilinganiselwe.
 
 ## Izixhumanisi zokukhishwa
 

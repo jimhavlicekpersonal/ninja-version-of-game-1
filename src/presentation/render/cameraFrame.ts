@@ -92,3 +92,42 @@ export function battleOpening(o: BattleOpeningIn): number | null {
   // Not worth a camera move unless the base gets clearly bigger.
   return z >= o.fitZoom * 1.25 ? z : null;
 }
+
+/**
+ * P6-11 (PLY-05): the action frame. Once the army is in, the camera leaves the entry fit (~0.14 zoom on a portrait
+ * phone, warriors 4-5 px) for a box around the living warriors and what they are hitting, zoom clamped.
+ */
+export interface WorldBox {
+  x0: number;
+  y0: number;
+  x1: number;
+  y1: number;
+}
+
+export interface FreeArea {
+  left: number;
+  top: number;
+  right: number;
+  bottom: number;
+  cssW: number;
+  cssH: number;
+}
+
+/** World px kept around the action (a building's art, a warrior's sprite, a ring). */
+export const ACTION_PAD = 140;
+/** The action frame never zooms in closer than this (a warrior ~40 px, the fight still has room around it). */
+export const ACTION_MAX_ZOOM = 0.62;
+
+/** Zoom and world centre that put `box` (padded) inside the free area, zoom in [minZoom, maxZoom]. */
+export function actionShot(box: WorldBox, free: FreeArea, minZoom: number, maxZoom = ACTION_MAX_ZOOM): { zoom: number; x: number; y: number } {
+  const w = Math.max(1, box.x1 - box.x0 + ACTION_PAD * 2);
+  const h = Math.max(1, box.y1 - box.y0 + ACTION_PAD * 2);
+  const availW = Math.max(60, free.right - free.left);
+  const availH = Math.max(60, free.bottom - free.top);
+  const lo = Math.min(minZoom, maxZoom);
+  const zoom = Math.min(maxZoom, Math.max(lo, Math.min(availW / w, availH / h)));
+  // The middle of the box at the middle of the free area.
+  const fx = (free.left + free.right) / 2 - free.cssW / 2;
+  const fy = (free.top + free.bottom) / 2 - free.cssH / 2;
+  return { zoom, x: (box.x0 + box.x1) / 2 - fx / zoom, y: (box.y0 + box.y1) / 2 - fy / zoom };
+}

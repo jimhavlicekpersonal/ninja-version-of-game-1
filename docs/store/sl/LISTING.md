@@ -26,8 +26,15 @@ Vodi klan nindž, zgradi skrito vas v gorah, izuri petdeset vrst bojevnikov, raz
 **Načrtuj vpad**
 
 - Bojevniki vstopijo le skozi točke vdora. Razišči poti in stolpe, ki jih varujejo.
-- Vrzi dimno bombo, ko bojevniki stopijo v doseg stolpov, in pošlji saboterje, da onesposobijo obrambo.
+- Pošlji odred v boj z enim ukazom (skupaj, v klešče ali v koloni; tanki naprej ali v naskok) ali pa ročno postavi vsakega bojevnika.
+- Vrzi dimno bombo, ko bojevniki stopijo v doseg stolpov, in pošlji saboterje, da onesposobijo obrambo. Od ravni 7 Klanske trdnjave Senčni kapitan enkrat na bitko zbere ves tvoj odred.
+- Po vpadu poglej, kaj bi ista vojska dosegla skozi drugo točko.
 - Premišljen napad premaga tudi večjo vojsko.
+
+**Ubrani svojo vas**
+
+- Za vsak vpad v tvojo vas dobiš poročilo: kaj je ostalo ohranjeno, koliko zvezdic je bilo ubranjenih in kje je napadalec vdrl.
+- Preizkusi obrambo proti simuliranemu napadalcu in vadi proti vojski, ki te je premagala.
 
 **Igraj z drugimi** (prek spleta)
 
@@ -38,7 +45,12 @@ Vodi klan nindž, zgradi skrito vas v gorah, izuri petdeset vrst bojevnikov, raz
 
 **Senčne preizkušnje**
 
-- Neskončen niz trdnjav: vsaka stopnja je težja in nagrado da samo enkrat.
+- Neskončen niz trdnjav: vsaka stopnja je težja in nagrado da samo enkrat. Dnevna vaja ti omogoča vadbo, medtem ko se tvoja vojska uri.
+
+**Vsak dan nekaj novega**
+
+- Dogodki po stalnem štiritedenskem koledarju, pet vsakoletnih praznikov z lastno trdnjavo in videzom trdnjave, ki si ga lahko prislužiš, tedenska Bojna steza in dnevna pogodba.
+- Dosežki, pečati trdnjave, čini mojstrstva bojevnikov in videzi, ki si jih prislužiš z igranjem.
 
 **Poštena igra**
 
@@ -46,7 +58,7 @@ Vodi klan nindž, zgradi skrito vas v gorah, izuri petdeset vrst bojevnikov, raz
 - Računalniško ustvarjeni tekmeci so vedno jasno označeni.
 - Igralci, mlajši od 18 let, imajo omejitev porabe; prejemaš le obvestila, ki jih izbereš, in so izklopljena, dokler jih ne vklopiš.
 
-Kagemura je brezplačna za prenos in igranje. Vse stavbe, bojevniki, ravni trdnjave in načini igre so dosegljivi brez plačila, oglasov pa ni. Žad, premijska valuta, se postopoma prisluži z igranjem (dosežki, lige, dnevna skrinja in brezplačna pot Sezonskega zvitka), lahko pa ga tudi kupiš. Nekatere stvari so na voljo samo za pravi denar: premijska pot Sezonskega zvitka (dodatne nagrade, hitrejša gradnja vso sezono in videz trdnjave »Praznik lampijonov«) in časovno omejeni paketi žada in virov.
+Kagemura je brezplačna za prenos in igranje. Vse stavbe, bojevniki, ravni trdnjave in načini igre so dosegljivi brez plačila, oglasov pa ni. Žad, premijska valuta, se postopoma prisluži z igranjem (dosežki, lige, dnevna skrinja in brezplačna pot Sezonskega zvitka), lahko pa ga tudi kupiš. Nekatere stvari so na voljo samo za pravi denar: premijska pot Sezonskega zvitka (dodatne nagrade, hitrejša gradnja vso sezono in videz trdnjave, ki se spreminja vsako sezono) in časovno omejeni paketi žada in virov.
 
 ## Povezave za izdajo
 

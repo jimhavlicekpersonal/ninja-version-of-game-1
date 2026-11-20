@@ -3,7 +3,7 @@
  * end times come only from the schedule: nothing a player does (or doesn't
  * do) moves, resets or extends them, so every countdown shown is real.
  */
-import type { EventEffect, GameData } from './types';
+import type { DatedEventDef, EventEffect, EventsDef, GameData } from './types';
 
 const HOUR = 3_600_000;
 
@@ -16,6 +16,8 @@ export interface EventWindow {
   start: number;
   end: number;
   effect: EventEffect;
+  /** P5-01: a festival on a fixed date (not part of the repeating loop). */
+  dated?: boolean;
 }
 
 function periodMs(data: GameData): number {
@@ -37,7 +39,26 @@ export function eventsBetween(from: number, to: number, data: GameData): EventWi
       if (end > from && start < to) out.push({ key: `${e.id}#${k}`, id: e.id, name: e.name, description: e.description, start, end, effect: e.effect });
     }
   }
-  return out.sort((a, b) => a.start - b.start);
+  // P5-01: festivals on fixed UTC dates, one occurrence a year (`<id>#<year>`). The year comes from the UTC
+  // calendar, which is exact integer arithmetic on the timestamp, so browser and server agree.
+  if (ev.dated?.length) {
+    const longestDated = Math.max(0, ...ev.dated.map((e) => e.durationHours * HOUR));
+    const y0 = new Date(from - longestDated).getUTCFullYear();
+    const y1 = new Date(to).getUTCFullYear();
+    for (let y = y0; y <= y1; y++) {
+      for (const e of ev.dated) {
+        const start = Date.UTC(y, e.month - 1, e.day);
+        const end = start + e.durationHours * HOUR;
+        if (end > from && start < to) out.push({ key: `${e.id}#${y}`, id: e.id, name: e.name, description: e.description, start, end, effect: e.effect, dated: true });
+      }
+    }
+  }
+  return out.sort((a, b) => a.start - b.start || (a.key < b.key ? -1 : 1));
+}
+
+/** The definition behind a window (loop or festival). */
+export function eventDef(id: string, data: GameData): EventsDef['schedule'][number] | DatedEventDef | undefined {
+  return data.events.schedule.find((e) => e.id === id) ?? data.events.dated?.find((e) => e.id === id);
 }
 
 /** Events running at time t (start inclusive, end exclusive). */

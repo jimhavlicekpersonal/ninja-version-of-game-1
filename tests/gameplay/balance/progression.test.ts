@@ -45,7 +45,10 @@ describe('progression pacing (model player)', () => {
     expect(avgDestruction).toBeLessThan(95);
     // Opponents follow the player's trophies, which follow its hall.
     expect(p.raidLog[p.raidLog.length - 1].opponentHall).toBeGreaterThanOrEqual(5);
-    expect(p.state.trophies).toBeLessThan(2600);
+    // Restated (P3-10, pacing targets from the campaign; Phases 3-4 sped the early game: Keep 8 by day 17 of 24): honor
+    // follows the Keep reached, below the matchmaking scale's honor for one Keep above it (was a flat 2,600 for ~Keep 7).
+    const keepNow = Math.max(...Object.keys(p.hallReachedAt).map(Number));
+    expect(p.state.trophies).toBeLessThan(data.ranks.matchmaking.trophiesPerHall * keepNow);
     // Report section 5 step 11 (E24): Keep 3 used to be a cliff after Keep 2 (0.88 stars). Early
     // Keeps meet bases further below their earned strength (`powerSlackByKeep`).
     for (let h = 3; h <= 5; h++) {
@@ -54,8 +57,9 @@ describe('progression pacing (model player)', () => {
     }
     const h6 = p.hallReachedAt[6];
     expect(h6).toBeDefined();
-    // Design re-audit: Keep 5 -> 6 costs x5 (was x6.5, the casual drop-off), so this arrives ~a day sooner.
-    expect(h6 / 24).toBeGreaterThanOrEqual(9);
+    // Design re-audit: Keep 5 -> 6 costs x5 (was x6.5, the casual drop-off), so this arrives ~a day sooner. Restated
+    // (P3-10): P3-01/P3-04 brought Keep 6 to day ~8.6 for the regular player (the campaign's pacing targets).
+    expect(h6 / 24).toBeGreaterThanOrEqual(7);
     expect(h6 / 24).toBeLessThanOrEqual(17);
   });
 });

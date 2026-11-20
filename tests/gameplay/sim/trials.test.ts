@@ -3,9 +3,10 @@ import { describe, expect, it } from 'vitest';
 import { createBattle, deploy, runBattle } from '../../../src/gameplay/sim/battle/battle';
 import { LAYOUTS } from '../../../src/gameplay/sim/battle/basegen';
 import type { BaseLayout, Deployment } from '../../../src/gameplay/sim/battle/types';
-import { trialBase, trialInfo, trialReward } from '../../../src/gameplay/sim/trials';
+import { attemptTier, trialBase, trialCatchUpTier, trialInfo, trialReward, trialRewardsThrough, trialVariant } from '../../../src/gameplay/sim/trials';
 import { applyCommand, trialBattleSeed } from '../../../src/gameplay/sim/village';
 import { migrate, SAVE_VERSION, serialize } from '../../../src/gameplay/sim/save';
+import type { VillageState } from '../../../src/gameplay/sim/types';
 import { data, entryDeployments, newGame } from './helpers';
 
 /** Rough defensive strength: sum over defenses of HP x damage per tick. */
@@ -56,11 +57,37 @@ describe('Shadow Trials ladder', () => {
     }
   });
 
+  // P1-07 (RET-07, 2026-11-18; this item authorised restating the pinned tiers): Ironclad used to land only on
+  // Open Courtyard (no walls) and doubled up with Elite every tenth tier.
   it('adds modifiers on their tiers', () => {
-    expect(trialInfo(5, data).modifiers.map((m) => m.id)).toEqual(['ironclad']);
-    expect(trialInfo(10, data).modifiers.map((m) => m.id).sort()).toEqual(['elite', 'ironclad']);
-    expect(trialBase(5, data).wallPower).toBe(2);
-    expect(trialInfo(7, data).modifiers).toEqual([]);
+    expect(trialInfo(7, data).modifiers.map((m) => m.id)).toEqual(['ironclad']);
+    expect(trialInfo(10, data).modifiers.map((m) => m.id)).toEqual(['elite']);
+    expect(trialBase(7, data).wallPower).toBe(2);
+    expect(trialInfo(5, data).modifiers).toEqual([]);
+  });
+
+  it('a modifier that names walls lands on a fortress with walls, alternates included, and no tier carries two (tiers 1-120)', () => {
+    for (let t = 1; t <= 120; t++) {
+      for (let v = 0; v <= data.trials.maxAlternates; v++) {
+        const info = trialInfo(t, data, v);
+        expect(info.modifiers.length, `tier ${t}`).toBeLessThanOrEqual(1);
+        if (info.modifiers.some((m) => m.wallPower)) {
+          const walls = trialBase(t, data, v).buildings.filter((b) => data.buildings[b.type]?.category === 'hedge').length;
+          expect(walls, `tier ${t} variant ${v} (${info.layout.id})`).toBeGreaterThan(0);
+        }
+      }
+    }
+  });
+
+  it('a rival modifier tempers the fortress as that clan does, from the temper unlock Keep', () => {
+    const t = Array.from({ length: 120 }, (_, i) => i + 1).find((x) => trialInfo(x, data).modifiers.some((m) => m.rival))!;
+    expect(trialInfo(t, data).hall).toBeGreaterThanOrEqual(data.battle.temper!.unlockKeep);
+    expect(trialBase(t, data).buildings.some((b) => b.temper)).toBe(true);
+  });
+
+  it('rewards at tiers whose formula lands on a whole number are pinned (XPL-08, P1-17)', () => {
+    // 550, 600, 4,900 and 82,728 as before; tier 64 is 3,840,074 × (1 + 0.003 × 4) past the Keep ladder.
+    expect([2, 4, 16, 32, 64].map((t) => trialReward(t, data).acorns)).toEqual([550, 600, 4900, 82728, 3886154]);
   });
 
   it('rewards grow slowly (logarithmically) and Jade comes every 10 tiers', () => {
@@ -201,3 +228,47 @@ describe('Shadow Trials: a dependable climb (F33)', () => {
   });
 });
 
+
+describe('P3-06 (PAC-09): a late starter catches up', () => {
+  const keepAt = (s: VillageState, keep: number): VillageState => ({ ...s, buildings: s.buildings.map((b) => (data.buildings[b.type].category === 'hall' ? { ...b, level: keep } : b)) });
+
+  it('a Keep 10 village may attempt the first tier of Keep 8 with nothing cleared; a Keep 1 village may not skip', () => {
+    const { state } = newGame();
+    expect(trialCatchUpTier(state.trials, 1, data)).toBeNull();
+    expect(attemptTier(state.trials, 1, data)).toBe(1);
+    expect(attemptTier(state.trials, 3, data)).toBe(1);
+    expect(trialCatchUpTier(state.trials, 10, data)).toBe(7 * data.trials.tiersPerHall + 1);
+    // Already past it: no catch-up.
+    expect(trialCatchUpTier({ best: 40 }, 10, data)).toBeNull();
+  });
+
+  it('clearing the catch-up tier sets the best tier to it and pays every skipped tier once', () => {
+    const { state, clock } = newGame({ acorns: 0, dew: 0 });
+    const s0 = keepAt({ ...state, army: { hedgehog_roller: 400 } }, 10);
+    const tier = trialCatchUpTier(s0.trials, 10, data)!;
+    const want = trialRewardsThrough(0, tier, data);
+    let sum = 0;
+    for (let t = 1; t <= tier; t++) sum += trialReward(t, data).acorns ?? 0;
+    expect(want.acorns).toBe(sum);
+    // A tier between the next one and the catch-up tier stays locked.
+    const mid = applyCommand(s0, { type: 'trialEnd', tier: 5, record: { at: clock.now(), opponentName: 'x', setup: { seed: 1, base: trialBase(5, data, 0), army: s0.army }, deployments: [] } }, clock.now(), data);
+    expect(mid.ok).toBe(false);
+    const locked = applyCommand(s0, { type: 'trialEnd', tier: tier + 1, record: { at: clock.now(), opponentName: 'x', setup: { seed: 1, base: trialBase(tier + 1, data, 0), army: s0.army }, deployments: [] } }, clock.now(), data);
+    expect(locked.ok).toBe(false);
+  });
+});
+
+describe('independent review 2026-11-18: the alternate fortress follows a failed catch-up tier', () => {
+  it('after failing the catch-up tier, "try a different fortress" switches that tier, not tier 1', () => {
+    const { state, clock } = newGame();
+    const s0: VillageState = { ...state, army: { hedgehog_roller: 5 }, buildings: state.buildings.map((b) => (data.buildings[b.type].category === 'hall' ? { ...b, level: 10 } : b)) };
+    const tier = trialCatchUpTier(s0.trials, 10, data)!;
+    const failed = applyCommand(s0, { type: 'trialEnd', tier, record: { at: clock.now(), opponentName: 'x', setup: { seed: trialBattleSeed(s0.seed, s0.nextSeed, tier), base: trialBase(tier, data, 0), army: s0.army }, deployments: [] } }, clock.now(), data);
+    if (!failed.ok) throw new Error(failed.message);
+    expect(failed.state.trials.failedTier).toBe(tier);
+    const alt = applyCommand(failed.state, { type: 'trialAlternate' }, clock.now(), data);
+    if (!alt.ok) throw new Error(alt.message);
+    expect(trialVariant(alt.state.trials, tier)).toBe(1);
+    expect(trialVariant(alt.state.trials, 1)).toBe(0);
+  });
+});

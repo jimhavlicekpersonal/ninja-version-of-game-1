@@ -348,7 +348,9 @@ export class VillageScene extends Phaser.Scene {
       const level = effectiveLevel(b, now);
       const cap = collectorCapacity(b, level, gd);
       const amount = collectorAmount(b, now, gd);
-      const show = cap > 0 && amount >= Math.max(gd.economy.minCollectAmount, cap * gd.economy.collectBubbleMinFraction) && this.placement?.id !== b.id;
+      // P3-04 (PAC-04): during the tutorial the bubble shows as soon as one coin exists (the step asks for a tap).
+      const least = this.controller.state.tutorial.done ? Math.max(gd.economy.minCollectAmount, cap * gd.economy.collectBubbleMinFraction) : gd.economy.minCollectAmount;
+      const show = cap > 0 && amount >= least && this.placement?.id !== b.id;
       if (show && !view.bubble) {
         view.bubble = this.add.image(0, 0, Keys.bubble(def.produces)).setOrigin(0.5, 1).setDepth(OVERLAY_DEPTH - 2);
       }

@@ -3,6 +3,14 @@
   "epoch": 1767225600000,
   "seasonDays": 30,
   "pointsPerTier": 300,
+  "$commentSeasonSkins": "Retention audit RET-04 (P1-02): the premium track's look changes each season, chosen by season number modulo this list (a tier whose premium reward names a look gives this season's instead). A buyer who already owns this season's look gets repeatJade Jade for that tier.",
+  "seasonSkins": ["lantern_elder", "crimson_maple", "snow_pine", "indigo_tide", "jade_bamboo", "plum_blossom", "golden_harvest", "storm_cloud"],
+  "repeatJade": 60,
+  "$commentTasks": "P1-08 (RET-05): collect targets are ofDailyProduction of the village's own daily collector output (base and perHall stay the floor), so a single collect no longer finishes them; upgrade tasks count timed upgrades only (stat timedUpgradesDone), so wall levels do not move them.",
+  "$commentBonus": "Retention audit RET-02 / ECO-03 (P1-03): after the last tier, every everyPoints task points pay reward (resources only, Keep-scaled, never Jade), at most maxPerSeason times. A full season's bonus (17 x 3,000 of each at scale 1) stays under the free track's own supply (90,000 of each).",
+  "$commentEstimate": "Economy ECO-06 (P1-05): the value estimate counts the tiers this player can still reach at their own pace this season (points against days elapsed, never above all tasks every day; defaultPace in the first minDaysForPace days), and if it would exceed guardPackMultiple x the Jade of the same-price pack it shows only the Jade and lists the supplies by amount.",
+  "estimate": { "defaultPace": 0.6, "minDaysForPace": 3, "guardPackMultiple": 6 },
+  "bonus": { "everyPoints": 300, "reward": { "acorns": 3000, "dew": 3000 }, "maxPerSeason": 17 },
   "productId": "lantern_pass",
   "usd": 4.99,
   "premiumBuildSpeedBonus": 0.2,
@@ -294,19 +302,21 @@
       "text": "Collect {n} Coins",
       "stat": "collectedAcorns",
       "base": 2000,
-      "perHall": 3000
+      "perHall": 3000,
+      "ofDailyProduction": 0.25
     },
     {
       "id": "collect_dew",
       "text": "Collect {n} Provisions",
       "stat": "collectedDew",
       "base": 2000,
-      "perHall": 3000
+      "perHall": 3000,
+      "ofDailyProduction": 0.25
     },
     {
       "id": "finish_upgrades",
       "text": "Finish {n} upgrades",
-      "stat": "upgradesDone",
+      "stat": "timedUpgradesDone",
       "base": 2,
       "perHall": 0
     },
@@ -346,6 +356,41 @@
       "stat": "researchDone",
       "base": 1,
       "perHall": 0
+    },
+    {
+      "id": "trial_tier",
+      "text": "Clear a new Shadow Trial tier",
+      "stat": "trialsCleared",
+      "base": 1,
+      "perHall": 0
+    },
+    {
+      "id": "donate",
+      "text": "Donate {n} warriors to your Alliance",
+      "stat": "donations",
+      "base": 5,
+      "perHall": 0
+    },
+    {
+      "id": "daily_drill",
+      "text": "Fight today's daily drill",
+      "stat": "drillsDone",
+      "base": 1,
+      "perHall": 0
+    },
+    {
+      "id": "stake_won",
+      "text": "Reach a declared stake in a raid",
+      "stat": "stakesWon",
+      "base": 1,
+      "perHall": 0
+    },
+    {
+      "id": "three_star",
+      "text": "Win a raid with three stars",
+      "stat": "raidsThreeStar",
+      "base": 1,
+      "perHall": 0
     }
   ],
   "weeklyChallenges": [
@@ -368,7 +413,7 @@
     {
       "id": "w_upgrades",
       "text": "Finish {n} upgrades this week",
-      "stat": "upgradesDone",
+      "stat": "timedUpgradesDone",
       "base": 10,
       "perHall": 0
     },
@@ -399,7 +444,30 @@
       "stat": "trialsCleared",
       "base": 2,
       "perHall": 0
+    },
+    {
+      "id": "w_rematch",
+      "text": "Settle the score with a raider this week",
+      "stat": "rematchesWon",
+      "base": 1,
+      "perHall": 0
+    },
+    {
+      "id": "w_goal_steps",
+      "text": "Reach {n} reward steps in Bounty Hunts, festivals or the Gauntlet this week",
+      "stat": "goalSteps",
+      "base": 4,
+      "perHall": 0
+    },
+    {
+      "id": "w_three_stars",
+      "text": "Win {n} raids with three stars this week",
+      "stat": "raidsThreeStar",
+      "base": 3,
+      "perHall": 0
     }
   ],
-  "weeklyCount": 3
+  "weeklyCount": 3,
+  "$commentSeasonNames": "P5-10 (2026-11-18): each Scroll season and each monthly league season is named from this list (season number mod 12).",
+  "seasonNames": ["Season of the Crane", "Season of the Plum Rain", "Season of the Iron Bell", "Season of the Long Night", "Season of the Red Fan", "Season of the Mountain Wind", "Season of the Silent Lake", "Season of the Paper Lantern", "Season of the Falling Leaf", "Season of the Hidden Blade", "Season of the White Pine", "Season of the Ember Moon"]
 }

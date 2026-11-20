@@ -83,6 +83,29 @@ export function refusedReason(code: string): string {
 
 const SEEN_KEY = 'tk.newsSeen';
 
+/**
+ * P7-14: "What's new" for this version, shown first in News until it is seen once on the device. The same English text
+ * is the stores' release notes (docs/store/RELEASE_NOTES.md; a test keeps them equal). One entry per version.
+ */
+export const WHATS_NEW = { version: '0.1.0', key: 'whatsNew.0_1_0' } as const;
+const WHATS_NEW_KEY = 'tk.whatsNewSeen';
+
+function whatsNewUnseen(): boolean {
+  try {
+    return localStorage.getItem(WHATS_NEW_KEY) !== WHATS_NEW.version;
+  } catch {
+    return false;
+  }
+}
+
+export function markWhatsNewSeen(): void {
+  try {
+    localStorage.setItem(WHATS_NEW_KEY, WHATS_NEW.version);
+  } catch {
+    /* this session only */
+  }
+}
+
 /** A short fingerprint of the operators' notice, to tell a new one from one already read. */
 export function noticeKey(text: string | null): string {
   if (!text) return '';
@@ -95,7 +118,7 @@ export function noticeKey(text: string | null): string {
 export function unseenNews(src: Pick<NewsSource, 'serverNotice' | 'notices'>, seenNotice: string): number {
   const unread = src.notices.filter((n) => !n.read).length;
   const fresh = src.serverNotice && noticeKey(src.serverNotice) !== seenNotice ? 1 : 0;
-  return unread + fresh;
+  return unread + fresh + (whatsNewUnseen() ? 1 : 0);
 }
 
 export function seenNoticeKey(): string {
@@ -117,6 +140,8 @@ export function markNoticeSeen(text: string | null): void {
 /** The panel body. */
 export function newsBody(src: NewsSource): HTMLElement {
   const body = h('div', { class: 'news' });
+  // Review M4: only until it has been seen once on this device.
+  if (whatsNewUnseen()) body.append(h('p', { class: 'store-note whats-new', 'data-id': 'whats-new' }, t(WHATS_NEW.key)));
   const section = (title: string, ...rows: (HTMLElement | null)[]) => {
     const list = rows.filter((r): r is HTMLElement => Boolean(r));
     if (list.length) body.append(h('h3', {}, title), ...list);

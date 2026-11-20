@@ -50,3 +50,21 @@ export function entryDeployments(setup: BattleSetup, wanted: [troop: string, cou
   }
   return out;
 }
+
+/**
+ * `count` deployments of `troop` that the Infiltration Points rule accepts (every new battle command forces
+ * `infiltration: true`, P1-11): dealt round the base's points, each up to its cover, one per tick from `tick`.
+ */
+export function pointDeploys(setup: Omit<BattleSetup, 'infiltration'>, troop: string, count: number, tick = 0): Deployment[] {
+  const sim = createBattle({ ...setup, infiltration: true }, data);
+  const plan = sim.entry!;
+  const housing = data.troops[troop]?.housing ?? 1;
+  const used = plan.points.map(() => 0);
+  const out: Deployment[] = [];
+  for (let i = 0, p = 0; out.length < count && i < count * plan.points.length * 2; i++, p = (p + 1) % plan.points.length) {
+    if (used[p] + housing > plan.cover) continue;
+    used[p] += housing;
+    out.push({ tick: tick + out.length, troop, x: plan.points[p].x, y: plan.points[p].y });
+  }
+  return out;
+}

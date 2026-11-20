@@ -73,6 +73,15 @@ describe('event schedule from the server (G10)', () => {
     expect(upcomingEvents(Date.UTC(2026, 10, 8, 3), 2, data).map((e) => e.id)).toEqual(['harvest_moon', 'raiders_moon']);
   });
 
+  it('carries every non-timing field through: the dated festivals keep their dates under an operator schedule (P5-01)', () => {
+    const ev = applyEventSchedule(defaultData.events, schedule());
+    expect(ev.dated).toEqual(defaultData.events.dated);
+    expect(ev.dated!.length).toBeGreaterThan(0);
+    const f = defaultData.events.dated![0];
+    const at = Date.UTC(2027, f.month - 1, f.day, 1);
+    expect(activeEvents(at, { ...defaultData, events: ev }).map((e) => e.key)).toContain(`${f.id}#2027`);
+  });
+
   it('the game applies it at hello, keeps it for an offline start and clears it when the server sends none', () => {
     const map = new Map<string, string>();
     const kv = { get: (k: string) => map.get(k) ?? null, set: (k: string, v: string | null) => void (v === null ? map.delete(k) : map.set(k, v)) };

@@ -1,7 +1,7 @@
 /**
  * The free daily chest and the visit streak.
  *
- * Chest: one per UTC day, free, and never sold (no Moonstone or real-money
+ * Chest: one per day (the player's own day since P5-09; see `chestDay`), free, and never sold (no Moonstone or real-money
  * path opens it or rerolls it). The contents are drawn from the weighted
  * table in daily.json, and the odds are shown in full before opening. The
  * draw comes from the village seed and the day, so reloading cannot reroll it.
@@ -11,10 +11,11 @@
  * covers it, and otherwise you move back one step per missed day. Skips
  * cannot be bought.
  */
+import { localDayIndex, nextLocalDayAt } from './calendar';
 import { dayIndex } from './pass';
 import { scaleReward } from './economy';
 import { createRng, mixSeed, next } from './rng';
-import type { Cost, DailyState, GameData, ResourceKind } from './types';
+import type { Cost, DailyState, GameData, ResourceKind, VillageState } from './types';
 
 export function emptyDaily(data: GameData): DailyState {
   return { lastDay: -1, step: 0, skipsLeft: data.daily.streak.skipsPerWeek, skipWeek: -1, history: [] };
@@ -35,13 +36,22 @@ export function chestOdds(data: GameData): ChestOdds[] {
   return list.map((o) => ({ id: o.id, label: o.label, percent: (o.weight * 100) / total, reward: { ...o.reward } }));
 }
 
-export function chestReady(state: { daily: DailyState }, now: number, data: GameData): boolean {
-  return state.daily.lastDay < dayIndex(now, data);
+/**
+ * P5-09 (RET-12): the day the chest counts in. The player's own day (`localDayIndex`, like tasks and the calendar)
+ * once a claim has been made on it (`daily.local`); until then the old UTC day, so the switch never allows a second
+ * chest on the day it happens and never takes one away.
+ */
+export function chestDay(state: Pick<VillageState, 'daily' | 'localTime'>, now: number, data: GameData): number {
+  return state.daily.local ? localDayIndex(state as VillageState, now, data) : dayIndex(now, data);
 }
 
-/** When the next chest can be opened (start of the next UTC day). */
-export function nextChestAt(now: number, data: GameData): number {
-  return data.pass.epoch + (dayIndex(now, data) + 1) * 86_400_000;
+export function chestReady(state: Pick<VillageState, 'daily' | 'localTime'>, now: number, data: GameData): boolean {
+  return state.daily.lastDay < chestDay(state, now, data);
+}
+
+/** When the next chest can be opened (the start of the player's next day; of the next UTC day before the switch). */
+export function nextChestAt(state: Pick<VillageState, 'daily' | 'localTime'>, now: number, data: GameData): number {
+  return state.daily.local ? nextLocalDayAt(state as VillageState, now, data) : data.pass.epoch + (dayIndex(now, data) + 1) * 86_400_000;
 }
 
 export interface StreakAfterClaim {

@@ -13,6 +13,7 @@ import { attackerStrength, researchKeep } from '../../../src/gameplay/sim/matchm
 import { defaultData as data } from '../../../src/gameplay/sim/data';
 import { matchedVillage } from '../../../tools/balance/matched';
 import { botArmy } from '../../../src/gameplay/sim/matchmaking';
+import { troopLevelCapAt } from '../../../src/gameplay/sim/research';
 
 const KEEPS = [5, 8, 12, 15];
 
@@ -23,10 +24,14 @@ describe('matched raids average about one to two stars at every Keep (raid bots\
 
   it('researched to the caps: 1-2 stars on average at every Keep band, never a three-star farm', { timeout: 180_000 }, () => {
     for (const r of rows.filter((x) => x.lag === 0)) {
-      expect(r.stars, `Keep ${r.keep}`).toBeGreaterThanOrEqual(1);
-      expect(r.stars, `Keep ${r.keep}`).toBeLessThanOrEqual(2.2);
-      expect(r.threeStar, `Keep ${r.keep}`).toBeLessThanOrEqual(0.6);
-      expect(r.opponentKeep, `Keep ${r.keep}`).toBe(r.keep);
+      // PUB-02 / XPL-07: CI once computed this row as the lag-2 row (2.75 stars). Name the inputs first, so a
+      // wrong-row result fails on its cause (opponent Keep, levels) and prints every battle's hash.
+      const detail = `Keep ${r.keep} lag ${r.lag} levels ${JSON.stringify(r.levels)}\n${r.battles.map((b) => `  seed ${b.seed}: Keep ${b.opponentKeep} ${b.stars}* ${b.destruction}% ${b.hash}`).join('\n')}`;
+      for (const [t, lv] of Object.entries(r.levels)) expect(lv, `${detail}\n${t}`).toBe(troopLevelCapAt(r.keep, data, t));
+      expect(r.opponentKeep, detail).toBe(r.keep);
+      expect(r.stars, detail).toBeGreaterThanOrEqual(1);
+      expect(r.stars, detail).toBeLessThanOrEqual(2.2);
+      expect(r.threeStar, detail).toBeLessThanOrEqual(0.6);
     }
     const avg = rows.filter((x) => x.lag === 0).reduce((a, x) => a + x.stars, 0) / KEEPS.length;
     expect(avg).toBeGreaterThanOrEqual(1.2);

@@ -26,8 +26,15 @@ Lidera un clan ninja. Construye una aldea oculta entre las montañas, entrena ci
 **Saquea con un plan**
 
 - Los guerreros solo entran por los Puntos de Infiltración: explora las rutas y las torres que las cubren.
-- Lanza Bombas de humo cuando tus guerreros entren en el alcance de las torres y envía Saboteadores para bloquear defensas.
+- Envía a tu escuadra con una sola orden (juntos, en pinza o en fila; tanques primero o en carga) o coloca a cada guerrero a mano.
+- Lanza Bombas de humo cuando tus guerreros entren en el alcance de las torres y envía Saboteadores para bloquear defensas. Desde el nivel 7 de la Fortaleza del Clan, el Capitán de las Sombras anima a toda tu escuadra una vez por batalla.
+- Tras un saqueo, mira qué habría hecho el mismo ejército por otro punto.
 - Un ataque bien planeado supera a uno enorme.
+
+**Defiende tu aldea**
+
+- Cada saqueo a tu aldea llega con un informe: lo que conservaste, las estrellas que negaste y por dónde entró el atacante.
+- Pon a prueba tus defensas contra un atacante simulado y practica contra el ejército que te venció.
 
 **Juega en equipo** (en línea)
 
@@ -38,7 +45,12 @@ Lidera un clan ninja. Construye una aldea oculta entre las montañas, entrena ci
 
 **Las Pruebas de las Sombras**
 
-- Una escalera infinita de fortalezas. Cada nivel da su recompensa una vez y aumenta la dificultad.
+- Una escalera infinita de fortalezas. Cada nivel da su recompensa una vez y aumenta la dificultad. Con la práctica diaria puedes entrenar mientras tu ejército se prepara.
+
+**Algo nuevo cada día**
+
+- Eventos en un calendario fijo de cuatro semanas, cinco festivales al año con una fortaleza y un aspecto de la Fortaleza que ganar, un Guantelete semanal y un contrato diario.
+- Logros, sellos de la Fortaleza, rangos de maestría de guerrero y aspectos que ganas jugando.
 
 **Juego limpio**
 
@@ -46,7 +58,7 @@ Lidera un clan ninja. Construye una aldea oculta entre las montañas, entrena ci
 - Los oponentes generados siempre están indicados.
 - Límites de gastos para menores de 18 y recordatorios que tú eliges, desactivados hasta que los actives.
 
-Kagemura se descarga y se juega gratis: puedes acceder a todos los edificios, guerreros, niveles de Fortaleza y modos sin pagar, y no hay anuncios. El Jade, la moneda prémium, se gana en pequeñas cantidades jugando (logros, ligas, cofre diario y senda gratuita del Pergamino de Temporada) y también se puede comprar. Algunos contenidos solo se venden por dinero real: la senda prémium del Pergamino de Temporada (recompensas adicionales, construcciones más rápidas durante la temporada y el aspecto Festival de los Faroles para la Fortaleza) y paquetes temporales de Jade y recursos.
+Kagemura se descarga y se juega gratis: puedes acceder a todos los edificios, guerreros, niveles de Fortaleza y modos sin pagar, y no hay anuncios. El Jade, la moneda prémium, se gana en pequeñas cantidades jugando (logros, ligas, cofre diario y senda gratuita del Pergamino de Temporada) y también se puede comprar. Algunos contenidos solo se venden por dinero real: la senda prémium del Pergamino de Temporada (recompensas adicionales, construcciones más rápidas durante la temporada y un aspecto para la Fortaleza que cambia cada temporada) y paquetes temporales de Jade y recursos.
 
 ## Enlaces de la versión
 

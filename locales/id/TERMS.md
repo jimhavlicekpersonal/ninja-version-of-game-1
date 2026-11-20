@@ -27,6 +27,9 @@ Bahasa Indonesia baku yang ramah, menyapa pemain dengan "kamu" (posesif "-mu": d
 | Looks | tampilan |
 | Tempering (Reach / Blast / Watch) | Penempaan (Jangkauan / Ledakan / Jaga) |
 | Stake | Taruhan |
+| The Gauntlet / Bounty Hunt / daily contract | Uji Nyali / Perburuan Hadiah / kontrak harian |
+| Keep seal / sealed / mark (ladder) | segel Benteng / tersegel / tanda (di tangga) |
+| Warrior Mastery rank / Season of the X | Peringkat (Penguasaan Prajurit) / Musim X (Musim Bangau) |
 | splash / anti-air | kerusakan area / antiudara |
 | generated | buatan komputer |
 | Settings / Store / Online play / Sign-ins | Pengaturan / Toko / Main online / Cara masuk |

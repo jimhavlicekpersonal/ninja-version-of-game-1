@@ -71,9 +71,17 @@ describe('privacy, support and community pages (GLOBAL-015, R06)', () => {
     expect(html).not.toMatch(/&lt;(email|server|owner|date)|<(email|server|owner name|date)>/i);
     expect(html).not.toMatch(/@example\.|TODO/);
   });
-  it('the shared publisher config is empty until the owner fills it', () => {
-    const cfg = read('public/legal-config.js');
-    for (const k of ['operator', 'supportEmail', 'deletionUrl']) expect(cfg).toMatch(new RegExp(`${k}: ''`));
+  // PUB-04 (P7-01, 2026-11-18): empty (the honest "not decided yet") or well formed, read as values (the file's
+  // comments use example.com on purpose). The store preflight, not this test, stops a store build with empty facts.
+  it('the shared publisher config holds no placeholder: each fact is empty or well formed', async () => {
+    const { readLegalConfig, legalValueProblem } = await import('../../tools/release/legal-config.mjs');
+    const cfg = readLegalConfig(resolve(root, 'public/legal-config.js'));
+    for (const k of ['operator', 'supportEmail', 'deletionUrl', 'termsEffective', 'policyUpdated']) expect(k in cfg, k).toBe(true);
+    for (const [k, v] of Object.entries(cfg)) expect(legalValueProblem(k, v), k).toBeNull();
+    expect(legalValueProblem('supportEmail', 'support@example.com')).toMatch(/placeholder/);
+    expect(legalValueProblem('operator', '<owner name>')).toMatch(/placeholder/);
+    expect(legalValueProblem('deletionUrl', 'http://x.test/delete')).toMatch(/https/);
+    expect(legalValueProblem('termsEffective', 'soon')).toMatch(/date/);
     expect(existsSync(resolve(root, 'public/legal.js'))).toBe(true);
   });
   it('Settings links all three pages, with build overrides', () => {
@@ -123,5 +131,41 @@ describe('privacy defaults and declarations (GLOBAL-019)', () => {
   it('the store docs no longer claim email is never collected or that everything is earnable', () => {
     expect(read('docs/store/LISTING.md')).not.toContain('everything in the game can be earned by playing');
     expect(read('public/privacy.html')).toContain('It is off until you turn it on');
+  });
+});
+
+describe('the listing names the Season Scroll look as the data has it (P1-02)', () => {
+  it("its claims row matches pass.json seasonSkins and the description names no single look", () => {
+    const listing = readFileSync(resolve('docs/store/LISTING.md'), 'utf8');
+    const pass = JSON.parse(readFileSync(resolve('src/gameplay/data/pass.json'), 'utf8')) as { seasonSkins: string[] };
+    const cosmetics = JSON.parse(readFileSync(resolve('src/gameplay/data/cosmetics.json'), 'utf8')) as { hallSkins: { id: string; name: string; passOnly?: boolean }[] };
+    const row = listing.split('\n').find((l) => l.startsWith('| A Keep look that changes each season'));
+    expect(row).toBeDefined();
+    expect(row).toContain(`(${pass.seasonSkins.length} looks`);
+    for (const id of pass.seasonSkins) expect(cosmetics.hallSkins.find((s) => s.id === id)?.passOnly).toBe(true);
+    const description = listing.split('\n').find((l) => l.startsWith('Kagemura is free to download'))!;
+    for (const id of pass.seasonSkins) expect(description).not.toContain(cosmetics.hallSkins.find((s) => s.id === id)!.name);
+  });
+});
+
+describe('the privacy page date follows its text (PUB-11, P7-08)', () => {
+  it("policyUpdated changes whenever the English privacy strings do", async () => {
+    const { createHash } = await import('node:crypto');
+    const pages = JSON.parse(readFileSync(resolve('locales/en/pages.json'), 'utf8')) as Record<string, string>;
+    const text = Object.keys(pages).filter((k) => k.startsWith('pages.privacy.')).sort().map((k) => `${k}=${pages[k]}`).join('\n');
+    const hash = createHash('sha256').update(text).digest('hex').slice(0, 16);
+    const date = /policyUpdated:\s*'([^']*)'/.exec(readFileSync(resolve('public/legal-config.js'), 'utf8'))?.[1];
+    // When the privacy text changes: set policyUpdated to that day in public/legal-config.js and both values here.
+    expect({ hash, date }).toEqual({ hash: '818a60cc8d64d2b4', date: '2026-11-14' });
+  });
+});
+
+describe('Apple age-rating answers match what the game does (C05, P7-04)', () => {
+  it('answers Contests Frequent and Age assurance present, with the reasoning beside each', () => {
+    const privacy = readFileSync(resolve('docs/store/PRIVACY.md'), 'utf8');
+    const row = (q: string) => privacy.split('\n').find((l) => l.startsWith(`| ${q} |`)) ?? '';
+    expect(row('Contests')).toMatch(/\*\*Frequent\*\*.*leagues/);
+    expect(row('Age assurance')).toMatch(/\*\*Yes \/ present\*\*.*Declared Age Range/);
+    expect(row('Parental controls')).toMatch(/\*\*No\*\*/);
   });
 });

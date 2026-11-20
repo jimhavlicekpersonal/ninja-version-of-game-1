@@ -14,6 +14,8 @@
 | Gang / Gang War / relay | দঙ্গল / দঙ্গল যুদ্ধ / রিলে |
 | Friendly Duel / duel layout | বন্ধুত্বপূর্ণ দ্বন্দ্বযুদ্ধ / দ্বন্দ্বযুদ্ধের নকশা |
 | Shadow Trials / tier | ছায়া পরীক্ষা / ধাপ |
+| Daily drill / practice | দৈনিক মহড়া / অনুশীলন |
+| stun | স্তব্ধতা (jam থেকে আলাদা) |
 | Season Scroll / premium track / Pass (rail) | মৌসুমি পুঁথি / প্রিমিয়াম পথ / পুঁথি |
 | Smoke Bomb / smoke | ধোঁয়া বোমা / ধোঁয়া |
 | Saboteur / Sabotage / jam | নাশকতাকারী / নাশকতা / অচল করা, অচলাবস্থা |

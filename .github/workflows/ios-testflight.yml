@@ -9,19 +9,36 @@ on:
 
 jobs:
   testflight:
-    runs-on: macos-15
+    # P7-06 (PUB-09): the image with Xcode 26 / the iOS 26 SDK that App Store Connect requires in 2026.
+    # This workflow has never run (no signing secrets yet): the first run is the owner's check.
+    runs-on: macos-26
     env:
       APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
       ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
       ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
-      BUNDLE_ID: ${{ vars.IOS_BUNDLE_ID || 'com.toadstoolkingdoms.app' }}
+      BUNDLE_ID: ${{ vars.IOS_BUNDLE_ID || vars.APP_ID || 'com.toadstoolkingdoms.app' }}
+      APP_ID: ${{ vars.IOS_BUNDLE_ID || vars.APP_ID }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with:
-          node-version: 24
+          node-version-file: .node-version
           cache: npm
       - run: npm ci
+      # PUB-05 (P7-02): the bundle id is the owner's choice; refuse the legacy one unless allowed on purpose.
+      # PUB-04 (P7-01): a store build needs the publisher facts, dated terms and the app id; the preflight lists
+      # everything still open and stops here on the blocking ones (docs/store/OWNER_CHECKLIST.md).
+      - name: Store readiness
+        run: node tools/release/check-store-ready.mjs --store
+        env:
+          APP_ID: ${{ vars.IOS_BUNDLE_ID || vars.APP_ID }}
+          ALLOW_LEGACY_APP_ID: ${{ vars.ALLOW_LEGACY_APP_ID }}
+          VITE_SERVER_URL: ${{ vars.VITE_SERVER_URL }}
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+      - name: Bundle id chosen
+        run: node tools/release/check-app-id.mjs
+        env:
+          ALLOW_LEGACY_APP_ID: ${{ vars.ALLOW_LEGACY_APP_ID }}
       - name: Server first (roadmap step 74)
         run: node tools/release/check-server-rules.mjs
         env:
@@ -39,6 +56,8 @@ jobs:
           VITE_SENTRY_DSN: ${{ vars.VITE_SENTRY_DSN }}
           VITE_GOOGLE_CLIENT_ID: ${{ vars.VITE_GOOGLE_CLIENT_ID }}
           VITE_APPLE_SERVICES_ID: ${{ vars.VITE_APPLE_SERVICES_ID }}
+          # P7-11 (PUB-14): local-day statistics; the owner's switch (repository variable VITE_STATS_TZ=1), off by default.
+          VITE_STATS_TZ: ${{ vars.VITE_STATS_TZ || '0' }}
       - run: npx cap sync ios
       - name: Use the newest installed Xcode (App Store Connect requires a current SDK)
         run: |
@@ -49,7 +68,8 @@ jobs:
           echo "iOS SDK $sdk"
           # Apple raises the minimum upload SDK each spring (the iOS 26 SDK / Xcode 26 for 2026);
           # confirm the current rule at https://developer.apple.com/news/upcoming-requirements/.
-          if [ "${sdk%%.*}" -lt 26 ]; then echo "::warning::iOS SDK $sdk is older than 26: App Store Connect may refuse this upload. Use a runner image with Xcode 26 (e.g. runs-on: macos-26)."; fi
+          # P7-06: below the required SDK the upload would be refused, so the job stops here instead of warning.
+          if [ "${sdk%%.*}" -lt 26 ]; then echo "::error::iOS SDK $sdk is older than 26: App Store Connect refuses this upload. Use a runner image with Xcode 26."; exit 1; fi
       - name: Install the App Store Connect API key
         run: |
           mkdir -p "$RUNNER_TEMP/keys"

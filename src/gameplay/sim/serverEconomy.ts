@@ -125,7 +125,11 @@ export const PLAYER_COMMANDS: ReadonlySet<Command['type']> = new Set<Command['ty
   'claimCalendar',
   'bountyEnd',
   'rematchEnd',
+  // P3-07 (2026-11-18): the daily drill, re-simulated by the server like a Trial.
+  'drillEnd',
+  // P5-08 (2026-11-18): a Keep's seal.
+  'claimKeepSeal',
 ]);
 
 /** Commands that re-run a whole battle on the server (CPU): a batch may carry only a few. */
-export const BATTLE_COMMANDS: ReadonlySet<Command['type']> = new Set<Command['type']>(['trialEnd', 'abandonBattle', 'bountyEnd', 'rematchEnd']);
+export const BATTLE_COMMANDS: ReadonlySet<Command['type']> = new Set<Command['type']>(['trialEnd', 'abandonBattle', 'bountyEnd', 'rematchEnd', 'drillEnd']);

@@ -24,7 +24,25 @@ function listFiles(dir: string): string[] {
  * touch icon are read by the operating system when the game is installed, never by the page, and
  * were ~315 KB of every update on a slow link.
  */
-const NOT_PRECACHED = new Set(['icons/icon-512.png', 'icons/icon-maskable-512.png', 'icons/apple-touch-icon.png']);
+const NOT_PRECACHED = new Set(['icons/icon-512.png', 'icons/icon-maskable-512.png', 'icons/apple-touch-icon.png', 'screenshots/village-portrait.jpg', 'screenshots/battle-landscape.jpg']);
+
+/**
+ * P7-09 (PUB-12): with VITE_PUBLIC_URL (the game's public address) the link-preview tags become absolute (og:image,
+ * twitter:image, og:url), which link unfurlers require; without it the relative tags stay as they are.
+ */
+function absoluteLinkPreview(publicUrl: string | undefined): Plugin {
+  return {
+    name: 'tk-link-preview',
+    apply: 'build',
+    transformIndexHtml(html) {
+      const base = (publicUrl ?? '').trim().replace(/\/+$/, '');
+      if (!/^https:\/\//.test(base)) return html;
+      return html
+        .replace('<meta property="og:image" content="./icons/icon-512.png" />', `<meta property="og:image" content="${base}/icons/icon-512.png" />\n    <meta property="og:url" content="${base}/" />`)
+        .replace('<meta name="twitter:image" content="./icons/icon-512.png" />', `<meta name="twitter:image" content="${base}/icons/icon-512.png" />`);
+    },
+  };
+}
 
 /** Emits sw.js with the list of built files to precache (no plugin dependency needed). */
 function serviceWorker(): Plugin {
@@ -155,10 +173,15 @@ export default defineConfig(({ command, mode }) => ({
   },
   // Production ships a smaller Phaser (no physics, sound, tilemaps: phaserBuild.js); dev and tests use the full package.
   resolve: command === 'build' && !process.env.VITEST ? { alias: [{ find: /^phaser$/, replacement: fileURLToPath(new URL('./src/presentation/render/phaserBuild.js', import.meta.url)) }] } : {},
-  plugins: [bootGuard(), nonBlockingStyles(), serviceWorker(), phaserFlags()],
+  plugins: [bootGuard(), nonBlockingStyles(), serviceWorker(), phaserFlags(), absoluteLinkPreview(process.env.VITE_PUBLIC_URL)],
   // `npm test` leaves out the slow model-player and timing tests (tests/slow.ts); `npm run test:slow`
   // (`vitest run --mode slow`) runs only those. CI runs both.
   test: mode === 'slow'
     ? { include: SLOW_TESTS, environment: 'node' }
-    : { include: ['tests/**/*.test.ts'], exclude: [...configDefaults.exclude, ...SLOW_TESTS], environment: 'node' },
+    : {
+        include: ['tests/**/*.test.ts'], exclude: [...configDefaults.exclude, ...SLOW_TESTS], environment: 'node',
+        // PUB-03: every Postgres test makes a schema and runs all migrations against one shared database;
+        // Vitest's 5 s default timed out on CI. Only the database-backed runs get the longer limit.
+        ...(process.env.TEST_DATABASE_URL ? { testTimeout: 30_000, hookTimeout: 30_000 } : {}),
+      },
 }));

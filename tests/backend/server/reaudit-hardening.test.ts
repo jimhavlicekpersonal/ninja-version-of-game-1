@@ -11,7 +11,7 @@ import { brotliDecompressSync, gunzipSync } from 'node:zlib';
 import { describe, expect, it, onTestFinished } from 'vitest';
 import { buildServer, pickEncoding, type ServerOptions } from '../../../server/app';
 import { checkConfig, parseAdminTokens, parseTrustProxy, pgPoolSettings, pgTls } from '../../../server/config';
-import { MAX_BACKDATE_MS, MAX_COMMAND_BYTES } from '../../../server/core/village';
+import { MAX_COMMAND_BYTES, MAX_TIMER_BACKDATE_MS } from '../../../server/core/village';
 import { BATTLE_COMMANDS_PER_MINUTE, DEFAULT_RATE_LIMITS, ipAllowList, ipKey, MemoryRateLimiter, type RateLimiter } from '../../../server/rateLimit';
 import { RedisClient, type RedisCommander } from '../../../server/redis';
 import { MemoryRepo, type Player } from '../../../server/repo';
@@ -45,13 +45,15 @@ for (const [label, makeRepo] of repoFactories) {
       const r = await ann.sendCommands({ device: 'device-backdate', stateHash: '', commands: [{ seq: 1, t: t0 + HOUR, command: { type: 'upgrade', id: keep.id } }] });
       expect(r.results).toEqual([{ seq: 1, ok: true }]);
       expect(r.corrections).toBeDefined();
+      // XPL-10 (P1-19, 2026-11-18): a command that starts a timer keeps only MAX_TIMER_BACKDATE_MS of its own
+      // time; every other command keeps MAX_BACKDATE_MS (tests/backend/server/exploits-2026-11-16.test.ts).
       const [logged] = await w.repo.commandsOf(ann.id, 0, 10);
-      expect(logged.at).toBe(w.now() - MAX_BACKDATE_MS);
+      expect(logged.at).toBe(w.now() - MAX_TIMER_BACKDATE_MS);
       expect(logged.clientAt).toBe(t0 + HOUR);
       const after = deserialize((await ann.getVillage())!.file, w.data);
-      expect(after.buildings.find((b) => b.id === keep.id)!.upgrade?.startedAt ?? w.now() - MAX_BACKDATE_MS).toBe(w.now() - MAX_BACKDATE_MS);
-      // A command inside the bound keeps its own time.
-      const inside = w.now() - HOUR;
+      expect(after.buildings.find((b) => b.id === keep.id)!.upgrade?.startedAt ?? w.now() - MAX_TIMER_BACKDATE_MS).toBe(w.now() - MAX_TIMER_BACKDATE_MS);
+      // A command inside the bound, after the village's last change, keeps its own time.
+      const inside = w.now() - MAX_TIMER_BACKDATE_MS / 2;
       await ann.sendCommands({ device: 'device-backdate', stateHash: '', commands: [{ seq: 2, t: inside, command: { type: 'collect', id: 'nothing' } }] });
       expect((await w.repo.commandsOf(ann.id, 1, 10))[0].at).toBe(inside);
     });

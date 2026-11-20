@@ -1,4 +1,6 @@
 {
+  "$commentSeal": "P5-08 (PAC-11, 2026-11-18): a Keep's seal pays this once (Keep-scaled like the chest, written at the Keep 5 economy) when every building that Keep allows is built to that Keep's cap (sim/seals.ts).",
+  "seal": { "reward": { "acorns": 30000, "dew": 30000 } },
   "levels": [
     {
       "level": 1,

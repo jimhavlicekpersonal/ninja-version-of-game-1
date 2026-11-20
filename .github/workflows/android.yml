@@ -33,7 +33,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with:
-          node-version: 24
+          node-version-file: .node-version
           cache: npm
       - uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6
         with:
@@ -57,6 +57,8 @@ jobs:
           VITE_SENTRY_DSN: ${{ vars.VITE_SENTRY_DSN }}
           VITE_GOOGLE_CLIENT_ID: ${{ vars.VITE_GOOGLE_CLIENT_ID }}
           VITE_APPLE_SERVICES_ID: ${{ vars.VITE_APPLE_SERVICES_ID }}
+          # P7-11 (PUB-14): local-day statistics; the owner's switch (repository variable VITE_STATS_TZ=1), off by default.
+          VITE_STATS_TZ: ${{ vars.VITE_STATS_TZ || '0' }}
       - run: npx cap sync android
       - name: Build debug APK
         working-directory: android
@@ -70,6 +72,7 @@ jobs:
   aab:
     runs-on: ubuntu-latest
     env:
+      APP_ID: ${{ vars.APP_ID }}
       ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
       ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
       ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
@@ -87,10 +90,27 @@ jobs:
           fi
       - if: steps.key.outputs.ready == 'true'
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      # PUB-05 (P7-02): never upload under the old game's package name by accident (Play never lets it change).
+      # PUB-04 (P7-01): a store build needs the publisher facts, dated terms and the app id; the preflight lists
+      # everything still open and stops here on the blocking ones (docs/store/OWNER_CHECKLIST.md).
+      - name: Store readiness
+        if: steps.key.outputs.ready == 'true'
+        run: node tools/release/check-store-ready.mjs --store
+        env:
+          APP_ID: ${{ vars.APP_ID }}
+          ALLOW_LEGACY_APP_ID: ${{ vars.ALLOW_LEGACY_APP_ID }}
+          VITE_SERVER_URL: ${{ vars.VITE_SERVER_URL }}
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+      - name: App id chosen
+        if: steps.key.outputs.ready == 'true'
+        run: node tools/release/check-app-id.mjs
+        env:
+          APP_ID: ${{ vars.APP_ID }}
+          ALLOW_LEGACY_APP_ID: ${{ vars.ALLOW_LEGACY_APP_ID }}
       - if: steps.key.outputs.ready == 'true'
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with:
-          node-version: 24
+          node-version-file: .node-version
           cache: npm
       - if: steps.key.outputs.ready == 'true'
         uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6
@@ -118,6 +138,8 @@ jobs:
           VITE_SENTRY_DSN: ${{ vars.VITE_SENTRY_DSN }}
           VITE_GOOGLE_CLIENT_ID: ${{ vars.VITE_GOOGLE_CLIENT_ID }}
           VITE_APPLE_SERVICES_ID: ${{ vars.VITE_APPLE_SERVICES_ID }}
+          # P7-11 (PUB-14): local-day statistics; the owner's switch (repository variable VITE_STATS_TZ=1), off by default.
+          VITE_STATS_TZ: ${{ vars.VITE_STATS_TZ || '0' }}
       - if: steps.key.outputs.ready == 'true'
         run: npx cap sync android
       - name: Install the upload key

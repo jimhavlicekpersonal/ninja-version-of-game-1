@@ -11,7 +11,7 @@
     <meta name="apple-mobile-web-app-title" content="Kagemura" />
     <link rel="manifest" />
     <script>(function(d,w){var l=w.__kgLocale,code=l?l.code:'en';d.querySelector('link[rel="manifest"]').href=code==='en'?'./manifest.webmanifest':'./'+code+'/manifest.webmanifest';if(l&&l.boot&&l.boot['boot.description'])d.querySelector('meta[name="description"]').content=l.boot['boot.description'];})(document,window);</script>
-    <!-- Link previews (retention audit G23). No og:url: the address is the owner's choice (docs/SHIPPING.md); paths stay relative. -->
+    <!-- Link previews (retention audit G23). Relative here; a build with VITE_PUBLIC_URL makes og:image, twitter:image and og:url absolute (vite.config.ts, P7-09). -->
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Kagemura" />
     <meta property="og:title" content="Kagemura: Ninja Clans" />

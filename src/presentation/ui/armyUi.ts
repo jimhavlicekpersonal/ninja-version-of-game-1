@@ -1,4 +1,5 @@
 import { messageText as i18nMessage, listText as i18nList } from './i18n';
+import { unitName } from './unitName';
 import { displayData as localizedData, labelText as i18nLabel } from './i18n';
 import { t as i18nText } from './i18n';
 /**
@@ -9,11 +10,13 @@ import { t as i18nText } from './i18n';
  * rebuilt only when what it shows has changed, never while a finger is down, and
  * the scroll position stays where the player left it.
  */
-import { t } from './i18n';
+import { fmtPercent, t } from './i18n';
 import { suggestedArmy } from '../../gameplay/sim/suggest';
+import { armyDiversity, diversityShare, trainableRoles } from '../../gameplay/sim/carry';
 import { troopLevelOf, researchLanes } from '../../gameplay/sim/research';
 import { troopLevel } from '../../gameplay/sim/data';
-import { MODEL as CANONICAL_MODEL, WARRIORS as CANONICAL_WARRIORS } from '../../gameplay/sim/progression';
+import { HEROES as CANONICAL_HEROES, MODEL as CANONICAL_MODEL, WARRIORS as CANONICAL_WARRIORS } from '../../gameplay/sim/progression';
+import { heroAtKeep } from '../../gameplay/sim/heroes';
 import { missingFor } from '../../gameplay/sim/resources';
 import { RESOURCE_KINDS, type ResourceKind } from '../../gameplay/sim/types';
 import { troopUnlock, trainingSpeed } from '../../gameplay/sim/army';
@@ -28,6 +31,7 @@ import { icons } from './icons';
 
 const MODEL = localizedData(CANONICAL_MODEL, 'progression');
 const WARRIORS = localizedData(CANONICAL_WARRIORS, 'roster.warriors');
+const HEROES_SHOWN = localizedData(CANONICAL_HEROES, 'roster.heroes');
 
 type ArmyTab = 'train' | 'army' | 'research';
 
@@ -62,7 +66,7 @@ export class ArmyUi {
   }
 
   private armyText(army: Record<string, number>): string {
-    return i18nList(Object.entries(army).map(([t, n]) => i18nText("ui.message_14677cb26f", { arg1: n, arg2: this.gd.troops[t]?.name ?? t })));
+    return i18nList(Object.entries(army).map(([t, n]) => i18nText("ui.message_14677cb26f", { arg1: n, arg2: unitName(t, this.gd) })));
   }
 
   private thumb(troop: string): HTMLElement | null {
@@ -77,7 +81,7 @@ export class ArmyUi {
     const tabs = h('div', { class: 'shop-tabs army-tabs', role: 'tablist' });
     // Strip and tabs are pinned together: another tab is always one tap away. The Codex sits beside the tabs
     // (re-audit design item 7), a small button rather than a "50 classes" banner on a new player's first visit.
-    const codex = h('button', { class: 'btn ghost codex-btn', type: 'button', title: i18nText("ui.warrior_codex_all_classes_03eb859e9c", { arg1: WARRIORS.length }), onclick: () => this.d.openCodex() }, icon(icons.scroll), i18nText("ui.codex_616efbe968"));
+    const codex = h('button', { class: 'btn ghost codex-btn', type: 'button', title: i18nText("ui.warrior_codex_all_classes_03eb859e9c", { arg1: WARRIORS.length }), 'aria-label': i18nText("ui.codex_616efbe968"), onclick: () => this.d.openCodex() }, icon(icons.scroll), h('span', { class: 'codex-label' }, i18nText("ui.codex_616efbe968")));
     const head = h('div', { class: 'army-head' }, strip, h('div', { class: 'army-tabrow' }, tabs, codex));
     const pane = h('div', { class: 'army-pane' });
     body.append(head, pane);
@@ -172,7 +176,7 @@ export class ArmyUi {
           Object.values(suggestion).some((n) => n > 0) ? this.refillRow(i18nText("ui.suggested_army_5963c5c4f7"), suggestion, draw) : null,
           // Filters only once there is something to filter (re-audit design item 4: 5 tiers and 10 roles for 2 warriors).
           v.dojo === 'ready' && scopeCount >= 5 ? filters : null,
-          speed > 1 ? h('p', { class: 'muted small' }, i18nText("ui.your_training_dojo_trains_faster_than__0f817a20eb", { arg1: speed })) : null,
+          speed > 1 ? h('p', { class: 'muted small dojo-speed' }, i18nText("ui.your_training_dojo_trains_faster_than__0f817a20eb", { arg1: speed })) : null,
           trainList,
           !list.length && v.dojo === 'ready' ? trainEmpty : null,
         ].filter((x): x is HTMLElement => x !== null),
@@ -266,7 +270,7 @@ export class ArmyUi {
     if (v.waiting) detail.push(i18nText("ui.waiting_4d88af2107", { arg1: v.waiting }));
     const line = h('div', { class: 'army-strip-line' });
     if (v.active) {
-      const name = this.gd.troops[v.active.troop]?.name ?? v.active.troop;
+      const name = unitName(v.active.troop, this.gd);
       line.append(
         this.thumb(v.active.troop) ?? '',
         h(
@@ -292,7 +296,7 @@ export class ArmyUi {
       line.append(h('span', { class: 'chip army-noroom' }, i18nText("ui.no_room_to_finish_4a74b86b51")));
     }
     // Always one line, even an empty one: the strip keeps its height, so nothing below it moves under a finger.
-    strip.append(line, h('p', { class: 'muted small army-detail' }, detail.length ? i18nText("ui.warriors_56148a7f40", { arg1: detail.join(' · ') }) : '\u00a0'));
+    strip.append(line, h('p', { class: `muted small army-detail${detail.length ? '' : ' empty'}` }, detail.length ? i18nText("ui.warriors_56148a7f40", { arg1: detail.join(' · ') }) : '\u00a0'));
   }
 
   /** Shown until training is possible, so an empty panel always says what to do next. */
@@ -383,18 +387,29 @@ export class ArmyUi {
     const ready = h('div', { class: 'army-row' });
     for (const [t, n] of Object.entries(s.army)) {
       if (n <= 0) continue;
-      const x = h('button', { class: 'qx', type: 'button', 'aria-label': i18nText("ui.dismiss_8e63f52b79", { arg1: gd.troops[t]?.name ?? t }) }, '×');
+      const x = h('button', { class: 'qx', type: 'button', 'aria-label': i18nText("ui.dismiss_8e63f52b79", { arg1: unitName(t, gd) }) }, '×');
       x.addEventListener('click', () => this.dismiss(t, n, redraw));
-      ready.append(h('span', { class: 'army-chip' }, this.thumb(t), i18nText("ui.message_fb705db4f9", { arg1: gd.troops[t]?.name ?? t, arg2: n }), x));
+      ready.append(h('span', { class: 'army-chip' }, this.thumb(t), i18nText("ui.message_fb705db4f9", { arg1: unitName(t, gd), arg2: n }), x));
     }
     if (!ready.childElementCount) ready.append(h('span', { class: 'muted' }, i18nText("ui.no_warriors_ready_yet_0132a774ac")));
     const units = Object.values(s.army).reduce((a, b) => a + b, 0);
     wrap.append(h('h3', {}, units ? t('army.readyN', { n: units }) : t('army.ready')), ready);
+    // P6-08: the hero has a card outside the battle bar (his name and ability, translated).
+    const hero = heroAtKeep(hallLevel(s, gd), gd);
+    const heroEntry = hero ? HEROES_SHOWN.find((x) => x.id === hero.id) : undefined;
+    if (hero && heroEntry) {
+      wrap.append(h('div', { class: 'troop-row army-card hero-card', 'data-id': 'hero-card' }, this.thumb(hero.id), h('div', { class: 'army-card-body' }, h('b', {}, `${heroEntry.name} `, h('span', { class: 'muted small' }, i18nText("ui.lv_445f51ab9e", { arg1: hero.level }))), h('span', { class: 'small' }, h('b', {}, `${heroEntry.ability.name}: `), heroEntry.ability.text))));
+    }
+    // P6-13 (UIS-07): the share of the loot this ready army would carry, before the raid (only when under 100%).
+    if (units) {
+      const share = diversityShare(armyDiversity(s.army, { hero: undefined }, gd), gd, trainableRoles(s, gd));
+      if (share < 1) wrap.append(h('p', { class: 'small carry-preview', 'data-id': 'carry-preview' }, t('carry.preview', { pct: fmtPercent(share * 100) })));
+    }
     const lodge = Object.entries(lodgeTroops(s));
     if (lodge.length) {
       wrap.append(
         h('h3', {}, i18nText("ui.donated_by_your_alliance_07bb504dfc")),
-        h('div', { class: 'army-row' }, ...lodge.map(([t, l]) => h('span', { class: 'army-chip' }, this.thumb(t), i18nText("ui.message_cf83918ca6", { arg1: gd.troops[t]?.name ?? t, arg2: l.count }), h('span', { class: 'muted small' }, i18nText("ui.lv_445f51ab9e", { arg1: l.level }))))),
+        h('div', { class: 'army-row' }, ...lodge.map(([t, l]) => h('span', { class: 'army-chip' }, this.thumb(t), i18nText("ui.message_cf83918ca6", { arg1: unitName(t, gd), arg2: l.count }), h('span', { class: 'muted small' }, i18nText("ui.lv_445f51ab9e", { arg1: l.level }))))),
         h('p', { class: 'muted small' }, i18nText("ui.they_fight_first_in_your_next_attack_a_889c0c0bce")),
       );
     }
@@ -448,7 +463,7 @@ export class ArmyUi {
 
   private stackRow(st: QueueStack, redraw: () => void): HTMLElement {
     const { c, gd } = this;
-    const name = gd.troops[st.troop]?.name ?? st.troop;
+    const name = unitName(st.troop, gd);
     const cancel = (count: number) => {
       const r = c.dispatch({ type: 'cancelTraining', index: st.lastIndex, troop: st.troop, count });
       if (!r.ok) this.d.kit.toast(refusalText(r), 'error');
@@ -492,7 +507,7 @@ export class ArmyUi {
   /** Send warriors home, one or all of a kind, with the refund and space shown first. */
   private dismiss(troop: string, have: number, redraw: () => void): void {
     const { c, gd } = this;
-    const name = gd.troops[troop]?.name ?? troop;
+    const name = unitName(troop, gd);
     const text = (count: number) => {
       const p = dismissPreview(c.state, troop, count, gd);
       const refund = i18nList(RESOURCE_KINDS.filter((k) => p.refund[k]).map((k) => i18nText("ui.message_14677cb26f", { arg1: formatNumber(p.refund[k]!), arg2: RES_LABEL[k] })), 'conjunction');

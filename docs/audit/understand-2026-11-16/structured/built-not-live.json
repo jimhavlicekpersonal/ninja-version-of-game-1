@@ -1,0 +1,366 @@
+{
+ "problems": [
+  {
+   "id": "BNL-01",
+   "title": "Squad orders have no screen: the largest measured skill lever in a raid cannot be used",
+   "severity": "high",
+   "verified": "measured",
+   "evidence": "Logic and tests exist (/home/user/ninja-version-of-game-1/src/gameplay/control/squadPlan.ts; battleSession.ts:105-121; tests/gameplay/control/squad.test.ts passes), but a search of src/presentation and src/app.ts for orderSquad, holdSquad, squadWaiting or SquadOrder finds nothing, and no ui.json key exists. My run (scratch bnl/squad.mjs, raid-bot army, 3 bases per Keep, 9 orders x 6 entry points = 324 raids): Keep 9 bot plan 60.0%, best order and point 100.0%, worst 29.3%; Keep 12 bot plan 49.7%, best 93.3%, worst 22.0%; no planned warrior failed to deploy. The best order differs by base (together+tanks, file+rush, together+rush).",
+   "whyItMatters": "Formation, wave order and entry point move the same army across a 70-point range, which is the mastery depth the owner asks for, and today only a player who hand-places every warrior can reach it. It needs no rules, save, protocol or server change.",
+   "proposedFix": "In /home/user/ninja-version-of-game-1/src/presentation/ui/battleHud.ts add a formation picker and a wave-order picker (three choices each, remembered in a device preference), a 'send squad' mode where a tap on an Infiltration Point calls session.orderSquad({point, formation, order}) (wire the point tap in src/presentation/render/BattleScene.ts), and a Hold button with the count while session.squadWaiting > 0. About 11 new keys (squad.*) in locales/en/ui.json, then i18n:sync and 49 translations. Hand placement stays. Measure with Playwright at 320x568, 360x640, 390x844 and 844x390.",
+   "fixCost": "M",
+   "touches": [
+    "UI",
+    "I18N"
+   ],
+   "needsOwner": false
+  },
+  {
+   "id": "BNL-02",
+   "title": "Warrior Mastery pays +10% HP and damage after one raid and its bonus is in no budget, gate or matchmaking number",
+   "severity": "high",
+   "verified": "measured",
+   "evidence": "/home/user/ninja-version-of-game-1/src/gameplay/data/progression.json mastery = xpBase 50, xpGrowth 1.35, maxBonus 0.3, xpPerHousingUsed 1, xpPerStar 2. Level 5 (+10.2%) needs 498 EXP; one three-star raid with 120 housing of one type pays 840. Raids to +10% / +15% / +20% / +25% with a one-type army: Keep 4: 1/3/12/126; Keep 12: 1/1/5/48; with five types at Keep 12: 2/5/22/239 (bnl/mastery.mjs). Effect on the raid-bot army, 12 bases, bot plan (bnl/masterypower.mjs): Keep 12 62.8% and 8% three stars at +0%, 73.2% and 25% at +10%, 82.4% and 50% at +17%, 87.4% and 67% at +24%; Keep 15 73.3% to 91.4%; an earlier 18-base run gives +10.7 +- 2.6 points at Keep 12 for +10%. attackerStrength (src/gameplay/sim/matchmaking.ts:126-148) does not read mastery; docs/game-theory/PREVIEW_BALANCE.md has no mastery section.",
+   "whyItMatters": "Switching features.mastery on as tuned would be a one-evening +15 to +20% power jump for every player followed by a flat curve: it breaks the star-rate gates and gives no long-term chase.",
+   "proposedFix": "Before any player can earn EXP (the save stores raw EXP): set mastery.xpBase to about 1500 in progression.json (about 40 raids to +10% for a warrior that is a quarter of a Keep 9 army, about 230 to +17%), consider maxBonus 0.30 to 0.15, and either add the bonus to attackerStrength or apply it only against generated bases and Shadow Trials. Add a mastered policy to tools/balance/campaign.ts with a gate, and a mastery table to tools/balance/preview.ts. Ship first as ranks with maxBonus 0 (see opportunities).",
+   "fixCost": "M",
+   "touches": [
+    "DATA_ONLY",
+    "BALANCE_GATES",
+    "UI",
+    "I18N"
+   ],
+   "needsOwner": false
+  },
+  {
+   "id": "BNL-03",
+   "title": "Hero choice is a false choice: the live Shadow Captain equals or beats every planned hero with that hero's own army",
+   "severity": "high",
+   "verified": "measured",
+   "evidence": "18 bases per cell (bnl/heroes.out, tools/balance/preview.ts runHeroPreview with 6 layouts x 3 seeds), hero minus Captain with the hero's own family army: Iron Matriarch +0.3, -3.2, -2.1 (Keeps 9, 12, 15); Sky Admiral -9.7, -5.9, -2.1 (Keeps 11, 13, 15), and only +0.3, +1.0, +0.9 over no hero at all; Grand Sensei -4.4, -6.7, -5.1 (Keeps 13, 14, 15). The Captain is equal or better in 14 of 18 cells. Deploying the hero last does not change it (bnl/herolast.out, 12 bases: Sky Admiral Keep 11 20.5 first, 20.1 last, Captain 28.8 and 26.7). The committed report shows the same sign on 6 bases (docs/game-theory/PREVIEW_BALANCE.md:155-172). Cause read in code: Rally re-arms on every new target (src/gameplay/sim/battle/warriors.ts:304) while the new abilities fire once (heroAbilities.ts:32-34); Sky Admiral tops out at 3,558 HP against the Captain's 9,110.",
+   "whyItMatters": "A Hero Hall that offers three worse heroes is a trap, not depth. Heroes are the second-best replay lever here only if each one changes how its army plays.",
+   "proposedFix": "Settle the open Rally question first (docs/game-theory/REQUESTS.md:7), because it sets the baseline. Then retune the three kits in /home/user/ninja-version-of-game-1/src/gameplay/data/planned.json against a written gate (own-family army beats the Captain by 5 or more points at the hero's three Keeps on 30 or more bases; raid mix within 3): for example sky_admiral hpPerHousing 10 to about 22, squall strength 0.5 to 0.7 and durationTicks 50 to 100 and covering flyers deployed during it; bulwark durationTicks 60 to 120. Add the gate as a slow test under tests/gameplay/planned/. Going live after that needs rules:snapshot and SIM_RULES 8.",
+   "fixCost": "L",
+   "touches": [
+    "SIM_RULES",
+    "BALANCE_GATES",
+    "I18N",
+    "DOCS"
+   ],
+   "needsOwner": false
+  },
+  {
+   "id": "BNL-04",
+   "title": "Ten of the fifteen planned counters change nothing in a raid",
+   "severity": "high",
+   "verified": "measured",
+   "evidence": "12 bases per cell, three Keeps each, effect = with the building minus with its body only (bnl/countersA.out, countersB.out): Ink Seal Post and Moonlit Gravel 0.0 in all 9 cells but one (+0.3); Spotter's Perch, Listening Jars, Discipline Banner, Rain Barrel Tower (its effect), Straw Scarecrow, Rolling Log Chute, Sand Bucket Post and Sleep Dart Tower within +-1.6 in at least 8 of 9 cells. Working: Steam Vent -5.0, 0.0, -6.6 against its targets; Lightning Rod -6.7, -2.2, -1.2; Whirling Blade Tower -9.2, -4.8, -0.3 but -17.3 and -10.4 against the armies meant to beat it; Mirror Screen -2.9, -2.8, +0.2; Living Bamboo Wall up to -6.3. An independent 18-base run at Keep 15 gives 0.0 +- 0.0 for six of them (bnl/counters15.out). One extra body moves a raid more than most rules: Discipline Banner body at Keep 15 -13.9 points with a 0.0 effect.",
+   "whyItMatters": "Making all fifteen live would add fifteen bodies to every generated base, shift every balance gate, and give players ten buildings whose translated descriptions promise an effect that does not happen.",
+   "proposedFix": "Plan a first wave of at most five (steam_vent, lightning_rod_pagoda, whirling_blade_tower with its counteredBy list corrected, mirror_screen at hpMult 1, living_bamboo_wall) and keep the rest not live until their numbers in progression.json buildingCatalog and planned.json pass an acceptance line (effect of -3 or better against the 'it beats' army at two of three Keeps on 24 or more bases), for example sleep seconds 2 to 5, moonlit_gravel radius 0.5 to 2 with a wider troops list. Each live building needs rules:snapshot, SIM_RULES 8, callout labels, a painter, and every balance run.",
+   "fixCost": "L",
+   "touches": [
+    "SIM_RULES",
+    "BALANCE_GATES",
+    "UI",
+    "I18N",
+    "DOCS"
+   ],
+   "needsOwner": false
+  },
+  {
+   "id": "BNL-05",
+   "title": "The planned buildings are priced past the whole live defence budget",
+   "severity": "high",
+   "verified": "measured",
+   "evidence": "bnl/caps.mjs over withPreview data: all sixteen planned buildings to max at Keep 15 cost 616 M Coins and 494 builder-days; every live defence, trap, support and wall together costs 418 M and 407. The five counters that work cost 393 M and 214 builder-days alone (Lightning Rod 154 M; Living Bamboo Wall 3.79 M x 25). Ink Seal Post level 1 is 1.62 M Coins and 7 days; Lightning Rod level 1 is 4.28 M and 7 days. /home/user/ninja-version-of-game-1/src/gameplay/sim/plannedContent.ts:89-91 grows levels past the reference's top by x1.16 power and x1.45 cost, so a level 12 Living Bamboo Wall has 54,761 HP (1.81x a level 13 Stone Wall) for 1,191,459 Coins (8.8x) where planned.json:22 says Stone Wall HP at double the price, and a level 10 Mirror Screen has 125,810 HP (2.3x a max Kunai Tower).",
+   "whyItMatters": "Live as derived, they would more than double the endgame's defensive grind in one release and put week-long first levels in front of new unlocks, with no campaign run behind it.",
+   "proposedFix": "In plannedContent.ts previewLevels stop extrapolating past the reference's last level (or lower pinnacleMaxLevel for those entries in progression.json), cap a first level's buildSeconds at one day, and set costMult per building so a first wave adds no more than about 25% to the 418 M and 407-day total; correct the planned.json comments; add a test under tests/gameplay/planned/ that pins the wave's total cost and time. Re-run balance:campaign when any goes live.",
+   "fixCost": "M",
+   "touches": [
+    "DATA_ONLY",
+    "BALANCE_GATES",
+    "DOCS"
+   ],
+   "needsOwner": false
+  },
+  {
+   "id": "BNL-06",
+   "title": "The server would refuse a chosen hero and ignore mastery; neither is in what the server checks or versions",
+   "severity": "high",
+   "verified": "read-in-code",
+   "evidence": "/home/user/ninja-version-of-game-1/server/core/pvp.ts:236-244 accepts only heroAtKeep (a chosen hero is refused with army.bad_hero) and returns no mastery, while the device's battleLoadout sends both once the flags are on (src/gameplay/sim/village.ts:2058-2065). chooseHero is not in PLAYER_COMMANDS (src/gameplay/sim/serverEconomy.ts:93-128); mastery and hero are outside Economy (serverEconomy.ts:14-24); defence records drop mastery (pvp.ts:716-718), so a defender's replay would diverge. The mastery curve lives in progression.json, which is outside GameData, dataVersionOf (src/backend/net/dataVersion.ts:51-57) and balance bundles (src/backend/net/balanceBundle.ts:84-85 changes existing numbers only). The request is open in docs/backend/REQUESTS.md:7-9.",
+   "whyItMatters": "Flipping features.heroChoice or features.mastery today breaks online raids for anyone who uses them, and a mistuned curve could be neither detected between builds nor corrected without an app release.",
+   "proposedFix": "checkArmy: read the hero from the server-held village with heroFor and validate sub.mastery with masteryMatches; store mastery on attack records; add chooseHero to PLAYER_COMMANDS; carry mastery and the hero choice in Economy or serve them from the server village; move the mastery numbers into GameData; add the protocol field, a hello feature, docs/PROTOCOL.md and contract tests. Until then add a test that defaultData.features stays unset.",
+   "fixCost": "L",
+   "touches": [
+    "SERVER",
+    "PROTOCOL",
+    "PLAYER_COMMANDS",
+    "DOCS"
+   ],
+   "needsOwner": false
+  },
+  {
+   "id": "BNL-07",
+   "title": "Shared replays accept an unchecked setup.mastery today, although mastery is not live",
+   "severity": "medium",
+   "verified": "read-in-code",
+   "evidence": "/home/user/ninja-version-of-game-1/server/core/sharedReplays.ts:74 lists 'mastery' in SETUP_KEYS, :118 copies it from the request, :127 re-simulates it with no range check, no features.mastery test and no comparison with the recorded attack; the live engine multiplies HP and damage by 1 + mastery (src/gameplay/sim/battle/battle.ts:293-294). When the seed matches one of the sharer's recorded raids the share is labelled as a raid on a real player (:139). Not reproduced against a running server.",
+   "whyItMatters": "A forged share can show a battle that never happened, labelled as a real raid, which is against the honesty invariant, and it is the one place a not-live rule is reachable in production.",
+   "proposedFix": "In share(): drop setup.mastery unless ctx.data.features?.mastery is on; when on, keep only known warrior ids with finite values between 0 and mastery.maxBonus. Validate setup.hero against the engine's battle.heroes and level range the same way. Add a case to the shared-replay server tests.",
+   "fixCost": "S",
+   "touches": [
+    "SERVER"
+   ],
+   "needsOwner": false
+  },
+  {
+   "id": "BNL-08",
+   "title": "The one live hero is invisible outside the troop bar, and his ability text is not what the code does",
+   "severity": "medium",
+   "verified": "read-in-code",
+   "evidence": "Rally emits an ability event (src/gameplay/sim/battle/warriors.ts:304) but /home/user/ninja-version-of-game-1/src/presentation/render/BattleScene.ts:128 builds ABILITY_NAME from roster warriors only, so lines 1200-1206 show no callout for shadow_captain. Hero data is read in src/presentation only by battleHud.ts:513-520 (the troop card) and the preview picker: no Keep 7 moment, no Codex entry. The text says once per battle (battle.json hero description; roster.json 'Recharges each battle') while the code re-arms on every new target (open question in docs/game-theory/REQUESTS.md:7).",
+   "whyItMatters": "A free hero from Keep 7 is a strong return hook that players never see arrive or act, and a description that understates the rule is still an untrue description.",
+   "proposedFix": "Add HEROES (id to ability.name, already translated in every language) to ABILITY_NAME; show the hero in the Keep 7 unlock ceremony (src/presentation/ui/unlockCeremony.ts) and as a Codex card (codexUi.ts) with the existing translated name and ability text; keep the re-arm and rewrite the two English strings (battle.heroes.shadow_captain.description, roster.heroes.shadow_captain.ability.text), then i18n:extract, i18n:sync and 49 retranslations. No SIM_RULES change on this route.",
+   "fixCost": "M",
+   "touches": [
+    "UI",
+    "I18N"
+   ],
+   "needsOwner": false
+  },
+  {
+   "id": "BNL-09",
+   "title": "No on-screen feedback exists for the new counter events or the new hero abilities, and the Lightning Rod floods the event list",
+   "severity": "medium",
+   "verified": "read-in-code",
+   "evidence": "/home/user/ninja-version-of-game-1/src/presentation/render/BattleScene.ts:129 COUNTER_LABEL has lit, repair and grounded only; previewCounters.ts emits doused, surfaced, revealed, stunned, defused, absorbed, discharge, sleep and sealed, and heroAbilities.ts:58 emits bulwark, squall and inner_calm, none of which has a label or a ui.json key. Measured: 1,200 to 1,700 absorbed events per fight at Keeps 13 to 15 (bnl/countersB.out), one per absorbed hit (src/gameplay/sim/battle/previewCounters.ts:273).",
+   "whyItMatters": "A counter the attacker cannot see working reads as a bug, and readable feedback is most of what makes a counter satisfying to play around.",
+   "proposedFix": "Add the nine labels through t() (nine keys in locales/en/ui.json, 49 translations) and hero ability names from roster.heroes.*.ability.name; in chargeRod emit absorbed at most once per second per rod (events never enter the result hash). Do this in the same change that makes a first wave live.",
+   "fixCost": "S",
+   "touches": [
+    "UI",
+    "I18N"
+   ],
+   "needsOwner": false
+  },
+  {
+   "id": "BNL-10",
+   "title": "Rules 10 left eleven untyped, untested hooks in the production simulator, fails its own pass marks, and its bundle claim is wrong",
+   "severity": "medium",
+   "verified": "read-in-code",
+   "evidence": "Hooks behind absent data keys: battle.crowding, wallHp, damageSpread, temper.convexity, versus (/home/user/ninja-version-of-game-1/src/gameplay/sim/battle/battle.ts:120-121, 154-168, 709-722; temper.ts:118-127), kit.breachRadius (warriors.ts:354-361), raids.carryByStars, defenseWin.perStar and uncapped (defense.ts:206-209, 242-245, 278), raids.raiderMatch (matchmaking.ts:272-279), raids.attackCarryByStars and economy.garrisonCrew (village.ts:427-438, 1848-1851). All are read through casts, no file under tests/ names any key, and cls appears 0 times in troops.json. docs/game-theory/rules10/SESSION_2026-11-15.md: best-to-worst standard army gap 19/19/17 against a pass mark of 12, Keep 9 not converged, seven Keeps not run, breach radius 'does nothing measurable'. rules10/README.md:12-14 says raid and economy numbers could go in a bundle; balanceBundle.ts:84-85 only changes numbers that already exist.",
+   "whyItMatters": "Unreviewed code paths ship inside the deterministic simulator that the server archives with every rules snapshot, and the documented way to switch part of it on does not work.",
+   "proposedFix": "Leave the combat keys off. Remove the kit.breachRadius hook, declare the remaining keys in src/gameplay/sim/types.ts, add one unit test per hook (absent = identical result, present = the effect), and correct the README. If garrisonCrew or per-star defence pay are wanted, add neutral values to economy.json and raids.json (garrisonCrew 0, a numeric per-star share) so they exist to be changed.",
+   "fixCost": "M",
+   "touches": [
+    "DOCS",
+    "DATA_ONLY"
+   ],
+   "needsOwner": false
+  },
+  {
+   "id": "BNL-11",
+   "title": "Hero Hall cap trap: choosing a hero can lower his level below the automatic one",
+   "severity": "medium",
+   "verified": "read-in-code",
+   "evidence": "/home/user/ninja-version-of-game-1/src/gameplay/sim/heroes.ts:47-54: a chosen hero's level is min(Keep level, Hall level) while the automatic hero is not capped. At Keep 12 with a level 1 Hall, choosing the Shadow Captain gives level 1; 'Let the Keep choose' gives level 6. Hall max level by Keep 7 to 15 is 1, 2, 3, 4, 6, 7, 8, 9, 10 (bnl/tables.mjs), so only an unmaxed Hall bites.",
+   "whyItMatters": "The first thing a player does with a new Hero Hall would make their army weaker with no warning.",
+   "proposedFix": "In heroFor apply the same rule to both paths: either no cap, with the Hall's level deciding which heroes can be chosen (for example level 1 Captain, 3 Matriarch, 6 Admiral, 8 Sensei), or cap the automatic hero too once a Hall stands. Update tests/gameplay/planned/progression.test.ts and the picker line in src/presentation/ui/contentPreviewUi.ts.",
+   "fixCost": "S",
+   "touches": [
+    "DOCS"
+   ],
+   "needsOwner": false
+  },
+  {
+   "id": "BNL-12",
+   "title": "The committed balance preview is too thin to decide anything from",
+   "severity": "medium",
+   "verified": "measured",
+   "evidence": "/home/user/ninja-version-of-game-1/docs/game-theory/PREVIEW_BALANCE.md uses 2 seeds x 3 layouts = 6 bases per cell (tools/balance/preview.mjs:12). Body-only deltas of one building swing by double digits with a 0.0 effect (Discipline Banner, Keep 15, raid mix: -16.8 in the report, -13.9 on my 12 bases). Its Events column counts every counter event on the base (preview.ts fight(), 'if (e.k === counter) counters.n++'), so values of 1.0 to 1.5 are the live Repair Crane. It has no mastery section, does not test the Hall cap, and always deploys the hero first.",
+   "whyItMatters": "It is the only evidence a designer has before switching content live, and at six bases it cannot tell a working counter from noise.",
+   "proposedFix": "tools/balance/preview.ts and preview.mjs: six layouts x 5 seeds, a paired standard-error column, events counted by kind for the building under test only, a mastery table (bonus against destruction and raids-to-level), heroes deployed first and last. Regenerate the report.",
+   "fixCost": "S",
+   "touches": [
+    "DOCS"
+   ],
+   "needsOwner": false
+  },
+  {
+   "id": "BNL-13",
+   "title": "Translated text for planned content does not match the code",
+   "severity": "low",
+   "verified": "read-in-code",
+   "evidence": "progression.json buildingCatalog hero_shrine: 'one hall per hero' (planned.json count 1, one chosen hero); ink_seal_post: 'nothing bails out of them' (no bail-out mechanic: a search for 'bail' in src/gameplay/sim finds nothing); roster.json grand_sensei: 'ignores the next jam' (code: stun, trap or splash, src/gameplay/sim/battle/heroAbilities.ts:51-56); mirror_screen: 'Melee warriors just walk up and smash it' (its body costs the melee army 20.2 points at Keep 7). All are already translated in 49 languages.",
+   "whyItMatters": "Each wrong sentence becomes 50 wrong sentences the day the content goes live.",
+   "proposedFix": "Fix the English in /home/user/ninja-version-of-game-1/src/gameplay/data/progression.json and roster.json before any of these go live, run i18n:extract and i18n:sync, and retranslate the changed entries.",
+   "fixCost": "S",
+   "touches": [
+    "I18N"
+   ],
+   "needsOwner": false
+  },
+  {
+   "id": "BNL-14",
+   "title": "No person can play the planned content on a deployed build",
+   "severity": "low",
+   "verified": "read-in-code",
+   "evidence": "/home/user/ninja-version-of-game-1/src/backend/payments/select.ts:23-27 allows the preview only in a dev build, or with ?debug&preview in a build made with VITE_ALLOW_PREVIEW=1, which the deploy workflow never sets (src/main.ts:275-279). docs/game-theory/rules10/README.md: 'no person has played any of it'.",
+   "whyItMatters": "Every balance number here comes from a bot plan; fun, readability and the squad-order feel can only be judged by people.",
+   "proposedFix": "Add a second build to .github/workflows/deploy.yml under a preview path with VITE_ALLOW_PREVIEW=1 (sandbox save, never online), and a short tester checklist. The owner decides whether an unfinished-content URL may exist and who tests.",
+   "fixCost": "S",
+   "touches": [
+    "DOCS"
+   ],
+   "needsOwner": true
+  }
+ ],
+ "geniusElements": [
+  {
+   "title": "withPreview isolation of planned content",
+   "where": "/home/user/ninja-version-of-game-1/src/gameplay/sim/plannedContent.ts; BattleSim.previewKinds in src/gameplay/sim/battle/battle.ts:196-199",
+   "whyKeep": "The shipped data never contains planned content, and every new hook is reached only when a base holds a planned kind, so live battles, replays, the server and the gates run the same arithmetic. tests/gameplay/planned/progression.test.ts proves a live battle plays the same under both data sets. It is the right pattern for every future feature."
+  },
+  {
+   "title": "Level tables derived from a live reference building or warrior",
+   "where": "/home/user/ninja-version-of-game-1/src/gameplay/data/planned.json (ref, hpMult, damageMult, costMult); previewLevels and previewHeroDef in plannedContent.ts",
+   "whyKeep": "One rule instead of hand-typed tables: a planned building or hero follows the live curve automatically, and the hero rule reproduces the Shadow Captain exactly (tested). Only its extrapolation past the reference's top level needs a cap."
+  },
+  {
+   "title": "Squad orders as pure planning that emits ordinary deployments",
+   "where": "/home/user/ninja-version-of-game-1/src/gameplay/control/squadPlan.ts; BattleSession.orderSquad in src/gameplay/control/battleSession.ts",
+   "whyKeep": "A formation and wave order become normal deploy calls on their ticks, so records, replays and the server check need no change at all. It adds a large skill lever with zero protocol or rules surface."
+  },
+  {
+   "title": "Body-versus-effect measurement",
+   "where": "/home/user/ninja-version-of-game-1/tools/balance/preview.ts (withBuilding, bodyOnly, runBuildingPreview)",
+   "whyKeep": "Fighting each base three ways (without the building, with it, with its body only) separates what a rule does from what extra HP does. It is what exposed the ten no-op counters. Keep the method; raise the sample."
+  },
+  {
+   "title": "Archived battle rules and the snapshot-before-bump order",
+   "where": "/home/user/ninja-version-of-game-1/server/rules/ (vN, manifest.json digests, archive.ts); tools/release/rules-snapshot.mjs; SIM_RULES_COMPATIBLE in src/gameplay/sim/battle/battle.ts:55",
+   "whyKeep": "Old clients are checked with their own rules, old replays stay watchable, and a digest test stops an archive from drifting. This is what makes switching content on safe; every go-live step above relies on it."
+  },
+  {
+   "title": "Tempering with rival clans that answer the player's recent raids",
+   "where": "/home/user/ninja-version-of-game-1/src/gameplay/sim/battle/temper.ts; battle.json temper (offers: recentRaids 10, counterShare 0.5); HUD panel in src/presentation/ui/hud.ts:1616",
+   "whyKeep": "A fixed-budget reshaping of existing towers, shown at scouting, with an untempered base playing exactly as rules 5. It is the realized core of the Living Fortress design: the best army depends on the base and on the player's own history."
+  },
+  {
+   "title": "Mastery's guard rails",
+   "where": "/home/user/ninja-version-of-game-1/src/gameplay/sim/mastery.ts (masteryMatches, awardMastery); masteryBonus in src/gameplay/sim/progression.ts:177",
+   "whyKeep": "A setup can never claim more than the village earned, donated warriors and the hero earn nothing, and the bonus approaches a cap so numbers stay bounded. The shape is right; only the EXP scale is wrong."
+  },
+  {
+   "title": "The balance lab's method and candour",
+   "where": "/home/user/ninja-version-of-game-1/tools/balance/lab/ (tune6.py, tune7.py, oracle10.py); docs/game-theory/rules10/SESSION_2026-11-15.md",
+   "whyKeep": "It tunes to a role frontier, searches for armies that beat the tuning, and reports the pass marks it fails and the limits of its evidence. Keep the lab and its tests as the acceptance method even though its Rules 10 numbers should not ship."
+  }
+ ],
+ "opportunities": [
+  {
+   "title": "Warrior Mastery as ranks with no stat bonus",
+   "description": "Turn features.mastery on with mastery.maxBonus 0 and the retuned EXP curve: every warrior type gets a visible rank that grows with use, shown in the Codex and as EXP gained on the result screen. No setup carries a bonus, so no battle changes and the server needs only the same data. The stat bonus can follow later behind the server work.",
+   "where": "/home/user/ninja-version-of-game-1/src/gameplay/data/progression.json (mastery); src/gameplay/sim/data.ts (add features); src/presentation/ui/contentPreviewUi.ts masterySection; raid_end event in src/gameplay/sim/village.ts",
+   "cost": "M",
+   "touches": [
+    "DATA_ONLY",
+    "UI",
+    "I18N"
+   ],
+   "expectedEffect": "Fifty long collection tracks and an honest reason to rotate armies and return, at no balance or server risk. Also call awardMastery in Alliance War, Gang War, Bounty Hunt and rematch battles so every fight counts."
+  },
+  {
+   "title": "Planned counters in Shadow Trials and Bounty Hunt fortresses before players can build them",
+   "description": "Let the three to five counters that measure as working appear only in generated Trial and Bounty fortresses (a separate list read by trialBase and bountyBase, not hall limits). Players meet new puzzles without the 393 M Coin sink, village art for placement, or a shift in raid matchmaking.",
+   "where": "/home/user/ninja-version-of-game-1/src/gameplay/sim/trials.ts; src/gameplay/sim/goalEvents.ts; src/gameplay/data/buildings.json and trials.json; src/gameplay/sim/battle/basegen.ts",
+   "cost": "L",
+   "touches": [
+    "SIM_RULES",
+    "BALANCE_GATES",
+    "UI",
+    "I18N"
+   ],
+   "expectedEffect": "Variety in the endless ladder (a featured counter per tier band) and a safe live test of each counter before it enters the base-building economy."
+  },
+  {
+   "title": "Codex page: what counters what, and how rival clans answer you",
+   "description": "Show the counters and counteredBy lists that already exist on 20 catalog buildings, the tempering triangle, each rival clan's home temper, and one sentence saying that rival outposts answer your last ten raids half the time. Names are already translated; only a few sentences are new.",
+   "where": "/home/user/ninja-version-of-game-1/src/presentation/ui/codexUi.ts; src/gameplay/data/progression.json buildingCatalog; battle.json temper.offers and temper.rivals",
+   "cost": "M",
+   "touches": [
+    "UI",
+    "I18N"
+   ],
+   "expectedEffect": "Turns hidden rules into a readable meta the player can plan against, and closes an honesty gap: the adaptation is live but stated nowhere in the game."
+  },
+  {
+   "title": "Garrison crew: defence and trap builds do not take a Village Artisan",
+   "description": "The hook exists (economy.garrisonCrew, two builds at a time in the lab patch). Defence stops competing with growth for builder time, which is the cheapest answer to defence not being worth building.",
+   "where": "/home/user/ninja-version-of-game-1/src/gameplay/sim/village.ts:427-438 (builderStatus); src/gameplay/data/economy.json",
+   "cost": "M",
+   "touches": [
+    "DATA_ONLY",
+    "SERVER",
+    "BALANCE_GATES",
+    "UI",
+    "I18N"
+   ],
+   "expectedEffect": "More players build and upgrade defences, which makes defence replays, tempering and holds matter. Needs the server on the same data first (it replays place and upgrade) and a campaign re-run."
+  },
+  {
+   "title": "Every star a defence denies pays",
+   "description": "The hook exists (raids.defenseWin.perStar): a raid held to two stars pays a third of the hold reward, to one star two thirds. Each defence upgrade is felt on the next raid instead of only when a raid is held outright.",
+   "where": "/home/user/ninja-version-of-game-1/src/gameplay/sim/defense.ts:242-245; src/gameplay/data/raids.json defenseWin",
+   "cost": "S",
+   "touches": [
+    "DATA_ONLY",
+    "BALANCE_GATES",
+    "UI",
+    "I18N"
+   ],
+   "expectedEffect": "A visible, honest return on defence in the defence log after every bot raid; a reason to open the game and look at what the village held."
+  },
+  {
+   "title": "A saved opening per army preset",
+   "description": "After the squad-order screen exists, remember a formation and wave order with each saved army (device preference keyed by preset, no save-format change) and offer it as the default when that army raids.",
+   "where": "/home/user/ninja-version-of-game-1/src/presentation/ui/armyUi.ts (presets); src/presentation/ui/battleHud.ts",
+   "cost": "S",
+   "touches": [
+    "UI",
+    "I18N"
+   ],
+   "expectedEffect": "Players build and refine named plans (army plus opening), which is the loop that keeps strategy players experimenting."
+  },
+  {
+   "title": "Building mastery as the defender's counterpart",
+   "description": "progression.json already holds buildingMastery numbers (xpBase 100, maxBonus 0.15) with no simulation behind them. Defences that earn EXP by defending would balance warrior mastery in player-versus-player raids and reward keeping a base.",
+   "where": "/home/user/ninja-version-of-game-1/src/gameplay/data/progression.json buildingMastery; src/gameplay/sim/defense.ts; src/gameplay/sim/battle/battle.ts createBattle",
+   "cost": "XL",
+   "touches": [
+    "SIM_RULES",
+    "SAVE_VERSION",
+    "SERVER",
+    "PROTOCOL",
+    "BALANCE_GATES",
+    "UI",
+    "I18N"
+   ],
+   "expectedEffect": "A long-term reason to care about the home base. Should be a precondition for ever shipping the warrior mastery stat bonus against real players."
+  },
+  {
+   "title": "A go-live gate for planned content",
+   "description": "Make the preview a test: a planned counter or hero may be marked live only if a slow test shows its effect on 30 bases (counter: -3 or better against its targets at two of three Keeps; hero: +5 over the Captain with its own family).",
+   "where": "/home/user/ninja-version-of-game-1/tools/balance/preview.ts; a new slow test under tests/gameplay/planned/",
+   "cost": "M",
+   "touches": [
+    "BALANCE_GATES",
+    "DOCS"
+   ],
+   "expectedEffect": "No more content that works in unit tests and does nothing in a raid; every future switch-on carries its own evidence."
+  }
+ ],
+ "reportPath": "docs/audit/understand-2026-11-16/scripts/built-not-live.md",
+ "summary": "Only one built-but-not-live system is ready to switch on: squad orders, which have logic and tests but no screen. In 324 measured raids the same army scored between 22% and 100% depending on formation, wave order and entry point (bot plan 60.0% at Keep 9 and 49.7% at Keep 12), and a screen touches only presentation code and translations. The rest is well isolated (the shipped data never holds it; 59 planned-content and squad tests pass) but not ready. Warrior Mastery as tuned pays +10% HP and damage after one raid and lifts Keep 12 three-star rates from 8% to 50% at +17%. No planned hero beats the live Shadow Captain with its own army on 18 bases per cell (Sky Admiral -9.7, -5.9, -2.1). Ten of the fifteen counters change nothing in a raid on 12 bases per cell. The sixteen planned buildings cost 616 M Coins and 494 builder-days to max against 418 M and 407 for every live defensive building. The server would refuse a chosen hero and ignores mastery, the mastery curve sits outside the data version and balance bundles, and shared replays already accept an unchecked mastery field. Rules 10's combat hooks fail their own pass marks and should stay off; its two economy hooks (garrison crew, per-star defence pay) are worth a campaign run. Names and descriptions for all planned content are already translated in every language, but several sentences do not match the code. The three changes I would make first: (1) build the squad-order screen; (2) make the live hero visible and his text true (Rally callout, Keep 7 moment, Codex card) and close the shared-replay mastery hole; (3) retune the mastery curve (xpBase 50 to about 1500) and ship mastery as ranks with no stat bonus, leaving stat bonuses, heroes and a re-priced first wave of five counters for a later rules bump with the server work done."
+}

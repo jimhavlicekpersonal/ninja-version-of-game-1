@@ -1,23 +1,26 @@
 import { displayData as localizedData, messageText as ownedText, generatedName } from './i18n';
+import { unitName } from './unitName';
+import { RES_LABEL } from './chips';
+import type { ProgressLine } from './resultProgress';
 import { messageText as i18nMessage, listText as i18nList } from './i18n';
 import { labelText as i18nLabel } from './i18n';
 import { t as i18nText } from './i18n';
 import { fmtDecimal, fmtPercent, pointLabel, t } from './i18n';
-import { armyDiversity, diversityShare, stakeOptions } from '../../gameplay/sim/carry';
+import { stakeOptions } from '../../gameplay/sim/carry';
 import { rivalById } from '../../gameplay/sim/rivals';
 import { isolateName } from '../../gameplay/sim/social/names';
-import type { BattleSession } from '../../gameplay/control/battleSession';
+import { WhatIfRun, type BattleSession, type Formation, type WaveOrder } from '../../gameplay/control/battleSession';
 import type { BattleHooks, BattleView, ScreenInsets } from '../render/BattleScene';
 import { totalLoot } from '../../gameplay/sim/battle/basegen';
 import { isAbility } from '../../gameplay/sim/battle/battle';
 import { pointIntel, scoutReport } from '../../gameplay/sim/battle/scout';
 import { closeCalls } from '../../gameplay/sim/battle/closecall';
 import { lossTrophies, winTrophies } from '../../gameplay/sim/ranks';
-import type { BattleResult } from '../../gameplay/sim/battle/types';
+import type { BaseLayout, BattleResult } from '../../gameplay/sim/battle/types';
 import type { Cost, ResourceKind } from '../../gameplay/sim/types';
 import { RESOURCE_KINDS } from '../../gameplay/sim/types';
 import { clear, h, icon } from './dom';
-import { formatNumber } from './format';
+import { formatDuration, formatNumber } from './format';
 import { icons } from './icons';
 import { sound } from '../audio/sound';
 import { celebrate, countUp, reducedMotion, removeWithExit, uiArt } from './feedback';
@@ -30,7 +33,7 @@ interface BattleHudDeps {
   session: BattleSession;
   myTrophies: number;
   /** Set when watching a replay. */
-  replayOf?: { kind: 'attack' | 'defense'; opponentName: string };
+  replayOf?: { kind: 'attack' | 'defense'; opponentName: string; /** P6-04: a "Test my defenses" raid (nothing taken). */ test?: boolean };
   /** Set for Grove Raid attacks (no loot, no Next). */
   /** Alliance War, or a Gang War strike (`title`, step 67). */
   grove?: { enemyName: string; title?: string };
@@ -44,17 +47,56 @@ interface BattleHudDeps {
   trial?: { tier: number; layout: string; modifiers: string[]; reward: Cost; firstClear: boolean; starsToClear: number };
   troopThumb(type: string): string | null;
   scoutFee: number;
+  /** P3-11: whether this base's loot would not fit in storage (raids only). */
+  lootWontFit?: (base: BaseLayout) => boolean;
+  /** P3-12: the time left on a shield this raid would end (absent: none, or the first attack keeps it). */
+  shieldLeftMs?: number;
   canPayFee(): boolean;
   onHome(): void;
   onNext(): void;
+  /** P6-16: go home and open the Army panel (the scout screen with no army). */
+  onTrain?(): void;
   /** Resolves false when the battle could not start (an online raid needs the server's go and seed). */
   onAttack(): boolean | Promise<boolean>;
   /** Called once when a live battle ends; returns the loot actually banked. */
   /** `banked` is what reached storage (bonuses included); `overflow` is what was won but did not fit. */
-  onFinished(): { result: BattleResult; banked: Cost; trophies: number; bonus?: Cost; eventBonus?: Cost; overflow?: Cost; note?: string; pending?: boolean; stake?: number } | null;
+  onFinished(): { result: BattleResult; banked: Cost; trophies: number; bonus?: Cost; eventBonus?: Cost; overflow?: Cost; note?: string; pending?: boolean; stake?: number; /** The diversity share the raid carried (sim/carry.ts; absent = 1). */ diversity?: number; /** P5-03: the daily contract it met (its name). */ contract?: string; /** P6-07: what the battle moved. */ progress?: ProgressLine[] } | null;
   /** A raid that may declare a stake (sim/carry.ts): offline, or on a server with the `stakes` feature. */
   stakes?: boolean;
+  /** P6-13 (UIS-07): the share of the loot this army would carry (sim/carry.ts; raids only, absent or 1 = all). */
+  carryShare?: number;
   onReplay(): void;
+  /**
+   * P6-07 (UIS-01): what to do next from the result screen (Refill, Next, the next Trial tier, a different fortress),
+   * worked out once the battle is settled. Each closes the result screen first.
+   */
+  nextActions?(result: BattleResult): { label: string; primary?: boolean; onClick(): void }[];
+}
+
+/**
+ * P6-01: "hold a reserve" is offered only if it is the best order on at least one base in five at Keeps 9, 12 and 15
+ * (tools/balance/run-squad-orders.mjs; the measurement is in docs/audit/understand-2026-11-16/phase6/).
+ */
+const SQUAD_RESERVE = false;
+const SQUAD_KEY = 'tk.squad';
+
+function loadSquadChoice(): { formation: Formation | null; order: WaveOrder } {
+  try {
+    const v = JSON.parse(localStorage.getItem(SQUAD_KEY) ?? 'null') as { formation?: unknown; order?: unknown } | null;
+    const formation = (['together', 'pincer', 'file'] as const).find((f) => f === v?.formation) ?? null;
+    const order = (['tanks', 'rush', ...(SQUAD_RESERVE ? ['reserve'] : [])] as WaveOrder[]).find((o) => o === v?.order) ?? 'tanks';
+    return { formation, order };
+  } catch {
+    return { formation: null, order: 'tanks' };
+  }
+}
+
+function saveSquadChoice(c: { formation: Formation | null; order: WaveOrder }): void {
+  try {
+    localStorage.setItem(SQUAD_KEY, JSON.stringify(c));
+  } catch {
+    /* storage blocked: the choice lasts this battle */
+  }
 }
 
 function lootChips(loot: Cost): HTMLElement {
@@ -97,6 +139,11 @@ export class BattleHud {
   private interval = 0;
   private finished = false;
   private lastStars = -1;
+  /** P6-01: the squad order row (above the troop cards). */
+  private squadEl = h('div', { class: 'squad-row', role: 'group' });
+  private squad: { formation: Formation | null; order: WaveOrder } = loadSquadChoice();
+  private squadSig = '';
+  private lastStake: number | undefined = undefined;
   private lootSig = '';
   /** The map, once the scene is up: point positions for the chevrons, path highlight, refit. */
   private view: BattleView | null = null;
@@ -121,6 +168,8 @@ export class BattleHud {
         { class: 'b-name', type: 'button', 'aria-expanded': 'true', 'aria-controls': 'b-left-more', onclick: () => this.toggleCard() },
         h('bdi', {}, baseName),
         h('span', { class: 'level' }, i18nText("ui.lv_445f51ab9e", { arg1: this.s.setup.base.hallLevel })),
+        // P6-09 (Honesty): what kind of opponent this is stays on the folded line, at 320 px too.
+        this.kindTag(),
         h('span', { class: 'b-caret', 'aria-hidden': 'true' }),
       ),
       h(
@@ -128,10 +177,12 @@ export class BattleHud {
         { class: 'muted small b-more', id: 'b-left-more' },
         this.s.mode === 'replay'
           ? deps.replayOf?.kind === 'defense'
-            ? i18nText("ui.replay_attacks_loot_taken_cfa170965c", { arg1: isolateName(deps.replayOf.opponentName) })
+            ? deps.replayOf.test
+              ? i18nText("ui.practice_battle_nothing_is_spent_or_wo_c68624fd43")
+              : i18nText("ui.replay_attacks_loot_taken_cfa170965c", { arg1: isolateName(deps.replayOf.opponentName) })
             : i18nText("ui.replay_loot_won_db27073d59")
           : deps.grove
-            ? i18nText("ui.vs_2d68ca8191", { arg1: deps.grove.title ?? 'Alliance War', arg2: isolateName(deps.grove.enemyName) })
+            ? i18nText("ui.vs_2d68ca8191", { arg1: deps.grove.title ?? i18nText("ui.alliance_war_fe9355cdf5"), arg2: isolateName(deps.grove.enemyName) })
             : deps.special
               ? ownedText(deps.special.title)
             : deps.trial
@@ -149,7 +200,7 @@ export class BattleHud {
         this.s.mode !== 'replay' && !deps.grove && !deps.trial && !deps.special && this.s.setup.base.trophies !== undefined
           ? h(
               'div',
-              { class: 'small b-trophies', title: i18nText("ui.honor_theirs_then_what_you_win_or_lose_a762882eaa") },
+              { class: 'small b-trophies', role: 'button', tabindex: '0', title: i18nText("ui.honor_theirs_then_what_you_win_or_lose_a762882eaa"), onclick: (ev: Event) => { ev.stopPropagation(); this.toast(i18nText("ui.honor_theirs_then_what_you_win_or_lose_a762882eaa")); } },
               icon(icons.leaf),
               i18nText("ui.message_f9da5dafaf", { arg1: this.s.setup.base.trophies, arg2: winTrophies(deps.myTrophies, this.s.setup.base.trophies, localizedData(this.s.data)), arg3: lossTrophies(deps.myTrophies, this.s.setup.base.trophies, localizedData(this.s.data)) }),
             )
@@ -161,7 +212,7 @@ export class BattleHud {
     const right = h('div', { class: 'panel b-right' }, this.timerEl, this.starsEl, this.pctEl);
     this.coachEl.hidden = true;
     root.dataset.mode = this.s.mode;
-    root.append(left, right, this.chevronsEl, this.toastEl, this.coachEl, this.troopsEl, this.bottomEl, this.modalEl);
+    root.append(left, right, this.chevronsEl, this.toastEl, this.coachEl, this.squadEl, this.troopsEl, this.bottomEl, this.modalEl);
     // Pick the first available troop by default (Saboteurs first: jam, then attack).
     this.selected = this.firstTroop();
     this.renderBottom();
@@ -171,9 +222,20 @@ export class BattleHud {
     }
     this.tick();
     this.interval = window.setInterval(() => this.tick(), 100);
+    window.addEventListener('keydown', this.onKey);
   }
 
   private leftEl!: HTMLElement;
+
+  /** A short label for a generated, practice or Trial opponent (never for a real player or a replay). */
+  private kindTag(): HTMLElement | null {
+    const d = this.deps;
+    const base = this.s.setup.base;
+    if (d.replayOf?.test) return h('span', { class: 'chip b-kind', 'data-id': 'opponent-kind' }, t('kind.practice'));
+    if (this.s.mode === 'replay' || d.grove) return null;
+    const key = d.practice ? 'kind.practice' : d.trial ? 'kind.trial' : base.rival ? 'kind.rival' : d.special || base.practice ? 'kind.generated' : null;
+    return key ? h('span', { class: 'chip b-kind', 'data-id': 'opponent-kind' }, t(key)) : null;
+  }
 
   /**
    * Art audit F4: on a narrow or short phone the opponent card took a fifth of the screen. It folds to one line (name
@@ -212,6 +274,7 @@ export class BattleHud {
 
   destroy(): void {
     window.clearInterval(this.interval);
+    window.removeEventListener('keydown', this.onKey);
     clear(this.deps.root);
     this.deps.root.hidden = true;
     delete this.deps.root.dataset.mode;
@@ -226,7 +289,7 @@ export class BattleHud {
     const box = (el: Element | null) => (el && el.getClientRects().length ? el.getBoundingClientRect() : null);
     const root = this.deps.root;
     // Anything in the upper half (the cards; sideways also the scout drawer) bounds the top, the rest the bottom.
-    const all = [box(root.querySelector('.b-left')), box(root.querySelector('.b-right')), box(this.troopsEl), box(this.bottomEl), box(this.scoutEl)].filter((r): r is DOMRect => Boolean(r) && r!.height > 0);
+    const all = [box(root.querySelector('.b-left')), box(root.querySelector('.b-right')), box(this.troopsEl), box(this.squadEl), box(this.bottomEl), box(this.scoutEl)].filter((r): r is DOMRect => Boolean(r) && r!.height > 0);
     const tops = all.filter((r) => r.top < vh / 2);
     const lows = all.filter((r) => r.top >= vh / 2);
     let top = Math.max(0, ...tops.map((r) => r.bottom)) + 4;
@@ -309,6 +372,8 @@ export class BattleHud {
         ),
       ),
     );
+    // P6-09 (PLY-14): a merged or translated label is wider than the edge margin; keep every chevron whole on screen.
+    for (const el of this.chevronsEl.children) clampOnScreen(el as HTMLElement, vw, vh);
   }
 
   hooks(): BattleHooks {
@@ -332,11 +397,21 @@ export class BattleHud {
         if (this.selected && isAbility(localizedData(this.s.data), this.selected)) this.selected = this.lastTroop ?? this.firstTroop();
         else if ((this.s.sim.remaining[this.selected ?? ''] ?? 0) <= 0) this.selected = this.firstTroop();
         if (this.s.mode === 'live') this.renderTroops();
+        if (this.s.mode === 'live' && !this.speedShown && this.allDeployed()) this.renderBottom();
       },
+      cardArmed: () => this.cardArmed(),
+      squadTap: (point) => this.squadTap(point),
     };
   }
 
   private scoutEl: HTMLElement | null = null;
+
+  /** P6-11: a selected card can still drop something (the camera stays on the entry points while it can). */
+  cardArmed(): boolean {
+    const sel = this.selected;
+    if (!sel) return false;
+    return isAbility(localizedData(this.s.data), sel) ? (this.s.sim.charges[sel] ?? 0) > 0 : (this.s.sim.remaining[sel] ?? 0) > 0;
+  }
 
   /**
    * What scouting reveals, as a drawer (re-audit design item 2): one chip row by default ("6 points · 12 defenses ▸"
@@ -364,7 +439,9 @@ export class BattleHud {
         ? h('p', { class: 'small temper-profile' }, t('scout.profile', { reach: fmtPercent(r.profile.reach * 100), blast: fmtPercent(r.profile.blast * 100), watch: fmtPercent(r.profile.watch * 100) }))
         : null,
       ...r.tips.map((t) => h('p', { class: 'small' }, ownedText(t))),
-      this.deps.stakes && stakeOptions(this.s.data).length ? h('p', { class: 'small muted' }, t('stake.help')) : null,
+      this.deps.stakes && stakeOptions(this.s.data).length && this.s.stake === undefined ? h('p', { class: 'small muted' }, t('stake.help')) : null,
+      // P6-13 (UIS-07): the diversity share before the raid, not only after it.
+      this.deps.carryShare !== undefined && this.deps.carryShare < 1 ? h('p', { class: 'small carry-preview', 'data-id': 'carry-preview' }, t('carry.preview', { pct: fmtPercent(this.deps.carryShare * 100) })) : null,
       ...(() => {
         // Report section 5 step 8: who holds this outpost (a computer rival clan).
         const clan = rivalById(this.s.setup.base.rival, localizedData(this.s.data));
@@ -383,7 +460,11 @@ export class BattleHud {
       this.renderScout();
       this.view?.fit();
     });
-    this.scoutEl = h('div', { class: `panel scout-report${this.scoutOpen ? ' open' : ''}` }, h('div', { class: 'scout-row' }, toggle, ...this.pointChips()), ...this.stakeRow(), more);
+    // P3-12: one line while a shield is running that this attack would end.
+    const shieldNote = this.deps.shieldLeftMs && this.deps.shieldLeftMs > 0 ? h('p', { class: 'small shield-note' }, t('scout.shieldEnds', { time: formatDuration(this.deps.shieldLeftMs) })) : null;
+    // P3-11 (PLY-04): say when the loot on offer will not fit.
+    const roomNote = this.deps.lootWontFit?.(this.s.setup.base) ? h('p', { class: 'small room-note' }, t('scout.lootWontFit')) : null;
+    this.scoutEl = h('div', { class: `panel scout-report${this.scoutOpen ? ' open' : ''}` }, h('div', { class: 'scout-row' }, toggle, ...this.pointChips()), shieldNote, roomNote, ...this.stakeRow(), more);
     this.deps.root.insertBefore(this.scoutEl, this.troopsEl);
   }
 
@@ -399,12 +480,24 @@ export class BattleHud {
       const b = h('button', { type: 'button', class: `chip${on ? ' on' : ''}`, 'aria-pressed': String(on), 'data-id': `stake-${stake ?? 0}` }, label);
       b.addEventListener('click', () => {
         this.s.setStake(stake);
+        // P6-13 (UIS-05): the first stake on this device opens the drawer once, so the rules are read before Attack.
+        if (stake !== undefined) {
+          try {
+            if (!localStorage.getItem('tk.stakeHelpSeen')) {
+              localStorage.setItem('tk.stakeHelpSeen', '1');
+              this.scoutOpen = true;
+            }
+          } catch {
+            /* storage blocked: the help line below the chips still shows */
+          }
+        }
         this.renderScout();
       });
       return b;
     };
-    // Always in view (one chip row); what a stake means is in the drawer.
-    return [h('div', { class: 'chips stake-row', role: 'group', 'aria-label': t('stake.label') }, h('span', { class: 'muted small' }, t('stake.label')), chip(undefined, t('stake.none')), ...opts.map((n) => chip(n, t('stake.option', { stars: n, mult: mult(gd.raids.stakes!.byStars[String(n)]) }))))];
+    // Always in view (one chip row); with a stake chosen, its downside is the line right under it.
+    const row = h('div', { class: 'chips stake-row', role: 'group', 'aria-label': t('stake.label') }, h('span', { class: 'muted small' }, t('stake.label')), chip(undefined, t('stake.none')), ...opts.map((n) => chip(n, t('stake.option', { stars: n, mult: mult(gd.raids.stakes!.byStars[String(n)]) }))));
+    return this.s.stake !== undefined ? [row, h('p', { class: 'small stake-help', 'data-id': 'stake-help' }, t('stake.help'))] : [row];
   }
 
   /** One chip per Infiltration Point: letter and how many defenses cover its path (tap: highlight the path). */
@@ -444,12 +537,18 @@ export class BattleHud {
     if (mode === 'scout') {
       const hasArmy = Object.values(this.s.setup.army).some((n) => n > 0);
       this.bottomEl.append(
-        h('button', { class: 'btn ghost', type: 'button', onclick: () => this.deps.onHome() }, t('battle.home')),
+        h('button', { class: 'btn ghost', type: 'button', 'data-id': 'battle-home', onclick: () => this.deps.onHome() }, t('battle.home')),
         this.deps.grove || this.deps.trial || this.deps.practice || this.deps.special
           ? h('span', {}, '')
           : h(
               'button',
-              { class: 'btn gold', type: 'button', disabled: !this.deps.canPayFee(), onclick: () => this.deps.onNext() },
+              {
+                class: `btn gold${this.deps.canPayFee() ? '' : ' unaffordable'}`,
+                type: 'button',
+                'aria-disabled': String(!this.deps.canPayFee()),
+                // P6-16 (UIS-10): a tap on an unaffordable Next says why instead of doing nothing.
+                onclick: () => (this.deps.canPayFee() ? this.deps.onNext() : this.toast(i18nText("sim.not_enough_resources_needs_69f536b412", { arg1: `${formatNumber(this.deps.scoutFee)} ${RES_LABEL.acorns}` }))),
+              },
               h('span', {}, t('battle.next')),
               h('span', { class: 'chip' }, icon(icons.acorns), formatNumber(this.deps.scoutFee)),
             ),
@@ -458,22 +557,38 @@ export class BattleHud {
           {
             class: 'btn danger big-attack',
             type: 'button',
-            disabled: !hasArmy,
-            onclick: (ev: Event) => void this.attackTapped(ev.currentTarget as HTMLButtonElement),
+            
+            // P6-16: with no army, the button leads to the Army panel instead of being a dead end.
+            onclick: (ev: Event) => (hasArmy ? void this.attackTapped(ev.currentTarget as HTMLButtonElement) : this.deps.onTrain ? this.deps.onTrain() : undefined),
           },
           hasArmy ? t('battle.attack') : t('battle.trainFirst'),
         ),
       );
     } else if (mode === 'live') {
-      this.bottomEl.append(h('button', { class: 'btn danger', type: 'button', onclick: () => this.confirmEnd() }, t('battle.end')));
+      // P6-11 (PLY-05): once every warrior is in, the fight can be watched faster. Speed scales real time only
+      // (deployments keep their tick), so the result and the replay are the same at any speed.
+      this.speedShown = this.allDeployed();
+      this.bottomEl.append(this.speedShown ? this.speedButton() : '', h('button', { class: 'btn danger', type: 'button', 'data-id': 'battle-end', onclick: () => this.confirmEnd() }, t('battle.end')));
     } else {
-      const speed = h('button', { class: 'btn ghost', type: 'button' }, i18nText("ui.speed_48c409f269", { arg1: this.s.speed }));
-      speed.addEventListener('click', () => {
-        this.s.speed = this.s.speed === 1 ? 2 : this.s.speed === 2 ? 4 : 1;
-        speed.textContent = i18nText("ui.speed_48c409f269", { arg1: this.s.speed });
-      });
-      this.bottomEl.append(speed, h('button', { class: 'btn primary', type: 'button', onclick: () => this.deps.onHome() }, i18nText("ui.exit_replay_0a858020f8")));
+      this.bottomEl.append(this.speedButton(), h('button', { class: 'btn primary', type: 'button', 'data-id': 'exit-replay', onclick: () => this.deps.onHome() }, i18nText("ui.exit_replay_0a858020f8")));
     }
+  }
+
+  private speedShown = false;
+
+  /** Every warrior of the army is on the field (abilities may still have charges). */
+  allDeployed(): boolean {
+    // Review L6: the hero is placed by hand (squad orders leave him out), so he does not hold back the speed button.
+    return Object.entries(this.s.sim.remaining).every(([t, n]) => n <= 0 || this.s.data.troops[t] === undefined);
+  }
+
+  private speedButton(): HTMLElement {
+    const speed = h('button', { class: 'btn ghost b-speed', type: 'button', 'data-id': 'battle-speed' }, i18nText("ui.speed_48c409f269", { arg1: this.s.speed }));
+    speed.addEventListener('click', () => {
+      this.s.speed = this.s.speed === 1 ? 2 : this.s.speed === 2 ? 4 : 1;
+      speed.textContent = i18nText("ui.speed_48c409f269", { arg1: this.s.speed });
+    });
+    return speed;
   }
 
   private lastTroop: string | null = null;
@@ -488,8 +603,75 @@ export class BattleHud {
     return isAbility(localizedData(this.s.data), type) ? this.s.sim.charges[type] ?? 0 : this.s.sim.remaining[type] ?? 0;
   }
 
+  /**
+   * P6-01 (CMB-09, UIS-03): squad orders. Two chip groups (formation, wave order), remembered on the device. With a
+   * formation armed, a tap on a glowing ring sends every undeployed warrior through that point in that shape (the
+   * hero and Smoke stay by hand). Hold, with the waiting count, shows while a squad is still going in.
+   */
+  private renderSquad(): void {
+    const s = this.s;
+    const entry = s.sim.entry;
+    const warriorsLeft = Object.entries(s.sim.remaining).some(([t, n]) => n > 0 && s.data.troops[t] !== undefined);
+    const waiting = s.squadWaiting;
+    const show = s.mode === 'live' && !s.sim.ended && Boolean(entry?.points.length) && (warriorsLeft || waiting > 0);
+    const orders: WaveOrder[] = SQUAD_RESERVE ? ['tanks', 'rush', 'reserve'] : ['tanks', 'rush'];
+    const sig = JSON.stringify([show, this.squad, waiting, s.mode]);
+    if (sig === this.squadSig) return;
+    this.squadSig = sig;
+    clear(this.squadEl);
+    this.squadEl.hidden = !show;
+    if (!show) return;
+    this.squadEl.setAttribute('aria-label', t('squad.label'));
+    const chip = (on: boolean, label: string, id: string, click: () => void) => {
+      const b = h('button', { type: 'button', class: `chip${on ? ' on' : ''}`, 'aria-pressed': String(on), 'data-id': id }, label);
+      b.addEventListener('click', click);
+      return b;
+    };
+    const formations = h(
+      'div',
+      { class: 'squad-group' },
+      ...(['together', 'pincer', 'file'] as Formation[]).map((f) =>
+        chip(this.squad.formation === f, t(`squad.${f}`), `squad-${f}`, () => {
+          // A second tap on the armed formation disarms it: taps place warriors one by one again.
+          this.squad = { ...this.squad, formation: this.squad.formation === f ? null : f };
+          saveSquadChoice(this.squad);
+          this.renderSquad();
+          if (this.squad.formation && s.mode === 'live') this.toast(t('squad.armed'));
+        }),
+      ),
+    );
+    const second =
+      waiting > 0
+        ? h('button', { type: 'button', class: 'chip squad-hold', 'data-id': 'squad-hold', onclick: () => { s.holdSquad(); this.renderSquad(); } }, t('squad.hold', { n: waiting }))
+        : // One chip that cycles through the wave orders keeps the row on one line at 320 px.
+          h('button', {
+            type: 'button',
+            class: 'chip squad-order',
+            'data-id': 'squad-order',
+            'aria-label': t('squad.orderAria', { order: t(`squad.${this.squad.order}`) }),
+            onclick: () => {
+              this.squad = { ...this.squad, order: orders[(orders.indexOf(this.squad.order) + 1) % orders.length] };
+              saveSquadChoice(this.squad);
+              this.renderSquad();
+            },
+          }, t(`squad.${this.squad.order}`), h('span', { class: 'squad-cycle', 'aria-hidden': 'true' }, '⟳'));
+    this.squadEl.append(formations, second);
+  }
+
+  /** P6-01: with a formation armed and a warrior (not the hero, not an ability) selected, a ring tap sends the squad. */
+  squadTap(point: number): number {
+    const s = this.s;
+    const sel = this.selected;
+    if (!this.squad.formation || s.mode !== 'live' || !sel || isAbility(localizedData(s.data), sel) || s.data.troops[sel] === undefined) return 0;
+    const n = s.orderSquad({ point, formation: this.squad.formation, order: this.squad.order });
+    this.squadSig = '';
+    this.renderSquad();
+    return n;
+  }
+
   private renderTroops(): void {
     clear(this.troopsEl);
+    this.renderSquad();
     if (this.s.mode === 'replay') return;
     if ((this.s.sim.charges.smoke_bomb ?? 0) > 0 || (this.s.sim.abilitiesUsed.smoke_bomb ?? 0) > 0) {
       const left = this.left('smoke_bomb');
@@ -499,6 +681,8 @@ export class BattleHud {
         icon(icons.smoke),
         h('span', { class: 'troop-count' }, `×${left}`),
       );
+      const ab = localizedData(this.s.data).battle.abilities.smoke_bomb;
+      this.longPress(card, () => `${ab.name}: ${ab.description}`);
       card.addEventListener('click', () => {
         if (this.left('smoke_bomb') <= 0) return;
         if (this.selected && !isAbility(localizedData(this.s.data), this.selected)) this.lastTroop = this.selected;
@@ -524,8 +708,16 @@ export class BattleHud {
         thumb ? h('img', { src: thumb, alt: '' }) : null,
         h('span', { class: 'troop-count' }, `×${left}`),
       );
+      if (def) this.longPress(card, () => `${def.name}: ${def.description}`);
       card.addEventListener('click', () => {
         if (this.left(type) <= 0) return;
+        // P6-11: once warriors are in, a second tap on the selected card puts it down, and the camera follows the fight.
+        if (this.selected === type && this.s.mode === 'live' && this.s.deployments.length) {
+          this.selected = null;
+          uiArt.haptic('selection');
+          this.renderTroops();
+          return;
+        }
         this.selected = type;
         this.lastTroop = type;
         uiArt.haptic('selection');
@@ -538,6 +730,13 @@ export class BattleHud {
   private tick(): void {
     const sim = this.s.sim;
     this.drawChevrons();
+    this.renderSquad();
+    // P6-11: a squad order deploys over many ticks without a tap; the speed button follows the last warrior in.
+    if (this.s.mode === 'live' && !sim.ended && !this.speedShown && this.allDeployed()) {
+      if ((this.s.sim.remaining[this.selected ?? ''] ?? 0) <= 0 && this.selected && !isAbility(localizedData(this.s.data), this.selected)) this.selected = this.firstTroop();
+      this.renderBottom();
+      this.renderTroops();
+    }
     if (this.deps.coach) this.coach();
     const secs = this.s.mode === 'scout' ? sim.duration / localizedData(this.s.data).battle.ticksPerSecond : this.s.secondsLeft();
     this.timerEl.textContent = `${Math.floor(secs / 60)}:${String(secs % 60).padStart(2, '0')}`;
@@ -545,9 +744,12 @@ export class BattleHud {
     this.pctEl.textContent = `${pct}%`;
     const t = localizedData(this.s.data).battle.starThresholds;
     const stars = (pct >= t.destruction ? 1 : 0) + (sim.hallDestroyed ? 1 : 0) + (pct >= t.full ? 1 : 0);
-    if (stars !== this.lastStars) {
+    if (stars !== this.lastStars || this.s.stake !== this.lastStake) {
+      this.lastStake = this.s.stake;
       clear(this.starsEl);
-      for (let i = 0; i < 3; i++) this.starsEl.append(h('span', { class: `star${i < stars ? ' on' : ''}` }, '★'));
+      // P6-13: the declared stake's star is marked for the whole fight.
+      const staked = this.s.stake;
+      for (let i = 0; i < 3; i++) this.starsEl.append(h('span', { class: `star${i < stars ? ' on' : ''}${staked === i + 1 ? ' staked' : ''}`, ...(staked === i + 1 ? { 'data-id': 'staked-star', title: i18nText('stake.option', { stars: staked, mult: fmtDecimal(this.s.data.raids.stakes?.byStars[String(staked)] ?? 1, 2) }) } : {}) }, '★'));
       if (this.lastStars >= 0 && stars > this.lastStars) {
         this.starsEl.classList.add('bump');
         sound.play('star');
@@ -581,7 +783,7 @@ export class BattleHud {
       this.finished = true;
       if (this.s.mode === 'live') {
         const out = this.deps.onFinished();
-        if (out) this.showResults(out.result, out.banked, out.trophies, out.bonus, out.eventBonus, out.note, out.overflow, out.pending, out.stake);
+        if (out) this.showResults(out.result, out.banked, out.trophies, out.bonus, out.eventBonus, out.note, out.overflow, out.pending, out.stake, out.diversity, out.contract, out.progress);
       } else {
         this.toast(i18nText("ui.replay_finished_c807fbe581"));
       }
@@ -624,7 +826,10 @@ export class BattleHud {
     );
   }
 
-  private showResults(r: BattleResult, banked: Cost, trophies: number, bonus?: Cost, eventBonus?: Cost, note?: string, overflow?: Cost, pending = false, stake?: number): void {
+  private showResults(r: BattleResult, banked: Cost, trophies: number, bonus?: Cost, eventBonus?: Cost, note?: string, overflow?: Cost, pending = false, stake?: number, diversity?: number, contract?: string, progress: ProgressLine[] = []): void {
+    // P6-07: a missed stake brings home only the league bonus; the line says that, never "Loot".
+    const stakeMissed = stake !== undefined && !pending && r.stars < stake;
+    const carried = Object.values(banked).some((v) => (v ?? 0) > 0);
     // Result feel (re-audit design item 11): stars slam in one by one with a sound and haptic each, a banner for a
     // flawless raid, and the loot counts up. Reduced motion shows the end state at once.
     celebrate(r.stars > 0 ? 'victory' : 'defeat');
@@ -637,7 +842,7 @@ export class BattleHud {
       if (won) window.setTimeout(() => celebrate('star'), still ? 0 : (250 + i * STAR_GAP * 1000 + 180));
     }
     if (r.destruction >= 100) window.setTimeout(() => celebrate('perfect'), still ? 0 : 250 + 3 * STAR_GAP * 1000);
-    const used = i18nList(Object.entries(r.used).map(([t, n]) => i18nText("ui.message_14677cb26f", { arg1: n, arg2: localizedData(this.s.data).troops[t]?.name ?? t })));
+    const used = i18nList(Object.entries(r.used).map(([t, n]) => i18nText("ui.message_14677cb26f", { arg1: n, arg2: unitName(t, localizedData(this.s.data)) })));
     const title = r.stars === 3 ? t('battle.perfect') : r.stars > 0 ? t('battle.victory') : t('battle.defeat');
     const body = h(
       'div',
@@ -652,21 +857,31 @@ export class BattleHud {
           ? h('p', { class: 'muted' }, i18nText("ui.loot_it_would_have_won_49fffbecef"), lootChips(r.loot))
         : pending
           ? h('p', {}, i18nText("ui.loot_won_5491665d1d"), lootChips(r.loot), h('span', { class: 'muted small' }, i18nText("ui.confirming_with_the_server_it_arrives__667ceaec28")))
-          : h('p', {}, this.deps.trial || this.deps.special ? i18nLabel('Reward: ') : i18nLabel('Loot: '), countingChips(banked, still ? 0 : 250 + r.stars * STAR_GAP * 1000)),
+          : stakeMissed && !carried
+            ? null
+            : h('p', {}, this.deps.trial || this.deps.special ? i18nLabel('Reward: ') : stakeMissed ? t('result.leagueBonus') : i18nLabel('Loot: '), countingChips(banked, still ? 0 : 250 + r.stars * STAR_GAP * 1000)),
       this.deps.grove || this.deps.trial || this.deps.practice || this.deps.special || pending ? '' : h('p', {}, i18nLabel('Honor: '), h('span', { class: `chip ${trophies >= 0 ? 'good' : 'short'}` }, icon(icons.leaf), `${trophies >= 0 ? '+' : ''}${trophies}`)),
-      ...this.carryNotes(r, stake, pending),
-      bonus && Object.keys(bonus).length ? h('p', { class: 'muted small' }, i18nText("ui.includes_your_league_bonus_b40d9ae1a0"), lootChips(bonus)) : null,
+      ...this.carryNotes(r, stake, pending, diversity, carried),
+      contract ? h('p', { class: 'note good' }, t('contract.met', { name: contract })) : null,
+      bonus && Object.keys(bonus).length && !stakeMissed ? h('p', { class: 'muted small' }, i18nText("ui.includes_your_league_bonus_b40d9ae1a0"), lootChips(bonus)) : null,
       eventBonus && Object.keys(eventBonus).length ? h('p', { class: 'muted small' }, i18nText("ui.includes_the_event_bonus_8c87bb2bac"), lootChips(eventBonus)) : null,
       ...closeCalls(this.s.sim, localizedData(this.s.data)).map((cc) => h('p', { class: 'close-call' }, i18nMessage(cc.text))),
       used ? h('p', { class: 'muted small' }, t('battle.used', { list: used })) : null,
       // The settlement says exactly what did not fit; nothing is inferred from totals.
       overflow && Object.values(overflow).some((v) => (v ?? 0) > 0) ? h('p', { class: 'note' }, i18nText("ui.did_not_fit_in_your_storage_e281ba747c"), lootChips(overflow)) : null,
+      this.progressBlock(progress),
+      // P6-02 (CMB-02): the review, after the raid only, on demand.
+      this.s.sim.entry && this.s.sim.entry.points.length > 1 && this.s.deployments.some((d) => this.s.data.troops[d.troop])
+        ? h('button', { class: 'btn ghost small-btn what-if-btn', type: 'button', 'data-id': 'what-if', onclick: () => this.openWhatIf() }, t('review.button'))
+        : null,
     );
+    const next = this.deps.nextActions?.(r) ?? [];
     this.modal(title, body, [
       { label: t('battle.watchReplay'), onClick: () => this.deps.onReplay() },
+      ...next.map((a) => ({ label: a.label, primary: a.primary, onClick: () => a.onClick() })),
       {
         label: t('battle.returnHome'),
-        primary: true,
+        primary: !next.some((a) => a.primary),
         onClick: () => {
           // Retention audit G26: a real raid's win may be followed by the store's review sheet (rarely; reviewPrompt.ts).
           if (!this.deps.grove && !this.deps.trial && !this.deps.practice && !this.deps.special && !this.deps.replayOf) noteBattleResult(r.stars > 0, !this.deps.coach);
@@ -676,8 +891,78 @@ export class BattleHud {
     ], false);
   }
 
+  /**
+   * P6-02 (CMB-02): the same army and orders sent through another open point, simulated one point at a time on demand
+   * in slices (the result screen stays responsive on a cheap phone). Said for what it is; never advice, never before.
+   */
+  private openWhatIf(): void {
+    const s = this.s;
+    const entry = s.sim.entry;
+    if (!entry) return;
+    const setup = s.setup;
+    const deployments = [...s.deployments];
+    const endTick = s.endTick;
+    const list = h('div', { class: 'what-if' });
+    let running: number | null = null;
+    entry.points.forEach((p, i) => {
+      const out = h('span', { class: 'small what-if-out', 'aria-live': 'polite' });
+      const btn = h('button', { class: 'btn ghost', type: 'button', 'data-id': `what-if-${i}` }, pointLabel(p.label)) as HTMLButtonElement;
+      btn.addEventListener('click', () => {
+        if (running !== null) return;
+        btn.disabled = true;
+        out.textContent = '…';
+        const run = new WhatIfRun(setup, deployments, i, s.data, endTick);
+        const slice = () => {
+          const t0 = performance.now();
+          // ~8 ms of work a slice, then give the frame back.
+          while (!run.advance(4) && performance.now() - t0 < 6);
+          if (!run.sim.ended) {
+            running = window.setTimeout(slice, 0);
+            return;
+          }
+          running = null;
+          btn.disabled = false;
+          const o = run.outcome();
+          out.textContent = t('review.result', { stars: o.result.stars, pct: fmtPercent(o.result.destruction) });
+          if (o.sent < o.total) out.append(h('span', { class: 'muted' }, ` · ${t('review.fit', { sent: o.sent, total: o.total })}`));
+        };
+        running = window.setTimeout(slice, 0);
+      });
+      list.append(h('div', { class: 'what-if-row' }, btn, out));
+    });
+    const close = this.modal(t('review.title'), h('div', {}, h('p', { class: 'muted small' }, t('review.about')), list), [
+      {
+        label: i18nText("ui.close_7d9eb7acb1"),
+        onClick: () => {
+          if (running !== null) window.clearTimeout(running);
+          close();
+        },
+      },
+    ]);
+  }
+
+  /** P6-07: the tasks this battle moved, honor to the next league and the Scroll's next tier (only what moved). */
+  private progressBlock(lines: ProgressLine[]): HTMLElement | null {
+    if (!lines.length) return null;
+    const gd = localizedData(this.s.data);
+    const wrap = h('div', { class: 'result-progress', 'data-id': 'result-progress' });
+    for (const l of lines) {
+      if (l.kind === 'task') {
+        const tpl = (l.taskKind === 'weekly' ? gd.pass.weeklyChallenges : gd.pass.dailyTasks).find((x) => x.id === l.id);
+        if (!tpl) continue;
+        const text = `${l.taskKind === 'weekly' ? i18nLabel('Weekly: ') : ''}${tpl.text.replace('{n}', formatNumber(l.target))}`;
+        wrap.append(h('div', { class: 'result-task' }, h('span', { class: 'small' }, text), h('div', { class: 'progress-row' }, h('div', { class: 'progress' }, h('i', { style: `width:${Math.min(100, (l.to / Math.max(1, l.target)) * 100)}%` })), h('span', { class: 'small' }, `${formatNumber(l.to)}/${formatNumber(l.target)}`))));
+      } else if (l.kind === 'honor') {
+        wrap.append(h('p', { class: 'muted small' }, i18nText("ui.more_honor_to_reach_3b60f7cad1", { arg1: formatNumber(l.left), arg2: l.league })));
+      } else {
+        wrap.append(h('p', { class: 'muted small' }, i18nText("ui.tier_more_points_c5379e2fd6", { arg1: l.tier, arg2: formatNumber(l.pointsLeft) })));
+      }
+    }
+    return wrap;
+  }
+
   /** What the raid carried home (sim/carry.ts): the stake's outcome and, for a one-role squad, the share it carried. */
-  private carryNotes(r: BattleResult, stake: number | undefined, pending: boolean): HTMLElement[] {
+  private carryNotes(r: BattleResult, stake: number | undefined, pending: boolean, share = 1, carried = true): HTMLElement[] {
     if (this.deps.grove || this.deps.trial || this.deps.practice || this.deps.special || this.deps.replayOf) return [];
     const gd = this.s.data;
     const out: HTMLElement[] = [];
@@ -686,8 +971,8 @@ export class BattleHud {
     if (!pending && m !== undefined) {
       out.push(h('p', { class: `note ${r.stars >= stake! ? 'good' : 'short'}` }, r.stars >= stake! ? t('stake.met', { stars: stake, mult: fmtDecimal(m, Math.round(m * 10) === m * 10 ? 1 : 2) }) : t('stake.missed', { stars: stake })));
     }
-    const share = diversityShare(armyDiversity(r.used, this.s.setup, gd), gd);
-    if (share < 1 && (pending || m === undefined || r.stars >= stake!)) out.push(h('p', { class: 'muted small' }, t('carry.diversity', { pct: fmtPercent(share * 100) })));
+    // P6-07: no share line on a raid that carried nothing.
+    if (share < 1 && (pending || carried) && (pending || m === undefined || r.stars >= stake!)) out.push(h('p', { class: 'muted small' }, t('carry.diversity', { pct: fmtPercent(share * 100) })));
     return out;
   }
 
@@ -755,6 +1040,86 @@ export class BattleHud {
       ),
     );
     this.modalEl.append(backdrop);
+    // P6-16 (UIS-13): focus goes into the dialog and Tab stays inside it; Escape closes it when it can be closed.
+    backdrop.dataset.closable = String(closable);
+    backdrop.addEventListener('keydown', (e) => {
+      if (e.key !== 'Tab') return;
+      const f = [...backdrop.querySelectorAll<HTMLElement>('button:not([disabled]), [tabindex="0"]')];
+      if (!f.length) return;
+      const i = f.indexOf(document.activeElement as HTMLElement);
+      const nextI = e.shiftKey ? (i <= 0 ? f.length - 1 : i - 1) : i === f.length - 1 ? 0 : i + 1;
+      e.preventDefault();
+      f[nextI].focus();
+    });
+    (foot.querySelector<HTMLElement>('.btn.primary') ?? backdrop.querySelector<HTMLElement>('button'))?.focus();
     return close;
   }
+
+  /**
+   * P6-16 (UIS-13): battle hotkeys on a keyboard: 1-9 pick a warrior card, S the Smoke Bomb, Esc closes the top
+   * dialog or asks "End the battle?" (a replay or the scout screen go home). Typing in a field is left alone.
+   */
+  private onKey = (e: KeyboardEvent): void => {
+    if (e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey) return;
+    const tag = (e.target as HTMLElement | null)?.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+    const top = [...this.modalEl.querySelectorAll<HTMLElement>('.modal-backdrop:not(.out)')].pop();
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      if (top) {
+        if (top.dataset.closable === 'true') top.querySelector<HTMLButtonElement>('.modal-head .icon-btn')?.click();
+        return;
+      }
+      if (this.s.mode === 'live' && !this.s.sim.ended) this.confirmEnd();
+      else this.deps.root.querySelector<HTMLButtonElement>('[data-id="exit-replay"], [data-id="battle-home"]')?.click();
+      return;
+    }
+    if (top || this.s.mode === 'replay') return;
+    if (e.key === 's' || e.key === 'S') {
+      this.troopsEl.querySelector<HTMLButtonElement>('.troop-card.ability')?.click();
+      e.preventDefault();
+      return;
+    }
+    if (/^[1-9]$/.test(e.key)) {
+      const cards = [...this.troopsEl.querySelectorAll<HTMLButtonElement>('.troop-card:not(.ability)')];
+      cards[Number(e.key) - 1]?.click();
+      e.preventDefault();
+    }
+  };
+
+  /** P6-16: a long press on a card shows its name and line from data (a title never shows on touch). */
+  private longPress(el: HTMLElement, text: () => string): void {
+    let timer = 0;
+    let fired = false;
+    const cancel = () => window.clearTimeout(timer);
+    el.addEventListener('pointerdown', () => {
+      cancel();
+      fired = false;
+      timer = window.setTimeout(() => {
+        fired = true;
+        this.toast(text());
+      }, 550);
+    });
+    for (const ev of ['pointerup', 'pointerleave', 'pointercancel']) el.addEventListener(ev, cancel);
+    // Review L10: a long press explains the card; it does not also select it.
+    el.addEventListener(
+      'click',
+      (e) => {
+        if (!fired) return;
+        fired = false;
+        e.stopImmediatePropagation();
+      },
+      true,
+    );
+  }
+}
+
+/** Move an absolutely placed, centred element (left/top at its centre) so its whole box is inside the viewport. */
+export function clampOnScreen(el: HTMLElement, vw: number, vh: number, margin = 6): void {
+  const r = el.getBoundingClientRect();
+  if (!r.width) return;
+  const dx = r.left < margin ? margin - r.left : r.right > vw - margin ? vw - margin - r.right : 0;
+  const dy = r.top < margin ? margin - r.top : r.bottom > vh - margin ? vh - margin - r.bottom : 0;
+  if (dx) el.style.left = `${Math.round(parseFloat(el.style.left) + dx)}px`;
+  if (dy) el.style.top = `${Math.round(parseFloat(el.style.top) + dy)}px`;
 }

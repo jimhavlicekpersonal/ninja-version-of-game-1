@@ -13,6 +13,7 @@
  *   server's raid loot agree with what the game shows.
  * - Change it only between events: a goal event's key is `<id>#<period number>`, so moving the epoch
  *   or period mid-event starts a new bounty ladder.
+ * - The dated festivals (`events.json` `dated`, P5-01) are not part of a schedule: they keep their dates.
  * Pure: browser and Node.
  */
 import type { EventsDef } from '../../gameplay/sim/types';
@@ -63,10 +64,15 @@ export function checkEventSchedule(raw: unknown, builtIn: EventsDef): EventSched
   return { format: 1, id: x.id, epoch: x.epoch as number, periodDays: x.periodDays as number, entries };
 }
 
-/** The built-in events with this schedule's timing (a copy; names, text, effects and goals are the built-in ones). */
+/**
+ * The built-in events with this schedule's timing (a copy; names, text, effects and goals are the built-in ones).
+ * P5-01: every other field of the built-in events (the dated festivals, and anything added later) is carried
+ * through unchanged; an operator's schedule retimes the loop only.
+ */
 export function applyEventSchedule(builtIn: EventsDef, s: EventSchedule): EventsDef {
   const byId = new Map(builtIn.schedule.map((e) => [e.id, e]));
   return {
+    ...structuredClone(builtIn),
     epoch: s.epoch,
     periodDays: s.periodDays,
     schedule: s.entries.map((e) => ({ ...structuredClone(byId.get(e.id)!), startHour: e.startHour, durationHours: e.durationHours })),

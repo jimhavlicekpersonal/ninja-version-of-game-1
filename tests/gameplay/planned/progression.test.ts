@@ -4,7 +4,7 @@
  */
 import { describe, expect, it } from 'vitest';
 import { generateOpponent } from '../../../src/gameplay/sim/battle/basegen';
-import { createBattle, deploy, runBattle } from '../../../src/gameplay/sim/battle/battle';
+import { createBattle, runBattle } from '../../../src/gameplay/sim/battle/battle';
 import { defaultData } from '../../../src/gameplay/sim/data';
 import { heroFor } from '../../../src/gameplay/sim/heroes';
 import { awardMastery, masteryBonuses } from '../../../src/gameplay/sim/mastery';
@@ -76,8 +76,9 @@ describe('the planned buildings', () => {
     const before = JSON.stringify(defaultData);
     const data = withPreview(defaultData);
     expect(JSON.stringify(defaultData)).toBe(before);
+    // P5-07: mastery (ranks, no bonus) is live; only the hero choice stays in the preview.
     expect(data.features).toEqual({ mastery: true, heroChoice: true });
-    expect(defaultData.features).toBeUndefined();
+    expect(defaultData.features).toEqual({ mastery: true });
     for (const keep of [5, 9, 14]) {
       const base = generateOpponent(4242 + keep, keep, defaultData);
       const army = { hedgehog_roller: 20, frog_lobber: 10, beetle_brute: 4, owl_bomber: 3 };
@@ -103,12 +104,18 @@ describe('Hero Hall: choosing a hero', () => {
     expect(heroFor(s, defaultData)).toEqual({ id: 'shadow_captain', level: 7 });
   });
 
-  it('needs a Hero Hall, lets the player pick an unlocked hero, and caps the hero at the Hall\'s level', () => {
+  // P4-10 (BNL-11, restated): the Hall's level decides which heroes can be chosen; it never caps the hero's level.
+  it('needs a Hero Hall, lets the player pick a hero the Hall has unlocked, at the hero\'s Keep level', () => {
     const noHall = village(12, P);
     const r0 = applyCommand(noHall, { type: 'chooseHero', hero: 'iron_matriarch' }, NOW, P);
     expect(r0.ok).toBe(false);
     expect(heroFor(noHall, P)).toEqual({ id: 'shadow_captain', level: 6 });
-    const s = village(12, P, 2);
+    const low = village(12, P, 1);
+    // A level 1 Hall: the Captain only, at his full Keep level (the old cap gave level 1 here).
+    const captain = applyCommand(low, { type: 'chooseHero', hero: 'shadow_captain' }, NOW, P);
+    expect(captain.ok && heroFor(captain.state, P)).toEqual({ id: 'shadow_captain', level: 6 });
+    expect(applyCommand(low, { type: 'chooseHero', hero: 'iron_matriarch' }, NOW, P).ok).toBe(false);
+    const s = village(12, P, 3);
     const locked = applyCommand(s, { type: 'chooseHero', hero: 'grand_sensei' }, NOW, P);
     expect(locked.ok).toBe(false);
     if (!locked.ok) expect(locked.code).toBe('LOCKED');
@@ -116,44 +123,43 @@ describe('Hero Hall: choosing a hero', () => {
     expect(r.ok).toBe(true);
     if (!r.ok) return;
     expect(r.state.hero).toEqual({ chosen: 'iron_matriarch' });
-    expect(heroFor(r.state, P)).toEqual({ id: 'iron_matriarch', level: 2 });
-    expect(battleLoadout(r.state, P).hero).toEqual({ id: 'iron_matriarch', level: 2 });
+    const level = heroFor(r.state, P)!.level;
+    expect(level).toBeGreaterThan(1);
+    expect(battleLoadout(r.state, P).hero).toEqual({ id: 'iron_matriarch', level });
     const back = applyCommand(r.state, { type: 'chooseHero', hero: null }, NOW, P);
     expect(back.ok && heroFor(back.state, P)).toEqual({ id: 'shadow_captain', level: 6 });
   });
 });
 
-describe('Warrior Mastery (audit B4)', () => {
-  it('earns nothing and changes no battle in the shipped game', () => {
-    const s = village(8, defaultData);
-    expect(awardMastery(s, { used: { hedgehog_roller: 10 }, stars: 3 }, {}, defaultData)).toEqual({});
-    expect(s.mastery).toEqual({});
-    s.mastery = { hedgehog_roller: 1e6 };
-    expect(masteryBonuses(s, defaultData)).toEqual({});
-    expect(battleLoadout(s, defaultData).mastery).toBeUndefined();
+// P5-07 (BNL-02, restated as the item authorises): the ranks contract. Experience grows without end, the rank comes
+// from the level curve, masteryBonuses returns nothing and no battle setup the game builds carries mastery.
+describe('Warrior Mastery (audit B4): ranks with no stat bonus', () => {
+  it('the shipped game earns experience by housing and stars, own warriors only (not the hero or donated warriors)', () => {
+    for (const d of [defaultData, P]) {
+      const s = village(8, d);
+      const gained = awardMastery(s, { used: { hedgehog_roller: 10, beetle_brute: 2, shadow_captain: 1 }, stars: 2 }, { hero: { id: 'shadow_captain', level: 2 }, reinforcements: { beetle_brute: { count: 1, level: 3 } } }, d);
+      expect(gained).toEqual({ hedgehog_roller: battleMasteryXp(10, 2), beetle_brute: battleMasteryXp(d.troops.beetle_brute.housing, 2) });
+      expect(s.mastery).toEqual(gained);
+    }
   });
 
-  it('with the feature on: EXP per attack by housing and stars, own warriors only, and a bonus that never passes 30%', () => {
-    const s = village(8, P);
-    const gained = awardMastery(s, { used: { hedgehog_roller: 10, beetle_brute: 2, shadow_captain: 1 }, stars: 2 }, { hero: { id: 'shadow_captain', level: 2 }, reinforcements: { beetle_brute: { count: 1, level: 3 } } }, P);
-    expect(gained).toEqual({ hedgehog_roller: battleMasteryXp(10, 2), beetle_brute: battleMasteryXp(P.troops.beetle_brute.housing, 2) });
-    s.mastery = { hedgehog_roller: 2730, frog_lobber: 1e12 };
-    const bonus = masteryBonuses(s, P);
-    expect(bonus.hedgehog_roller).toBeCloseTo(masteryBonus(10), 4);
-    expect(bonus.frog_lobber).toBeLessThanOrEqual(0.3);
-    expect(battleLoadout(s, P).mastery).toEqual(bonus);
+  it('no rank carries a bonus: masteryBonuses is empty and no setup the game builds carries mastery', () => {
+    for (const d of [defaultData, P]) {
+      const s = village(8, d);
+      s.army = { hedgehog_roller: 5 };
+      s.mastery = { hedgehog_roller: 2730, frog_lobber: 1e12 };
+      expect(masteryBonus(40)).toBe(0);
+      expect(masteryBonuses(s, d)).toEqual({});
+      expect(battleLoadout(s, d).mastery).toBeUndefined();
+    }
   });
 
-  it('mastered warriors fight with the bonus, and a setup claiming more mastery than earned is refused', () => {
+  it('a setup claiming mastery is refused', () => {
     const s = village(8, P);
     s.army = { hedgehog_roller: 5 };
     s.mastery = { hedgehog_roller: 2730 };
     const loadout = battleLoadout(s, P);
     const base = generateOpponent(77, 8, P);
-    const sim = createBattle({ seed: 1, base, ...loadout }, P);
-    expect(deploy(sim, { tick: 0, troop: 'hedgehog_roller', x: sim.entry ? sim.entry.points[0].x : 1, y: sim.entry ? sim.entry.points[0].y : 1 })).toBe(true);
-    const lv = P.troops.hedgehog_roller.levels[0];
-    expect(sim.troops[0].maxHp).toBeCloseTo(lv.hp * (1 + loadout.mastery!.hedgehog_roller), 6);
     const cheat = { ...loadout, mastery: { hedgehog_roller: 0.3 } };
     const r = applyCommand(s, { type: 'battleEnd', record: { at: NOW, opponentName: 'x', setup: { seed: 1, base, ...cheat }, deployments: [] } }, NOW, P);
     expect(r.ok).toBe(false);
@@ -166,7 +172,7 @@ describe('save v23', () => {
     const s = createNewVillage(NOW, defaultData);
     expect(s.mastery).toEqual({});
     expect(s.hero).toEqual({});
-    expect(SAVE_VERSION).toBe(23);
+    expect(SAVE_VERSION).toBe(24);
   });
 
   it('a v22 save gains both, empty, and keeps everything else', () => {
@@ -175,7 +181,7 @@ describe('save v23', () => {
     delete s.hero;
     const file = { ...serialize(s as unknown as VillageState, NOW), version: 22 };
     const out = migrate(structuredClone(file), defaultData);
-    expect(out.version).toBe(23);
+    expect(out.version).toBe(SAVE_VERSION);
     expect(out.village.mastery).toEqual({});
     expect(out.village.hero).toEqual({});
     expect({ ...out.village, mastery: undefined, hero: undefined }).toEqual({ ...file.village, mastery: undefined, hero: undefined });

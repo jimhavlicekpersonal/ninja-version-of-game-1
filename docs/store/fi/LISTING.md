@@ -26,8 +26,15 @@ Johda ninjaklaania, rakenna piilotettu kylä vuorille, kouluta viittäkymmentä 
 **Hyökkää suunnitelmalla**
 
 - Soturit pääsevät sisään vain Soluttautumispisteistä. Tiedustele reitit ja niitä vartioivat tornit.
-- Heitä Savupommi, kun soturit astuvat tornin kantamalle, ja lähetä Sabotööri lamauttamaan puolustus.
+- Lähetä joukkosi sisään yhdellä käskyllä (yhdessä, pihtiliikkeenä tai jonossa; tankit ensin tai ryntäyksenä) tai sijoita jokainen soturi itse.
+- Heitä Savupommi, kun soturit astuvat tornin kantamalle, ja lähetä Sabotööri lamauttamaan puolustus. Klaanilinnan tasolta 7 alkaen Varjokapteeni kokoaa koko joukkosi kerran taistelussa.
+- Katso ryöstöretken jälkeen, mitä sama armeija olisi saanut aikaan toisen pisteen kautta.
 - Harkittu hyökkäys voittaa suuremman armeijan.
+
+**Puolusta kylääsi**
+
+- Jokaisesta kylääsi kohdistuneesta ryöstöretkestä saat raportin: mitä säilytit, montako tähteä estit ja mistä ryöstäjä murtautui sisään.
+- Testaa puolustuksesi simuloitua ryöstäjää vastaan ja harjoittele armeijaa vastaan, joka voitti sinut.
 
 **Pelatkaa yhdessä** (verkossa)
 
@@ -38,7 +45,12 @@ Johda ninjaklaania, rakenna piilotettu kylä vuorille, kouluta viittäkymmentä 
 
 **Varjokoetukset**
 
-- Loputon sarja linnakkeita. Jokainen taso palkitsee vain kerran ja on edellistä vaikeampi.
+- Loputon sarja linnakkeita. Jokainen taso palkitsee vain kerran ja on edellistä vaikeampi. Päivän harjoituksella voit harjoitella sillä aikaa, kun armeijasi koulutetaan.
+
+**Joka päivä jotain uutta**
+
+- Tapahtumat kiinteällä neljän viikon kalenterilla, viisi vuotuista juhlaa omalla linnoituksellaan ja ansaittavalla Linnan ulkoasulla, viikoittainen Kujanjuoksu ja päivän sopimus.
+- Saavutukset, Linnan sinetit, soturimestaruuden arvot ja pelaamalla ansaittavat ulkoasut.
 
 **Reilu peli**
 
@@ -46,7 +58,7 @@ Johda ninjaklaania, rakenna piilotettu kylä vuorille, kouluta viittäkymmentä 
 - Tietokoneen luomat vastustajat on aina merkitty sellaisiksi.
 - Kulutusrajat alle 18-vuotiaille pelaajille ja vain itse valitsemasi muistutukset (pois päältä, kunnes otat ne käyttöön).
 
-Kagemuran voi ladata ja sitä voi pelata ilmaiseksi: jokainen rakennus, soturi, Linnan taso ja pelitila on saavutettavissa maksamatta, eikä mainoksia ole. Jadea, premium-valuuttaa, ansaitaan pieniä määriä pelaamalla (saavutukset, liigat, päivän arkku ja Kausikäärön ilmainen polku), ja sitä voi myös ostaa. Osaa asioista myydään vain oikealla rahalla: Kausikäärön premium-polku (lisäpalkinnot, nopeampi rakentaminen kauden ajan ja Linnan ulkoasu ”Lyhtyjuhla”) sekä rajoitetun ajan Jade- ja resurssipaketit.
+Kagemuran voi ladata ja sitä voi pelata ilmaiseksi: jokainen rakennus, soturi, Linnan taso ja pelitila on saavutettavissa maksamatta, eikä mainoksia ole. Jadea, premium-valuuttaa, ansaitaan pieniä määriä pelaamalla (saavutukset, liigat, päivän arkku ja Kausikäärön ilmainen polku), ja sitä voi myös ostaa. Osaa asioista myydään vain oikealla rahalla: Kausikäärön premium-polku (lisäpalkinnot, nopeampi rakentaminen kauden ajan ja joka kausi vaihtuva Linnan ulkoasu) sekä rajoitetun ajan Jade- ja resurssipaketit.
 
 ## Julkaisulinkit
 

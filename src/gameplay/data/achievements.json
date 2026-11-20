@@ -238,12 +238,264 @@
         40
       ],
       [
-        60,
+        40,
         75
       ],
       [
-        100,
+        53,
         100
+      ]
+    ]
+  },
+  {
+    "id": "generous",
+    "name": "Generous Ally",
+    "text": "Donate {n} warriors to your Alliance",
+    "stat": "donations",
+    "tiers": [
+      [
+        25,
+        5
+      ],
+      [
+        150,
+        10
+      ],
+      [
+        600,
+        15
+      ],
+      [
+        2000,
+        20
+      ]
+    ]
+  },
+  {
+    "id": "avenger",
+    "name": "Score Settler",
+    "text": "Win {n} rematches against raiders",
+    "stat": "rematchesWon",
+    "tiers": [
+      [
+        3,
+        10
+      ],
+      [
+        15,
+        15
+      ],
+      [
+        50,
+        25
+      ]
+    ]
+  },
+  {
+    "id": "drill_sergeant",
+    "name": "Drill Sergeant",
+    "text": "Train {n} warriors",
+    "stat": "troopsTrained",
+    "tiers": [
+      [
+        300,
+        5
+      ],
+      [
+        2000,
+        10
+      ],
+      [
+        8000,
+        15
+      ],
+      [
+        25000,
+        20
+      ]
+    ]
+  },
+  {
+    "id": "wrecker",
+    "name": "Wrecker",
+    "text": "Destroy {n}% in raids (added up)",
+    "stat": "raidDestruction",
+    "tiers": [
+      [
+        2500,
+        5
+      ],
+      [
+        25000,
+        10
+      ],
+      [
+        100000,
+        15
+      ],
+      [
+        250000,
+        20
+      ]
+    ]
+  },
+  {
+    "id": "calendar_keeper",
+    "name": "Calendar Keeper",
+    "text": "Claim {n} calendar days",
+    "stat": "calendarDays",
+    "tiers": [
+      [
+        28,
+        10
+      ],
+      [
+        84,
+        15
+      ],
+      [
+        168,
+        25
+      ]
+    ]
+  },
+  {
+    "id": "full_roster",
+    "name": "Full Roster",
+    "text": "Unlock {n} warriors",
+    "stat": "warriorsUnlocked",
+    "tiers": [
+      [
+        10,
+        10
+      ],
+      [
+        25,
+        15
+      ],
+      [
+        50,
+        25
+      ]
+    ]
+  },
+  {
+    "id": "wardrobe",
+    "name": "Many Colours",
+    "text": "Own {n} Clan Keep looks",
+    "stat": "looksOwned",
+    "tiers": [
+      [
+        3,
+        10
+      ],
+      [
+        8,
+        15
+      ],
+      [
+        15,
+        25
+      ]
+    ]
+  },
+  {
+    "id": "tempered",
+    "name": "Tempered Steel",
+    "text": "Temper {n} kinds of tower",
+    "stat": "towerTypesTempered",
+    "tiers": [
+      [
+        1,
+        10
+      ],
+      [
+        2,
+        15
+      ]
+    ]
+  },
+  {
+    "id": "clean_sweeps",
+    "name": "Clean Sweeps",
+    "text": "Win {n} raids with three stars",
+    "stat": "raidsThreeStar",
+    "tiers": [
+      [
+        10,
+        5
+      ],
+      [
+        50,
+        10
+      ],
+      [
+        200,
+        15
+      ],
+      [
+        600,
+        20
+      ]
+    ]
+  },
+  {
+    "id": "bold_words",
+    "name": "Bold Words",
+    "text": "Reach {n} declared stakes",
+    "stat": "stakesWon",
+    "tiers": [
+      [
+        5,
+        10
+      ],
+      [
+        30,
+        15
+      ],
+      [
+        120,
+        25
+      ]
+    ]
+  },
+  {
+    "id": "gauntlet_runner",
+    "name": "Gauntlet Runner",
+    "text": "Complete {n} Gauntlet ladders",
+    "stat": "gauntletLadders",
+    "tiers": [
+      [
+        1,
+        10
+      ],
+      [
+        10,
+        15
+      ],
+      [
+        40,
+        25
+      ]
+    ]
+  },
+  {
+    "id": "unbroken",
+    "name": "Unbroken Walls",
+    "text": "Hold {n} raids against your village",
+    "stat": "defensesWon",
+    "tiers": [
+      [
+        5,
+        10
+      ],
+      [
+        25,
+        15
+      ],
+      [
+        100,
+        25
       ]
     ]
   }

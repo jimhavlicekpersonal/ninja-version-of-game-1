@@ -1,12 +1,13 @@
 /**
  * Clan Stipend (store.json `stipend`): a consumable, not a subscription. Buying
- * it adds `payments` daily Jade payments. One payment can be claimed per UTC day,
+ * it adds `payments` daily Jade payments. One payment can be claimed per day (the player's own day since P5-09),
  * only by opening the game and tapping Claim. A missed day loses nothing: the
  * stipend simply lasts until every payment is claimed, so there is no streak to
  * keep and no reminder to answer. It can be bought again once no payments are
  * left (a store delivery while some are left, e.g. bought on another device,
  * adds its payments on top).
  */
+import { localDayIndex } from './calendar';
 import { dayIndex } from './pass';
 import type { GameData, StipendState, VillageState } from './types';
 
@@ -30,7 +31,8 @@ export interface StipendStatus {
 export function stipendStatus(state: VillageState, now: number, data: GameData): StipendStatus {
   const def = data.store.stipend;
   const st = state.stipend ?? emptyStipend();
-  const day = dayIndex(now, data);
+  // P5-09: the player's own day once a claim was made on it; the old UTC day until then (`stipend.local`).
+  const day = st.local ? localDayIndex(state, now, data) : dayIndex(now, data);
   return { offered: Boolean(def), left: st.left, claimable: Boolean(def) && st.left > 0 && st.lastDay < day, jade: st.left > 0 ? nextPayment(st) : def?.jadePerPayment ?? 0, canBuy: Boolean(def) && st.left <= 0 };
 }
 
@@ -59,7 +61,9 @@ export function claimStipend(state: VillageState, now: number, data: GameData): 
   if (!status.claimable) return null;
   state.stipend.left -= 1;
   state.stipend.jade -= status.jade;
-  state.stipend.lastDay = dayIndex(now, data);
+  // Review M2: the switching claim stores the later of the UTC and the local day (no second payment the same UTC day).
+  state.stipend.lastDay = state.stipend.local ? localDayIndex(state, now, data) : Math.max(dayIndex(now, data), localDayIndex(state, now, data));
+  state.stipend.local = true;
   state.resources.moonstones += status.jade;
   return status.jade;
 }

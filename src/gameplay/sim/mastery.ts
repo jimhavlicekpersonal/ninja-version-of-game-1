@@ -1,6 +1,8 @@
 /**
- * Warrior Mastery (fresh-slate review B4; content batch 2026-11-14), behind `data.features.mastery`, which the
- * shipped data leaves off. The model is PROGRESSION_MODEL.md's: a warrior type earns
+ * Warrior Mastery (fresh-slate review B4; content batch 2026-11-14), behind `data.features.mastery`. P5-07
+ * (2026-11-18): live as ranks with no stat bonus (`progression.json` `mastery.maxBonus` 0, so `masteryBonuses` is
+ * empty and no battle setup carries mastery); experience is paid for raids and a Trial tier's first clear only.
+ * The model is PROGRESSION_MODEL.md's: a warrior type earns
  * `housing used x (1 + 2 x stars)` EXP per attack (`battleMasteryXp`); mastery level M needs
  * `50 x (1.35^M - 1) / 0.35` EXP in total (`masteryXpTotal`), and gives `0.30 x (1 - 0.92^M)` more HP and damage
  * (`masteryBonus`, never past +30%). EXP is kept in `VillageState.mastery` (save v23, empty until the feature is

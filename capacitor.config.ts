@@ -1,14 +1,17 @@
 import type { CapacitorConfig } from '@capacitor/cli';
+import { LEGACY_APP_ID } from './tools/release/app-id.mjs';
 
 /**
  * Native app wrapper for iOS and Android. The web build in dist/ is copied
  * into the native projects with `npm run cap:sync`.
- * appId is still the original app's id on purpose: changing it creates a new
- * App Store / Play listing. Change it only when you set up the new listing
- * (docs/SHIPPING.md).
+ * appId comes from APP_ID (PUB-05, P7-02), the same variable the Android build
+ * (`android/app/release.gradle`) and the signed release jobs read; unset, it is the
+ * original app's id. A new id means a new App Store / Play listing and Google Play
+ * never lets it change after the first upload: the owner chooses it (docs/SHIPPING.md
+ * section 6), and the signed jobs refuse the legacy id unless ALLOW_LEGACY_APP_ID=1.
  */
 const config: CapacitorConfig = {
-  appId: 'com.toadstoolkingdoms.app',
+  appId: process.env.APP_ID || LEGACY_APP_ID,
   appName: 'Kagemura',
   webDir: 'dist',
   backgroundColor: '#1f2a36',

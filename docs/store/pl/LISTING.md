@@ -26,8 +26,15 @@ Poprowadź klan ninja: zbuduj ukrytą wioskę w górach, wyszkol pięćdziesiąt
 **Planuj i atakuj**
 
 - Wojownicy wchodzą tylko przez Punkty Infiltracji. Zbadaj ścieżki i wieże, które ich pilnują.
-- Rzucaj Bomby Dymne, gdy wojownicy wchodzą w zasięg wież, i wysyłaj Sabotażystów, by unieruchomili obronę.
+- Wyślij oddział jednym rozkazem (razem, w kleszcze lub gęsiego; tanki przodem lub szturm) albo rozstaw każdego wojownika ręcznie.
+- Rzucaj Bomby Dymne, gdy wojownicy wchodzą w zasięg wież, i wysyłaj Sabotażystów, by unieruchomili obronę. Od poziomu 7 Twierdzy Klanu Kapitan Cienia raz na bitwę mobilizuje cały twój oddział.
+- Po najeździe sprawdź, co ta sama armia osiągnęłaby przez inny punkt.
 - Przemyślany atak pokonuje większą armię.
+
+**Broń swojej wioski**
+
+- Każdy najazd na twoją wioskę ma raport: co ocalało, ile gwiazdek udało się obronić i którędy wszedł najeźdźca.
+- Przetestuj obronę przeciw symulowanemu najeźdźcy i ćwicz przeciw armii, która cię pokonała.
 
 **Wspólna gra** (online)
 
@@ -38,7 +45,12 @@ Poprowadź klan ninja: zbuduj ukrytą wioskę w górach, wyszkol pięćdziesiąt
 
 **Próby Cienia**
 
-- Niekończąca się seria twierdz: każdy poziom jest trudniejszy od poprzedniego i daje nagrodę tylko raz.
+- Niekończąca się seria twierdz: każdy poziom jest trudniejszy od poprzedniego i daje nagrodę tylko raz. Codzienny trening pozwala ćwiczyć, gdy twoja armia się szkoli.
+
+**Codziennie coś nowego**
+
+- Wydarzenia w stałym czterotygodniowym kalendarzu, pięć dorocznych świąt z fortecą i wyglądem Twierdzy do zdobycia, cotygodniowa Rękawica i codzienny kontrakt.
+- Osiągnięcia, pieczęcie Twierdzy, rangi mistrzostwa wojowników i wyglądy zdobywane w grze.
 
 **Uczciwa gra**
 
@@ -46,7 +58,7 @@ Poprowadź klan ninja: zbuduj ukrytą wioskę w górach, wyszkol pięćdziesiąt
 - Przeciwnicy wygenerowani komputerowo są zawsze tak oznaczeni.
 - Gracze poniżej 18 lat mają limit wydatków; powiadomienia są tylko te, które wybierzesz, i pozostają wyłączone, dopóki ich nie włączysz.
 
-Kagemura można pobrać i grać za darmo. Wszystkie budynki, wojownicy, poziomy Twierdzy i tryby gry są dostępne bez płacenia, a reklam nie ma. Jadeit, walutę premium, zdobywa się po trochu w grze (osiągnięcia, ligi, codzienna skrzynia i darmowa ścieżka Zwoju Sezonu), można go też kupić. Niektóre rzeczy są dostępne tylko za prawdziwe pieniądze: ścieżka premium Zwoju Sezonu (dodatkowe nagrody, szybsza budowa przez cały sezon i wygląd Twierdzy „Święto Lampionów”) oraz ograniczone czasowo pakiety Jadeitu i zasobów.
+Kagemura można pobrać i grać za darmo. Wszystkie budynki, wojownicy, poziomy Twierdzy i tryby gry są dostępne bez płacenia, a reklam nie ma. Jadeit, walutę premium, zdobywa się po trochu w grze (osiągnięcia, ligi, codzienna skrzynia i darmowa ścieżka Zwoju Sezonu), można go też kupić. Niektóre rzeczy są dostępne tylko za prawdziwe pieniądze: ścieżka premium Zwoju Sezonu (dodatkowe nagrody, szybsza budowa przez cały sezon i wygląd Twierdzy zmieniający się co sezon) oraz ograniczone czasowo pakiety Jadeitu i zasobów.
 
 ## Linki do wydania
 

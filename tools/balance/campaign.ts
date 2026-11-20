@@ -23,6 +23,18 @@ export interface CampaignSpec {
   opts: ModelOptions;
   casual: boolean;
   maxDays: number;
+  /**
+   * P2-04 (DEF-03): the model player cannot design a base, so this campaign's village is raided on a generated
+   * layout for its Keep (`raids.labAutoLayout` and `labWalls`, set on a data clone for this campaign only; live data
+   * never sets them, `tests/gameplay/balance/campaign-gates.test.ts` checks).
+   */
+  labLayout?: boolean;
+}
+
+/** The data a campaign plays: the live data, or for `labLayout` a clone with the lab's layout flags. */
+export function campaignData(spec: CampaignSpec, data: GameData = defaultData): GameData {
+  if (!spec.labLayout) return data;
+  return { ...data, raids: { ...data.raids, labAutoLayout: true, labWalls: true } };
 }
 
 /** The campaigns `npm run balance:campaign` plays (and the gates read). */
@@ -34,6 +46,13 @@ export const CAMPAIGNS: CampaignSpec[] = [
   { id: 'regular_rusher', name: 'Regular rusher (4 sessions a day, never builds defenses or traps)', opts: { raidsPerSession: 2, policy: 'rusher' }, casual: false, maxDays: 220 },
   { id: 'regular_sandbagger', name: 'Regular sandbagger (4 sessions a day, research held at Keep - 1.4 to meet weaker bases)', opts: { raidsPerSession: 2, policy: 'sandbagger' }, casual: false, maxDays: 220 },
   { id: 'casual_explorer', name: 'Casual (one visit a day, explorer: newest warrior of each family, Trials and tasks)', opts: { raidsPerSession: 2, policy: 'explorer', engaged: true }, casual: true, maxDays: 400 },
+  // P2-04 (DEF-03): the campaign that sees defense: the fortress policy (keeps its counters within two levels of
+  // the Keep's caps before raising the Keep) on a real, walled layout.
+  // P3-02 (PAC-02, PAC-08): the player the game allows, reported beside the conservative gated baseline: the casual
+  // player who hires the third artisan with the starting Jade, and one who also queues the next army.
+  { id: 'casual_hires', name: 'Casual who hires the third artisan with the starting Jade (one visit a day, suggested army, Trials and tasks)', opts: { raidsPerSession: 2, engaged: true, hireBuilders: true }, casual: true, maxDays: 400 },
+  { id: 'casual_queues', name: 'Casual who hires the third artisan and queues the next army (one visit a day, suggested army, Trials and tasks)', opts: { raidsPerSession: 2, engaged: true, hireBuilders: true, queueArmy: true }, casual: true, maxDays: 400 },
+  { id: 'regular_fortress', name: 'Regular fortress (4 sessions a day, counters within 2 levels of the caps before the Keep, walled generated layout)', opts: { raidsPerSession: 2, policy: 'fortress', fortressGap: 2 }, casual: false, maxDays: 220, labLayout: true },
 ];
 
 export interface KeepRow {
@@ -71,7 +90,8 @@ export interface CampaignResult {
   totals: { looted: number; stolen: number; defenseRewards: number };
 }
 
-export function runCampaign(spec: CampaignSpec, data: GameData = defaultData): CampaignResult {
+export function runCampaign(spec: CampaignSpec, live: GameData = defaultData): CampaignResult {
+  const data = campaignData(spec, live);
   const p = new ModelPlayer(data, spec.opts);
   activeHour(p, 60, 2);
   let days = 0;
@@ -167,18 +187,27 @@ export function campaignMarkdown(results: CampaignResult[]): string {
     }
     L.push('');
   }
-  const reg = results.find((r) => r.id === 'regular');
-  const def = results.find((r) => r.id === 'regular_defender');
-  if (reg && def) {
-    L.push('## Is defense worth building? (economy E26)', '');
-    L.push('The same regular player with and without the defender policy, at the Keeps both played.', '');
-    L.push('| Keep | Stolen per raid (raider) | Stolen per raid (defender) | Held (raider) | Held (defender) |', '|---|---|---|---|---|');
-    for (const a of reg.byKeep) {
-      const b = def.byKeep.find((x) => x.keep === a.keep);
-      if (!b || !a.defenses || !b.defenses) continue;
-      L.push(`| ${a.keep} | ${Math.round(a.stolen).toLocaleString('en-US')} | ${Math.round(b.stolen).toLocaleString('en-US')} | ${Math.round(a.held * 100)}% | ${Math.round(b.held * 100)}% |`);
+  // P2-04 (DEF-03): what defense buys, by policy. The fortress plays a walled generated layout (`labLayout`), the
+  // others the model's own placement; all four play the same raids against generated bases.
+  const pols = ['regular_rusher', 'regular', 'regular_defender', 'regular_fortress'].map((id) => results.find((r) => r.id === id)).filter((r): r is CampaignResult => Boolean(r));
+  if (pols.length >= 2) {
+    L.push('## Is defense worth building? (economy E26, defense DEF-03)', '');
+    L.push('The regular player under four policies: the rusher never builds defenses, the regular raider builds them late, the defender builds the counters before collectors, and the fortress keeps every counter within two levels of the caps before raising the Keep, on a walled generated layout (the model player cannot design a base). Bot raids only: with a server configured, a village is not raided by bots yet (`docs/backend/REQUESTS.md`, P2-12).', '');
+    L.push(`| Keep | ${pols.map((r) => `Held (${r.id.replace('regular_', '')})`).join(' | ')} | ${pols.map((r) => `Stolen per raid (${r.id.replace('regular_', '')})`).join(' | ')} |`, `|---|${pols.map(() => '---|').join('')}${pols.map(() => '---|').join('')}`);
+    for (let k = 1; k <= 15; k++) {
+      const cells = pols.map((r) => r.byKeep.find((x) => x.keep === k));
+      if (cells.every((c) => !c?.defenses)) continue;
+      L.push(`| ${k} | ${cells.map((c) => (c?.defenses ? `${Math.round(c.held * 100)}%` : '–')).join(' | ')} | ${cells.map((c) => (c?.defenses ? Math.round(c.stolen).toLocaleString('en-US') : '–')).join(' | ')} |`);
     }
-    L.push('', `Keep 15 reached on day ${reg.reached[15] ?? '–'} (raider) and ${def.reached[15] ?? '–'} (defender).`, '');
+    L.push('', '| Policy | Keep 12 (day) | Keep 15 (day) | Raids against the village | Held, Keeps 9-15 | Stolen ÷ looted | Paid for held raids |', '|---|---|---|---|---|---|---|');
+    for (const r of pols) {
+      const late = r.byKeep.filter((x) => x.keep >= 9 && x.defenses);
+      const n = late.reduce((a, x) => a + x.defenses, 0);
+      const held = n ? late.reduce((a, x) => a + x.held * x.defenses, 0) / n : 0;
+      const ratio = r.totals.looted ? r.totals.stolen / r.totals.looted : 0;
+      L.push(`| ${r.id} | ${r.reached[12] ?? '–'} | ${r.reached[15] ?? '–'} | ${r.defenses} | ${Math.round(held * 100)}% | ${ratio.toFixed(2)} | ${Math.round(r.totals.defenseRewards).toLocaleString('en-US')} |`);
+    }
+    L.push('');
   }
   return L.join('\n') + '\n';
 }

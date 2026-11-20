@@ -26,8 +26,15 @@ Duo agbụrụ ninja, wuo obodo zoro ezo n'ugwu, zụọ ụdị ndị dike iri 
 **Jiri atụmatụ wakpo**
 
 - Ndị dike na-abanye naanị site n'Ebe Mbanye nke obodo: nyochaa ụzọ ndị ahụ na ụlọ nche elu na-eche ha.
-- Tụba Bọmbụ Anwụrụ mgbe ndị dike gị na-abanye n'ebe ụlọ nche elu ruru, zipụkwa Onye Mmebi Nzuzo ka ọ kpọchie ihe nchekwa.
+- Jiri otu iwu zipụ otu gị (ọnụ, akụkụ abụọ ma ọ bụ otu ahịrị; ndị ike buru ụzọ ma ọ bụ ọsọ), ma ọ bụ jiri aka gị tọọ dike ọ bụla.
+- Tụba Bọmbụ Anwụrụ mgbe ndị dike gị na-abanye n'ebe ụlọ nche elu ruru, zipụkwa Onye Mmebi Nzuzo ka ọ kpọchie ihe nchekwa. Site n'ọkwa Obi Agbụrụ 7, Ọchịagha Onyinyo na-akpọkọta otu gị niile otu ugboro n'agha ọ bụla.
+- Mgbe mwakpo gasịrị, hụ ihe otu usuu agha ahụ gaara eme site n'ebe ọzọ.
 - Mwakpo e mere atụmatụ ya nke ọma na-emeri usuu agha buru ibu.
+
+**Chekwaa obodo gị**
+
+- Mwakpo ọ bụla e mere obodo gị nwere akụkọ: ihe ị chekwara, kpakpando a gbochiri, na ebe onye mwakpo ahụ si banye.
+- Nwalee ihe nchekwa gị megide onye mwakpo nṅomi, ma mee mmega megide usuu agha meriri gị.
 
 **Egwuregwu ọnụ** (n'ịntanetị)
 
@@ -38,7 +45,12 @@ Duo agbụrụ ninja, wuo obodo zoro ezo n'ugwu, zụọ ụdị ndị dike iri 
 
 **Ule Onyinyo**
 
-- Usoro ebe ewusiri ike na-enweghị njedebe. Ọkwa ọ bụla na-akwụ ụgwọ naanị otu ugboro, ọ na-esikwu ike.
+- Usoro ebe ewusiri ike na-enweghị njedebe. Ọkwa ọ bụla na-akwụ ụgwọ naanị otu ugboro, ọ na-esikwu ike. Mmega kwa ụbọchị na-enye gị ohere ime mmega mgbe usuu agha gị na-azụ.
+
+**Ihe ọhụrụ kwa ụbọchị**
+
+- Mmemme na kalenda izu anọ a kwadoro, mmemme ise kwa afọ nwere ebe ike na ọdịdị Obi ị ga-enweta, Ụzọ Ọnwụnwa kwa izu, na nkwekọrịta kwa ụbọchị.
+- Ihe ịga nke ọma, akara Obi, ogo ọkaka ndị dike na ọdịdị ị na-enweta site n'igwu egwuregwu.
 
 **Egwuregwu ziri ezi**
 
@@ -46,7 +58,7 @@ Duo agbụrụ ninja, wuo obodo zoro ezo n'ugwu, zụọ ụdị ndị dike iri 
 - A na-akpọ ndị iro kọmputa mere aha ha mgbe niile.
 - Oke mmefu maka ndị egwuregwu na-erubeghị afọ 18, na ihe ncheta ị họọrọ (ha na-anọ n'agbanyụ ruo mgbe i gbanyere ha).
 
-Kagemura bụ n'efu ibudata na igwu. Ụlọ ọ bụla, dike ọ bụla, ọkwa Obi ọ bụla na ụdị egwuregwu ọ bụla nwere ike iru n'enweghị ịkwụ ụgwọ, ọ nweghịkwa mgbasa ozi. Jed, ego pụrụ iche, na-enweta ntakịrị ntakịrị site n'igwu egwuregwu (ihe ịga nke ọma, otu, igbe kwa ụbọchị na ụzọ efu nke Mpịakọta Oge), a pụkwara ịzụta ya. Ụfọdụ ihe a na-ere naanị n'ezigbo ego: ụzọ pụrụ iche nke Mpịakọta Oge (ihe nrite ndị ọzọ, iwu ụlọ ọsọ ọsọ n'oge ahụ niile na ọdịdị Obi "Mmemme Oriọna") na ngwugwu Jed na akụ dị ruo oge a kara aka.
+Kagemura bụ n'efu ibudata na igwu. Ụlọ ọ bụla, dike ọ bụla, ọkwa Obi ọ bụla na ụdị egwuregwu ọ bụla nwere ike iru n'enweghị ịkwụ ụgwọ, ọ nweghịkwa mgbasa ozi. Jed, ego pụrụ iche, na-enweta ntakịrị ntakịrị site n'igwu egwuregwu (ihe ịga nke ọma, otu, igbe kwa ụbọchị na ụzọ efu nke Mpịakọta Oge), a pụkwara ịzụta ya. Ụfọdụ ihe a na-ere naanị n'ezigbo ego: ụzọ pụrụ iche nke Mpịakọta Oge (ihe nrite ndị ọzọ, iwu ụlọ ọsọ ọsọ n'oge ahụ na ọdịdị Obi na-agbanwe kwa oge) na ngwugwu Jed na akụ dị ruo oge a kara aka.
 
 ## Njikọ mwepụta
 

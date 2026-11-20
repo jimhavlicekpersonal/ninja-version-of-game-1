@@ -28,7 +28,8 @@ export function auraStrength(sim: BattleSim, target: SimTroop, aura: WarriorKit[
   let value = 0;
   for (const index of sources) {
     const source = sim.troops[index];
-    if (source.dead) continue;
+    // Phase 4 review #10: a Rally lasts its 15 seconds, as its card says, even if the Captain falls meanwhile.
+    if (source.dead && !(aura === 'rally' && (source.rallyUntil ?? 0) > sim.tick)) continue;
     const kit = kitOf(sim, source);
     if (aura === 'splash' && origin && source.id !== target.id) {
       const behind = (target.x - source.x) * (origin.x - source.x) + (target.y - source.y) * (origin.y - source.y) < 0;
@@ -165,6 +166,31 @@ export function stepWarriorEffects(sim: BattleSim, actions: Actions): void {
 }
 
 /** Support, path opening and movement abilities happen before normal targeting/attacking. */
+/**
+ * P4-01 (CMB-01, SIM_RULES 8): a support warrior in position with its allies strikes the nearest non-wall building
+ * within its own range, at `warriorRules.supportStrike` of its damage (absent or 0: it never strikes, as before).
+ * Its cooldown is the usual one; nearest by distance to the building's footprint, ties by index (deterministic).
+ */
+function supportStrike(sim: BattleSim, t: SimTroop, range: number, interval: number, actions: Actions): void {
+  const share = sim.data.battle.warriorRules.supportStrike ?? 0;
+  if (!(share > 0) || t.cooldown > 0) return;
+  let best = -1;
+  let bestD = 0;
+  sim.buildings.forEach((b, i) => {
+    // Review #9: never a trap (normal targeting and splash never pick one either).
+    if (b.destroyed || b.kind === 'hedge' || b.kind === 'trap') return;
+    const d = distToRect(t.x, t.y, shape(b));
+    if (d <= range && (best < 0 || d < bestD)) {
+      best = i;
+      bestD = d;
+    }
+  });
+  if (best < 0) return;
+  t.cooldown = interval + Math.min(0, t.cooldown); // review #3: haste's overshoot carries
+  t.attacking = true;
+  resolveWarriorHit(sim, t, best, attackDamage(sim, t, sim.buildings[best]) * share, actions);
+}
+
 export function beforeWarriorAction(sim: BattleSim, t: SimTroop, actions: Actions): boolean {
   const def = troopDef(sim.data, t.type);
   if (!def.kit || t.summoned) return false;
@@ -243,6 +269,7 @@ export function beforeWarriorAction(sim: BattleSim, t: SimTroop, actions: Action
   if (t.slowTicks > 0) t.slowTicks--;
   if (distance(t.x, t.y, candidates[0].x, candidates[0].y) <= radius / 2) {
     t.path = null;
+    supportStrike(sim, t, def.range, def.attackIntervalTicks, actions);
     return true;
   }
   const n = sim.grid.size;
@@ -278,7 +305,7 @@ export function beforeWarriorAction(sim: BattleSim, t: SimTroop, actions: Action
     if (hi >= 0) {
       t.attacking = true;
       if (t.cooldown <= 0) {
-        t.cooldown = def.attackIntervalTicks;
+        t.cooldown = def.attackIntervalTicks + Math.min(0, t.cooldown); // review #3: haste's overshoot carries
         resolveWarriorHit(sim, t, hi, attackDamage(sim, t, sim.buildings[hi]), actions);
       }
       return true;
@@ -351,15 +378,6 @@ export function resolveWarriorHit(sim: BattleSim, t: SimTroop, bi: number, damag
     if (kit.burnTicks) effect(sim, { ...base, kind: 'burn', damage: t.damage * (kit.burnFraction ?? 0), endsTick: sim.tick + kit.burnTicks });
     if (sim.previewKinds) previewHit(sim, t, bi, damage, actions);
     else actions.damageBuilding(sim, bi, damage);
-    // Rules 10 (lab): a siege warrior's breach. When it brings a wall down, the walls within `breachRadius`
-    // fall with it, so the opening is wide enough for the whole army.
-    if (kit.breachRadius && target.kind === 'hedge' && target.destroyed) {
-      sim.buildings.forEach((b, i) => {
-        if (b.destroyed || b.kind !== 'hedge' || distance(cx, cy, b.x + b.size / 2, b.y + b.size / 2) > (kit.breachRadius ?? 0)) return;
-        actions.damageBuilding(sim, i, b.hp + 1);
-      });
-      sim.events.push({ k: 'ability', troop: t.id, what: 'breach' });
-    }
   }
   let hits = 0;
   sim.buildings.forEach((b, i) => {

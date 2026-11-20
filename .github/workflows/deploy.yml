@@ -22,7 +22,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with:
-          node-version: 24
+          node-version-file: .node-version
           cache: npm
       - run: npm ci
       - run: npm run lint
@@ -32,6 +32,12 @@ jobs:
         continue-on-error: true
         run: npm audit --omit=dev --audit-level=high
       - run: npm test
+      # PUB-04 (P7-01): what a store build would still need, as a notice on the web build (never fails it).
+      - run: npm run release:preflight
+      # PUB-02 / XPL-07: the generated-base, matchmaking and bot-plan pins again with V8's optimising compilers
+      # off. A difference between the two runs is an engine fault: the server must not run on that Node.
+      - name: Determinism pins without optimising compilers
+        run: npx vitest run tests/gameplay/battle/matchmaking-pins.test.ts --execArgv=--no-turbofan --execArgv=--no-maglev
       # The model-player campaigns and the battle timing check (tests/slow.ts), outside the default suite.
       - run: npm run test:slow
       - run: npm run typecheck:server
@@ -39,6 +45,8 @@ jobs:
         env:
           # Set this repository variable to your PvP server's URL to turn on online play.
           VITE_SERVER_URL: ${{ vars.VITE_SERVER_URL }}
+          # P7-09: the game's public address (https://...): absolute og:image, twitter:image and og:url for link previews.
+          VITE_PUBLIC_URL: ${{ vars.VITE_PUBLIC_URL }}
           # Store listings for "Update Kagemura" (roadmap step 75); set once the listings exist.
           VITE_APP_STORE_URL: ${{ vars.VITE_APP_STORE_URL }}
           VITE_PLAY_STORE_URL: ${{ vars.VITE_PLAY_STORE_URL }}
@@ -47,6 +55,8 @@ jobs:
           VITE_SENTRY_DSN: ${{ vars.VITE_SENTRY_DSN }}
           VITE_GOOGLE_CLIENT_ID: ${{ vars.VITE_GOOGLE_CLIENT_ID }}
           VITE_APPLE_SERVICES_ID: ${{ vars.VITE_APPLE_SERVICES_ID }}
+          # P7-11 (PUB-14): local-day statistics; the owner's switch (repository variable VITE_STATS_TZ=1), off by default.
+          VITE_STATS_TZ: ${{ vars.VITE_STATS_TZ || '0' }}
       - name: Server first (roadmap step 74)
         if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
         run: node tools/release/check-server-rules.mjs
@@ -83,11 +93,11 @@ jobs:
           fetch-depth: 0
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with:
-          node-version: 24
+          node-version-file: .node-version
           cache: npm
       - run: npm ci
       - run: npm run typecheck:server
-      - run: npx vitest run tests/backend/server tests/backend/net tests/backend/contract
+      - run: npx vitest run --maxWorkers=2 tests/backend/server tests/backend/net tests/backend/contract
       - run: npm run server:build
       # The test suites above migrate only their own throwaway schemas, so the
       # database's default schema is still empty here. The built server refuses
@@ -144,7 +154,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with:
-          node-version: 24
+          node-version-file: .node-version
       - id: deployment
         uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5
       - name: Verify the published game and language assets

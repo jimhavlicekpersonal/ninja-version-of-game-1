@@ -1,7 +1,7 @@
 import { buildingDef, levelDef, maxDefinedLevel } from './data';
 import { footprint, rectsOverlap } from './grid';
 import type { GameData, VillageState } from './types';
-import { RESOURCE_KINDS } from './types';
+import { RESOURCE_KINDS, STAT_KEYS } from './types';
 import { mixSeed } from './rng';
 import { scatterObstacles } from './obstacles';
 import { normalizeTemper, validTemper } from './battle/temper';
@@ -13,7 +13,7 @@ import { emptyNet } from './net';
 import { emptyDaily } from './daily';
 import type { GameData as GD } from './types';
 
-export const SAVE_VERSION = 23;
+export const SAVE_VERSION = 24;
 const EXPORT_PREFIX = 'TK1';
 
 // Values the save migrations fill in (quality Q20). They describe what each old format meant and never change.
@@ -182,7 +182,7 @@ export function migrate(raw: unknown, data?: GD): SaveFile {
     // baselines. Raids faced starts at the defenses still in the log, so a village that has not
     // been raided yet still gets the gentler first raids (raids.newPlayerRaids).
     v.stipend = v.stipend ?? { left: 0, lastDay: -1 };
-    v.goalEvent = v.goalEvent ?? null;
+    v.goalEvent = v.goalEvent ?? null; // v24 turns it into `goalEvents`
     const log = Array.isArray(v.defenseLog) ? (v.defenseLog as { result?: { stars?: number } }[]) : [];
     const tasks = v.tasks as { dayBaseline?: Record<string, number>; weekBaseline?: Record<string, number> } | undefined;
     const stats = v.stats as Record<string, number> | undefined;
@@ -241,10 +241,42 @@ export function migrate(raw: unknown, data?: GD): SaveFile {
     if (!v.mastery || typeof v.mastery !== 'object' || Array.isArray(v.mastery)) v.mastery = {};
     if (!v.hero || typeof v.hero !== 'object' || Array.isArray(v.hero)) v.hero = {};
   }
+  if (out.version < 24 && v && typeof v === 'object') {
+    // v23 -> v24 (the 2026-11-16 replayability pass, docs/audit/understand-2026-11-16/PROGRESS.md): the counter
+    // of timed upgrades (P1-08), the Scroll rollover's record (`pass.lastSeason`, P1-01, written when a season
+    // ends) and the time the Keep reached its level (`keepReachedAt`, P1-21, written at the next Keep upgrade); the
+    // daily drill's last paid day (`drill`, P3-07, written by the first drill) and its stat (`drillsDone`, by repairStats).
+    // Timed upgrades start at the finished upgrades already counted, so a running weekly task is not reset.
+    const stats = v.stats as Record<string, number> | undefined;
+    if (stats && typeof stats === 'object' && stats.timedUpgradesDone === undefined) stats.timedUpgradesDone = stats.upgradesDone ?? 0;
+  }
+  // P5-01: goal progress per occurrence (the one slot, reset on every key change, let two overlapping goal events pay
+  // a ladder again on each switch). On every load (review M4: saves of this branch were already v24 before the list
+  // existed): the stored occurrence carries over with its claimed steps.
+  if (v && typeof v === 'object') {
+    if (!Array.isArray(v.goalEvents)) v.goalEvents = v.goalEvent && typeof v.goalEvent === 'object' ? [v.goalEvent] : [];
+    delete v.goalEvent;
+  }
+  repairStats(v);
   repairTrainingQueue(v);
   if (data) repairTempers(v, data);
   out.version = SAVE_VERSION;
   return out;
+}
+
+/**
+ * Every counter in `STAT_KEYS`, in the lifetime stats and both task baselines, on every load (save v24). A counter
+ * added later in the pass needs no new save step: a missing one starts at 0, and a missing baseline at the
+ * lifetime value (so a running task does not count what happened before the counter existed). Mutates.
+ */
+function repairStats(v: Record<string, unknown>): void {
+  const stats = v.stats as Record<string, number> | undefined;
+  if (!stats || typeof stats !== 'object') return;
+  const tasks = v.tasks as { dayBaseline?: Record<string, number>; weekBaseline?: Record<string, number> } | undefined;
+  for (const k of STAT_KEYS) {
+    if (!Number.isFinite(stats[k])) stats[k] = 0;
+    for (const b of [tasks?.dayBaseline, tasks?.weekBaseline]) if (b && typeof b === 'object' && !Number.isFinite(b[k])) b[k] = stats[k];
+  }
 }
 
 /**
@@ -279,11 +311,18 @@ export function validateVillage(v: VillageState, data: GameData): string[] {
   const problems: string[] = [];
   if (!v || typeof v !== 'object') return ['village missing'];
   if (!Number.isFinite(v.createdAt) || !Number.isFinite(v.lastSeenAt)) problems.push('bad timestamps');
-  if (!v.resources) problems.push('resources missing');
-  if (!v.trials || !Number.isInteger(v.trials.best) || v.trials.best < 0) problems.push('bad trials');
   // Jade may be negative: a refunded purchase whose Jade was already spent (a debt, re-audit).
   // Save v17 (ledger audit A5): a refunded purchase leaves a debt (a negative balance) in any resource.
+  // (The `else` once hung on the trials check, so a village without resources threw instead of failing.)
+  if (!v.resources || typeof v.resources !== 'object') problems.push('resources missing');
   else for (const k of RESOURCE_KINDS) if (!Number.isFinite(v.resources[k])) problems.push(`bad ${k}`);
+  if (!v.trials || !Number.isInteger(v.trials.best) || v.trials.best < 0) problems.push('bad trials');
+  // Save v24 (P5-01): goal progress per occurrence.
+  if (!Array.isArray(v.goalEvents) || !v.goalEvents.every((g) => g && typeof g.key === 'string' && Array.isArray(g.claimed) && g.claimed.every((i) => Number.isInteger(i)))) problems.push('bad goalEvents');
+  // Save v24 (P5-08): the sealed Keeps.
+  if (v.seals !== undefined && (!Array.isArray(v.seals) || !v.seals.every((k) => Number.isInteger(k) && k >= 1))) problems.push('bad seals');
+  // Save v24 (P3-07): the daily drill's last paid local day.
+  if (v.drill !== undefined && (!v.drill || typeof v.drill !== 'object' || !Number.isInteger(v.drill.day))) problems.push('bad drill');
   if (!Array.isArray(v.buildings)) return [...problems, 'buildings missing'];
   const map = data.economy.mapSize;
   const ids = new Set<string>();
@@ -317,7 +356,9 @@ export function validateVillage(v: VillageState, data: GameData): string[] {
   if (!Array.isArray(v.battleLog)) problems.push('battle log missing');
   if (!Number.isFinite(v.seed) || !Number.isFinite(v.nextSeed)) problems.push('bad seed');
   if (!Number.isFinite(v.trophies) || v.trophies < 0) problems.push('bad trophies');
-  if (!Number.isFinite(v.shieldUntil) || !Number.isFinite(v.season) || !Number.isFinite(v.raidCheckAt)) problems.push('bad rank fields');
+  if (!Number.isFinite(v.shieldUntil) || !Number.isInteger(v.season) || v.season < 0 || !Number.isFinite(v.raidCheckAt)) problems.push('bad rank fields');
+  // XPL-03: the war week is a whole number (a forged one only ever pays the last `settleWeeksMax` wars).
+  if (v.grove && v.grove.settledWeek !== undefined && !Number.isInteger(v.grove.settledWeek)) problems.push('bad alliance war week');
   if (!Array.isArray(v.defenseLog)) problems.push('defense log missing');
   if (!v.stats || !v.pass || !v.tasks || !v.cosmetics || !v.offers || !v.profile || !Array.isArray(v.purchases)) problems.push('economy fields missing');
   if (!v.grove || !Array.isArray(v.grove.chat)) problems.push('alliance missing');

@@ -1,0 +1,398 @@
+{
+ "problems": [
+  {
+   "id": "RET-01",
+   "title": "Live events are four kinds on a 14-day loop, with nothing dated or seasonal",
+   "severity": "high",
+   "verified": "measured",
+   "evidence": "src/gameplay/data/events.json:3-62: 5 slots, 4 distinct names and effects (collect +30%, raid loot +20% twice, training -25%, Bounty Hunt), periodDays 14. Script over the next 365 days: 26-27 occurrences of each, and an event is running 67.9% of all hours; the only playable one runs 72 of every 336 h. EventsDef (src/gameplay/sim/types.ts:1114-1119) cannot express a dated window, and the server can only retime built-in ids (src/backend/net/eventSchedule.ts:66). The panel says 'repeats every two weeks' (locales/en/messages.json:943).",
+   "whyItMatters": "A regular player has seen every event by day 14 and the whole schedule by day 28. By day 45 nothing on the calendar is new, and 'limited-time' means little when something runs two hours in three.",
+   "proposedFix": "Data: make events.json a 28-day loop of 9-10 named windows built from the three existing effects at different sizes and lengths, plus a second goal entry (goal.power 1.2, its own ladder). Code: optional events.dated[] (month-day start, durationHours, effect or goal) merged in sim/events.ts eventsBetween (key id#year), EventsDef in types.ts, the validator in src/backend/net/eventSchedule.ts, docs/PROTOCOL.md. Reword messages.json:943. Then npm run balance:campaign (events is in its fingerprint, tools/balance/campaign.ts:126).",
+   "fixCost": "L",
+   "touches": [
+    "BALANCE_GATES",
+    "I18N",
+    "SERVER",
+    "PROTOCOL",
+    "UI",
+    "DOCS"
+   ],
+   "needsOwner": false
+  },
+  {
+   "id": "RET-02",
+   "title": "Season Scroll is finished in 19 of 30 days, and tasks then pay nothing",
+   "severity": "high",
+   "verified": "measured",
+   "evidence": "pass.json: 30 tiers x 300 points. passPointsPerDay = 471.4 (sim/pass.ts:35-37), so 9,000 points take 19.1 days; 36% of earnable points (5,143 of 14,143) have no tier, and 75% task completion still reaches tier 30. After tier 30, claimTask keeps adding points (sim/village.ts:1322-1328) but unlockedTier is capped (pass.ts:30-32): the '+100' button changes nothing. A task pays points only (event grants: {}).",
+   "whyItMatters": "The most engaged players lose the daily-task loop for the last third of every month.",
+   "proposedFix": "pass.json: add bonus { everyPoints: 300, reward: { acorns: 6000, dew: 6000 }, maxPerSeason: 17 } (Keep-scaled, no Jade). In claimTask (village.ts:1317) pay each newly crossed bonus, floor((points - 9000) / 300), through grantResources and report it in the reward event: no new state and no new command. Add a 'Bonus' row to economyUi.openPass (economyUi.ts:486); leave passPremiumValue alone. Re-run the campaign.",
+   "fixCost": "M",
+   "touches": [
+    "PLAYER_COMMANDS",
+    "SERVER",
+    "I18N",
+    "UI",
+    "BALANCE_GATES"
+   ],
+   "needsOwner": false
+  },
+  {
+   "id": "RET-03",
+   "title": "Unlocked but unclaimed Scroll tiers are discarded at the season end",
+   "severity": "high",
+   "verified": "reproduced",
+   "evidence": "sim/pass.ts:306 resets state.pass with no grant. Reproduced: 3,000 points, 10 tiers unlocked, none claimed; advance past passSeasonEndsAt gives season 10 -> 11, points 0, resources unchanged. Paid premium tiers are dropped the same way. The panel says only 'Season ends in {time}. Complete tasks to earn points and unlock tiers.' (locales/en/messages.json:1376); the rail badge (hud.ts:590) counts claimable tiers but nothing warns of the loss.",
+   "whyItMatters": "Earned rewards, and for buyers paid ones, vanish silently. That breaks the project's own honesty rule and is a refund and store-review risk.",
+   "proposedFix": "In advance (village.ts:372-379), before rollPeriods moves the season, grant every unlocked unclaimed free tier (and premium ones while premium) with grantReward at passTierKeep; add premium grants to the purchase's premium record as claimTier does (village.ts:1342-1349); keep { season, granted, overflow } in a new optional pass.lastSeason for the welcome-back summary (save migration: absent).",
+   "fixCost": "M",
+   "touches": [
+    "SAVE_VERSION",
+    "PLAYER_COMMANDS",
+    "SERVER",
+    "I18N",
+    "UI"
+   ],
+   "needsOwner": false
+  },
+  {
+   "id": "RET-04",
+   "title": "The paid track gives the same look every season; a returning buyer's tier 15 is empty",
+   "severity": "high",
+   "verified": "reproduced",
+   "evidence": "pass.json tier 15 premium is skin lantern_elder, the only Scroll look (cosmetics.json:63-69). Reproduced: premium, 15 tiers, look already owned: claimTier returns ok with grants {} (grantReward, village.ts:1258-1262, has no fallback, unlike the calendar's repeatJade, calendar.ts:67-70). passPremiumValue still returns skins ['lantern_elder'] for that owner (pass.ts:87-88), and the pitch names the look (messages.json:716).",
+   "whyItMatters": "A second $4.99 purchase is advertised with something the buyer already owns, and season 2 offers nothing to look forward to.",
+   "proposedFix": "pass.json: seasonSkins (6-12 ids, chosen by passSeason % n) and repeatJade for a look already owned. cosmetics.json: the new passOnly looks (two colours each, names only, no artist). passTierReward (village.ts:1299) resolves the season's look or the Jade; passPremiumValue skips owned looks; economyUi.passLookName follows. Re-run the campaign (pass is in its fingerprint).",
+   "fixCost": "M",
+   "touches": [
+    "PLAYER_COMMANDS",
+    "SERVER",
+    "I18N",
+    "UI",
+    "BALANCE_GATES"
+   ],
+   "needsOwner": false
+  },
+  {
+   "id": "RET-05",
+   "title": "Tasks: 15 templates over 9 counters, exhausted in a week, several of them no-ops",
+   "severity": "high",
+   "verified": "measured",
+   "evidence": "pass.json:291-403: 8 daily and 7 weekly templates. 400 seeded players: every daily template seen after 6.6 days, every weekly after 5.4 weeks; at least 2 of 3 dailies repeat from the day before on 28.3% of days. Collect targets are linear (2000 + 3000 x (Keep-1)): 35,000 at Keep 12 against 10.18M Coins a day of production (0.3%). Upgrade progress counts instant walls (village.ts:577) though taskEligible excludes them (pass.ts:147-168): 'Finish 10 upgrades' is ten wall taps, and with 5 Artisans and 168 h builds it cannot be done otherwise from Keep 10. Newly allowed upgrade steps that fit a day fall from 50/50 (Keep 7) to 11/57 (Keep 12) and 4/51 (Keep 15), so the late daily pool is about six. No template touches Trials (daily), the Bounty, rematches, donations, 3-stars, stakes or tempering.",
+   "whyItMatters": "Tasks drive the Scroll every day and currently ask only for what the player does anyway.",
+   "proposedFix": "pass.json: add about 8 templates on existing stats (trialsCleared as a daily x1, donations, rematchesWon) and on three new StatKeys counted in afterCommand and bountyEnd (threeStarRaids, stakesWon, bountySteps; types.ts:366 plus a save migration), each with a taskEligible case (pass.ts:152). Make collect targets a share of collector production (new TaskTemplate.ofDailyProduction 0.25, read in fixedTarget, pass.ts:209). Count only timed upgrades for upgrade tasks.",
+   "fixCost": "M",
+   "touches": [
+    "SAVE_VERSION",
+    "PLAYER_COMMANDS",
+    "SERVER",
+    "I18N",
+    "BALANCE_GATES"
+   ],
+   "needsOwner": false
+  },
+  {
+   "id": "RET-06",
+   "title": "The 'endless' Trials end near tier 65-72, and one achievement cannot be completed",
+   "severity": "medium",
+   "verified": "measured",
+   "evidence": "trials.json: +6% power per tier past 60 (tier 70 x2.32, 80 x4.16, 100 x13.33) while the reward stays at 3.8-4.0M each. Measured with the raid bots' full-research Keep-15 army and hero, bot plan, 2 base variants x 4 seeds: tiers 55-63 cleared, 64 and 66 failed, 67 and 68 one clear in eight, 70 best 1 star 50%, 75 best 0 stars 30%. A human plans better than the bot, hence 65-72. achievements.json:227-248 asks for 100 tiers (100 Jade). The panel says 'there is no top' (messages.json:759).",
+   "whyItMatters": "A Keep-15 player (regular model day 113) has no Trials left, and Goals shows a bar that can never fill.",
+   "proposedFix": "trials.json: powerGrowthPerTier 0.06 -> about 0.02, a reward that keeps growing past tier 60, taskMaxGrowth re-derived. achievements.json trial_walker tiers set to what a re-run of the measurement shows reachable (for example 5/25/60/80). Reword the panel line. Re-run the campaign; tell BACKEND (trialEnd replays the same data).",
+   "fixCost": "M",
+   "touches": [
+    "BALANCE_GATES",
+    "SERVER",
+    "I18N",
+    "DOCS"
+   ],
+   "needsOwner": false
+  },
+  {
+   "id": "RET-07",
+   "title": "Ironclad Walls only ever lands on the layout that has no walls",
+   "severity": "medium",
+   "verified": "reproduced",
+   "evidence": "sim/trials.ts:41-42: modifiers apply where t % every === 0 (5 and 10) and the layout is LAYOUTS[(t-1) % 5], so every modifier tier is open_court ('no walls', battle/basegen.ts:126-128). Reproduced: trialBase for tiers 5, 10, ... 60 has 0 wall segments, and the first alternate (kunai_ring) has 0 too; tiers 57/58/59 have 125/65/64. Only two modifiers exist, and Elite (power x1.2) is always on that same layout.",
+   "whyItMatters": "The panel announces 'Walls have double HP' on a fortress without walls; the affix system adds no variety.",
+   "proposedFix": "TrialModifierDef (types.ts:1164) gains offset; trialInfo tests (t - offset) % every === 0. trials.json: ironclad every 5 offset 2 (the walled_keep tiers), elite every 7. Add two or three modifiers from inputs the battle already takes: a rival clan's tempers through temperBase (battle.json temper.rivals) and levelBias. Update tests/gameplay/sim/trials.test.ts:60-61; re-run the campaign.",
+   "fixCost": "S",
+   "touches": [
+    "BALANCE_GATES",
+    "SERVER",
+    "I18N",
+    "DATA_ONLY"
+   ],
+   "needsOwner": false
+  },
+  {
+   "id": "RET-08",
+   "title": "Achievements are nine counters; three reachable goals remain after Keep 15",
+   "severity": "medium",
+   "verified": "measured",
+   "evidence": "achievements.json: 9 achievements, 44 tiers, 2,540 Jade, all cumulative. Regular model (docs/game-theory/campaign.json): 25 wins day 6, 100 day 29, 250 day 78, 600 about day 191, 1,200 about day 383; about 18 of 44 tiers by day 14 (estimate). After Keep 15 only raider 600/1,200, stargazer 1,800/3,600 and scholar 400 are reachable. Casual model: 1,200 wins about day 1,824. Stats that exist and no goal uses: donations, rematchesWon, troopsTrained, raidDestruction (types.ts:366). No feat, collection or social goal.",
+   "whyItMatters": "Goals are the cheapest long-tail layer and stop giving direction after the first month.",
+   "proposedFix": "achievements.json plus src/backend/platform/achievementIds.json (tests/backend/growth-client.test.ts:29-35): add 10-12. Data only: donations, rematchesWon, troopsTrained, raidDestruction. With a small achievementValue extension (sim/achievements.ts:3): calendar days claimed (cycles x 28 + claimed), warriors unlocked, looks owned, building types tempered. Feats on the new stats from RET-05. Keep the added Jade under about 600. No 'hold a raid' goal while the campaign's held rate is 0% (CAMPAIGN.md).",
+   "fixCost": "M",
+   "touches": [
+    "I18N",
+    "DATA_ONLY",
+    "DOCS"
+   ],
+   "needsOwner": false
+  },
+  {
+   "id": "RET-09",
+   "title": "No collection or completion layer is live; nothing new unlocks after Keep 8",
+   "severity": "medium",
+   "verified": "read-in-code",
+   "evidence": "The Codex is 'N of 50 unlocked' and fills itself by Keep 15. Mastery is built but off (planned.json features.mastery; sim/mastery.ts earns nothing while off). cosmetics.json has 9 Keep looks (7 bought with Jade, 1 calendar, 1 Scroll); none is earned by play. hall.json: new building types at Keeps 2-6 and 8, then only Longbow Yagura at 12; 3-4 warriors per Keep. Regular model reaches Keep 8 on day 23 and Keep 15 on day 113; casual reaches Keep 8 on day 75.",
+   "whyItMatters": "From about day 25 the only novelty is more levels, and at Keep 15 there is nothing left to complete.",
+   "proposedFix": "Earnable looks (two colours each, names only) in cosmetics.json with new flags, granted in rollSeasons on first reaching Obsidian, Storm and Kage, in trialEnd at tiers 20/40/60, and on the calendar's later cycles; a looks-collected count in the Store. Then cosmetic Mastery ranks (opportunity 5).",
+   "fixCost": "L",
+   "touches": [
+    "I18N",
+    "UI",
+    "SERVER",
+    "PLAYER_COMMANDS",
+    "BALANCE_GATES"
+   ],
+   "needsOwner": false
+  },
+  {
+   "id": "RET-10",
+   "title": "The next-objective chip dead-ends on 'Next Artisan free in...'",
+   "severity": "medium",
+   "verified": "read-in-code",
+   "evidence": "sim/objective.ts:20-28 and 82-104: the kinds are chest, raid, upgrade, save, research, train, builders, none. Nothing covers claimable tasks, Scroll tiers or achievements (the rail badges at hud.ts:588-593 already know them), a running Bounty with unpaid steps, the next Trial tier or an open rematch. With Artisans busy and the army training the chip is a countdown (locales/en/ui.json:44).",
+   "whyItMatters": "From Keep 10 builds take 3-7 days; the one line meant to say 'do this now' shows a timer exactly when the player needs something to play.",
+   "proposedFix": "objective.ts: add kinds claim, bounty (goalEventView with unpaid steps and a full army) and trial (next tier at or below the Keep), ahead of builders and none. hud.ts:1324 maps them to their panels; three keys in locales/en/ui.json; cases in tests/gameplay/sim/return-hooks.test.ts.",
+   "fixCost": "S",
+   "touches": [
+    "UI",
+    "I18N"
+   ],
+   "needsOwner": false
+  },
+  {
+   "id": "RET-11",
+   "title": "Raids have no rotating context from one session to the next",
+   "severity": "medium",
+   "verified": "read-in-code",
+   "evidence": "What varies today: the generated base (5 layouts, 3 rival clans, loot range; sim/matchmaking.ts:169-197), the opt-in stake (raids.json stakes x1.1 and x1.25) and +20% loot for 96 of every 336 h (events.json). EventEffect (types.ts:1087-1094) has three fields; nothing is keyed to the day, the rival clan, the army or the star count. The only special target is the Bounty (72 h per 14 days).",
+   "whyItMatters": "Raiding is the core loop (regular model: 528 raids in 133 days), and today's raid offers the same deal as yesterday's.",
+   "proposedFix": "A daily contract (opportunity 2): a pure function of the day in events.json that changes only what a won raid carries home (bankRaidLoot, village.ts:1846), never the battle, so no battle-rules change.",
+   "fixCost": "M",
+   "touches": [
+    "PLAYER_COMMANDS",
+    "SERVER",
+    "I18N",
+    "UI",
+    "BALANCE_GATES"
+   ],
+   "needsOwner": false
+  },
+  {
+   "id": "RET-12",
+   "title": "Two daily clocks: chest and stipend at UTC midnight, tasks and calendar at local midnight",
+   "severity": "medium",
+   "verified": "read-in-code",
+   "evidence": "sim/daily.ts:38-45 and village.ts:1554-1555 use dayIndex (UTC; the refusal says '(UTC)'); calendar.ts:34-41 and pass.ts:284 use localDayIndex. In Los Angeles the chest flips at 16:00 and the calendar at 00:00, so the one Daily badge and the chip's 'Your daily rewards are ready' fire at two times. The stated reason for UTC (the draw depends on the day) no longer holds: since save v22 the draw is salted at each claim (village.ts:1557-1568). Fresh-slate review H3, still open.",
+   "whyItMatters": "The daily ritual is split in two for most of the world, and the second moment falls mid-afternoon or at dawn.",
+   "proposedFix": "openDailyChest, chestReady, nextChestAt, the streak's skip week and claimStipend take localDayIndex; a save migration stops daily.lastDay from allowing a second chest on the switch day; LOCAL_TIME_CHANGE_DAYS already limits clock moves. Update the refusal text and reminders.ts:60.",
+   "fixCost": "M",
+   "touches": [
+    "SAVE_VERSION",
+    "PLAYER_COMMANDS",
+    "SERVER",
+    "I18N"
+   ],
+   "needsOwner": false
+  },
+  {
+   "id": "RET-13",
+   "title": "Streak tops out on day 7; the calendar is identical from its second lap",
+   "severity": "low",
+   "verified": "read-in-code",
+   "evidence": "daily.json streak: 7 steps, x1.6 and 5 Jade a week at the top, nothing after. daily.json calendar: 28 fixed days; from cycle 2 day 28 pays 40 Jade instead of a look (calendar.ts:67-70). Nothing marks day 30, 100 or 365.",
+   "whyItMatters": "After the first month the daily visit has no further milestone to aim at.",
+   "proposedFix": "Lifetime milestones that a missed day cannot touch: daily.json milestones [{ chests: 30 | 100 | 200 | 365, skin or moonstones }] on a new chestsOpened stat, paid in openDailyChest; calendar.skins[] so each cycle's day 28 gives the next look.",
+   "fixCost": "M",
+   "touches": [
+    "SAVE_VERSION",
+    "PLAYER_COMMANDS",
+    "SERVER",
+    "I18N",
+    "UI",
+    "BALANCE_GATES"
+   ],
+   "needsOwner": false
+  },
+  {
+   "id": "RET-14",
+   "title": "League win bonus is flat and fades to 1-4% of a raid",
+   "severity": "low",
+   "verified": "measured",
+   "evidence": "ranks.json leagues[].winBonus (1,000 to 80,000 each) is paid unscaled (leagueWinBonus, village.ts:1773-1782). Against the regular campaign's loot per raid: Keep 5 Iron 30.6%, Keep 8 Obsidian 15.1%, Keep 12 Ember 3.6%, Keep 15 Storm 1.4%. Every other fixed reward goes through scaleReward and holds its value (chest EV 0.35-0.93 of a raid from Keep 5 to 15).",
+   "whyItMatters": "The league ladder stops mattering per raid exactly when honor is highest.",
+   "proposedFix": "Express it as a share of the raid's own loot (winBonusShare per league, for example 4% Cedar to 18% Kage, times stars/3) in ranks.json and leagueWinBonus; show it on the Honor panel. Re-run the campaign.",
+   "fixCost": "S",
+   "touches": [
+    "BALANCE_GATES",
+    "PLAYER_COMMANDS",
+    "SERVER",
+    "DATA_ONLY"
+   ],
+   "needsOwner": false
+  }
+ ],
+ "geniusElements": [
+  {
+   "title": "Free daily chest that cannot be gamed and never overstates, with a streak that never wipes",
+   "where": "src/gameplay/sim/daily.ts:32-94; src/gameplay/sim/village.ts:1280-1296, 1553-1577; src/gameplay/data/daily.json",
+   "whyKeep": "Exact odds are shown before opening. The draw is fixed by seed, day and a salt re-rolled at each claim, so a reload cannot reroll and future days cannot be read. The result reports granted and overflow separately and warns before a chest would not fit. The streak has a free weekly skip, loses one step per missed day, is never sold, and pays its top-step Jade once a week."
+  },
+  {
+   "title": "Adaptive tasks, checked for feasibility and frozen when the period begins",
+   "where": "src/gameplay/sim/pass.ts:108-118, 152-253, 282-304; pass.json adaptiveTasks",
+   "whyKeep": "Star and win targets follow the player's last 10 raids and are withdrawn when even one is out of reach. taskEligible removes tasks the village cannot finish (no obstacles left, no upgrade or research that fits, Trial tiers out of reach). Ids and targets are fixed at the period start, so a task never moves mid-day."
+  },
+  {
+   "title": "Task days at the player's own midnight, and a 28-day calendar that loses nothing",
+   "where": "src/gameplay/sim/calendar.ts:34-96",
+   "whyKeep": "The offset can change at most once in 7 days, so moving the clock cannot farm days, and the server replays setLocalTime. The calendar is fixed, never random, never sold; a missed day only delays the next claim."
+  },
+  {
+   "title": "Events as a pure schedule function, with goal ladders the server rebuilds",
+   "where": "src/gameplay/sim/events.ts:26-67; src/gameplay/sim/goalEvents.ts:61-123; village.ts:1957-1978",
+   "whyKeep": "Start and end come only from the schedule, so every countdown is real by construction. The Bounty fortress is rebuilt from village seed, occurrence key and Keep and never taken from the client; each ladder step pays once per occurrence; a better result later pays only the new steps."
+  },
+  {
+   "title": "Shadow Trials fairness: median-of-five fortresses, alternates, paid once",
+   "where": "src/gameplay/sim/trials.ts:72-115; village.ts:1925-1949; trials.json layoutPower",
+   "whyKeep": "Each tier uses the median-strength of five generated candidates, with an authored factor per layout, so one unlucky roll is never a wall or a gift. After a failure the player may switch to an alternate fortress for the same reward. Rewards are paid on first clear only and grow logarithmically, so the ladder cannot be farmed, and the base is rebuilt from the tier number."
+  },
+  {
+   "title": "Keep-scaled rewards, with Scroll tiers scaled by the Keep they unlocked at",
+   "where": "src/gameplay/sim/economy.ts:63-78; village.ts:1298-1315 (passTierKeep); economy.json rewardScaleByHall",
+   "whyKeep": "Measured against campaign loot, the chest stays 0.35-0.93 of a raid from Keep 5 to 15, the calendar cycle 2-5 raids and the Bounty ladder 2-6 raids: no flat reward decays. tierKeep means hoarding claims until after a Keep-up gains nothing."
+  },
+  {
+   "title": "Honest selling of the Season Scroll",
+   "where": "src/gameplay/sim/pass.ts:45-101",
+   "whyKeep": "passSaleOpen refuses the sale in the last 4 days unless 15 tiers are already unlocked. passPremiumValue quotes '≈ N Jade' only for tiers this player can still reach at full pace, priced as Keep-scaled top-ups, and leaves out the build-speed perk. Premium claims are recorded on the purchase so a refund takes back exactly what was given."
+  },
+  {
+   "title": "Notification ethics in the planner itself",
+   "where": "src/gameplay/sim/reminders.ts:91-132; notifications.json",
+   "whyKeep": "Reminders exist only after opt-in, per type. Anything in quiet hours moves to the morning instead of firing; each local day keeps at most 4 by a fixed priority. No reminder is an offer. The same quiet-hours and local-day functions are shared with server push."
+  }
+ ],
+ "opportunities": [
+  {
+   "title": "Weekly Gauntlet: one shared challenge fortress a week",
+   "description": "A second goal-event kind whose fortress is seeded from the occurrence key only, so everyone at the same Keep attacks the same base. It carries Trial-style modifiers (power, wallPower) and a rival clan's tempers for variety, and pays a star ladder once per week. A best-destruction board can follow on the server.",
+   "where": "src/gameplay/sim/goalEvents.ts (GoalDef.kind, bountyBase seed), events.json, the existing onBounty path in app.ts and dailyUi.openEvents",
+   "cost": "M",
+   "touches": [
+    "PLAYER_COMMANDS",
+    "SERVER",
+    "I18N",
+    "UI",
+    "BALANCE_GATES"
+   ],
+   "expectedEffect": "A weekly appointment with comparable results between friends and Gang mates; reuses bountyEnd, the ladder and the events panel as they are."
+  },
+  {
+   "title": "Daily contract: rotating raid terms that never touch the battle",
+   "description": "One contract a day, the same for everyone and a pure function of the day: +15% loot from one rival clan's outposts, declared stakes pay x1.4 today, the diversity share counts double, 3-star raids carry +10%. It only changes what a won raid carries home.",
+   "where": "events.json contracts[], sim/events.ts, bankRaidLoot (village.ts:1846), the battle results screen and the Attack panel",
+   "cost": "M",
+   "touches": [
+    "PLAYER_COMMANDS",
+    "SERVER",
+    "I18N",
+    "UI",
+    "BALANCE_GATES"
+   ],
+   "expectedEffect": "Each day's raids ask a slightly different question (which clan, which army, whether to declare) without a battle-rules bump."
+  },
+  {
+   "title": "A year of dated festivals with earnable Keep looks",
+   "description": "Dated windows (New Year, spring blossom, midsummer lanterns, harvest moon, winter) from data, each a goal event or a boosted buff whose top ladder step gives that festival's look. Looks are two colours each, so no artist is needed.",
+   "where": "events.json dated[], sim/events.ts, GoalLadderStep.reward (skin), cosmetics.json",
+   "cost": "L",
+   "touches": [
+    "I18N",
+    "SERVER",
+    "PROTOCOL",
+    "UI",
+    "BALANCE_GATES",
+    "DOCS"
+   ],
+   "expectedEffect": "Something a day-120 player has not seen, real scarcity that is honest (the date), and content the stores feature."
+  },
+  {
+   "title": "Long-tail and feat achievements pack",
+   "description": "Ten to twelve new goals: donations, rematches won, warriors trained, total destruction, calendar days claimed, looks owned, warriors unlocked, 3-star raids, stakes won, Bounty ladders completed.",
+   "where": "achievements.json, src/backend/platform/achievementIds.json, sim/achievements.ts achievementValue",
+   "cost": "M",
+   "touches": [
+    "I18N",
+    "DATA_ONLY"
+   ],
+   "expectedEffect": "Direction after Keep 15 and goals that reward how the player raids, not only how often."
+  },
+  {
+   "title": "Cosmetic Mastery ranks",
+   "description": "Turn on the EXP tracking that sim/mastery.ts already has, without its battle bonus: each warrior type earns ranks shown in the Codex. The save field exists since v23 and the Codex panel is already built for the preview.",
+   "where": "sim/mastery.ts (a ranks-only feature flag), ui/contentPreviewUi.ts, codexUi.ts",
+   "cost": "L",
+   "touches": [
+    "UI",
+    "I18N",
+    "PLAYER_COMMANDS",
+    "SERVER"
+   ],
+   "expectedEffect": "A 50-warrior collection to complete that rewards trying every warrior, with no power effect and no battle-rules change."
+  },
+  {
+   "title": "Earnable looks for league firsts, Trial milestones and calendar cycles",
+   "description": "A dozen palette looks granted, never sold: first season finished in Obsidian, Storm and Kage; Trial tiers 20, 40 and 60; calendar cycles 2 to 6.",
+   "where": "cosmetics.json, rollSeasons (sim/ranks.ts), trialEnd (village.ts:1925), calendarReward (calendar.ts:63)",
+   "cost": "M",
+   "touches": [
+    "I18N",
+    "UI",
+    "PLAYER_COMMANDS",
+    "SERVER",
+    "BALANCE_GATES"
+   ],
+   "expectedEffect": "Visible status that comes from play, and a reason to care about the league at the season end."
+  },
+  {
+   "title": "Trials ladder view with milestones",
+   "description": "Show the next ten tiers with their layout and modifier, and mark every tenth tier with its Jade and a named milestone. Today the panel shows one tier.",
+   "where": "hud.ts openTrials (2147-2177), trials.json",
+   "cost": "M",
+   "touches": [
+    "UI",
+    "I18N"
+   ],
+   "expectedEffect": "The 60 authored tiers read as a journey with a visible next landmark instead of a single button."
+  },
+  {
+   "title": "Season identity and recap",
+   "description": "Name each Scroll and league season from a data list of twelve, and show a recap card at rollover: best league, raids won, stars, tiers claimed, with the existing share sheet.",
+   "where": "pass.json and ranks.json season names, seasonLog (village.ts:394-400), growthUi.ts share",
+   "cost": "M",
+   "touches": [
+    "I18N",
+    "UI"
+   ],
+   "expectedEffect": "Each month feels like a new chapter and ends on a summary worth sharing."
+  }
+ ],
+ "reportPath": "docs/audit/understand-2026-11-16/scripts/retention.md",
+ "summary": "The return-hook layer is honest and well engineered, but it is thin and it loops: a regular player has seen every event kind and every task template by day 14, and from day 28-30 the calendar, the Season Scroll and the event schedule repeat identically. The audit's finding still holds: four events in a 14-day loop, nothing dated or seasonal, and an event is running 67.9% of all hours. Rewards that go through the Keep scale keep their value to Keep 15 (the chest is 0.35-0.93 of a raid throughout); the one flat reward is the league win bonus, which falls from about 30% of a raid at Keep 5 to 1.4% at Keep 15. Four defects are not in the docs. Unclaimed Scroll tiers are silently discarded at the season end. A returning buyer's premium look tier grants nothing while the value estimate still lists it. The Scroll is finished in 19 of 30 days, after which tasks pay nothing. The Ironclad Walls modifier only ever lands on the wall-less layout. The 'endless' Trials stop at about tier 65-72 for a maxed army played by the bot plan, so the 100-tier achievement cannot be completed. There is no live collection layer, and after Keep 8 only one new building type unlocks; a Keep-15 player (regular model day 113) has three counter achievements and the monthly league climb left. First I would fix the Scroll in one batch: auto-claim at rollover, rotating looks with a Jade fallback, and a repeatable bonus after tier 30. Second, build a real event calendar: a 28-day loop from the existing effects, dated festivals, and a shared weekly Gauntlet that reuses the Bounty code. Third, widen tasks and achievements and repair the Trials (modifier offsets, slower growth past tier 60). Changes to pass, daily, events, trials or ranks data all need the campaign re-run, and all 50 languages are live, so every new string costs 49 translations."
+}

@@ -26,8 +26,15 @@ Dirige un clan ninja. Bâtis un village caché dans la montagne, entraîne cinqu
 **Attaque avec un plan**
 
 - Les guerriers n'entrent que par les points d'infiltration : reconnais les chemins et les tours qui les couvrent.
-- Lance des Bombes fumigènes quand tes guerriers entrent à portée des tours, et envoie des Saboteurs enrayer les défenses.
+- Envoie ton escouade d'un seul ordre (groupés, en tenaille ou en file ; tanks d'abord ou en ruée), ou place chaque guerrier à la main.
+- Lance des Bombes fumigènes quand tes guerriers entrent à portée des tours, et envoie des Saboteurs enrayer les défenses. Dès le niveau 7 du Donjon du Clan, le Capitaine des Ombres rallie toute ton escouade une fois par combat.
+- Après un raid, découvre ce que la même armée aurait fait par un autre point.
 - Une attaque bien préparée vaut mieux qu'une attaque énorme.
+
+**Défends ton village**
+
+- Chaque raid contre ton village s'accompagne d'un rapport : ce que tu as conservé, les étoiles que tu as refusées, par où l'assaillant est entré.
+- Teste tes défenses contre un assaillant simulé, et entraîne-toi contre l'armée qui l'a emporté sur toi.
 
 **Joue en équipe** (en ligne)
 
@@ -38,7 +45,12 @@ Dirige un clan ninja. Bâtis un village caché dans la montagne, entraîne cinqu
 
 **Les Épreuves de l'Ombre**
 
-- Une échelle sans fin de forteresses. Chaque palier paie sa récompense une fois et devient plus difficile.
+- Une échelle sans fin de forteresses. Chaque palier paie sa récompense une fois et devient plus difficile. L'exercice du jour te permet de t'entraîner pendant que ton armée se forme.
+
+**Du nouveau chaque jour**
+
+- Des événements sur un calendrier fixe de quatre semaines, cinq festivals par an avec une forteresse et une apparence de Donjon à gagner, un Grand Assaut hebdomadaire et un contrat du jour.
+- Succès, sceaux de Donjon, rangs de maîtrise des guerriers et apparences à gagner en jouant.
 
 **Jeu équitable**
 
@@ -46,7 +58,7 @@ Dirige un clan ninja. Bâtis un village caché dans la montagne, entraîne cinqu
 - Les adversaires générés par l'ordinateur sont toujours indiqués.
 - Limites de dépenses pour les moins de 18 ans et rappels choisis par toi, désactivés tant que tu ne les actives pas.
 
-Kagemura est gratuit à télécharger et à jouer : tous les bâtiments, guerriers, niveaux de Donjon et modes sont disponibles sans payer, et il n'y a pas de publicité. Le Jade, la monnaie premium, se gagne en petites quantités en jouant (succès, ligues, coffre quotidien et voie gratuite du Parchemin de Saison) et peut aussi s'acheter. Certains contenus ne sont vendus que contre de l'argent réel : la voie premium du Parchemin de Saison (récompenses en plus, constructions plus rapides pendant la saison et l'apparence Fête des Lanternes pour le Donjon) et des packs limités de Jade et de ressources.
+Kagemura est gratuit à télécharger et à jouer : tous les bâtiments, guerriers, niveaux de Donjon et modes sont disponibles sans payer, et il n'y a pas de publicité. Le Jade, la monnaie premium, se gagne en petites quantités en jouant (succès, ligues, coffre quotidien et voie gratuite du Parchemin de Saison) et peut aussi s'acheter. Certains contenus ne sont vendus que contre de l'argent réel : la voie premium du Parchemin de Saison (récompenses en plus, constructions plus rapides pendant la saison et une apparence de Donjon qui change à chaque saison) et des packs limités de Jade et de ressources.
 
 ## Liens de la version
 

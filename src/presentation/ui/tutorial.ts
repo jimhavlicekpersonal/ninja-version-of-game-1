@@ -3,7 +3,7 @@ import { t } from './i18n';
 import type { Analytics } from '../../backend/analytics/events';
 import type { GameController } from '../../gameplay/control/controller';
 import type { VillageState } from '../../gameplay/sim/types';
-import { trainingSkipQuote } from '../../gameplay/sim/village';
+import { builderStatus, trainingSkipQuote } from '../../gameplay/sim/village';
 import { chestReady } from '../../gameplay/sim/daily';
 import { buildingOnScreen, type ScreenRect } from '../render/anchors';
 import { clear, h, icon } from './dom';
@@ -66,9 +66,11 @@ const STEPS: Step[] = [
       const left = waitText(hall(s).upgrade?.endsAt, c.now());
       return left ? t('tutorial.finishKeep.wait', { time: left }) : t('tutorial.finishKeep.done');
     },
-    targets: [`.sheet[data-type="${HALL}"] .btn.gold`, '.modal .btn.primary'],
+    // P3-04 (PAC-04): no ring on the Jade "Finish now"; the step ends once the Keep is building and an Artisan is free,
+    // so the army steps run while it builds.
+    targets: [],
     mapTarget: HALL,
-    done: (s) => hall(s).level >= 2,
+    done: (s, c) => hall(s).level >= 2 || (Boolean(hall(s).upgrade) && builderStatus(s, localizedData(c.data), c.now()).free > 0),
     mood: 'calm',
   },
   {
@@ -89,7 +91,8 @@ const STEPS: Step[] = [
       const left = waitText(lastTrainingEnd(s), c.now());
       return left ? t('tutorial.finishTrain.wait', { time: left }) : t('tutorial.finishTrain.done');
     },
-    targets: ['.modal-backdrop:last-child .btn.primary', '.training .btn.gold', '.round-btn[data-id="army"]'],
+    // P3-04: the Jade "Finish training" and its confirm are no longer ringed; the text still names the choice.
+    targets: ['.round-btn[data-id="army"]'],
     done: (s, c) => armySize(s) > 0 && (s.training.length === 0 || !trainingSkipQuote(s, c.now(), localizedData(c.data))),
   },
   {
@@ -104,8 +107,10 @@ const STEPS: Step[] = [
     text: () => t('tutorial.end'),
     button: () => t('tutorial.end.button'),
     mood: 'smile',
-    // Retention audit G6: the last step points at the daily chest (and Finish opens it while it is ready).
-    targets: ['.side-rail .round-btn[data-id="daily"]'],
+    // Retention audit G6 / P3-11 (PLY-04): the last step points at the Keep first (after the first raid storage is often
+    // nearly full) and the daily chest second: its line says Finish opens it while it is ready.
+    targets: [`.sheet[data-type="${HALL}"] .btn.upgrade:not(:disabled)`],
+    mapTarget: HALL,
     extra: (s, c) => (chestReady(s, c.now(), localizedData(c.data)) ? t('tutorial.end.daily') : ''),
     after: (c) => {
       if (chestReady(c.state, c.now(), localizedData(c.data))) document.querySelector<HTMLElement>('.side-rail .round-btn[data-id="daily"]:not([hidden])')?.click();
@@ -122,11 +127,14 @@ export class Tutorial {
   private timer = 0;
   private text = h('p', {});
   private lastStep = -1;
+  private scrolledFor = -1;
 
   constructor(
     private readonly c: GameController,
     private readonly analytics: Analytics,
     root: HTMLElement,
+    /** P6-09: asks before skipping (the HUD's confirm dialog); without it a skip is one tap, as before. */
+    private readonly ask?: (title: string, text: string, confirmLabel: string) => Promise<boolean>,
   ) {
     this.bubble.hidden = true;
     this.ring.hidden = true;
@@ -174,9 +182,16 @@ export class Tutorial {
     this.lastStep = i;
     clear(this.bubble);
     this.bubble.hidden = false;
-    const skip = h('button', { class: 'tut-skip', type: 'button' }, t('tutorial.skip'));
-    skip.addEventListener('click', () => this.go(STEPS.length));
-    const actions = h('div', { class: 'tut-actions' }, i < STEPS.length - 1 ? skip : '');
+    // P6-09 (PLY-01): the skip link sits in the bubble's top corner, away from the bottom bar, and asks once (it was one
+    // tap over the Army button, and a playtester skipped the whole tutorial twice by accident).
+    const skip = h('button', { class: 'tut-skip corner', type: 'button', 'data-id': 'tutorial-skip' }, t('tutorial.skip'));
+    skip.addEventListener('click', () => {
+      if (!this.ask) return this.go(STEPS.length);
+      void this.ask(t('tutorial.skip'), t('tutorial.skipAsk'), t('tutorial.skip')).then((yes) => {
+        if (yes) this.go(STEPS.length);
+      });
+    });
+    const actions = h('div', { class: 'tut-actions' });
     if (step.button) {
       const b = h('button', { class: 'btn primary', type: 'button' }, typeof step.button === 'function' ? step.button() : step.button);
       b.addEventListener('click', () => {
@@ -191,7 +206,7 @@ export class Tutorial {
     const face = h('div', { class: 'tut-face' });
     if (uiArt.senseiPortrait) face.innerHTML = uiArt.senseiPortrait(step.mood ?? 'calm');
     else face.append(icon(icons.toadstool));
-    this.bubble.append(face, h('div', { class: 'tut-body' }, h('p', { class: 'tut-step' }, t('tutorial.step', { n: i + 1, total: STEPS.length })), this.text, extra ? h('p', { class: 'tut-extra' }, extra) : null, actions));
+    this.bubble.append(face, h('div', { class: 'tut-body' }, h('p', { class: 'tut-step' }, t('tutorial.step', { n: i + 1, total: STEPS.length })), this.text, extra ? h('p', { class: 'tut-extra' }, extra) : null, actions), i < STEPS.length - 1 ? skip : '');
   }
 
   private stepText(step: Step): string {
@@ -223,7 +238,6 @@ export class Tutorial {
       this.ring.hidden = true;
       return;
     }
-    this.place(typeof step.mapTarget === 'function' ? step.mapTarget(this.c.state) : step.mapTarget);
     // Point at the first visible target, else at the building on the map.
     let r: ScreenRect | null = null;
     const targets = typeof step.targets === 'function' ? step.targets(this.c.state) : step.targets ?? [];
@@ -236,12 +250,24 @@ export class Tutorial {
       });
       if (found) {
         r = found.getBoundingClientRect();
+        // P6-09: a target outside its scroll box is scrolled into view once per step (the hit test there found the canvas).
+        if (this.scrolledFor !== i && (r.top < 0 || r.top + r.height > window.innerHeight)) {
+          this.scrolledFor = i;
+          (found as HTMLElement).scrollIntoView?.({ block: 'nearest' });
+          r = found.getBoundingClientRect();
+        }
         break;
       }
     }
     const modalOpen = Boolean(document.querySelector('.modal-backdrop'));
     const onMap = typeof step.mapTarget === 'function' ? step.mapTarget(this.c.state) : step.mapTarget;
-    if (!r && onMap && !modalOpen) r = buildingOnScreen(onMap);
+    if (!r && onMap && !modalOpen) {
+      r = buildingOnScreen(onMap);
+      // P6-09: never ring the map through an open sheet (it rang the Mint's Upgrade while the text asked for the Keep).
+      const sheet = document.querySelector('#hud .sheet:not([hidden])')?.getBoundingClientRect();
+      if (r && sheet && overlaps(r.left, r.left + r.width, sheet.left, sheet.right) && overlaps(r.top, r.top + r.height, sheet.top, sheet.bottom)) r = null;
+    }
+    this.place(onMap, r);
     if (!r) {
       this.ring.hidden = true;
       return;
@@ -254,19 +280,48 @@ export class Tutorial {
    * Keep the bubble off what the player needs: at the bottom while a sheet or panel is open (the Build/Attack bar is
    * not needed then); otherwise under the top bar and its event line, and clear of the side rail.
    */
-  private place(mapTarget?: string | null): void {
+  private place(mapTarget?: string | null, ringed?: ScreenRect | null): void {
     const sheet = document.querySelector('#hud .sheet:not([hidden])');
-    const low = Boolean(document.querySelector('.modal-backdrop')) || Boolean(sheet);
+    const modal = Boolean(document.querySelector('.modal-backdrop'));
+    const low = modal || Boolean(sheet);
     this.bubble.classList.toggle('low', low);
     const st = this.bubble.style;
     if (low) {
-      st.top = '';
       st.right = '';
       st.left = '';
       st.width = '';
       st.transform = '';
+      st.top = '';
+      // P6-09 (PLY-02): find the free band first. Over a sheet the bubble sits above it (never over the bottom bar,
+      // never over the sheet's sticky action row); in a dialog at the bottom, or at the top when the target is there.
+      const height = this.bubble.getBoundingClientRect().height;
+      if (!height) return;
+      const vh = window.innerHeight;
+      const head = document.querySelector('#hud .hud-head');
+      const below = Math.max(8, ...(head ? [...head.children].filter((e) => !e.classList.contains('toasts')).map((e) => e.getBoundingClientRect().bottom + 6) : []));
+      const free = (y: number) => y >= 0 && y + height <= vh && !(ringed && overlaps(y, y + height, ringed.top - 8, ringed.top + ringed.height + 8));
+      const choices: number[] = [];
+      const sr = sheet?.getBoundingClientRect();
+      // Sideways the sheet is a side panel: the bubble goes beside it, under the top bar.
+      if (!modal && sr && window.innerWidth - sr.right >= 260) {
+        const rail = document.querySelector('#hud .side-rail:not([hidden])')?.getBoundingClientRect();
+        const railLeft = Boolean(rail && rail.width && rail.left < window.innerWidth / 2);
+        st.left = `${Math.round(sr.right + 8)}px`;
+        st.right = `${Math.round(rail && rail.width && !railLeft ? window.innerWidth - rail.left + 6 : 12)}px`;
+        st.width = 'auto';
+        st.transform = 'none';
+        st.top = `${Math.round(below)}px`;
+        st.bottom = 'auto';
+        return;
+      }
+      if (!modal && sr) choices.push(Math.round(sr.top - height - 8), Math.round(below));
+      else choices.push(Math.round(vh - height - 12), 8);
+      const y = choices.find(free) ?? choices[0];
+      st.top = `${Math.max(0, y)}px`;
+      st.bottom = 'auto';
       return;
     }
+    st.bottom = '';
     const head = document.querySelector('#hud .hud-head');
     const rows = head ? [...head.children].filter((e) => !e.classList.contains('toasts')) : [];
     const below = Math.max(0, ...rows.map((e) => e.getBoundingClientRect().bottom));

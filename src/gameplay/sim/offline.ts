@@ -16,6 +16,8 @@ export interface OfflineSummary {
   raids: BattleRecord[];
   /** Monthly league chests that were awarded. */
   seasons: SeasonReward[];
+  /** P1-01: a Season Scroll that ended while away, with the unclaimed rewards it granted and what did not fit. */
+  scroll?: NonNullable<VillageState['pass']['lastSeason']>;
 }
 
 function waiting(state: VillageState, at: number, data: GameData): Partial<Record<ResourceKind, number>> {
@@ -60,6 +62,8 @@ export function computeOfflineProgress(state: VillageState, now: number, data: G
   }
   // Seasons are settled (chest paid, trophies softened) inside advance(), at their real end time.
   const seasons = (next.seasonLog ?? []).filter((sr) => sr.season >= state.season);
+  const last = next.pass.lastSeason;
+  const scroll = last && last.season >= state.pass.season ? last : undefined;
   next.lastSeenAt = now;
-  return { state: next, summary: { awayMs, finished, trained, collectorGains, raids: raided.raids.map((r) => r.record), seasons } };
+  return { state: next, summary: { awayMs, finished, trained, collectorGains, raids: raided.raids.map((r) => r.record), seasons, ...(scroll ? { scroll } : {}) } };
 }

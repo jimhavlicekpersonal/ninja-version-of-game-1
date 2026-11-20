@@ -534,8 +534,11 @@ async function boot(): Promise<void> {
     onReplay: (record) => app?.replay(record),
     onGroveAttack: (target) => app?.groveAttack(target),
     onTrial: (tier) => app?.trial(tier),
+    onDrill: () => app?.drill(),
     onBounty: (eventKey, base) => app?.bounty(eventKey, base),
     onRematch: (defenseId) => app?.rematch(defenseId),
+    onTestDefense: () => app?.testDefenses(),
+    onPracticeAgainst: (record) => app?.practiceAgainst(record),
     onPractice: (army) => app?.practice(army),
     onDuel: (friendId, name, opts) => void app?.duel(friendId, name, opts),
     onGangWarAttack: (target, relay, enemyName, bot) => void app?.gangWarAttack(target, relay, enemyName, bot),
@@ -608,9 +611,9 @@ async function boot(): Promise<void> {
   let shown = false;
   const earlyToasts: Parameters<Hud['toast']>[] = [];
   const showToast = hud.toast.bind(hud);
-  hud.toast = (text, kind = 'info') => {
-    if (shown) showToast(text, kind);
-    else earlyToasts.push([text, kind]);
+  hud.toast = (text, kind = 'info', opts) => {
+    if (shown) showToast(text, kind, opts);
+    else earlyToasts.push([text, kind, opts]);
   };
 
   // How to keep the village when the browser may delete it (client re-audit item 7): Settings
@@ -643,7 +646,8 @@ async function boot(): Promise<void> {
   const openPersistAdvice = () => hud.modal(i18nText("ui.keep_your_village_safe_c885b1fcbb"), persistNote(), [{ label: i18nText("ui.ok_565339bc4d"), primary: true, onClick: () => hud.closeAllModals() }]);
   const rawModal = hud.modal.bind(hud);
   hud.modal = (title, body, ...rest) => {
-    if (title === i18nLabel('Settings') && persistAdvice) body.prepend(persistNote());
+    // P6-10: the Settings dialog is known by its id, never by its translated title.
+    if (body.dataset.id === 'settings' && persistAdvice) body.prepend(persistNote());
     return rawModal(title, body, ...rest);
   };
 
@@ -659,8 +663,9 @@ async function boot(): Promise<void> {
       return;
     }
     const buttons = [...hudEl.querySelectorAll<HTMLButtonElement>('button')].filter((b) => b.offsetParent !== null);
-    const pick = (label: string) => buttons.find((b) => b.textContent?.trim() === i18nLabel(label));
-    (pick('End battle') ?? pick('Exit replay') ?? pick('Home'))?.click();
+    // P6-10: by data-id, never by translated text.
+    const pick = (id: string) => buttons.find((b) => b.dataset.id === id);
+    (pick('battle-end') ?? pick('exit-replay') ?? pick('battle-home'))?.click();
   };
 
   app = new App({
@@ -725,13 +730,14 @@ async function boot(): Promise<void> {
   if (sandbox) hud.toast(i18nText("ui.testing_sandbox_a_separate_practice_vi_e3d2ae64e5"), 'info');
   if (params.has('debug')) {
     // Testing hook, only with ?debug in the URL.
-    (window as unknown as Record<string, unknown>).tk = { game, controller, app, connection, paintedBytes: paintedBuildingBytes, textureBytes: () => textureBytes(game.textures) };
+    (window as unknown as Record<string, unknown>).tk = { game, controller, app, connection, hud, paintedBytes: paintedBuildingBytes, textureBytes: () => textureBytes(game.textures) };
   }
 
   // Re-audit: no paid offer after a loss (the Rebuild Kit after raids, often simulated ones, read as "pay to not lose").
   if (offline) hud.showWelcomeBack(offline, () => undefined);
   if (loadError) hud.toast(i18nText("ui.a_backup_was_kept_and_a_new_village_st_6cb7ba05bd", { arg1: loadError }), 'error');
-  tutorial = new Tutorial(controller, analytics, document.body);
+  // P6-09: skipping the tutorial asks once, through the HUD's own dialog.
+  tutorial = new Tutorial(controller, analytics, document.body, (title, text, label) => hud.confirm(title, text, label));
   tutorial.start();
   // A village kept after a failed load, further along than this one: offer it back.
   void hud.offerRecovery().catch((e) => console.warn(i18nText("ui.could_not_check_for_kept_villages_1d0aca4f81"), e));
@@ -754,9 +760,18 @@ async function boot(): Promise<void> {
   document.getElementById('boot')?.classList.add('done');
   bootGuard?.done();
   shown = true;
-  earlyToasts.forEach(([text, kind], i) => setTimeout(() => showToast(text, kind), i * 1200));
+  earlyToasts.forEach(([text, kind, opts], i) => setTimeout(() => showToast(text, kind, opts), i * 1200));
+  // P6-09 (PLY-09): the storage banners wait until the tutorial is done (one covered the Keep on the first screen).
+  const afterTutorial = (fn: () => void) => {
+    if (controller.state.tutorial.done) return fn();
+    const unsub = controller.subscribe(() => {
+      if (!controller.state.tutorial.done) return;
+      unsub();
+      fn();
+    });
+  };
   if (!store.persistent) {
-    showBanner('tk-banner-save', i18nText("ui.this_browser_can_t_save_your_village_p_2206e03480"), [{ label: i18nText("ui.hide_ac20a57bfd"), onClick: (close) => close() }]);
+    afterTutorial(() => showBanner('tk-banner-save', i18nText("ui.this_browser_can_t_save_your_village_p_2206e03480"), [{ label: i18nText("ui.hide_ac20a57bfd"), onClick: (close) => close() }]));
   } else if (!sandbox && !isNative()) {
     void storageKept().then((kept) => {
       if (kept) return;
@@ -764,10 +779,10 @@ async function boot(): Promise<void> {
       // the village after a week away: say how to keep it, at most once a week.
       persistAdvice = true;
       if (!persistPromptDue()) return;
-      showBanner('tk-banner-persist', i18nText("ui.this_browser_may_delete_your_village_i_ae643ded55"), [
+      afterTutorial(() => showBanner('tk-banner-persist', i18nText("ui.this_browser_may_delete_your_village_i_ae643ded55"), [
         { label: i18nText("ui.keep_it_safe_190db1d347"), onClick: (close) => { close(); snoozePersistPrompt(); openPersistAdvice(); } },
         { label: i18nText("ui.not_now_a0e63d7c71"), onClick: (close) => { close(); snoozePersistPrompt(); } },
-      ]);
+      ]));
     });
   }
   // Report section 5 step 3 (device F6): opened from the iOS Home Screen with a brand-new village, the

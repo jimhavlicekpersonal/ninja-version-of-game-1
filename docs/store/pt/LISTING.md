@@ -26,8 +26,15 @@ Lidere um clã ninja. Construa uma vila escondida nas montanhas, treine cinquent
 **Faça incursões com um plano**
 
 - Os guerreiros só entram pelos Pontos de Infiltração: reconheça os caminhos e as torres que os cobrem.
-- Jogue Bombas de Fumaça quando seus guerreiros entrarem no alcance das torres e mande Sabotadores para travar as defesas.
+- Mande seu esquadrão com uma só ordem (juntos, em pinça ou em fila; tanques antes ou em investida) ou posicione cada guerreiro manualmente.
+- Jogue Bombas de Fumaça quando seus guerreiros entrarem no alcance das torres e mande Sabotadores para travar as defesas. A partir do nível 7 da Fortaleza do Clã, o Capitão das Sombras inspira todo o seu esquadrão uma vez por batalha.
+- Depois de uma incursão, veja o que o mesmo exército teria feito por outro ponto.
 - Um ataque bem planejado vale mais que um ataque enorme.
+
+**Defenda sua vila**
+
+- Cada incursão na sua vila vem com um relatório: o que você manteve, as estrelas que negou e por onde o invasor entrou.
+- Teste suas defesas contra um invasor simulado e treine contra o exército que venceu você.
 
 **Jogue em equipe** (online)
 
@@ -38,7 +45,12 @@ Lidere um clã ninja. Construa uma vila escondida nas montanhas, treine cinquent
 
 **As Provas das Sombras**
 
-- Uma escada sem fim de fortalezas. Cada etapa paga a recompensa uma vez e aumenta a dificuldade.
+- Uma escada sem fim de fortalezas. Cada etapa paga a recompensa uma vez e aumenta a dificuldade. Com o treino diário, você pratica enquanto seu exército treina.
+
+**Algo novo todo dia**
+
+- Eventos num calendário fixo de quatro semanas, cinco festivais por ano com uma fortaleza e um visual da Fortaleza para conquistar, um Desafio semanal e um contrato diário.
+- Conquistas, selos da Fortaleza, postos de maestria de guerreiro e visuais que você conquista jogando.
 
 **Jogo limpo**
 
@@ -46,7 +58,7 @@ Lidere um clã ninja. Construa uma vila escondida nas montanhas, treine cinquent
 - Os adversários gerados pelo computador são sempre indicados.
 - Limites de gastos para menores de 18 anos e lembretes que você escolhe, desativados até você ativar.
 
-O Kagemura é grátis para baixar e jogar: todas as construções, guerreiros, níveis da Fortaleza e modos estão disponíveis sem pagar, e não há anúncios. O Jade, a moeda premium, é ganho em pequenas quantidades jogando (conquistas, ligas, baú diário e trilha gratuita do Pergaminho da Temporada) e também pode ser comprado. Alguns conteúdos só são vendidos por dinheiro de verdade: a trilha premium do Pergaminho da Temporada (recompensas extras, construções mais rápidas durante a temporada e o visual Festival das Lanternas para a Fortaleza) e pacotes temporários de Jade e recursos.
+O Kagemura é grátis para baixar e jogar: todas as construções, guerreiros, níveis da Fortaleza e modos estão disponíveis sem pagar, e não há anúncios. O Jade, a moeda premium, é ganho em pequenas quantidades jogando (conquistas, ligas, baú diário e trilha gratuita do Pergaminho da Temporada) e também pode ser comprado. Alguns conteúdos só são vendidos por dinheiro de verdade: a trilha premium do Pergaminho da Temporada (recompensas extras, construções mais rápidas durante a temporada e um visual para a Fortaleza que muda a cada temporada) e pacotes temporários de Jade e recursos.
 
 ## Links da versão
 

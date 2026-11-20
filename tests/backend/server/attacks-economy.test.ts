@@ -120,11 +120,20 @@ for (const [label, makeRepo] of repoFactories) {
       const game = emulator((await ann.getVillage())!.file, w.data);
       const local = game.do({ type: 'openDailyChest', entropy: 7 }, w.now());
       expect(local.ok).toBe(true);
-      const batch = game.batch();
+      // Its own device numbering, so the chest is not skipped as already applied (the scene's batches used 1-4).
+      const batch = { ...game.batch(), device: 'chest-device' };
       const reply = await ann.sendCommands(batch);
       const after = deserialize((await ann.getVillage())!.file, w.data).daily.salt ?? 0;
+      expect(after).not.toBe(before);
       expect(after).not.toBe(mixSeed(before, 7));
-      expect(reply.corrections).toBeDefined();
+      // The chest itself drew from the old salt on both sides, so the economies agree: no correction. Before
+      // 2026-11-18 this test expected one, because its batch reused numbers 1-4 and nothing was applied at all.
+      expect(reply.corrections).toBeUndefined();
+      // P1-16: the answer carries the salt the server rolled, so the game's next chest is the server's.
+      expect(reply.results[0]).toMatchObject({ ok: true, chestSalt: after });
+      // The command log keeps the entropy the server replayed, not the game's 7.
+      const logged = (await w.repo.commandsOf(ann.id, 0, 10)).find((l) => l.type === 'openDailyChest');
+      expect((logged?.command as { entropy?: number }).entropy).not.toBe(7);
     });
 
     it('gives donated troops from the donor’s server-held army (step 23)', async () => {

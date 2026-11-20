@@ -26,8 +26,15 @@ Leid een ninjaclan. Bouw een verborgen bergdorp, train vijftig soorten krijgers,
 **Overval met een plan**
 
 - Krijgers komen alleen binnen via infiltratiepunten: verken de routes en de torens die ze dekken.
-- Gooi Rookbommen als je krijgers het bereik van torens binnenlopen, en stuur Saboteurs om verdedigingen te blokkeren.
+- Stuur je ploeg met één bevel naar binnen (samen, als tang of achter elkaar; tanks eerst of in een stormloop), of plaats elke krijger zelf.
+- Gooi Rookbommen als je krijgers het bereik van torens binnenlopen, en stuur Saboteurs om verdedigingen te blokkeren. Vanaf Clanburcht 7 verzamelt de Schaduwkapitein één keer per gevecht je hele ploeg.
+- Na een overval zie je wat hetzelfde leger via een ander punt had bereikt.
 - Een slimme aanval is meer waard dan een enorme.
+
+**Verdedig je dorp**
+
+- Bij elke overval op je dorp hoort een verslag: wat je behield, welke sterren je voorkwam en waar de overvaller binnenkwam.
+- Test je verdediging tegen een gesimuleerde overvaller en oefen tegen het leger dat je versloeg.
 
 **Speel samen** (online)
 
@@ -38,7 +45,12 @@ Leid een ninjaclan. Bouw een verborgen bergdorp, train vijftig soorten krijgers,
 
 **De Schaduwbeproevingen**
 
-- Een eindeloze ladder van vestingen. Elke trede betaalt zijn beloning één keer uit en is zwaarder.
+- Een eindeloze ladder van vestingen. Elke trede betaalt zijn beloning één keer uit en is zwaarder. Met de dagelijkse oefening oefen je terwijl je leger traint.
+
+**Elke dag iets nieuws**
+
+- Evenementen op een vaste kalender van vier weken, vijf jaarlijkse feesten met een vesting en een Burchtlook om te verdienen, een wekelijkse Vuurproef en een dagcontract.
+- Prestaties, Burchtzegels, meesterschapsrangen voor krijgers en looks die je verdient door te spelen.
 
 **Eerlijk spel**
 
@@ -46,7 +58,7 @@ Leid een ninjaclan. Bouw een verborgen bergdorp, train vijftig soorten krijgers,
 - Door de computer gegenereerde tegenstanders worden altijd aangegeven.
 - Uitgavenlimieten voor spelers onder de 18 en herinneringen die jij kiest, uit tot je ze aanzet.
 
-Kagemura is gratis te downloaden en te spelen: alle gebouwen, krijgers, Burchtniveaus en spelmodi zijn beschikbaar zonder te betalen, en er zijn geen advertenties. Jade, de premiummunt, verdien je in kleine hoeveelheden door te spelen (doelen, liga's, de dagelijkse kist en het gratis spoor van de Seizoensrol) en kun je ook kopen. Sommige inhoud is alleen voor echt geld te koop: het premiumspoor van de Seizoensrol (extra beloningen, sneller bouwen tijdens het seizoen en de Burchtlook Lantaarnfeest) en tijdelijke pakketten met Jade en grondstoffen.
+Kagemura is gratis te downloaden en te spelen: alle gebouwen, krijgers, Burchtniveaus en spelmodi zijn beschikbaar zonder te betalen, en er zijn geen advertenties. Jade, de premiummunt, verdien je in kleine hoeveelheden door te spelen (doelen, liga's, de dagelijkse kist en het gratis spoor van de Seizoensrol) en kun je ook kopen. Sommige inhoud is alleen voor echt geld te koop: het premiumspoor van de Seizoensrol (extra beloningen, sneller bouwen tijdens het seizoen en een Burchtlook die elk seizoen verandert) en tijdelijke pakketten met Jade en grondstoffen.
 
 ## Links voor de release
 

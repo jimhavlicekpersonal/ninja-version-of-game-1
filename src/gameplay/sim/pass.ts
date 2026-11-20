@@ -2,9 +2,30 @@
 import { scaleReward, topUpOne } from './economy';
 import { createRng, mixSeed, next } from './rng';
 import { localDayIndex } from './calendar';
+import { eventDef, eventsBetween } from './events';
+import { rematchable } from './rematch';
+import { collectorRatePerHour } from './resources';
 import type { Cost, GameData, ResourceKind, Stats, TaskTemplate, VillageState } from './types';
 
 const DAY = 86_400_000;
+
+/**
+ * P1-03: how many past-the-last-tier bonuses these points have reached (no state: it follows from the points).
+ * A task claimed after the last tier used to add points to nothing while the button showed "+100".
+ */
+export function passBonusCount(points: number, data: GameData): number {
+  const b = data.pass.bonus;
+  if (!b || !(b.everyPoints > 0)) return 0;
+  const over = points - data.pass.tiers.length * data.pass.pointsPerTier;
+  return over <= 0 ? 0 : Math.min(b.maxPerSeason, Math.floor(over / b.everyPoints));
+}
+
+/** P1-02: the Season Scroll's look this season (the tier's own `skin` when no list is set). */
+export function passSeasonSkin(season: number, data: GameData, fallback?: string): string | undefined {
+  const list = data.pass.seasonSkins;
+  if (!list?.length) return fallback;
+  return list[((season % list.length) + list.length) % list.length];
+}
 
 export function passSeason(t: number, data: GameData): number {
   return Math.floor((t - data.pass.epoch) / (data.pass.seasonDays * DAY));
@@ -25,6 +46,12 @@ export function premiumActive(state: VillageState, t: number, data: GameData): b
 /** Build-time multiplier (premium pass = 20% faster). */
 export function buildTimeFactor(state: VillageState, t: number, data: GameData): number {
   return premiumActive(state, t, data) ? 1 - data.pass.premiumBuildSpeedBonus : 1;
+}
+
+/** P5-10: a season's name (Scroll season or monthly league season number), or null without the list. */
+export function seasonName(n: number, data: GameData): string | null {
+  const list = data.pass.seasonNames;
+  return list?.length ? list[((n % list.length) + list.length) % list.length] : null;
 }
 
 export function unlockedTier(state: VillageState, data: GameData): number {
@@ -64,6 +91,14 @@ export interface PassValue {
   skins: string[];
   /** Jade the cheapest pack of about the same price gives, for comparison. */
   packJade: number;
+  /** P1-05: the player's own pace this season (share of all points a day earns), used for `tiers`. */
+  pace: number;
+  /**
+   * P1-05: the estimate passed `guardPackMultiple` times the same-price pack, so `total` is the Jade alone and the
+   * premium tiers' Coins and Provisions are listed by amount (`supplies`) instead of priced as top-ups.
+   */
+  guarded: boolean;
+  supplies: Cost;
 }
 
 /**
@@ -77,15 +112,23 @@ export function passPremiumValue(state: VillageState, now: number, data: GameDat
   const season = passSeason(now, data);
   const points = state.pass.season === season ? state.pass.points : 0;
   const daysLeft = Math.max(0, (passSeasonEndsAt(now, data) - now) / DAY);
-  const reach = Math.min(p.tiers.length, Math.floor((points + daysLeft * passPointsPerDay(data)) / p.pointsPerTier));
+  // P1-05: at the player's own pace this season (it used to assume every task every day), never above 100%.
+  const est = p.estimate;
+  const elapsed = Math.max(0, (now - (passSeasonEndsAt(now, data) - p.seasonDays * DAY)) / DAY);
+  const pace = !est ? 1 : elapsed < est.minDaysForPace ? est.defaultPace : Math.min(1, points / (elapsed * passPointsPerDay(data)));
+  const reach = Math.min(p.tiers.length, Math.max(Math.floor(points / p.pointsPerTier), Math.floor((points + daysLeft * passPointsPerDay(data) * pace) / p.pointsPerTier)));
   const keep = hallOf(state, data);
   let jade = 0;
   let resourceJade = 0;
+  const supplies: Cost = {};
   const skins: string[] = [];
   for (const t of p.tiers) {
     if (t.tier > reach) continue;
-    const { skin, ...res } = t.premium;
-    if (skin) skins.push(skin);
+    const { skin: tierSkin, ...res } = t.premium;
+    // P1-02: this season's look; one the player already owns is worth `repeatJade`, never listed as a look.
+    const skin = tierSkin ? passSeasonSkin(season, data, tierSkin) : undefined;
+    if (skin && !state.cosmetics.owned.includes(skin)) skins.push(skin);
+    else if (skin) jade += p.repeatJade ?? 0;
     // Tiers already unlocked pay at the Keep they unlocked at (balance audit CU-6, `pass.tierKeep`).
     const at = state.pass.season === season && t.tier * p.pointsPerTier <= points ? state.pass.tierKeep?.[t.tier - 1] : undefined;
     const tierKeep = typeof at === 'number' && at >= 1 ? Math.min(at, keep) : keep;
@@ -93,11 +136,17 @@ export function passPremiumValue(state: VillageState, now: number, data: GameDat
     for (const [k, v] of Object.entries(scaled) as [ResourceKind, number][]) {
       if (!(v > 0)) continue;
       if (k === 'moonstones') jade += v;
-      else resourceJade += topUpOne(v, data, tierKeep);
+      else {
+        resourceJade += topUpOne(v, data, tierKeep);
+        supplies[k] = (supplies[k] ?? 0) + v;
+      }
     }
   }
   const pack = [...data.store.packs].sort((a, b) => Math.abs(a.usd - p.usd) - Math.abs(b.usd - p.usd))[0];
-  return { tiers: reach, tiersTotal: p.tiers.length, daysLeft: Math.ceil(daysLeft), jade, resourceJade, total: jade + resourceJade, skins, packJade: pack?.moonstones ?? 0 };
+  const packJade = pack?.moonstones ?? 0;
+  // P1-05: top-ups are the dearest rate in the game; past the guard the estimate shows only the Jade.
+  const guarded = !!est && packJade > 0 && jade + resourceJade > est.guardPackMultiple * packJade;
+  return { tiers: reach, tiersTotal: p.tiers.length, daysLeft: Math.ceil(daysLeft), jade, resourceJade, total: guarded ? jade : jade + resourceJade, skins, packJade, pace, guarded, supplies };
 }
 
 /**
@@ -109,12 +158,27 @@ export function recentRaidRates(state: VillageState, data: GameData): { stars: n
   const cfg = data.pass.adaptiveTasks;
   if (!cfg) return null;
   const raids = (state.battleLog ?? [])
-    .filter((r) => r.kind === 'attack' && !r.war && r.trial === undefined && !r.goalEvent && !r.rematch && r.settlement !== 'pending' && r.settlement !== 'rejected')
+    .filter((r) => r.kind === 'attack' && !r.war && r.trial === undefined && !r.goalEvent && !r.rematch && !r.drill && r.settlement !== 'pending' && r.settlement !== 'rejected')
     .slice(-cfg.recentRaids);
   if (raids.length < cfg.minRecent) return null;
   const stars = raids.reduce((a, r) => a + r.result.stars, 0) / raids.length;
   const wins = raids.filter((r) => r.result.stars >= 1).length / raids.length;
   return { stars, wins, raids: raids.length };
+}
+
+/** P5-04: the share of recent raids (as `recentRaidRates` counts them) won with three stars; null without enough. */
+function recentThreeStarShare(state: VillageState, data: GameData): number | null {
+  const cfg = data.pass.adaptiveTasks;
+  if (!cfg) return null;
+  const raids = (state.battleLog ?? [])
+    .filter((r) => r.kind === 'attack' && !r.war && r.trial === undefined && !r.goalEvent && !r.rematch && !r.drill && r.settlement !== 'pending' && r.settlement !== 'rejected')
+    .slice(-cfg.recentRaids);
+  if (raids.length < cfg.minRecent) return null;
+  return raids.filter((r) => r.result.stars >= 3).length / raids.length;
+}
+
+function hasCamp(state: VillageState, data: GameData): boolean {
+  return state.buildings.some((b) => b.level >= 1 && (data.buildings[b.type]?.levels[b.level - 1]?.housing ?? 0) > 0);
 }
 
 export interface Task {
@@ -149,21 +213,23 @@ function hallOf(state: VillageState, data: GameData): number {
  * task a chore), enough research that fits, Shadow Trial tiers within reach
  * (economy E27). Raids, stars and collecting are always possible.
  */
-export function taskEligible(tpl: TaskTemplate, target: number, state: VillageState, data: GameData, periodDays: number): boolean {
+export function taskEligible(tpl: TaskTemplate, target: number, state: VillageState, data: GameData, periodDays: number, now = state.lastSeenAt): boolean {
   const hall = hallOf(state, data);
   const limits = data.hall.levels[Math.min(data.hall.levels.length, hall) - 1]?.limits ?? {};
   const period = periodDays * DAY_SECONDS;
   switch (tpl.stat) {
     case 'obstaclesCleared':
       return state.buildings.filter((b) => data.buildings[b.type]?.category === 'obstacle').length >= target;
-    case 'upgradesDone': {
+    case 'upgradesDone':
+    case 'timedUpgradesDone': {
       let n = 0;
       for (const b of state.buildings) {
         const def = data.buildings[b.type];
         if (!def || ['obstacle', 'decor', 'hedge'].includes(def.category)) continue;
         const max = def.category === 'hall' ? Math.min(data.hall.levels.length, def.levels.length) : limits[b.type]?.maxLevel ?? 0;
         const nextLevel = def.levels[b.level];
-        if (b.level < max && nextLevel && nextLevel.buildSeconds <= period) n++;
+        // P1-08: a timed-upgrade task counts only upgrades that take a builder's time.
+        if (b.level < max && nextLevel && nextLevel.buildSeconds <= period && (tpl.stat !== 'timedUpgradesDone' || nextLevel.buildSeconds > 0)) n++;
       }
       return n >= target;
     }
@@ -195,15 +261,77 @@ export function taskEligible(tpl: TaskTemplate, target: number, state: VillageSt
       for (let t = best + 1; t <= best + target; t++) {
         if (Math.min(halls, 1 + Math.floor((t - 1) / cfg.tiersPerHall)) > hall) return false;
         const beyond = Math.max(0, t - halls * cfg.tiersPerHall);
-        if (cfg.taskMaxGrowth !== undefined && Math.pow(1 + cfg.powerGrowthPerTier, beyond) > cfg.taskMaxGrowth + 1e-9) return false;
+        let growth = 1;
+        for (let i = 0; i < beyond; i++) growth *= 1 + cfg.powerGrowthPerTier;
+        if (cfg.taskMaxGrowth !== undefined && growth > cfg.taskMaxGrowth + 1e-9) return false;
       }
       return true;
     }
     case 'troopsTrained':
-      return state.buildings.some((b) => b.level >= 1 && (data.buildings[b.type]?.levels[b.level - 1]?.housing ?? 0) > 0);
+      return hasCamp(state, data);
+    case 'collectedAcorns':
+    case 'collectedDew': {
+      // P5-04: a collect task is offered only when its target is more than one collect and fits in its period.
+      if (!tpl.ofDailyProduction) return true;
+      const { perHour, largest } = collectors(state, tpl.stat === 'collectedAcorns' ? 'acorns' : 'dew', data);
+      return target > largest && target <= perHour * 24 * periodDays;
+    }
+    // P5-04: each new template is offered only when the village can finish it (protected item 29).
+    case 'donations':
+      return Boolean(state.grove?.joined) && hasCamp(state, data);
+    case 'drillsDone':
+      return Boolean(data.daily.drill) && hasCamp(state, data);
+    case 'stakesWon': {
+      const rates = recentRaidRates(state, data);
+      return Object.keys(data.raids.stakes?.byStars ?? {}).length > 0 && !!rates && rates.stars >= 1.5;
+    }
+    case 'raidsThreeStar': {
+      const share = recentThreeStarShare(state, data);
+      return share !== null && share * (periodDays >= 7 ? 20 : 4) >= target;
+    }
+    case 'rematchesWon':
+      return rematchable(state, now, data).length >= target;
+    case 'goalSteps': {
+      // A goal event (Bounty, festival or Gauntlet) runs in the period, with at least `target` steps on its ladders.
+      let steps = 0;
+      for (const w of eventsBetween(now, now + period * 1000, data)) steps += eventDef(w.id, data)?.goal?.ladder.length ?? 0;
+      return steps >= target;
+    }
     default:
       return true;
   }
+}
+
+/**
+ * Retention audit RET-05 (P1-08): a collect task's share of the village's own daily collector output, rounded to
+ * two significant digits (0 when the template has none). Targets linear in the Keep were 0.3% of a day's
+ * production at Keep 12, so the task finished on the first collect.
+ */
+function productionTarget(tpl: TaskTemplate, state: VillageState, data: GameData): number {
+  if (!tpl.ofDailyProduction) return 0;
+  const kind = tpl.stat === 'collectedAcorns' ? 'acorns' : tpl.stat === 'collectedDew' ? 'dew' : null;
+  if (!kind) return 0;
+  const { perHour, largest } = collectors(state, kind, data);
+  // P5-04: never finished by a single collect: above what the largest collector holds (collectorHoursCap since P3-01).
+  const want = Math.max(perHour * 24 * tpl.ofDailyProduction, largest + 1);
+  if (!(perHour > 0)) return 0;
+  // Exact on every engine (no log10): the largest power of ten that leaves two significant digits, rounded up.
+  let step = 1;
+  while (want >= step * 100) step *= 10;
+  return Math.ceil(want / step) * step;
+}
+
+/** A village's collectors of one resource: output per hour and the most one of them holds (one collect's most). */
+function collectors(state: VillageState, kind: 'acorns' | 'dew', data: GameData): { perHour: number; largest: number } {
+  let perHour = 0;
+  let largest = 0;
+  for (const b of state.buildings) {
+    if (b.level < 1 || data.buildings[b.type]?.produces !== kind) continue;
+    const r = collectorRatePerHour(b, b.level, data);
+    perHour += r;
+    largest = Math.max(largest, r * data.economy.collectorHoursCap);
+  }
+  return { perHour, largest };
 }
 
 function fixedTarget(tpl: TaskTemplate, hall: number): number {
@@ -218,7 +346,7 @@ function fixedTarget(tpl: TaskTemplate, hall: number): number {
  * needed ~100 raids at Keep 12 for a casual player).
  */
 export function taskTarget(tpl: TaskTemplate, state: VillageState, data: GameData): number | null {
-  const base = fixedTarget(tpl, hallOf(state, data));
+  const base = Math.max(fixedTarget(tpl, hallOf(state, data)), productionTarget(tpl, state, data));
   if (!tpl.adaptive || (tpl.stat !== 'starsEarned' && tpl.stat !== 'raidsWon')) return base;
   const rates = recentRaidRates(state, data);
   if (!rates) return base;
@@ -234,10 +362,10 @@ function targetFor(tpl: TaskTemplate, hall: number, state?: VillageState, data?:
 }
 
 /** The tasks for a period, chosen from the ones the village can still do. */
-function chooseTasks(list: TaskTemplate[], n: number, seed: number, state: VillageState, data: GameData, periodDays: number): string[] {
+function chooseTasks(list: TaskTemplate[], n: number, seed: number, state: VillageState, data: GameData, periodDays: number, now = state.lastSeenAt): string[] {
   const ok = list.filter((tpl) => {
     const target = taskTarget(tpl, state, data);
-    return target !== null && taskEligible(tpl, target, state, data, periodDays);
+    return target !== null && taskEligible(tpl, target, state, data, periodDays, now);
   });
   return pickTemplates(ok.length >= n ? ok : list, n, seed).map((t) => t.id);
 }
@@ -290,7 +418,7 @@ export function rollPeriods(state: VillageState, now: number, data: GameData): v
       state.tasks.dayClaimed = [];
     }
     // Chosen once, from what the village can do as the day begins.
-    state.tasks.dayIds = chooseTasks(data.pass.dailyTasks, 3, mixSeed(state.seed, state.tasks.day * 2 + 1), state, data, 1);
+    state.tasks.dayIds = chooseTasks(data.pass.dailyTasks, 3, mixSeed(state.seed, state.tasks.day * 2 + 1), state, data, 1, now);
     state.tasks.dayTargets = chooseTargets(data.pass.dailyTasks, state.tasks.dayIds, state, data);
   }
   if (week > state.tasks.week || !state.tasks.weekIds?.length) {
@@ -299,9 +427,14 @@ export function rollPeriods(state: VillageState, now: number, data: GameData): v
       state.tasks.weekBaseline = { ...state.stats };
       state.tasks.weekClaimed = [];
     }
-    state.tasks.weekIds = chooseTasks(data.pass.weeklyChallenges, data.pass.weeklyCount, mixSeed(state.seed, state.tasks.week * 2 + 2), state, data, 7);
+    state.tasks.weekIds = chooseTasks(data.pass.weeklyChallenges, data.pass.weeklyCount, mixSeed(state.seed, state.tasks.week * 2 + 2), state, data, 7, now);
     state.tasks.weekTargets = chooseTargets(data.pass.weeklyChallenges, state.tasks.weekIds, state, data);
   }
   const season = passSeason(now, data);
-  if (season > state.pass.season) state.pass = { season, points: 0, premium: false, claimedFree: [], claimedPremium: [] };
+  if (season > state.pass.season) {
+    // P1-01: the record of what the rollover granted from the season that ended stays for the welcome back.
+    const last = state.pass.lastSeason;
+    // P5-10: the counters as the season begins, for its recap at the next rollover.
+    state.pass = { season, points: 0, premium: false, claimedFree: [], claimedPremium: [], ...(last ? { lastSeason: last } : {}), startStats: { raidsWon: state.stats.raidsWon, starsEarned: state.stats.starsEarned } };
+  }
 }

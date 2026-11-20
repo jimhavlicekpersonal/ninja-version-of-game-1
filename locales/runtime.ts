@@ -104,8 +104,19 @@ function costText(value: string, code: string, pack: Catalog): string {
   if (!parts.every(Boolean)) return value;
   return listFormat(parts.map(m => `${numberText(Number(m![1].replace(/,/g, '')), code)} ${labelText(m![2], code, pack)}`), code);
 }
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+/**
+ * P1-09 (2026-11-18): the simulation writes a UTC moment as `toUTCString().slice(0, 22)` ("Sat, 21 Nov 2026 00:00");
+ * read that shape exactly, so a delivery never depends on an engine accepting a truncated date in `Date.parse`.
+ */
+function utcFragment(value: string): number {
+  const m = /^(?:[A-Z][a-z]{2}, )?(\d{1,2}) ([A-Z][a-z]{2}) (\d{4})(?: (\d{2}):(\d{2}))?/.exec(value.trim());
+  const month = m ? MONTHS.indexOf(m[2]) : -1;
+  return m && month >= 0 ? Date.UTC(Number(m[3]), month, Number(m[1]), Number(m[4] ?? 0), Number(m[5] ?? 0)) : NaN;
+}
 function utcText(value: string, code: string, includeZone: boolean): string {
-  const at = Date.parse(value.replace(/:$/, '') + (value.endsWith('GMT') ? '' : ' GMT'));
+  const exact = utcFragment(value);
+  const at = Number.isFinite(exact) ? exact : Date.parse(value.replace(/:$/, '') + (value.endsWith('GMT') ? '' : ' GMT'));
   if (!Number.isFinite(at)) return value;
   const hasTime = /\d:\d/.test(value);
   return new Intl.DateTimeFormat(code, {dateStyle:'medium', ...(hasTime ? {timeStyle:'short' as const} : {}), timeZone:'UTC'}).format(at) + (includeZone ? ' UTC' : '');

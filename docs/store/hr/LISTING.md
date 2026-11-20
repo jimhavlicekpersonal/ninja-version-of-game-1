@@ -26,8 +26,15 @@ Vodi nindža klan, izgradi skriveno selo u planinama, obuči pedeset vrsta ratni
 **Napadaj s planom**
 
 - Ratnici ulaze samo kroz Točke infiltracije. Izvidi putove i tornjeve koji ih čuvaju.
-- Baci Dimnu bombu kad ratnici uđu u domet tornja i pošalji Sabotera da onesposobi obranu.
+- Pošalji odred jednom naredbom (zajedno, u kliještima ili u koloni; tenkovi prvi ili juriš) ili sam rasporedi svakog ratnika.
+- Baci Dimnu bombu kad ratnici uđu u domet tornja i pošalji Sabotera da onesposobi obranu. Od Utvrde klana razine 7 Kapetan sjene jednom po bitci okuplja cijeli tvoj odred.
+- Nakon prepada pogledaj što bi ista vojska postigla kroz drugu točku.
 - Promišljen napad pobjeđuje veću vojsku.
+
+**Obrani svoje selo**
+
+- Svaki prepad na tvoje selo donosi izvješće: što je sačuvano, koliko je zvjezdica uskraćeno i kuda je napadač ušao.
+- Testiraj svoju obranu protiv simuliranog napadača i vježbaj protiv vojske koja te pobijedila.
 
 **Igrajte zajedno** (na mreži)
 
@@ -38,7 +45,12 @@ Vodi nindža klan, izgradi skriveno selo u planinama, obuči pedeset vrsta ratni
 
 **Iskušenja sjene**
 
-- Beskrajni niz utvrda. Svaka razina nagrađuje samo jednom i sve je teža.
+- Beskrajni niz utvrda. Svaka razina nagrađuje samo jednom i sve je teža. Dnevna vježba omogućuje ti da vježbaš dok se tvoja vojska obučava.
+
+**Svaki dan nešto novo**
+
+- Događaji u stalnom kalendaru od četiri tjedna, pet godišnjih festivala s tvrđavom i izgledom Utvrde koji možeš zaraditi, tjedni Špalir i dnevni ugovor.
+- Postignuća, pečati Utvrde, rangovi Majstorstva ratnika i izgledi koje zarađuješ igranjem.
 
 **Poštena igra**
 
@@ -46,7 +58,7 @@ Vodi nindža klan, izgradi skriveno selo u planinama, obuči pedeset vrsta ratni
 - Računalno stvoreni protivnici uvijek su tako označeni.
 - Ograničenja potrošnje za igrače mlađe od 18 godina i samo podsjetnici koje odabereš (isključeni dok ih ne uključiš).
 
-Kagemura je besplatna za preuzimanje i igranje: svaka zgrada, ratnik, razina Utvrde i način igre dostupni su bez plaćanja, a oglasa nema. Žad, premium valuta, zarađuje se u malim količinama igranjem (postignuća, lige, dnevna škrinja i besplatna staza Sezonskog svitka), a može se i kupiti. Neke stvari prodaju se samo za pravi novac: premium staza Sezonskog svitka (dodatne nagrade, brža gradnja tijekom sezone i izgled Utvrde „Festival lampiona“) i vremenski ograničeni paketi žada i resursa.
+Kagemura je besplatna za preuzimanje i igranje: svaka zgrada, ratnik, razina Utvrde i način igre dostupni su bez plaćanja, a oglasa nema. Žad, premium valuta, zarađuje se u malim količinama igranjem (postignuća, lige, dnevna škrinja i besplatna staza Sezonskog svitka), a može se i kupiti. Neke stvari prodaju se samo za pravi novac: premium staza Sezonskog svitka (dodatne nagrade, brža gradnja tijekom sezone i izgled Utvrde koji se mijenja svake sezone) i vremenski ograničeni paketi žada i resursa.
 
 ## Poveznice za izdavanje
 

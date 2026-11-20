@@ -35,8 +35,10 @@ export interface PreviewOptions {
   only?: string[];
 }
 
-export interface BuildingRow { id: string; keep: number; army: string; base: number; withIt: number; bodyOnly: number; events: number }
-export interface HeroRow { id: string; keep: number; army: string; none: number; captain: number; hero: number }
+/** P4-10 (BNL-12): `effectSE` is the paired standard error of Δ effect over the bases; events count the building under test only. */
+export interface BuildingRow { id: string; keep: number; army: string; base: number; withIt: number; bodyOnly: number; effectSE: number; events: number }
+/** P4-10 (BNL-12): the hero sent first (`hero`) and last (`heroLast`). */
+export interface HeroRow { id: string; keep: number; army: string; none: number; captain: number; hero: number; heroLast: number }
 
 const liveTroop = (rosterId: string) => WARRIORS.find((w) => w.id === rosterId)?.liveTroop ?? rosterId;
 
@@ -114,16 +116,20 @@ function bodyOnly(data: GameData, id: string): GameData {
   return out;
 }
 
-function fight(base: BaseLayout, army: Record<string, number>, keep: number, seed: number, data: GameData, hero: { id: string; level: number } | null, counters?: { n: number }): number {
+function fight(base: BaseLayout, army: Record<string, number>, keep: number, seed: number, data: GameData, hero: { id: string; level: number } | null, counters?: { n: number; type: string }, heroLast = false): number {
   const levels = Object.fromEntries(Object.keys(army).map((t) => [t, troopLevelCapAt(keep, data, t)]));
   const setup: BattleSetup = { seed: 77 + seed, base, army, levels, infiltration: true, ...(hero ? { hero } : {}) };
   const sim = createBattle(setup, data);
   const deployments = botDeployments(sim.deployable, sim.grid.size, army, createRng(13 + seed), data, levels, sim.entry);
-  if (hero && deployments.length) deployments.unshift({ ...deployments[0], troop: hero.id });
+  if (hero && deployments.length) {
+    if (heroLast) deployments.push({ ...deployments[deployments.length - 1], troop: hero.id });
+    else deployments.unshift({ ...deployments[0], troop: hero.id });
+  }
   const byTick = deploymentsByTick(deployments);
   while (!sim.ended) {
     step(sim, byTick.get(sim.tick));
-    if (counters) for (const e of sim.events) if (e.k === 'counter') counters.n++;
+    // Only the building under test (the live Repair Crane's events used to be counted too).
+    if (counters) for (const e of sim.events) if (e.k === 'counter' && sim.buildings[e.building]?.type === counters.type) counters.n++;
   }
   return battleResult(sim).destruction;
 }
@@ -155,16 +161,20 @@ export function runBuildingPreview(opts: PreviewOptions): BuildingRow[] {
         let a = 0;
         let w = 0;
         let o = 0;
-        const counters = { n: 0 };
+        const deltas: number[] = [];
+        const counters = { n: 0, type: id };
         const list = bases(keep, opts);
         list.forEach((base, i) => {
           const changed = withBuilding(base, id, keep, data);
           a += fight(base, army, keep, i, data, null);
-          w += fight(changed, army, keep, i, data, null, counters);
-          o += fight(changed, army, keep, i, plain, null);
+          const wi = fight(changed, army, keep, i, data, null, counters);
+          const oi = fight(changed, army, keep, i, plain, null);
+          w += wi;
+          o += oi;
+          deltas.push(wi - oi);
         });
         const n = list.length;
-        rows.push({ id, keep, army: name, base: a / n, withIt: w / n, bodyOnly: o / n, events: counters.n / n });
+        rows.push({ id, keep, army: name, base: a / n, withIt: w / n, bodyOnly: o / n, effectSE: pairedSE(deltas), events: counters.n / n });
       }
     }
   }
@@ -192,18 +202,28 @@ export function runHeroPreview(opts: PreviewOptions): HeroRow[] {
         let none = 0;
         let cap = 0;
         let h = 0;
+        let hl = 0;
         const list = bases(keep, opts);
         list.forEach((base, i) => {
           none += fight(base, army, keep, i, data, null);
           cap += fight(base, army, keep, i, data, captain);
           h += fight(base, army, keep, i, data, hero);
+          hl += fight(base, army, keep, i, data, hero, undefined, true);
         });
         const n = list.length;
-        rows.push({ id, keep, army: name, none: none / n, captain: cap / n, hero: h / n });
+        rows.push({ id, keep, army: name, none: none / n, captain: cap / n, hero: h / n, heroLast: hl / n });
       }
     }
   }
   return rows;
+}
+
+/** Standard error of the mean of paired differences. */
+function pairedSE(d: number[]): number {
+  if (d.length < 2) return 0;
+  const m = d.reduce((a, x) => a + x, 0) / d.length;
+  const v = d.reduce((a, x) => a + (x - m) * (x - m), 0) / (d.length - 1);
+  return Math.sqrt(v / d.length);
 }
 
 const f1 = (n: number) => n.toFixed(1);
@@ -215,13 +235,13 @@ export function previewMarkdown(buildings: BuildingRow[], heroes: HeroRow[], opt
   L.push('Generated by `npm run balance:preview` (`tools/balance/preview.ts`) from `src/gameplay/data/planned.json`. Do not edit by hand. Reported only: nothing here is gated, and none of this content is live.', '');
   L.push(`Bases: generated at each Keep with mid-level buildings, ${opts.seeds} seed(s) × ${opts.layouts.length} layout(s) (${opts.layouts.join(', ')}). Armies fill the Keep's housing at its research caps and use the bot plan. Destruction % averaged over the bases.`, '');
   L.push('## Buildings', '');
-  L.push('Each planned building is added at its catalog max level for the Keep (the Living Bamboo Wall replaces the Stone Walls). **Δ building** = with it − without it; **Δ effect** = with it − with its body only (the effect switched off). A counter doing its job shows a clearly negative Δ effect against "it beats" and little against "beats it". Events: counter actions per fight (every counter on the base, live ones included).', '');
-  L.push('| Building | Keep | Army | Base % | With it % | Δ building | Δ effect | Events |', '|---|---|---|---|---|---|---|---|');
-  for (const r of buildings) L.push(`| \`${r.id}\` | ${r.keep} | ${r.army} | ${f1(r.base)} | ${f1(r.withIt)} | ${d1(r.withIt - r.base)} | ${d1(r.withIt - r.bodyOnly)} | ${f1(r.events)} |`);
+  L.push('Each planned building is added at its catalog max level for the Keep (the Living Bamboo Wall replaces the Stone Walls). **Δ building** = with it − without it; **Δ effect** = with it − with its body only (the effect switched off). A counter doing its job shows a clearly negative Δ effect against "it beats" and little against "beats it". Events: the tested building\'s counter actions per fight. ± is the paired standard error of Δ effect over the bases: an effect inside twice it is noise.', '');
+  L.push('| Building | Keep | Army | Base % | With it % | Δ building | Δ effect | ± | Events |', '|---|---|---|---|---|---|---|---|---|');
+  for (const r of buildings) L.push(`| \`${r.id}\` | ${r.keep} | ${r.army} | ${f1(r.base)} | ${f1(r.withIt)} | ${d1(r.withIt - r.base)} | ${d1(r.withIt - r.bodyOnly)} | ${f1(r.effectSE)} | ${f1(r.events)} |`);
   L.push('', '## Heroes', '');
-  L.push('The same army with no hero, with the live Shadow Captain at the Keep\'s level, and with the planned hero at its Keep level (its Hero Hall level would cap it).', '');
-  L.push('| Hero | Keep | Army | No hero % | Shadow Captain % | Hero % | Hero vs Captain |', '|---|---|---|---|---|---|---|');
-  for (const r of heroes) L.push(`| \`${r.id}\` | ${r.keep} | ${r.army} | ${f1(r.none)} | ${f1(r.captain)} | ${f1(r.hero)} | ${d1(r.hero - r.captain)} |`);
+  L.push('The same army with no hero, with the live Shadow Captain at the Keep\'s level, and with the planned hero at its Keep level (the Hero Hall decides which heroes can be chosen, never their level), sent first and sent last.', '');
+  L.push('| Hero | Keep | Army | No hero % | Shadow Captain % | Hero first % | Hero last % | Best vs Captain |', '|---|---|---|---|---|---|---|---|');
+  for (const r of heroes) L.push(`| \`${r.id}\` | ${r.keep} | ${r.army} | ${f1(r.none)} | ${f1(r.captain)} | ${f1(r.hero)} | ${f1(r.heroLast)} | ${d1(Math.max(r.hero, r.heroLast) - r.captain)} |`);
   L.push('');
   return L.join('\n');
 }

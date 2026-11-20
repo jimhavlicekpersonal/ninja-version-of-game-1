@@ -30,6 +30,13 @@ the gameplay lane and tested (`tests/gameplay/control/squad.test.ts`); nothing o
 
 Why: on 80 lab raids at Keep 12, formation was worth about 7 points of destruction and wave order about 6 on top of
 the entry point, and today only a player who hand-places every warrior can reach them (`docs/game-theory/rules10`).
+
+**Done 2026-11-18 (P6-01, replayability pass):** a row above the troop cards in live battles: three formation chips
+(a second tap disarms) and one wave-order chip that cycles (Tanks first, Rush; Hold a reserve is not offered: counted
+strictly it was the best order alone on 1, 3 and 0 of 10 bases at Keeps 9, 12 and 15, under the item's one-in-five
+bar, `docs/audit/understand-2026-11-16/phase6/p6-01-squad-orders.md`), both remembered on the device
+(`tk.squad`); with a formation armed and a warrior card selected, a ring tap sends the squad; Hold with the waiting
+count replaces the order chip while `squadWaiting > 0`. Tests: `tests/presentation/dom/squad.dom.test.ts`.
 Squad orders are recorded as ordinary deployments on their ticks, so replays and the server check are unchanged.
 The hero and abilities are not part of a squad order; they stay hand-placed.
 

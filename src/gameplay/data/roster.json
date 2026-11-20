@@ -169,7 +169,7 @@
         "accent": "#f4ead6",
         "weapon": "needle quiver and launcher"
       },
-      "dpsScale": 0.6,
+      "dpsScale": 0.8,
       "liveTroop": "thousand_needle"
     },
     {
@@ -504,6 +504,7 @@
         "weapon": "lightning rod",
         "mount": "storm-blue kite"
       },
+      "dpsScale": 0.9,
       "liveTroop": "thunder_kite"
     },
     {
@@ -522,6 +523,7 @@
         "weapon": "bomb racks",
         "mount": "long dragon kite"
       },
+      "dpsScale": 0.85,
       "liveTroop": "dragon_kite_armada"
     },
     {
@@ -549,7 +551,7 @@
       "ability": {
         "id": "war_drum",
         "name": "War Drum",
-        "text": "Nearby warriors move and attack 25% faster within 3 tiles. Multiple drums do not stack."
+        "text": "Nearby warriors move and attack 10% faster within 3 tiles. Multiple drums do not stack."
       },
       "look": {
         "gi": "#7a3f2a",
@@ -675,7 +677,7 @@
         "accent": "#e9b44c",
         "weapon": "bronze hand-mortar"
       },
-      "dpsScale": 0.5,
+      "dpsScale": 0.4,
       "liveTroop": "siege_bombardier"
     },
     {
@@ -693,6 +695,7 @@
         "accent": "#ff4a2a",
         "weapon": "volcanic cannon"
       },
+      "dpsScale": 1.1,
       "liveTroop": "volcano_cannoneer"
     },
     {
@@ -869,6 +872,7 @@
         "accent": "#e9b44c",
         "weapon": "eclipse ring blade"
       },
+      "hpScale": 0.9,
       "liveTroop": "eclipse_ninja"
     }
   ],
@@ -882,7 +886,7 @@
       "ability": {
         "id": "rally",
         "name": "Rally",
-        "text": "Nearby warriors fight 30% harder for 8 seconds. Recharges each battle."
+        "text": "The whole squad fights 50% harder for 15 seconds, once per battle."
       },
       "look": {
         "gi": "#141a22",
@@ -900,7 +904,7 @@
       "ability": {
         "id": "bulwark",
         "name": "Bulwark",
-        "text": "Raises a wall of shields that blocks defense fire in a cone for 6 seconds."
+        "text": "Raises a wall of shields that blocks defense fire in a cone for 12 seconds."
       },
       "look": {
         "gi": "#3d4a5c",
@@ -918,7 +922,7 @@
       "ability": {
         "id": "squall",
         "name": "Squall",
-        "text": "Pushes all flyers forward and shields them from anti-air for 5 seconds."
+        "text": "Pushes all flyers forward and shields them from anti-air for 10 seconds."
       },
       "look": {
         "gi": "#3a3f6a",
@@ -936,7 +940,7 @@
       "ability": {
         "id": "inner_calm",
         "name": "Inner Calm",
-        "text": "Every warrior on the field heals 40% and ignores the next jam, trap or splash."
+        "text": "Every warrior on the field heals 40% and ignores the next stun, trap or splash."
       },
       "look": {
         "gi": "#f4ead6",

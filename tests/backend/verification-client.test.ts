@@ -168,3 +168,16 @@ describe('build gates (8f, 8g)', () => {
     expect(main).toMatch(/crashBand = \(\) =>/);
   });
 });
+
+describe('P7-12 (BNL-14): the content preview build is manual and off by default', () => {
+  it('runs only by hand, its input defaults to off, it never deploys or goes online', () => {
+    const y = readFileSync(new URL('../../.github/workflows/content-preview.yml', import.meta.url), 'utf8');
+    const on = y.slice(y.indexOf('\non:'), y.indexOf('\npermissions:'));
+    expect(on).toContain('workflow_dispatch');
+    expect(on).not.toMatch(/\bpush\b|pull_request|schedule/);
+    expect(y).toMatch(/default: false/);
+    expect(y).toMatch(/if: \$\{\{ inputs\.build \}\}/);
+    expect(y).not.toMatch(/deploy-pages|upload-pages-artifact|pages: write/);
+    expect(y).toMatch(/VITE_SERVER_URL: ''/);
+  });
+});

@@ -86,5 +86,21 @@
       ]
     }
   ],
+  "screenshots": [
+    {
+      "src": "../screenshots/village-portrait.jpg",
+      "sizes": "390x844",
+      "type": "image/jpeg",
+      "form_factor": "narrow",
+      "label": "A hidden ninja village at Clan Keep 9"
+    },
+    {
+      "src": "../screenshots/battle-landscape.jpg",
+      "sizes": "844x390",
+      "type": "image/jpeg",
+      "form_factor": "wide",
+      "label": "A raid: the squad goes in through an Infiltration Point"
+    }
+  ],
   "lang": "kn"
 }

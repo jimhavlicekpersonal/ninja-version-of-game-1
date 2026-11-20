@@ -1,6 +1,6 @@
 {
   "generated": "npm run docs:progression",
-  "count": 608,
+  "count": 611,
   "icons": [
     {
       "key": "icon.warrior.shinobi.s1",
@@ -4958,7 +4958,7 @@
         2
       ],
       "live": false,
-      "prompt": "Isometric icon of the Hero Hall: Home of a clan hero; one hall per hero.. Stage 1 of 5: timber and plaster, simple."
+      "prompt": "Isometric icon of the Hero Hall: Home of your clan heroes: its level decides which hero you can choose.. Stage 1 of 5: timber and plaster, simple."
     },
     {
       "key": "icon.building.hero_shrine.s2",
@@ -4972,7 +4972,7 @@
         4
       ],
       "live": false,
-      "prompt": "Isometric icon of the Hero Hall: Home of a clan hero; one hall per hero.. Stage 2 of 5: stone base and tiled roof."
+      "prompt": "Isometric icon of the Hero Hall: Home of your clan heroes: its level decides which hero you can choose.. Stage 2 of 5: stone base and tiled roof."
     },
     {
       "key": "icon.building.hero_shrine.s3",
@@ -4986,7 +4986,7 @@
         6
       ],
       "live": false,
-      "prompt": "Isometric icon of the Hero Hall: Home of a clan hero; one hall per hero.. Stage 3 of 5: second storey, banners, lacquer trim."
+      "prompt": "Isometric icon of the Hero Hall: Home of your clan heroes: its level decides which hero you can choose.. Stage 3 of 5: second storey, banners, lacquer trim."
     },
     {
       "key": "icon.building.hero_shrine.s4",
@@ -5000,7 +5000,7 @@
         8
       ],
       "live": false,
-      "prompt": "Isometric icon of the Hero Hall: Home of a clan hero; one hall per hero.. Stage 4 of 5: gold finials, lanterns, carved beams."
+      "prompt": "Isometric icon of the Hero Hall: Home of your clan heroes: its level decides which hero you can choose.. Stage 4 of 5: gold finials, lanterns, carved beams."
     },
     {
       "key": "icon.building.hero_shrine.s5",
@@ -5014,7 +5014,7 @@
         10
       ],
       "live": false,
-      "prompt": "Isometric icon of the Hero Hall: Home of a clan hero; one hall per hero.. Stage 5 of 5: masterwork: gold leaf, glowing lanterns, clan crest banners."
+      "prompt": "Isometric icon of the Hero Hall: Home of your clan heroes: its level decides which hero you can choose.. Stage 5 of 5: masterwork: gold leaf, glowing lanterns, clan crest banners."
     },
     {
       "key": "icon.building.temple_bell_tower.s1",
@@ -6148,7 +6148,7 @@
         2
       ],
       "live": false,
-      "prompt": "Isometric icon of the Bronze Mirror Screen: Polished bronze panels: every third projectile that hits the screen flies back at whoever threw it. Melee warriors just walk up and smash it.. Stage 1 of 5: timber and plaster, simple."
+      "prompt": "Isometric icon of the Bronze Mirror Screen: Polished bronze panels: every third projectile that hits the screen flies back at whoever threw it.. Stage 1 of 5: timber and plaster, simple."
     },
     {
       "key": "icon.building.mirror_screen.s2",
@@ -6162,7 +6162,7 @@
         4
       ],
       "live": false,
-      "prompt": "Isometric icon of the Bronze Mirror Screen: Polished bronze panels: every third projectile that hits the screen flies back at whoever threw it. Melee warriors just walk up and smash it.. Stage 2 of 5: stone base and tiled roof."
+      "prompt": "Isometric icon of the Bronze Mirror Screen: Polished bronze panels: every third projectile that hits the screen flies back at whoever threw it.. Stage 2 of 5: stone base and tiled roof."
     },
     {
       "key": "icon.building.mirror_screen.s3",
@@ -6176,7 +6176,7 @@
         6
       ],
       "live": false,
-      "prompt": "Isometric icon of the Bronze Mirror Screen: Polished bronze panels: every third projectile that hits the screen flies back at whoever threw it. Melee warriors just walk up and smash it.. Stage 3 of 5: second storey, banners, lacquer trim."
+      "prompt": "Isometric icon of the Bronze Mirror Screen: Polished bronze panels: every third projectile that hits the screen flies back at whoever threw it.. Stage 3 of 5: second storey, banners, lacquer trim."
     },
     {
       "key": "icon.building.mirror_screen.s4",
@@ -6190,7 +6190,7 @@
         8
       ],
       "live": false,
-      "prompt": "Isometric icon of the Bronze Mirror Screen: Polished bronze panels: every third projectile that hits the screen flies back at whoever threw it. Melee warriors just walk up and smash it.. Stage 4 of 5: gold finials, lanterns, carved beams."
+      "prompt": "Isometric icon of the Bronze Mirror Screen: Polished bronze panels: every third projectile that hits the screen flies back at whoever threw it.. Stage 4 of 5: gold finials, lanterns, carved beams."
     },
     {
       "key": "icon.building.mirror_screen.s5",
@@ -6204,7 +6204,7 @@
         10
       ],
       "live": false,
-      "prompt": "Isometric icon of the Bronze Mirror Screen: Polished bronze panels: every third projectile that hits the screen flies back at whoever threw it. Melee warriors just walk up and smash it.. Stage 5 of 5: masterwork: gold leaf, glowing lanterns, clan crest banners."
+      "prompt": "Isometric icon of the Bronze Mirror Screen: Polished bronze panels: every third projectile that hits the screen flies back at whoever threw it.. Stage 5 of 5: masterwork: gold leaf, glowing lanterns, clan crest banners."
     },
     {
       "key": "icon.building.sand_bucket_post.s1",
@@ -6778,7 +6778,7 @@
         1
       ],
       "live": false,
-      "prompt": "Isometric icon of the Ink Seal Post: Warriors who fall within 3 tiles are sealed in ink: they cannot be revived, and nothing bails out of them.. Stage 1 of 5: timber and plaster, simple."
+      "prompt": "Isometric icon of the Ink Seal Post: Warriors who fall within 3 tiles are sealed in ink: they cannot be revived.. Stage 1 of 5: timber and plaster, simple."
     },
     {
       "key": "icon.building.ink_seal_post.s2",
@@ -6792,7 +6792,7 @@
         3
       ],
       "live": false,
-      "prompt": "Isometric icon of the Ink Seal Post: Warriors who fall within 3 tiles are sealed in ink: they cannot be revived, and nothing bails out of them.. Stage 2 of 5: stone base and tiled roof."
+      "prompt": "Isometric icon of the Ink Seal Post: Warriors who fall within 3 tiles are sealed in ink: they cannot be revived.. Stage 2 of 5: stone base and tiled roof."
     },
     {
       "key": "icon.building.ink_seal_post.s3",
@@ -6806,7 +6806,7 @@
         4
       ],
       "live": false,
-      "prompt": "Isometric icon of the Ink Seal Post: Warriors who fall within 3 tiles are sealed in ink: they cannot be revived, and nothing bails out of them.. Stage 3 of 5: second storey, banners, lacquer trim."
+      "prompt": "Isometric icon of the Ink Seal Post: Warriors who fall within 3 tiles are sealed in ink: they cannot be revived.. Stage 3 of 5: second storey, banners, lacquer trim."
     },
     {
       "key": "icon.building.ink_seal_post.s4",
@@ -6820,7 +6820,7 @@
         6
       ],
       "live": false,
-      "prompt": "Isometric icon of the Ink Seal Post: Warriors who fall within 3 tiles are sealed in ink: they cannot be revived, and nothing bails out of them.. Stage 4 of 5: gold finials, lanterns, carved beams."
+      "prompt": "Isometric icon of the Ink Seal Post: Warriors who fall within 3 tiles are sealed in ink: they cannot be revived.. Stage 4 of 5: gold finials, lanterns, carved beams."
     },
     {
       "key": "icon.building.ink_seal_post.s5",
@@ -6834,7 +6834,7 @@
         8
       ],
       "live": false,
-      "prompt": "Isometric icon of the Ink Seal Post: Warriors who fall within 3 tiles are sealed in ink: they cannot be revived, and nothing bails out of them.. Stage 5 of 5: masterwork: gold leaf, glowing lanterns, clan crest banners."
+      "prompt": "Isometric icon of the Ink Seal Post: Warriors who fall within 3 tiles are sealed in ink: they cannot be revived.. Stage 5 of 5: masterwork: gold leaf, glowing lanterns, clan crest banners."
     },
     {
       "key": "icon.building.longbow_yagura.s1",
@@ -7271,7 +7271,7 @@
       "group": "ability",
       "subject": "War Drum",
       "live": true,
-      "prompt": "Ability icon \"War Drum\": Nearby warriors move and attack 25% faster within 3 tiles. Multiple drums do not stack. One bold symbol on a round ink-wash badge."
+      "prompt": "Ability icon \"War Drum\": Nearby warriors move and attack 10% faster within 3 tiles. Multiple drums do not stack. One bold symbol on a round ink-wash badge."
     },
     {
       "key": "icon.ability.veil",
@@ -7442,7 +7442,7 @@
       "group": "ability",
       "subject": "Rally",
       "live": false,
-      "prompt": "Ability icon \"Rally\": Nearby warriors fight 30% harder for 8 seconds. Recharges each battle. One bold symbol on a round ink-wash badge."
+      "prompt": "Ability icon \"Rally\": The whole squad fights 50% harder for 15 seconds, once per battle. One bold symbol on a round ink-wash badge."
     },
     {
       "key": "icon.ability.bulwark",
@@ -7451,7 +7451,7 @@
       "group": "ability",
       "subject": "Bulwark",
       "live": false,
-      "prompt": "Ability icon \"Bulwark\": Raises a wall of shields that blocks defense fire in a cone for 6 seconds. One bold symbol on a round ink-wash badge."
+      "prompt": "Ability icon \"Bulwark\": Raises a wall of shields that blocks defense fire in a cone for 12 seconds. One bold symbol on a round ink-wash badge."
     },
     {
       "key": "icon.ability.squall",
@@ -7460,7 +7460,7 @@
       "group": "ability",
       "subject": "Squall",
       "live": false,
-      "prompt": "Ability icon \"Squall\": Pushes all flyers forward and shields them from anti-air for 5 seconds. One bold symbol on a round ink-wash badge."
+      "prompt": "Ability icon \"Squall\": Pushes all flyers forward and shields them from anti-air for 10 seconds. One bold symbol on a round ink-wash badge."
     },
     {
       "key": "icon.ability.inner_calm",
@@ -7469,7 +7469,7 @@
       "group": "ability",
       "subject": "Inner Calm",
       "live": false,
-      "prompt": "Ability icon \"Inner Calm\": Every warrior on the field heals 40% and ignores the next jam, trap or splash. One bold symbol on a round ink-wash badge."
+      "prompt": "Ability icon \"Inner Calm\": Every warrior on the field heals 40% and ignores the next stun, trap or splash. One bold symbol on a round ink-wash badge."
     },
     {
       "key": "icon.currency.acorns",
@@ -7731,6 +7731,33 @@
       "subject": "Elite Garrison",
       "live": true,
       "prompt": "Shadow Trial modifier \"Elite Garrison\": Defenses are 20% tougher and hit 20% harder."
+    },
+    {
+      "key": "icon.trial.rival_crimson_lotus",
+      "file": "public/art/icons/trials/rival_crimson_lotus.png",
+      "size": 96,
+      "group": "trial",
+      "subject": "Crimson Lotus Outpost",
+      "live": true,
+      "prompt": "Shadow Trial modifier \"Crimson Lotus Outpost\": Its towers are tempered the way the Crimson Lotus clan tempers theirs."
+    },
+    {
+      "key": "icon.trial.rival_iron_tide",
+      "file": "public/art/icons/trials/rival_iron_tide.png",
+      "size": 96,
+      "group": "trial",
+      "subject": "Iron Tide Outpost",
+      "live": true,
+      "prompt": "Shadow Trial modifier \"Iron Tide Outpost\": Its towers are tempered the way the Iron Tide clan tempers theirs."
+    },
+    {
+      "key": "icon.trial.rival_moon_veil",
+      "file": "public/art/icons/trials/rival_moon_veil.png",
+      "size": 96,
+      "group": "trial",
+      "subject": "Moon Veil Outpost",
+      "live": true,
+      "prompt": "Shadow Trial modifier \"Moon Veil Outpost\": Its towers are tempered the way the Moon Veil clan tempers theirs."
     },
     {
       "key": "icon.trial.ladder",

@@ -1,13 +1,16 @@
 import { heroPickerSection } from './contentPreviewUi';
+import { unitName } from './unitName';
 import { consumptionConsentBlock, replayPrivacyBlock } from './complianceUi';
 import { messageText as i18nMessage, dateText as i18nDate, listText as i18nList } from './i18n';
 import { displayData as localizedData, labelText as i18nLabel } from './i18n';
 import { t as i18nText, fmtDecimal, fmtPercent } from './i18n';
-import { language, t } from './i18n';
+import { language, pointLabel, t } from './i18n';
+import type { BattleRecord } from '../../gameplay/sim/battle/types';
 import { Capacitor } from '@capacitor/core';
 import type { GameController, VillageBackup } from '../../gameplay/control/controller';
 import { buildingDef, hallType, levelDef } from '../../gameplay/sim/data';
 import type { OfflineSummary } from '../../gameplay/sim/offline';
+import { heroAtKeep } from '../../gameplay/sim/heroes';
 import { hallUnlocks, troopCapUnlock, type UnlockItem } from '../../gameplay/sim/preview';
 import { capacity, collectorAmount, collectorCapacity, effectiveLevel, missingFor } from '../../gameplay/sim/resources';
 import type { Building, Cost, ResourceKind, Temper, TemperAxis } from '../../gameplay/sim/types';
@@ -20,10 +23,10 @@ import { replayable } from '../../gameplay/sim/battle/battle';
 import { rematchable } from '../../gameplay/sim/rematch';
 import { stipendStatus } from '../../gameplay/sim/stipend';
 import { shieldHoursFor, storageLootCap } from '../../gameplay/sim/defense';
-import { leagueChest, leagueFor, nextLeague, seasonEndsAt } from '../../gameplay/sim/ranks';
+import { leagueChest, leagueFor, nextLeague, seasonEndsAt, seasonOf } from '../../gameplay/sim/ranks';
 import { achievementViews } from '../../gameplay/sim/achievements';
 import { activeOffers } from '../../gameplay/sim/offers';
-import { currentTasks, unlockedTier } from '../../gameplay/sim/pass';
+import { currentTasks, seasonName, unlockedTier } from '../../gameplay/sim/pass';
 import { ArmyUi } from './armyUi';
 import { costChips, RES_LABEL } from './chips';
 import { refusalText } from './refusalText';
@@ -31,9 +34,12 @@ import { PROVIDER_NAMES, storeAgeSignal } from '../../backend/platform/auth';
 import type { AgeBand } from '../../gameplay/sim/age';
 import { askAgeBand } from './ageScreen';
 import { bandFromProfile } from '../../gameplay/sim/age';
-import { nextObjective } from '../../gameplay/sim/objective';
+import { armyBehindKeep, nextObjective } from '../../gameplay/sim/objective';
+import { sealProgress } from '../../gameplay/sim/seals';
 import { calendarView } from '../../gameplay/sim/calendar';
-import { advance } from '../../gameplay/sim/village';
+import { advance, lastAttackArmy, leagueBonusOf, practiceArmy } from '../../gameplay/sim/village';
+import { goalEventViews } from '../../gameplay/sim/goalEvents';
+import { defenseKept, firstToFall, raidEntry } from '../../gameplay/sim/defenseReport';
 import { EconomyUi } from './economyUi';
 import { DailyUi } from './dailyUi';
 import { chestReady } from '../../gameplay/sim/daily';
@@ -44,20 +50,21 @@ import { ledgerReason } from './ledgerReason';
 import { openShareReplay, shareable } from './growthUi';
 import { Connection } from '../../backend/net/connection';
 import { attacksLeft, raidPhase } from '../../gameplay/sim/social/groveRaid';
-import { builderStatus, countOfType, hallLevel, limitFor, payableInProvisions, placeQuote, skipQuote, temperQuote, topUpQuote, upgradeQuote, type PayWith, type QuoteResult } from '../../gameplay/sim/village';
+import { builderStatus, countOfType, crewStatus, onGarrisonCrew, hallLevel, limitFor, payableInProvisions, placeQuote, skipQuote, temperQuote, topUpQuote, upgradeQuote, type PayWith, type QuoteResult } from '../../gameplay/sim/village';
 import { TEMPER_AXES, temperAxes, temperable, temperDef } from '../../gameplay/sim/battle/temper';
-import { canTryAlternate, nextTrialTier, trialInfo, trialReward, trialVariant } from '../../gameplay/sim/trials';
+import { attemptTier, canTryAlternate, trialInfo, trialReward, trialRewardsThrough, trialVariant } from '../../gameplay/sim/trials';
+import { drillArmy, drillAvailable } from '../../gameplay/sim/drill';
 import type { UiBus } from './bus';
 import { clear, h, icon } from './dom';
 import { formatCompact, formatDuration, formatNumber } from './format';
 import { icons } from './icons';
 import { quality } from '../render/quality';
-import { removeWithExit } from './feedback';
+import { reducedMotion, removeWithExit, uiArt } from './feedback';
 import { badgeIdFor, provideBadges } from './cardArt';
 import { toastMs } from './toastTime';
 import { parseAskRecord, shouldAskAge } from './askAgain';
-import { loadKnown, newUnlocks, saveKnown, showCeremony } from './unlockCeremony';
-import { markNoticeSeen, newsBody, seenNoticeKey, unseenNews, type NewsItem } from './newsUi';
+import { loadKnown, loadMarks, milestonesDue, newUnlocks, saveKnown, saveMarks, showCeremony, showMilestone, type Milestone, type MilestoneMarks } from './unlockCeremony';
+import { markNoticeSeen, markWhatsNewSeen, newsBody, seenNoticeKey, unseenNews, type NewsItem } from './newsUi';
 import { lazyPanel, staleChunkError } from './lazyPanel';
 import type { SettingsHost } from './settingsUi';
 
@@ -79,6 +86,9 @@ export class Hud {
 
   private resEls = new Map<ResourceKind, { amt: HTMLElement; bar: HTMLElement; cap: HTMLElement | null }>();
   private buildersEl!: HTMLElement;
+  private crewEl!: HTMLElement;
+  /** P6-14: a dot on the battle log while a settle-the-score rematch is open. */
+  private logBadge = h('span', { class: 'badge dot', hidden: true, 'aria-hidden': 'true' }, '!');
   private trophiesEl!: HTMLElement;
   private shieldEl!: HTMLElement;
   private shieldBox!: HTMLElement;
@@ -209,7 +219,10 @@ export class Hud {
     this.deps.connection.subscribe(() => this.tellRefused());
     this.updateNet();
     this.deps.groveSource.subscribe(() => this.refresh());
-    this.c.onOffer((rule) => this.econ.showOffer(rule));
+    // P6-08: an offer the same moment triggered (the Keep Celebration) waits until the milestone card is gone.
+    this.c.onOffer((rule) => this.afterMilestones(() => this.econ.showOffer(rule)));
+    // P7-14 review M4: a player new in this version has nothing to compare: no "What's new" for them.
+    if (!this.c.state.tutorial.done) markWhatsNewSeen();
     // Report section 5 step 8 (growth 8): notifications stay off until the player says yes, but the
     // question is asked once at the moment it helps: right after the first long timer they start.
     this.c.onEvents((events) => {
@@ -249,6 +262,48 @@ export class Hud {
     }
   }
 
+  /**
+   * P6-17 (playthrough opportunity 1): with the camps empty, Attack offers what needs no standing army or pays
+   * without one (the daily drill, a "Try" practice battle) and, beside the retrain countdown, the next Trial tier and a
+   * running Bounty or Gauntlet. "Scout anyway" still scouts. Existing labels only.
+   */
+  private attackTapped(): void {
+    const s = this.c.state;
+    const empty = Object.values(s.army).every((n) => n <= 0);
+    const choices = empty && s.tutorial.done ? this.emptyCampChoices() : [];
+    if (!choices.length) return void this.deps.onAttack();
+    const body = h('div', { class: 'empty-camp' }, h('p', {}, i18nText("ui.no_warriors_ready_yet_0132a774ac")));
+    const ready = this.armyReadyAt();
+    if (ready) body.append(h('p', { class: 'muted small' }, h('span', { class: 'chip' }, icon(icons.clock), formatDuration(ready - this.c.now()))));
+    const close = this.modal(t('hud.attack'), body, [
+      ...choices.map((ch) => ({ label: ch.label, primary: ch.primary, onClick: () => { close(); ch.onClick(); } })),
+      { label: t('battle.scoutAnyway'), onClick: () => { close(); this.deps.onAttack(); } },
+    ]);
+  }
+
+  /** When the training queue fills the camps again (null: nothing training). */
+  private armyReadyAt(): number | null {
+    const q = this.c.state.training;
+    return q.length ? Math.max(...q.map((x) => x.endsAt)) : null;
+  }
+
+  /** P6-17: what to do with empty camps (shared by the Attack button and the result screen). */
+  emptyCampChoices(): { label: string; primary?: boolean; onClick(): void }[] {
+    const s = this.c.state;
+    const gd = localizedData(this.c.data);
+    const now = this.c.now();
+    const out: { label: string; primary?: boolean; onClick(): void }[] = [];
+    if (this.deps.onDrill && gd.daily.drill && Object.keys(drillArmy(s, gd)).length && drillAvailable(s, now, gd)) out.push({ label: t('drill.button'), primary: true, onClick: () => this.deps.onDrill?.() });
+    const tryTroop = Object.keys(lastAttackArmy(s) ?? {}).find((tt) => gd.troops[tt]) ?? Object.keys(gd.troops).find((tt) => troopUnlock(s, tt, gd).unlocked);
+    if (tryTroop && housingCapacity(s, gd) > 0) out.push({ label: i18nText("ui.try_85d6c0718c"), onClick: () => this.deps.onPractice(practiceArmy(s, tryTroop, gd)) });
+    if (this.armyReadyAt()) {
+      const next = attemptTier(s.trials, hallLevel(s, gd), gd);
+      out.push({ label: i18nText("ui.scout_tier_8fde370df8", { arg1: next }), onClick: () => this.openTrials() });
+      if (goalEventViews(s, now, gd).some((v) => v.ladder.some((l) => !l.paid))) out.push({ label: i18nText("ui.attack_the_bounty_fortress_0d8fd46d63"), onClick: () => this.daily.openEvents() });
+    }
+    return out;
+  }
+
   /** Open a panel named by a home-screen shortcut or an app link (after the tutorial; never during a battle). */
   openShortcut(name: string): void {
     if (!this.c.state.tutorial.done || document.getElementById('battle-hud')?.hidden === false) return;
@@ -278,9 +333,12 @@ export class Hud {
     top.append(moonBtn);
     this.resEls.set('moonstones', { amt: moonAmt, bar: h('i'), cap: null });
     this.buildersEl = h('span', { class: 'res-amt' });
-    top.append(h('div', { class: 'res res-builders', title: i18nText("ui.free_village_artisans_747cc3abe1") }, icon(icons.beaver, 'res-icon'), h('div', { class: 'res-body' }, this.buildersEl)));
+    // P6-12: the builders pill opens the builder panel (artisans and the garrison crew, each a named queue).
+    this.crewEl = h('span', { class: 'crew-badge', hidden: true, 'aria-hidden': 'true' });
+    top.append(h('button', { class: 'res res-builders', type: 'button', 'data-id': 'builders', title: i18nText("ui.free_village_artisans_747cc3abe1"), 'aria-label': i18nText("ui.free_village_artisans_747cc3abe1"), onclick: () => this.openBuilders() }, icon(icons.beaver, 'res-icon'), h('div', { class: 'res-body' }, this.buildersEl), this.crewEl));
     this.trophiesEl = h('span', { class: 'res-amt' });
-    const trophyBtn = h('div', { class: 'res res-trophies', title: i18nText("ui.honor_22ea092e76"), role: 'button' }, icon(icons.leaf, 'res-icon'), h('div', { class: 'res-body' }, this.trophiesEl));
+    // P6-14: a real button with a label (it was a div with a click handler).
+    const trophyBtn = h('button', { class: 'res res-trophies', type: 'button', 'data-id': 'honor', title: i18nText("ui.honor_22ea092e76"), 'aria-label': i18nText("ui.honor_22ea092e76") }, icon(icons.leaf, 'res-icon'), h('div', { class: 'res-body' }, this.trophiesEl));
     trophyBtn.addEventListener('click', () => this.openLeague());
     top.append(trophyBtn);
     this.shieldEl = h('span', { class: 'res-amt' });
@@ -318,13 +376,13 @@ export class Hud {
         'div',
         { class: 'group' },
         h('button', { class: 'round-btn', type: 'button', 'data-id': 'settings', 'aria-label': t('hud.settings'), onclick: () => this.openSettings() }, icon(icons.gear)),
-        h('button', { class: 'round-btn', type: 'button', 'data-id': 'log', 'aria-label': t('hud.battleLog'), onclick: () => this.openLog() }, icon(icons.scroll)),
+        h('button', { class: 'round-btn', type: 'button', 'data-id': 'log', 'aria-label': t('hud.battleLog'), onclick: () => this.openLog() }, icon(icons.scroll), this.logBadge),
         h('button', { class: 'round-btn', type: 'button', 'data-id': 'army', 'aria-label': t('hud.army'), onclick: () => this.openTraining() }, icon(icons.troops), this.armyPill),
       ),
       h(
         'div',
         { class: 'group' },
-        h('button', { class: 'round-btn big attack', type: 'button', 'data-id': 'attack', 'aria-label': t('hud.attack'), onclick: () => this.deps.onAttack() }, icon(icons.swords), h('span', {}, t('hud.attack'))),
+        h('button', { class: 'round-btn big attack', type: 'button', 'data-id': 'attack', 'aria-label': t('hud.attack'), onclick: () => this.attackTapped() }, icon(icons.swords), h('span', {}, t('hud.attack'))),
         h('button', { class: 'round-btn big build', type: 'button', 'data-id': 'build', 'aria-label': t('hud.build'), onclick: () => this.openShop() }, icon(icons.hammer), h('span', {}, t('hud.build'))),
       ),
     );
@@ -371,11 +429,44 @@ export class Hud {
       railBtn('Goals', icons.star, () => this.econ.openGoals()),
       railBtn('Alliance', icons.grove, () => void this.grove().then((g) => g?.open())),
       railBtn('Friends', icons.friends, () => void this.friendsPanel().then((f) => f?.open())),
-      railBtn('Trials', icons.leaf, () => this.openTrials()),
+      railBtn('Trials', icons.trials, () => this.openTrials()),
     );
     this.rail = rail;
     this.root.append(head, rail, this.fpsEl, this.bottomBar, this.placeBar, this.sheet, this.modalRoot);
   }
+
+  /** P6-14: once per device and button, a label beside a rail button that just appeared. */
+  private introduceRailButton(label: string, b: HTMLElement): void {
+    let seen: string[];
+    try {
+      seen = JSON.parse(localStorage.getItem('tk.railSeen') ?? '[]') as string[];
+    } catch {
+      return;
+    }
+    // A village that already had the button when this shipped (the first look) learns nothing new.
+    if (!this.railIntroReady) {
+      if (!seen.includes(label)) seen.push(label);
+      try {
+        localStorage.setItem('tk.railSeen', JSON.stringify(seen));
+      } catch {
+        /* blocked */
+      }
+      return;
+    }
+    if (seen.includes(label)) return;
+    seen.push(label);
+    try {
+      localStorage.setItem('tk.railSeen', JSON.stringify(seen));
+    } catch {
+      return;
+    }
+    const tip = h('span', { class: 'rail-intro', 'aria-hidden': 'true' }, t(`rail.${label}`));
+    b.append(tip);
+    window.setTimeout(() => tip.remove(), 4500);
+  }
+
+  /** Set after the first rail update, so buttons a village already has are not introduced again. */
+  private railIntroReady = false;
 
   /** A negative balance is a refund debt, repaid from future income. */
   private explainDebt(k: ResourceKind): void {
@@ -469,15 +560,24 @@ export class Hud {
         continue;
       }
       if (pill && k !== 'moonstones') pill.setAttribute('title', RES_LABEL[k]);
-      el.amt.textContent = formatNumber(v);
+      // P6-08: a gain (a claim, a raid's loot, a collect) counts up on the pill, with a light haptic.
+      const prev = this.lastRes[k];
+      this.lastRes[k] = v;
+      if (prev !== undefined && v > prev && !reducedMotion()) this.countPill(el.amt, prev, v, pill);
+      else if (!this.pillCounting.has(el.amt)) el.amt.textContent = formatNumber(v);
       if (el.cap) {
         el.cap.textContent = `/ ${formatCompact(cap[k])}`;
         el.bar.style.width = `${Math.min(100, (s.resources[k] / Math.max(1, cap[k])) * 100)}%`;
         el.bar.parentElement!.classList.toggle('full', s.resources[k] >= cap[k]);
       }
     }
+    // P6-08: a finished upgrade gets a haptic (the levels across the village went up).
+    const levels = s.buildings.reduce((a, b) => a + b.level, 0);
+    if (this.lastLevels !== null && levels > this.lastLevels) uiArt.haptic('success');
+    this.lastLevels = levels;
     const bs = builderStatus(s, gd, this.c.now());
     this.buildersEl.textContent = `${bs.free}/${bs.total}`;
+    this.updateCrew();
     this.trophiesEl.textContent = String(s.trophies);
     this.updateShield();
     this.updateRail();
@@ -488,10 +588,102 @@ export class Hud {
     this.checkUnlocks();
   }
 
+  private lastRes: Partial<Record<ResourceKind, number>> = {};
+  private lastLevels: number | null = null;
+  private pillCounting = new Set<HTMLElement>();
+
+  /** Count a resource pill up from `from` to `to` (~0.6 s, ease out); the pill pulses once. */
+  private countPill(el: HTMLElement, from: number, to: number, pill: HTMLElement | null): void {
+    this.pillCounting.add(el);
+    uiArt.haptic('light');
+    pill?.classList.remove('gain');
+    void pill?.offsetWidth;
+    pill?.classList.add('gain');
+    const start = performance.now();
+    const step = (now: number) => {
+      const k = Math.min(1, (now - start) / 600);
+      el.textContent = formatNumber(Math.round(from + (to - from) * (1 - Math.pow(1 - k, 3))));
+      if (k < 1 && el.isConnected) requestAnimationFrame(step);
+      else {
+        this.pillCounting.delete(el);
+        el.textContent = formatNumber(this.lastRes[[...this.resEls].find(([, x]) => x.amt === el)?.[0] as ResourceKind] ?? to);
+      }
+    };
+    requestAnimationFrame(step);
+  }
+
+  /** P6-08: what is true now, in the shape the device remembers. */
+  private milestoneMarks(): MilestoneMarks {
+    const s = this.c.state;
+    const gd = this.c.data;
+    const keep = hallLevel(s, gd);
+    return { league: leagueFor(s.trophies, gd).id, keep, hero: Boolean(heroAtKeep(keep, gd)), temper: keep >= (gd.battle.temper?.unlockKeep ?? Infinity) };
+  }
+
+  private milestoneWaiters: (() => void)[] = [];
+
+  /** Run `fn` now, or once the milestone cards that are due have been shown. */
+  private afterMilestones(fn: () => void): void {
+    this.checkMilestones();
+    // Review M1: cards that are due but waiting for a dialog or a battle to close still go first.
+    const due = this.c.state.tutorial.done && milestonesDue(loadMarks(), this.milestoneMarks()).length > 0;
+    if (this.ceremonyBusy || due) this.milestoneWaiters.push(fn);
+    else fn();
+  }
+
+  /** P6-08 (UIS-06): a card for a league change, each Keep level, the hero's arrival and tempering (once each, by device). */
+  private checkMilestones(): boolean {
+    const s = this.c.state;
+    if (this.ceremonyBusy || !s.tutorial.done) return false;
+    const now = this.milestoneMarks();
+    const seen = loadMarks();
+    const due = milestonesDue(seen, now);
+    if (!seen || !due.length) {
+      if (!seen || JSON.stringify(seen) !== JSON.stringify(now)) saveMarks(now);
+      return false;
+    }
+    if (document.getElementById('battle-hud')?.hidden === false || this.modalRoot.querySelector('.modal-backdrop:not(.out)')) return false;
+    const gd = localizedData(this.c.data);
+    const cards: Milestone[] = [];
+    for (const kind of due) {
+      if (kind === 'keep') {
+        const items = hallUnlocks(now.keep - 1, gd);
+        const hall = s.buildings.find((b) => buildingDef(gd, b.type).category === 'hall');
+        cards.push({ title: t('milestone.keep', { level: now.keep }), icons: [hall ? this.deps.thumbnail(hall.type) : null], lines: items.slice(0, 3).map((u) => this.unlockText(u)), button: hall ? { label: i18nText("ui.go_to_clan_keep_4d567aa33e"), onClick: () => this.selectAndFocus(hall.id) } : undefined });
+      } else if (kind === 'hero') {
+        const hero = heroAtKeep(now.keep, gd);
+        const def = hero ? gd.battle.heroes?.[hero.id] : undefined;
+        if (def) cards.push({ title: t('milestone.hero', { name: def.name }), icons: [this.deps.troopThumb(hero!.id)], lines: [def.description], button: { label: t('unlock.train'), onClick: () => this.openTraining() } });
+      } else if (kind === 'temper') {
+        cards.push({ title: t('temper.title'), lines: [t('codex.temperRule', { level: gd.battle.temper?.unlockKeep ?? now.keep })] });
+      } else {
+        const order = gd.ranks.leagues.map((l) => l.id);
+        const up = order.indexOf(now.league) > order.indexOf(seen.league);
+        const name = gd.ranks.leagues.find((l) => l.id === now.league)?.name ?? now.league;
+        cards.push({ title: t(up ? 'milestone.promoted' : 'milestone.demoted', { league: name }), button: { label: i18nText("ui.honor_22ea092e76"), onClick: () => this.openLeague() } });
+      }
+    }
+    saveMarks(now);
+    if (!cards.length) return false;
+    this.ceremonyBusy = true;
+    const next = (i: number): void => {
+      if (i >= cards.length) {
+        this.ceremonyBusy = false;
+        const waiting = this.milestoneWaiters.splice(0);
+        for (const fn of waiting) fn();
+        return;
+      }
+      void showMilestone(this.modalRoot, cards[i]).then(() => next(i + 1));
+    };
+    next(0);
+    return true;
+  }
+
   /** Retention audit G22: a short ceremony for each warrior that became trainable (unlockCeremony.ts). */
   private ceremonyBusy = false;
   private checkUnlocks(): void {
     const s = this.c.state;
+    if (this.checkMilestones()) return;
     if (this.ceremonyBusy || !s.tutorial.done) return;
     const gd = localizedData(this.c.data);
     const now = Object.keys(gd.troops).filter((id) => troopUnlock(s, id, gd).unlocked);
@@ -507,7 +699,7 @@ export class Hud {
     saveKnown(now);
     const warriors = added.map((id) => {
       const badge = badgeIdFor(id);
-      return { name: gd.troops[id]?.name ?? id, badge: badge ? this.deps.warriorIcon(badge) : this.deps.troopThumb(id) };
+      return { name: unitName(id, gd), badge: badge ? this.deps.warriorIcon(badge) : this.deps.troopThumb(id) };
     });
     void showCeremony(this.modalRoot, warriors, () => this.openTraining()).then(() => {
       this.ceremonyBusy = false;
@@ -535,7 +727,12 @@ export class Hud {
       Friends: this.deps.connection.canFriends,
       Trials: raided,
     };
-    for (const [label, b] of Object.entries(this.railBtns)) b.hidden = this.railCollapsed || !show[label];
+    for (const [label, b] of Object.entries(this.railBtns)) {
+      const wasHidden = b.hidden;
+      b.hidden = this.railCollapsed || !show[label];
+      // P6-14: the first time a rail button appears on this device, its label shows beside it for a few seconds.
+      if (wasHidden && !b.hidden && show[label]) this.introduceRailButton(label, b);
+    }
     const shown = Object.entries(show).filter(([, v]) => v).length;
     // A rail of one or two buttons needs no fold.
     this.railToggle.hidden = shown <= 2;
@@ -546,6 +743,7 @@ export class Hud {
       this.railCollapsed = false;
       this.updateRail();
     }
+    this.railIntroReady = true;
   }
 
   private toggleRail(): void {
@@ -591,7 +789,9 @@ export class Hud {
     const tasksReady = currentTasks(s, hl, gd).filter((t) => !t.claimed && t.progress >= t.target).length;
     set('Pass', tiersReady + tasksReady);
     set('Goals', achievementViews(s, hl, gd).filter((v) => v.claimable).length);
-    set('Events', 0);
+    // P6-14: Events counts the goal events with an unpaid step; the battle log the open rematches.
+    set('Events', goalEventViews(s, this.c.now(), gd).filter((v) => v.ladder.some((l) => !l.paid)).length);
+    this.logBadge.hidden = !(this.deps.onRematch && rematchable(s, this.c.now(), gd).length);
     const live = raidPhase(this.c.now(), gd);
     if (this.deps.groveSource.kind === 'online') {
       const g = this.deps.groveSource.snapshot();
@@ -698,7 +898,9 @@ export class Hud {
     this.netPill.className = `net-pill ${conn.status}`;
     this.netPill.textContent = i18nLabel(Hud.NET_LABEL[conn.status] ?? conn.status);
     const queued = conn.enabled ? conn.outbox().length : 0;
-    if (queued) this.netPill.textContent += ` · ${queued} to send`;
+    // P6-10 (UIS-12): the count only on the pill; the sentence (a keyed plural) is its title.
+    if (queued) this.netPill.textContent += ` · ${formatNumber(queued)}`;
+    this.netPill.title = queued ? t('sync.pending', { n: queued }) : i18nText("ui.online_play_17a5942b34");
     if (conn.newDefenses > 0) {
       const n = conn.newDefenses;
       conn.newDefenses = 0;
@@ -1127,6 +1329,7 @@ export class Hud {
       online: conn.online,
     });
     markNoticeSeen(conn.server?.notice ?? null);
+    markWhatsNewSeen();
     const unread = conn.notices.filter((n) => !n.read).map((n) => n.id);
     if (unread.length) void conn.markNoticesRead(unread).catch(() => undefined);
     this.modal(t('news.title'), body, [], 'normal', () => this.updateBadges());
@@ -1212,6 +1415,7 @@ export class Hud {
     const s = this.c.state;
     const bs = builderStatus(s, localizedData(this.c.data), this.c.now());
     this.buildersEl.textContent = `${bs.free}/${bs.total}`;
+    this.updateCrew();
     if (!this.selectedId || this.sheet.hidden) return;
     if (this.sheetSignature() !== this.sheetSig) this.renderSheet();
     else this.updateSheetLive();
@@ -1320,33 +1524,59 @@ export class Hud {
     let ic = icons.star;
     let text = '';
     let action: (() => void) | null = null;
+    let chips: HTMLElement | null = null;
     if (o.kind === 'chest') {
       [ic, text, action] = [icons.chest, t('objective.chest'), () => this.daily.openDaily()];
     } else if (o.kind === 'raid') {
       [ic, text, action] = [icons.swords, t('objective.raid'), () => this.deps.onAttack()];
     } else if (o.kind === 'upgrade') {
-      [ic, text, action] = [icons.hammer, o.keep ? t('objective.keep', { level: o.toLevel }) : t('objective.upgrade', { building: name(o.type), level: o.toLevel }), () => this.bus.emit('select', o.buildingId)];
+      [ic, text, action] = [icons.hammer, o.keep ? t('objective.keep', { level: o.toLevel }) : t('objective.upgrade', { building: name(o.type), level: o.toLevel }), () => this.selectAndFocus(o.buildingId)];
     } else if (o.kind === 'save') {
-      const need = (Object.entries(o.missing) as [ResourceKind, number][]).filter(([, v]) => v > 0).map(([k, v]) => i18nText("ui.message_14677cb26f", { arg1: formatCompact(v), arg2: RES_LABEL[k] })).join(' + ');
-      [ic, text, action] = [icons.acorns, t('objective.save', { need, building: name(o.type), level: o.toLevel }), () => this.bus.emit('select', o.buildingId)];
+      // P6-05 (UIS-04): the shortfall as cost chips beside the building's name (the sentence ran to 106 characters).
+      [ic, text, action] = [icons.acorns, t('objective.upgrade', { building: name(o.type), level: o.toLevel }), () => this.selectAndFocus(o.buildingId)];
+      chips = costChips(o.missing);
+    } else if (o.kind === 'claim') {
+      const where = o.what === 'pass' ? t('rail.Pass') : o.what === 'achievement' ? t('rail.Goals') : null;
+      const hall = this.c.state.buildings.find((b) => buildingDef(data, b.type).category === 'hall');
+      [ic, text, action] =
+        o.what === 'seal'
+          ? [icons.star, t('seal.claim', { keep: hallLevel(s, data) }), () => hall && this.selectAndFocus(hall.id)]
+          : [icons.star, t('objective.claim', { where: where! }), () => (o.what === 'pass' ? this.econ.openPass() : this.econ.openGoals())];
+    } else if (o.kind === 'rematch') {
+      [ic, text, action] = [icons.swords, i18nText("ui.settle_the_score_819ad8b9c9"), () => this.openLog()];
+    } else if (o.kind === 'goalEvent') {
+      [ic, text, action] = [icons.swords, o.goal === 'gauntlet' ? t('events.gauntlet.attack') : o.goal === 'festival' ? t('events.festival.attack') : i18nText("ui.attack_the_bounty_fortress_0d8fd46d63"), () => this.daily.openEvents()];
+    } else if (o.kind === 'trial') {
+      [ic, text, action] = [icons.leaf, i18nText("ui.scout_tier_8fde370df8", { arg1: o.tier }), () => this.openTrials()];
+    } else if (o.kind === 'drill') {
+      [ic, text, action] = [icons.swords, t('drill.button'), () => this.deps.onDrill?.()];
     } else if (o.kind === 'research') {
       // Growth 7 follow-up (game-theory batch 2026-11-13): existing translated lines, so every ready language keeps them.
       [ic, text, action] = [icons.star, t('research.lanesFree', { n: o.lanesFree }), () => this.openTraining()];
     } else if (o.kind === 'train') {
       [ic, text, action] = [icons.swords, t('battle.trainFirst'), () => this.openTraining()];
+    } else if (o.kind === 'defendSide') {
+      [ic, text, action] = [icons.shield, t('objective.defendSide', { point: pointLabel(o.point) }), () => this.openLog()];
     } else if (o.kind === 'builders') {
       [ic, text] = [icons.clock, t('objective.builders', { time: formatDuration(o.freeAt - now) })];
     }
-    const sig = `${o.kind}|${text}`;
+    const sig = `${o.kind}|${text}|${o.kind === 'save' ? JSON.stringify(o.missing) : ''}`;
     this.objectiveChip.hidden = o.kind === 'none';
     this.objectiveAction = action;
     if (sig === this.objectiveSig) return;
     this.objectiveSig = sig;
     clear(this.objectiveChip);
     this.objectiveChip.append(icon(ic), h('span', {}, text));
+    if (chips) this.objectiveChip.append(chips);
     if (action) this.objectiveChip.append(h('span', { 'aria-hidden': 'true' }, '▸'));
     this.objectiveChip.disabled = !action;
     this.objectiveChip.setAttribute('aria-label', t('objective.aria', { text }));
+  }
+
+  /** P6-05: select a building from the objective chip and bring it into view. */
+  private selectAndFocus(id: string): void {
+    this.bus.emit('select', id);
+    this.bus.emit('camera:focus', { id });
   }
 
   private renderUnlockChip(): void {
@@ -1414,6 +1644,8 @@ export class Hud {
     const level = effectiveLevel(b, now);
     clear(this.sheet);
     this.sheet.hidden = false;
+    // P6-09: a rebuilt sheet starts at its top (the head and the action row are sticky).
+    this.sheet.scrollTop = 0;
     if (def.category === 'obstacle' && def.clear) {
       this.renderObstacleSheet(b, def.name, def.description, def.clear);
       return;
@@ -1462,6 +1694,21 @@ export class Hud {
     if (def.category === 'hall' && hallUnlocks(level, gd).length) {
       this.sheet.append(h('button', { class: 'btn ghost small-btn', type: 'button', onclick: () => this.openUnlocks() }, icon(icons.toadstool), i18nText("ui.what_keep_lv_unlocks_ced96de6b4", { arg1: level + 1 })));
     }
+    // P3-09 (ECO-10): one plain line when the army is more than a Keep behind the village (no forced prerequisite).
+    if (def.category === 'hall' && armyBehindKeep(this.c.state, gd)) this.sheet.append(h('p', { class: 'note keep-rush' }, t('keep.armyBehind')));
+    // P5-08 (PAC-11): the Keep's seal: progress, the claim, or the mark.
+    const seal = def.category === 'hall' ? sealProgress(this.c.state, gd) : null;
+    if (seal?.sealed) this.sheet.append(h('p', { class: 'chip good keep-seal' }, t('seal.done', { keep: seal.keep })));
+    else if (seal?.ready) {
+      const claim = h('button', { class: 'btn gold', type: 'button' }, t('seal.claim', { keep: seal.keep }), costChips(seal.reward));
+      claim.addEventListener('click', () => {
+        if (this.c.dispatch({ type: 'claimKeepSeal' }).ok) {
+          this.sheetSig = '';
+          this.renderSheet();
+        }
+      });
+      this.sheet.append(h('div', { class: 'actions keep-seal' }, claim));
+    } else if (seal) this.sheet.append(h('p', { class: 'muted small keep-seal' }, t('seal.progress', { n: seal.done, total: seal.total })));
 
     // Upgrade in progress
     if (b.upgrade && now < b.upgrade.endsAt) {
@@ -1706,6 +1953,11 @@ export class Hud {
       chip(i18nText("ui.damage_sec_0418e5cdfb", { arg1: dps(nxt.damage) }), dps(cur.damage), dps(nxt.damage));
     }
     if (nxt.hp && cur.hp) chip(i18nText("ui.hp_0c9cb32a1b", { arg1: formatNumber(nxt.hp) }), cur.hp, nxt.hp);
+    // P6-09 (PLY-12): the Dojo says which warriors its next level unlocks (the ceremony said so only afterwards).
+    if (b.type === 'burrow_barracks') {
+      const names = Object.values(gd.troops).filter((tr) => tr.barracksLevel === level + 1 && (tr.unlockKeep ?? 1) <= hallLevel(this.c.state, gd)).map((tr) => tr.name);
+      if (names.length) chips.push(h('span', { class: 'chip up dojo-unlocks', 'data-id': 'dojo-unlocks' }, icon(icons.troops), t('sheet.unlocksWarriors', { list: i18nList(names, 'conjunction') })));
+    }
     const nextArt = this.deps.levelThumbnail?.(b.type, level + 1) ?? null;
     if (!chips.length && !nextArt) return null;
     return h('div', { class: 'stats next-level' }, nextArt ? h('img', { class: 'sheet-thumb next', src: nextArt, alt: '' }) : null, h('span', { class: 'next-label' }, t('sheet.nextLevel', { level: level + 1 })), ...chips);
@@ -1740,7 +1992,7 @@ export class Hud {
 
   private collect(b: Building): void {
     const r = this.c.dispatch({ type: 'collect', id: b.id });
-    if (!r.ok) this.toast(r.message, r.code === 'NOTHING_TO_COLLECT' ? 'info' : 'error');
+    if (!r.ok) this.toast(i18nMessage(r.message, true), r.code === 'NOTHING_TO_COLLECT' ? 'info' : 'error', r.code === 'NOTHING_TO_COLLECT' ? { log: false } : undefined);
     else for (const e of r.events) if (e.kind === 'collect') this.toast(i18nText("ui.message_308af0994c", { arg1: formatNumber(e.amount), arg2: RES_LABEL[e.resource] }), 'success');
   }
 
@@ -1791,10 +2043,33 @@ export class Hud {
         };
         body.append(h('div', { class: 'chips pay-choice', role: 'group', 'aria-label': t('pay.label') }, h('span', { class: 'muted small' }, t('pay.label')), choice(false, t('pay.coins')), choice(true, t('pay.provisions'))));
       }
+      gridCats = cats;
+      gridSig = this.shopSignature(cats);
       body.append(this.shopGrid(cats, () => close()));
     };
+    // P6-09 (PLY-08): the cards followed the state of the moment the panel opened ("All your Village Artisans are busy"
+    // 52 s after they were free). Redraw when what a card says changes, and quote again in the click.
+    let gridCats: string[] = [];
+    let gridSig = '';
     draw();
-    const close = this.modal(i18nText("ui.build_bdd254b65b"), body, [], 'wide');
+    const unsub = this.c.subscribe(() => {
+      if (this.shopSignature(gridCats) !== gridSig) draw();
+    });
+    const close = this.modal(i18nText("ui.build_bdd254b65b"), body, [], 'wide', unsub);
+  }
+
+  /** What the Build cards say (each card's verdict), to redraw them only when it changes. */
+  private shopSignature(categories: string[]): string {
+    const gd = localizedData(this.c.data);
+    const now = this.c.now();
+    const out: string[] = [];
+    for (const [type, def] of Object.entries(gd.buildings)) {
+      if (!def.inShop || !categories.includes(def.category)) continue;
+      const pay: PayWith = payableInProvisions(type, gd) && this.payWallsWithProvisions() ? 'dew' : 'acorns';
+      const q = placeQuote(this.c.state, gd, type, now, pay);
+      out.push(`${type}:${q.ok ? 1 : q.code}:${countOfType(this.c.state, type)}`);
+    }
+    return out.join('|');
   }
 
   /** Walls and traps paid in Provisions in the shop (a per-device choice; Coins when storage is blocked). */
@@ -1868,13 +2143,16 @@ export class Hud {
           'data-type': type,
           'aria-disabled': !q.ok && !tq,
           onclick: () => {
-            if (!q.ok && !tq) {
-              this.toast(i18nMessage(q.message, true), 'error');
+            // P6-09: quote again at the tap (the card may be older than the state).
+            const fresh = placeQuote(this.c.state, gd, type, this.c.now(), pay);
+            const freshTop = pay === 'acorns' && !fresh.ok && fresh.code === 'NOT_ENOUGH_RESOURCES' ? topUpQuote(this.c.state, { type: 'place', buildingType: type, x: 0, y: 0 }, this.c.now(), gd) : null;
+            if (!fresh.ok && !freshTop) {
+              this.toast(i18nMessage(fresh.message, true), 'error');
               return;
             }
             close();
             // Jade-priced buildings (Artisan's Hut) also go through the HUD's confirm when the spot is chosen.
-            this.bus.emit('placement:start', { kind: 'new', buildingType: type, buy: !q.ok || Boolean(price.moonstones), ...(pay === 'dew' ? { pay } : {}) });
+            this.bus.emit('placement:start', { kind: 'new', buildingType: type, buy: !fresh.ok || Boolean((fresh.quote?.cost ?? price).moonstones), ...(pay === 'dew' ? { pay } : {}) });
           },
         },
         thumb ? h('img', { src: thumb, alt: '' }) : h('div', { class: 'thumb-ph' }),
@@ -1982,12 +2260,17 @@ export class Hud {
       {},
       h('p', {}, h('b', {}, cur.name), i18nText("ui.honor_0c29c8fc2d", { arg1: s.trophies })),
       nxt ? h('p', { class: 'muted' }, i18nText("ui.more_honor_to_reach_3b60f7cad1", { arg1: nxt.min - s.trophies, arg2: nxt.name })) : h('p', { class: 'muted' }, i18nText("ui.you_are_in_the_top_league_8b390ac669")),
+      seasonName(seasonOf(this.c.now()), gd) ? h('p', {}, t('season.current', { name: seasonName(seasonOf(this.c.now()), gd)! })) : null,
       h('p', { class: 'muted' }, i18nText("ui.season_ends_in_at_the_end_of_each_mont_c60052cb71", { arg1: formatDuration(seasonEndsAt(this.c.now()) - this.c.now()), arg2: gd.ranks.seasonResetFloor })),
+      // P5-08: the Keeps this clan has sealed.
+      s.seals?.length ? h('p', { class: 'muted' }, t('seal.count', { list: i18nList([...s.seals].sort((a, b) => a - b).map(String)) })) : null,
       h('h3', {}, i18nText("ui.league_chests_fixed_contents_82950a94cd")),
       h('p', { class: 'muted small' }, i18nText("ui.sized_for_your_clan_keep_level_won_att_efc90477c4", { arg1: hallLevel(s, gd) })),
     );
     for (const l of gd.ranks.leagues) {
-      const bonus = Object.keys(l.winBonus ?? {}).length ? h('div', { class: 'muted small' }, i18nText("ui.win_bonus_76ff020d10"), costChips(l.winBonus)) : null;
+      // P2-09: the three-star bonus at this Keep (flat or a share of the Keep's raid loot, whichever is larger).
+      const lb = leagueBonusOf(l, 3, hallLevel(s, gd), gd);
+      const bonus = Object.keys(lb).length ? h('div', { class: 'muted small' }, i18nText("ui.win_bonus_76ff020d10"), costChips(lb)) : null;
       body.append(h('div', { class: `log-row${l.id === cur.id ? ' current' : ''}` }, h('div', {}, h('b', {}, l.name), h('div', { class: 'muted small' }, i18nText("ui.honor_47034117c2", { arg1: l.min })), bonus), costChips(leagueChest(l, hallLevel(s, gd), gd))));
     }
     body.append(h('p', { class: 'muted small' }, i18nText("ui.win_raids_to_earn_honor_lose_it_when_y_a98b0bc1b5")));
@@ -2005,6 +2288,8 @@ export class Hud {
     // Settle the score (sim/rematch.ts): a recent simulated raider's own base, once, labelled as generated.
     const answerable = new Set(this.deps.onRematch ? rematchable(s, this.c.now(), localizedData(this.c.data)).map((d) => d.id) : []);
     if (!attacks.length) body.append(h('p', { class: 'muted' }, i18nText("ui.no_battles_yet_tap_attack_to_raid_a_ne_5372be52a7")));
+    // P6-04: the simulated raider against the village as it is now (nothing lost; device only).
+    if (this.deps.onTestDefense && s.tutorial.done) body.prepend(h('div', { class: 'actions' }, h('button', { class: 'btn sky', type: 'button', 'data-id': 'test-defense', onclick: () => { this.closeAllModals(); this.deps.onTestDefense?.(); } }, icon(icons.shield), t('defense.test'))));
     for (const r of attacks) {
       const stars = h('span', { class: 'stars-mini' });
       for (let i = 0; i < 3; i++) stars.append(h('span', { class: i < r.result.stars ? '' : 'off' }, '★'));
@@ -2026,6 +2311,13 @@ export class Hud {
       const loot = r.kind === 'attack' ? r.banked ?? r.result.loot : r.result.loot;
       // A held defense pays a small reward (`banked` on the defense record).
       const held = r.kind === 'defense' && r.banked && Object.values(r.banked).some((v) => (v ?? 0) > 0) ? h('span', { class: 'chip good held' }, i18nText("ui.held_f2e1e705b1"), costChips(r.banked)) : null;
+      // P6-03: the defense report (what holding kept, stars denied, the reward, where the raider came in, and on
+      // demand the first buildings to fall, replayed only under the rules the raid was fought with).
+      const report = r.kind === 'defense' ? this.defenseReportLine(r) : null;
+      // P6-04: practice with this raider's army against the village as it is now (after a lost defense).
+      const tryAgain = r.kind === 'defense' && r.result.stars > 0 && this.deps.onPracticeAgainst
+        ? h('button', { class: 'btn ghost', type: 'button', 'data-id': 'practice-against', onclick: () => { this.closeAllModals(); this.deps.onPracticeAgainst?.(r); } }, t('defense.practiceAgainst'))
+        : null;
       const settle = answerable.has(r.id)
         ? h('button', { class: 'btn danger', type: 'button', title: i18nText("ui.attack_s_own_base_a_simulated_raider_n_0be62cf5a4", { arg1: r.opponentName }), onclick: () => { this.closeAllModals(); this.deps.onRematch?.(r.id); } }, i18nText("ui.settle_the_score_819ad8b9c9"))
         : null;
@@ -2033,12 +2325,76 @@ export class Hud {
         h(
           'div',
           { class: 'log-row' },
-          h('div', {}, h('b', {}, r.kind === 'attack' ? i18nText("ui.you_raided_b4bf27bb8b", { arg1: isolateName(r.opponentName), arg2: r.setup.base.practice ? i18nLabel(' (practice)') : '' }) : i18nText("ui.raided_you_29f66d0636", { arg1: isolateName(r.opponentName), arg2: r.simulated ? i18nText("ui.simulated_raider_aaf83ad5d6") : '' })), h('div', { class: 'row' }, stars, r.trophies !== undefined ? h('span', { class: `chip ${r.trophies >= 0 ? 'good' : 'short'}` }, icon(icons.leaf), `${r.trophies >= 0 ? '+' : ''}${r.trophies}`) : null, h('span', { class: 'muted small' }, i18nText("ui.ago_ecf7d53ab9", { arg1: r.result.destruction, arg2: formatDuration(this.c.now() - r.at) })), Object.keys(loot).some((k) => (loot as Record<string, number>)[k] > 0) ? costChips(loot) : h('span', { class: 'chip' }, i18nText("ui.no_loot_bdac804bb2")), held)),
-          h('div', { class: 'row' }, settle, share, replay),
+          h('div', {}, h('b', {}, r.kind === 'attack' ? i18nText("ui.you_raided_b4bf27bb8b", { arg1: isolateName(r.opponentName), arg2: r.setup.base.practice ? i18nLabel(' (practice)') : '' }) : i18nText("ui.raided_you_29f66d0636", { arg1: isolateName(r.opponentName), arg2: r.simulated ? i18nText("ui.simulated_raider_aaf83ad5d6") : '' })), h('div', { class: 'row' }, stars, r.trophies !== undefined ? h('span', { class: `chip ${r.trophies >= 0 ? 'good' : 'short'}` }, icon(icons.leaf), `${r.trophies >= 0 ? '+' : ''}${r.trophies}`) : null, h('span', { class: 'muted small' }, i18nText("ui.ago_ecf7d53ab9", { arg1: r.result.destruction, arg2: formatDuration(this.c.now() - r.at) })), Object.keys(loot).some((k) => (loot as Record<string, number>)[k] > 0) ? costChips(loot) : h('span', { class: 'chip' }, i18nText("ui.no_loot_bdac804bb2")), held), report),
+          h('div', { class: 'row' }, settle, tryAgain, share, replay),
         ),
       );
     }
     this.modal(i18nText("ui.battle_log_f618f95afb"), body, [], 'wide');
+  }
+
+  /** P6-12: a shield badge with the free crew places once a crew build has happened; the first one gets a line. */
+  private updateCrew(): void {
+    const gd = this.c.data;
+    const now = this.c.now();
+    const crew = crewStatus(this.c.state, gd, now);
+    const used = crew.busy > 0;
+    let seen: boolean;
+    try {
+      seen = localStorage.getItem('tk.crewSeen') === '1';
+      if (used && !seen) localStorage.setItem('tk.crewSeen', '1');
+    } catch {
+      seen = true;
+    }
+    if (used && !seen) this.toast(t('builders.crewNote'), 'info');
+    this.crewEl.hidden = crew.total === 0 || (!used && !seen);
+    const txt = `${crew.free}/${crew.total}`;
+    if (this.crewEl.textContent !== txt) this.crewEl.replaceChildren(icon(icons.shield), txt);
+  }
+
+  /** P6-12: the builder panel: the Village Artisans and the garrison crew, each with what it is building. */
+  openBuilders(): void {
+    const gd = localizedData(this.c.data);
+    const now = this.c.now();
+    const s = this.c.state;
+    const bs = builderStatus(s, gd, now);
+    const crew = crewStatus(s, gd, now);
+    const working = s.buildings.filter((b) => b.upgrade && b.upgrade.endsAt > now).sort((a, b) => a.upgrade!.endsAt - b.upgrade!.endsAt);
+    const crewIds = new Set(working.filter((b) => onGarrisonCrew(b.type, gd)).slice(0, crew.total).map((b) => b.id));
+    const row = (b: Building) => h('div', { class: 'log-row' }, h('b', {}, buildingDef(gd, b.type).name), h('span', { class: 'chip' }, icon(icons.clock), formatDuration(b.upgrade!.endsAt - now)));
+    const body = h(
+      'div',
+      { class: 'builders-panel' },
+      h('h3', {}, i18nText("ui.free_village_artisans_747cc3abe1"), ` ${bs.free}/${bs.total}`),
+      ...working.filter((b) => !crewIds.has(b.id)).map(row),
+      crew.total > 0 ? h('h3', {}, t('builders.crew', { free: crew.free, total: crew.total })) : null,
+      crew.total > 0 ? h('p', { class: 'muted small' }, t('builders.crewNote')) : null,
+      ...working.filter((b) => crewIds.has(b.id)).map(row),
+    );
+    this.modal(t('builders.title'), body, []);
+  }
+
+  /** P6-03: one line per defense: kept share, stars denied, entry point, and a button for the first to fall. */
+  private defenseReportLine(r: BattleRecord, withFell = true): HTMLElement {
+    const gd = localizedData(this.c.data);
+    const k = defenseKept(r);
+    const parts: (HTMLElement | string)[] = [];
+    if (k.share !== null) parts.push(h('span', { class: 'chip good' }, t('defense.kept', { pct: fmtPercent(k.share * 100) })));
+    if (r.result.stars < 3) parts.push(h('span', { class: 'chip' }, t('defense.denied', { n: 3 - r.result.stars })));
+    const entry = raidEntry(r, this.c.data);
+    if (entry) parts.push(h('span', { class: 'chip' }, t('defense.entry', { point: pointLabel(entry) })));
+    // The welcome-back line also names the reward for holding (the battle log shows it as its own chip).
+    if (!withFell && r.banked && Object.values(r.banked).some((v) => (v ?? 0) > 0)) parts.push(h('span', { class: 'chip good' }, i18nText("ui.held_f2e1e705b1"), costChips(r.banked)));
+    const line = h('div', { class: 'row defense-report small', 'data-id': 'defense-report' }, ...parts);
+    if (withFell && replayable(r)) {
+      const btn = h('button', { class: 'btn ghost small-btn', type: 'button' }, t('defense.fellButton')) as HTMLButtonElement;
+      btn.addEventListener('click', () => {
+        const fell = firstToFall(r, this.c.data) ?? [];
+        btn.replaceWith(h('span', { class: 'muted' }, fell.length ? t('defense.fell', { list: i18nList(fell.map((type) => buildingDef(gd, type).name)) }) : i18nText("ui.took_nothing_14469bdaf6")));
+      });
+      line.append(btn);
+    }
+    return line;
   }
 
   // ------------------------------------------------------------ welcome back
@@ -2051,7 +2407,7 @@ export class Hud {
       const name = buildingDef(gd, f.type).name;
       list.append(h('li', {}, f.level === 1 ? i18nText("ui.finished_building_c35f17b9de", { arg1: name }) : i18nText("ui.reached_level_643665f2d6", { arg1: name, arg2: f.level })));
     }
-    const trained = i18nList(Object.entries(s.trained).map(([t, n]) => i18nText("ui.message_14677cb26f", { arg1: n, arg2: gd.troops[t]?.name ?? t })));
+    const trained = i18nList(Object.entries(s.trained).map(([t, n]) => i18nText("ui.message_14677cb26f", { arg1: n, arg2: unitName(t, gd) })));
     if (trained) list.append(h('li', {}, i18nText("ui.finished_training_f0d9a0ead3", { arg1: trained })));
     const gains = RESOURCE_KINDS.filter((k) => (s.collectorGains[k] ?? 0) > 0);
     if (gains.length) {
@@ -2061,13 +2417,26 @@ export class Hud {
     }
     for (const r of s.raids) {
       const lost = i18nList(RESOURCE_KINDS.filter((k) => (r.result.loot[k] ?? 0) > 0).map((k) => i18nText("ui.message_14677cb26f", { arg1: formatNumber(r.result.loot[k]!), arg2: RES_LABEL[k] })), 'conjunction');
-      list.append(h('li', {}, i18nText("ui.raided_you_d9e46d7bd1", { arg1: isolateName(r.opponentName), arg2: r.simulated ? i18nText("ui.simulated_raider_aaf83ad5d6") : '', arg3: '★'.repeat(r.result.stars), arg4: '☆'.repeat(3 - r.result.stars), arg5: r.result.destruction }), lost ? i18nText("ui.took_cc3b25b89b", { arg1: lost }) : i18nText("ui.took_nothing_14469bdaf6"), r.trophies ? i18nText("ui.honor_b338aaea42", { arg1: r.trophies > 0 ? '+' : '', arg2: r.trophies }) : t('text.period')));
+      list.append(h('li', {}, this.defenseReportLine(r, false), i18nText("ui.raided_you_d9e46d7bd1", { arg1: isolateName(r.opponentName), arg2: r.simulated ? i18nText("ui.simulated_raider_aaf83ad5d6") : '', arg3: '★'.repeat(r.result.stars), arg4: '☆'.repeat(3 - r.result.stars), arg5: r.result.destruction }), lost ? i18nText("ui.took_cc3b25b89b", { arg1: lost }) : i18nText("ui.took_nothing_14469bdaf6"), r.trophies ? i18nText("ui.honor_b338aaea42", { arg1: r.trophies > 0 ? '+' : '', arg2: r.trophies }) : t('text.period')));
     }
     if (this.c.state.shieldUntil > this.c.now() && s.raids.some((r) => shieldHoursFor(r.result.destruction, localizedData(this.c.data)) > 0)) {
       list.append(h('li', {}, i18nText("ui.you_have_a_shield_for_3b6f18b25b", { arg1: formatDuration(this.c.state.shieldUntil - this.c.now()) })));
     }
     for (const sr of s.seasons) {
       list.append(h('li', {}, i18nText("ui.the_season_ended_your_chest_b601d5ff95", { arg1: localizedData(this.c.data).ranks.leagues.find((l) => l.id === sr.league)?.name ?? sr.league }), costChips(sr.chest), sr.overflow ? h('span', { class: 'muted small' }, i18nText("ui.did_not_fit_in_storage_2fd00242ff"), costChips(sr.overflow), ')') : null));
+    }
+    if (s.scroll) {
+      const sc = s.scroll;
+      const gdl = localizedData(this.c.data);
+      // P5-10: the season's recap card (its name, league, raids, stars, tiers) and a share the player starts.
+      const name = seasonName(sc.season, gdl);
+      const league = gdl.ranks.leagues.find((l) => l.id === sc.league)?.name;
+      const recap = name && league !== undefined ? t('season.recap', { name, league, raids: sc.raidsWon ?? '–', stars: sc.stars ?? '–', tiers: sc.tiers ?? 0 }) : null;
+      if (recap) {
+        const share = typeof navigator !== 'undefined' && typeof navigator.share === 'function' ? h('button', { class: 'btn ghost small-btn', type: 'button', onclick: () => void navigator.share({ text: recap }).catch(() => undefined) }, t('season.share')) : null;
+        list.append(h('li', { class: 'season-recap' }, h('b', {}, t('season.over', { name: name! })), ' ', recap, share ? ' ' : null, share));
+      }
+      if (Object.values(sc.granted).some((v) => Number(v) > 0)) list.append(h('li', {}, t('welcome.scrollEnded'), ' ', costChips(sc.granted), Object.values(sc.overflow).some((v) => Number(v) > 0) ? h('span', { class: 'muted small' }, ' ', i18nText("ui.did_not_fit_in_storage_2fd00242ff"), costChips(sc.overflow), ')') : null));
     }
     if (!list.childElementCount) list.append(h('li', {}, i18nText("ui.all_quiet_in_the_village_330fd36258")));
     body.append(list);
@@ -2123,10 +2492,11 @@ export class Hud {
   /** Toasts shown this session, newest first (the News panel lists them). */
   private recentToasts: NewsItem[] = [];
 
-  toast(text: string, kind: 'info' | 'error' | 'success' = 'info'): void {
+  /** `log: false` keeps a passing remark (an empty collect) out of News and messages (P6-09). */
+  toast(text: string, kind: 'info' | 'error' | 'success' = 'info', opts?: { log?: boolean }): void {
     if (kind === 'error') sound.play('error');
     const shown = i18nMessage(text);
-    this.recentToasts.unshift({ at: Date.now(), text: shown, kind });
+    if (opts?.log !== false) this.recentToasts.unshift({ at: Date.now(), text: shown, kind });
     if (this.recentToasts.length > 20) this.recentToasts.length = 20;
     const el = h('div', { class: `toast ${kind}` }, shown);
     let gone = false;
@@ -2147,12 +2517,13 @@ export class Hud {
   openTrials(): void {
     const gd = localizedData(this.c.data);
     const best = this.c.state.trials.best;
-    const next = nextTrialTier(best);
+    // P3-06: the tier to attempt may be the catch-up tier (the first of the Keep two below this one).
+    const next = attemptTier(this.c.state.trials, hallLevel(this.c.state, gd), gd);
     const info = trialInfo(next, gd, trialVariant(this.c.state.trials, next));
     const alternate = canTryAlternate(this.c.state.trials, gd);
     const body = h('div', {});
     body.append(
-      h('p', {}, i18nText("ui.an_endless_ladder_of_practice_fortress_5c41313067")),
+      h('p', {}, i18nText("ui.an_endless_ladder_of_practice_fortress_5c41313067", { tier: this.c.data.hall.levels.length * this.c.data.trials.tiersPerHall, pct: Math.round(this.c.data.trials.powerGrowthPerTier * 100) })),
       h('p', { class: 'muted small' }, i18nText("ui.practice_mode_these_are_generated_fort_420a3ab093", { arg1: gd.trials.starsToClear })),
       h(
         'div',
@@ -2165,16 +2536,58 @@ export class Hud {
           h('div', { class: 'small' }, i18nMessage(info.layout.tip)),
           ...info.modifiers.map((m) => h('div', { class: 'small' }, i18nText("ui.message_d2599d42d8", { arg1: m.name, arg2: m.description }))),
         ),
-        h('div', { class: 'cost' }, ...Object.entries(trialReward(next, gd)).map(([k, v]) => h('span', { class: 'chip good' }, icon(icons[k as 'acorns' | 'dew' | 'moonstones']), formatNumber(v ?? 0)))),
+        h('div', { class: 'cost' }, ...Object.entries(trialRewardsThrough(best, next, gd)).map(([k, v]) => h('span', { class: 'chip good' }, icon(icons[k as 'acorns' | 'dew' | 'moonstones']), formatNumber(v ?? 0)))),
       ),
       h('p', { class: 'muted small' }, best > 0 ? i18nText("ui.best_tier_you_can_replay_any_cleared_t_000ba0e5d5", { arg1: best }) : i18nText("ui.you_have_not_cleared_a_tier_yet_cb231a4e2d")),
     );
+    // P6-06 (UIS-11): the ladder: what is cleared, and the ten tiers beyond the next with layout and modifiers;
+    // a tier that pays Jade is marked with it.
+    const ladder = h('div', { class: 'trial-ladder', 'data-id': 'trial-ladder' }, h('h3', {}, t('trials.ladder')));
+    if (best > 0) ladder.append(h('p', { class: 'muted small' }, t('trials.cleared', { best })));
+    for (let tier = next + 1; tier <= next + 10; tier++) {
+      const ti = trialInfo(tier, gd);
+      const jade = trialReward(tier, gd).moonstones ?? 0;
+      ladder.append(
+        h(
+          'div',
+          { class: 'log-row trial-step' },
+          h('div', {}, h('b', {}, i18nText("ui.tier_e94add5d59", { arg1: tier, arg2: i18nMessage(ti.layout.name) })), ti.modifiers.length ? h('div', { class: 'muted small' }, i18nList(ti.modifiers.map((m) => m.name))) : null),
+          jade > 0 ? h('span', { class: 'chip good' }, icon(icons.moonstones), formatNumber(jade)) : null,
+        ),
+      );
+    }
+    body.append(ladder);
+    // A stepper for replays (no reward): any cleared tier, not only the best.
+    let replayTier = best;
+    const replayBtn = h('button', { class: 'btn ghost', type: 'button', 'data-id': 'trial-replay' }, i18nText("ui.replay_tier_ba6a185124", { arg1: replayTier })) as HTMLButtonElement;
+    const step = (d: number) => {
+      replayTier = Math.min(best, Math.max(1, replayTier + d));
+      replayBtn.textContent = i18nText("ui.replay_tier_ba6a185124", { arg1: replayTier });
+    };
+    if (best > 0) {
+      body.append(
+        h(
+          'div',
+          { class: 'actions trial-stepper' },
+          h('button', { class: 'btn ghost', type: 'button', 'aria-label': '−', 'data-id': 'trial-down', onclick: () => step(-1) }, '−'),
+          replayBtn,
+          h('button', { class: 'btn ghost', type: 'button', 'aria-label': '+', 'data-id': 'trial-up', onclick: () => step(1) }, '+'),
+        ),
+      );
+    }
     if (alternate) body.append(h('p', { class: 'note' }, i18nText("ui.stuck_on_tier_you_can_switch_it_to_a_d_36ad80b724", { arg1: next, arg2: gd.trials.maxAlternates - (this.c.state.trials.alternate ?? 0) })));
+    // P3-07: the daily drill (practice against this fortress with a full camp of your own warriors; nothing spent).
+    const drillOpen = Boolean(this.deps.onDrill && gd.daily.drill && Object.keys(drillArmy(this.c.state, gd)).length);
+    if (drillOpen) body.append(h('p', { class: 'small drill-line' }, drillAvailable(this.c.state, this.c.now(), gd) ? t('drill.about') : t('drill.doneToday')));
     const close = this.modal(i18nText("ui.shadow_trials_340bccf3a7"), body, [
-      best > 0 && { label: i18nText("ui.replay_tier_ba6a185124", { arg1: best }), onClick: () => { close(); this.deps.onTrial(best); } },
       alternate && { label: i18nText("ui.try_a_different_fortress_d0b3ff0e49"), onClick: () => { const r = this.c.dispatch({ type: 'trialAlternate' }); close(); if (r.ok) this.openTrials(); else this.toast(i18nMessage(r.message, true), 'error'); } },
+      drillOpen && { label: t('drill.button'), onClick: () => { close(); this.deps.onDrill?.(); } },
       { label: i18nText("ui.scout_tier_8fde370df8", { arg1: next }), primary: true, onClick: () => { close(); this.deps.onTrial(next); } },
     ]);
+    replayBtn.addEventListener('click', () => {
+      close();
+      this.deps.onTrial(replayTier);
+    });
   }
 
   modal(

@@ -26,8 +26,15 @@ Pimpin klan ninja, bangun desa tersembunyi di pegunungan, latih lima puluh jenis
 **Serbu dengan rencana**
 
 - Prajurit hanya bisa masuk lewat Titik Penyusupan. Intai jalurnya dan menara yang menjaganya.
-- Lempar Bom Asap saat prajuritmu masuk jangkauan menara, dan kirim Penyabot untuk melumpuhkan pertahanan.
+- Kirim regumu dengan satu perintah (bersama, jepit, atau berbaris; tank dulu atau terjang), atau tempatkan setiap prajurit secara manual.
+- Lempar Bom Asap saat prajuritmu masuk jangkauan menara, dan kirim Penyabot untuk melumpuhkan pertahanan. Mulai Benteng Klan level 7, Kapten Bayangan menyemangati seluruh regumu sekali dalam setiap pertempuran.
+- Setelah serbuan, lihat apa yang bisa dicapai pasukan yang sama lewat titik lain.
 - Serangan yang direncanakan mengalahkan pasukan yang lebih besar.
+
+**Pertahankan desamu**
+
+- Setiap serbuan ke desamu disertai laporan: apa yang terselamatkan, bintang yang kamu gagalkan, dan tempat penyerbu menerobos masuk.
+- Uji pertahananmu melawan penyerbu simulasi, dan berlatih melawan pasukan yang mengalahkanmu.
 
 **Main bersama** (online)
 
@@ -38,7 +45,12 @@ Pimpin klan ninja, bangun desa tersembunyi di pegunungan, latih lima puluh jenis
 
 **Ujian Bayangan**
 
-- Rangkaian kubu yang tak berujung. Setiap tingkat makin sulit dan hanya memberi hadiah sekali.
+- Rangkaian kubu yang tak berujung. Setiap tingkat makin sulit dan hanya memberi hadiah sekali. Latihan harian memungkinkanmu berlatih selagi pasukanmu dilatih.
+
+**Hal baru setiap hari**
+
+- Acara dengan kalender tetap empat minggu, lima festival tahunan dengan kubu dan tampilan Benteng yang bisa didapat, Uji Nyali mingguan, dan kontrak harian.
+- Pencapaian, segel Benteng, peringkat Penguasaan Prajurit, dan tampilan yang kamu dapat dengan bermain.
 
 **Main adil**
 
@@ -46,7 +58,7 @@ Pimpin klan ninja, bangun desa tersembunyi di pegunungan, latih lima puluh jenis
 - Lawan buatan komputer selalu diberi label yang jelas.
 - Batas belanja untuk pemain di bawah 18 tahun; hanya pengingat yang kamu pilih, dan semuanya mati sampai kamu menyalakannya.
 
-Kagemura gratis diunduh dan dimainkan. Setiap bangunan, prajurit, level Benteng, dan mode permainan bisa dicapai tanpa membayar, dan tidak ada iklan. Giok, mata uang premium, didapat sedikit demi sedikit dengan bermain (pencapaian, liga, peti harian, dan jalur gratis Gulungan Musim) dan juga bisa dibeli. Beberapa hal hanya dijual dengan uang sungguhan: jalur premium Gulungan Musim (hadiah tambahan, membangun lebih cepat selama musim berlangsung, dan tampilan Benteng "Festival Lentera") serta bundel Giok dan sumber daya berwaktu terbatas.
+Kagemura gratis diunduh dan dimainkan. Setiap bangunan, prajurit, level Benteng, dan mode permainan bisa dicapai tanpa membayar, dan tidak ada iklan. Giok, mata uang premium, didapat sedikit demi sedikit dengan bermain (pencapaian, liga, peti harian, dan jalur gratis Gulungan Musim) dan juga bisa dibeli. Beberapa hal hanya dijual dengan uang sungguhan: jalur premium Gulungan Musim (hadiah tambahan, membangun lebih cepat selama musim berlangsung, dan tampilan Benteng yang berganti setiap musim) serta bundel Giok dan sumber daya berwaktu terbatas.
 
 ## Tautan rilis
 

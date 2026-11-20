@@ -9,7 +9,8 @@ const only = process.argv.slice(2);
 const server = await createServer({ server: { middlewareMode: true, hmr: false, ws: false }, appType: 'custom', logLevel: 'error' });
 try {
   const m = await server.ssrLoadModule('/tools/balance/preview.ts');
-  const opts = { layouts: ['random', 'kunai_ring', 'walled_keep'], seeds: 2, ...(only.length ? { only } : {}) };
+  // P4-10 (BNL-12): six layouts x five seeds (30 bases a cell; 6 could not tell a working counter from noise).
+  const opts = { layouts: ['random', 'kunai_ring', 'walled_keep', 'mortar_core', 'twin_gates', 'open_court'], seeds: 5, ...(only.length ? { only } : {}) };
   const md = m.previewMarkdown(m.runBuildingPreview(opts), m.runHeroPreview(opts), opts);
   if (only.length) process.stdout.write(md);
   else {

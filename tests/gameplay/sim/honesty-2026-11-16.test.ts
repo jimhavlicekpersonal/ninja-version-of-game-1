@@ -1,0 +1,228 @@
+/**
+ * Phase 1 honesty defects of the 2026-11-16 pass (docs/audit/understand-2026-11-16/retention.md, economy.md):
+ * each as a test that failed on the code it describes.
+ */
+import { describe, expect, it } from 'vitest';
+import { currentTasks, passBonusCount, passPointsPerDay, passPremiumValue, passSeason, passSeasonEndsAt, taskTarget, unlockedTier } from '../../../src/gameplay/sim/pass';
+import { collectorRatePerHour, producedResource } from '../../../src/gameplay/sim/resources';
+import { advance, applyCommand, canHireArtisan, passTierReward } from '../../../src/gameplay/sim/village';
+import { migrate, SAVE_VERSION, serialize, deserialize } from '../../../src/gameplay/sim/save';
+import { data, newGame } from './helpers';
+
+describe('RET-03 / ECO-02 (P1-01): a season that ends grants its unclaimed tiers', () => {
+  function premiumVillage() {
+    const { state, clock } = newGame({ acorns: 0, dew: 0, moonstones: 0 });
+    state.pass.points = 20 * data.pass.pointsPerTier;
+    state.pass.premium = true;
+    const at = clock.now();
+    state.purchases.push({ id: 'test:pass1', productId: data.pass.productId, usd: 4.99, at });
+    return { state, at };
+  }
+
+  it('pays every unlocked tier, free and premium, and records it for the welcome back', () => {
+    const { state, at } = premiumVillage();
+    expect(unlockedTier(state, data)).toBe(20);
+    const end = passSeasonEndsAt(at, data);
+    const after = advance(state, end + 1000, data).state;
+    expect(after.pass.season).toBe(passSeason(end + 1000, data));
+    const last = after.pass.lastSeason!;
+    expect(last.season).toBe(state.pass.season);
+    const jade = (last.granted.moonstones ?? 0);
+    expect(jade).toBeGreaterThan(0);
+    expect(after.resources.moonstones).toBe(jade);
+    // Premium grants are kept on the purchase, so a refund takes them back.
+    expect(after.purchases[0].premium?.granted.moonstones ?? 0).toBeGreaterThan(0);
+    // Whatever did not fit is reported, never dropped silently.
+    const total = (k: 'acorns' | 'dew') => (last.granted[k] ?? 0) + (last.overflow[k] ?? 0);
+    expect(total('acorns')).toBeGreaterThan(last.granted.acorns ?? 0);
+  });
+
+  it('never pays a tier twice, and pays nothing when every tier was claimed', () => {
+    const { state, at } = premiumVillage();
+    for (let t = 1; t <= 20; t++) {
+      const f = applyCommand(state, { type: 'claimTier', tier: t, track: 'free' }, at, data);
+      if (f.ok) Object.assign(state, f.state);
+      const p = applyCommand(state, { type: 'claimTier', tier: t, track: 'premium' }, at, data);
+      if (p.ok) Object.assign(state, p.state);
+    }
+    const jadeBefore = state.resources.moonstones;
+    const after = advance(state, passSeasonEndsAt(at, data) + 1000, data).state;
+    // P5-10 (restated): every rollover writes the season recap; with every tier claimed it grants nothing.
+    expect(after.pass.lastSeason?.granted).toEqual({});
+    expect(after.resources.moonstones).toBe(jadeBefore);
+  });
+
+  it('a refund after the rollover takes the auto-claimed premium rewards back', () => {
+    const { state, at } = premiumVillage();
+    const after = advance(state, passSeasonEndsAt(at, data) + 1000, data).state;
+    const r = applyCommand(after, { type: 'revokePurchase', transactionId: 'test:pass1' }, passSeasonEndsAt(at, data) + 2000, data);
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    const freeJade = (after.pass.lastSeason!.granted.moonstones ?? 0) - (after.purchases[0].premium?.granted.moonstones ?? 0);
+    expect(r.state.resources.moonstones).toBe(freeJade);
+  });
+});
+
+describe('save v24: the pass bump', () => {
+  it('migrates a v23 village: timed upgrades start at the upgrades done, task baselines follow', () => {
+    const { state, clock } = newGame();
+    state.stats.upgradesDone = 7;
+    const file = serialize(state, clock.now()) as unknown as { version: number; village: Record<string, unknown> };
+    file.version = 23;
+    const stats = file.village.stats as Record<string, number>;
+    delete stats.timedUpgradesDone;
+    const tasks = file.village.tasks as { dayBaseline: Record<string, number> };
+    delete tasks.dayBaseline.timedUpgradesDone;
+    const out = migrate(file, data);
+    expect(out.version).toBe(SAVE_VERSION);
+    expect(SAVE_VERSION).toBe(24);
+    expect(out.village.stats.timedUpgradesDone).toBe(7);
+    expect(out.village.tasks.dayBaseline.timedUpgradesDone).toBe(7);
+  });
+
+  it('a v24 file written without a later counter still loads with it filled', () => {
+    const { state, clock } = newGame();
+    const file = serialize(state, clock.now()) as unknown as { village: { stats: Record<string, number> } };
+    delete file.village.stats.timedUpgradesDone;
+    expect(deserialize(file, data).stats.timedUpgradesDone).toBe(0);
+  });
+});
+
+describe('RET-04 (P1-02): the paid look changes each season, and an owned one pays Jade', () => {
+  const lookTier = data.pass.tiers.find((t) => t.premium.skin)!.tier;
+  it('twelve seasons give the list in order', () => {
+    const list = data.pass.seasonSkins!;
+    expect(list.length).toBeGreaterThanOrEqual(6);
+    for (let i = 0; i < 12; i++) {
+      const { state } = newGame();
+      state.pass.season = 100 + i;
+      expect(passTierReward(state, lookTier, 'premium', data)!.skin).toBe(list[(100 + i) % list.length]);
+    }
+    for (const id of list) expect(data.cosmetics.hallSkins.find((s) => s.id === id)?.passOnly).toBe(true);
+  });
+
+  it('an owner gets repeatJade, and the estimate never lists a look the player owns', () => {
+    const { state, clock } = newGame();
+    state.pass.season = passSeason(clock.now(), data);
+    const look = passTierReward(state, lookTier, 'premium', data)!.skin!;
+    state.cosmetics.owned.push(look);
+    const r = passTierReward(state, lookTier, 'premium', data)!;
+    expect(r.skin).toBeUndefined();
+    expect(r.moonstones).toBe(data.pass.repeatJade);
+    state.pass.points = data.pass.tiers.length * data.pass.pointsPerTier;
+    expect(passPremiumValue(state, clock.now(), data).skins).not.toContain(look);
+  });
+});
+
+describe('RET-02 / ECO-03 (P1-03): tasks keep paying after the last tier', () => {
+  it('a task claimed past tier 30 pays a visible bonus, and a full season stays under the free track supply', () => {
+    const { state, clock } = newGame({ acorns: 0, dew: 0 });
+    const top = data.pass.tiers.length * data.pass.pointsPerTier;
+    const b = data.pass.bonus!;
+    expect(passBonusCount(top, data)).toBe(0);
+    expect(passBonusCount(top + b.everyPoints, data)).toBe(1);
+    expect(passBonusCount(top + 1e9, data)).toBe(b.maxPerSeason);
+    const free = data.pass.tiers.reduce((sum, t) => sum + (t.free.acorns ?? 0), 0);
+    expect(b.reward.acorns! * b.maxPerSeason).toBeLessThanOrEqual(free);
+    expect(b.reward.moonstones ?? 0).toBe(0);
+    // Claim a real task with the points just below a bonus.
+    state.pass.points = top + b.everyPoints - 1;
+    const task = currentTasks(state, 1, data)[0];
+    state.stats[task.stat as keyof typeof state.stats] = (state.tasks.dayBaseline[task.stat as keyof typeof state.stats] ?? 0) + task.target;
+    const r = applyCommand(state, { type: 'claimTask', id: task.id, kind: task.kind }, clock.now(), data);
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    const ev = r.events.find((e) => e.kind === 'reward')!;
+    expect(ev.kind === 'reward' && (ev.grants.acorns ?? 0) + (ev.grants.dew ?? 0)).toBeGreaterThan(0);
+  });
+});
+
+describe('ECO-05 (P1-04): the Artisan\'s Bundle only while it can do what it says', () => {
+  it('is offered with two and three huts, not with four (the fifth costs more than the bundle gives)', () => {
+    const hut = Object.keys(data.buildings).find((t) => data.buildings[t].category === 'builder' && data.buildings[t].inShop)!;
+    const withHuts = (n: number) => {
+      const { state } = newGame();
+      const at = state.buildings.filter((b) => b.type === hut);
+      const extra = Array.from({ length: Math.max(0, n - at.length) }, (_, i) => ({ id: `hut${i}`, type: hut, level: 1, x: 2 + i * 3, y: 2, upgrade: null, collector: null }));
+      state.buildings = [...state.buildings, ...extra];
+      state.buildings = state.buildings.map((b) => (data.buildings[b.type].category === 'hall' ? { ...b, level: 10 } : b));
+      return state;
+    };
+    expect(canHireArtisan(withHuts(2), data)).toBe(true);
+    expect(canHireArtisan(withHuts(3), data)).toBe(true);
+    expect(canHireArtisan(withHuts(4), data)).toBe(false);
+  });
+});
+
+describe('ECO-06 (P1-05): the Scroll value estimate stays honest', () => {
+  const atKeep = (keep: number) => {
+    const { state, clock } = newGame();
+    state.buildings = state.buildings.map((b) => (data.buildings[b.type].category === 'hall' ? { ...b, level: keep } : b));
+    state.pass.season = passSeason(clock.now(), data);
+    return { state, now: clock.now() };
+  };
+
+  it('never shows more than the guard multiple of the same-price pack, at Keeps 3, 5, 10 and 15', () => {
+    for (const keep of [3, 5, 10, 15]) {
+      const { state, now } = atKeep(keep);
+      const v = passPremiumValue(state, now, data);
+      expect(v.total, `Keep ${keep}`).toBeLessThanOrEqual(data.pass.estimate!.guardPackMultiple * v.packJade + v.jade);
+      if (v.guarded) expect(v.total).toBe(v.jade);
+    }
+  });
+
+  it('a player who completes half the tasks sees about half the remaining tiers counted', () => {
+    const { state } = atKeep(5);
+    const start = passSeasonEndsAt(Date.UTC(2026, 3, 10), data) - data.pass.seasonDays * 86_400_000;
+    const now = start + 10 * 86_400_000;
+    state.pass.season = passSeason(now, data);
+    const full = 10 * passPointsPerDay(data);
+    state.pass.points = Math.round(full);
+    const all = passPremiumValue(state, now, data);
+    state.pass.points = Math.round(full / 2);
+    const half = passPremiumValue(state, now, data);
+    expect(all.pace).toBeCloseTo(1, 1);
+    expect(half.pace).toBeCloseTo(0.5, 1);
+    // The half-pace player's projection: half of every remaining day's points (it used to assume all of them).
+    const projected = Math.floor((state.pass.points + 20 * passPointsPerDay(data) * 0.5) / data.pass.pointsPerTier);
+    expect(Math.abs(half.tiers - Math.min(data.pass.tiers.length, projected))).toBeLessThanOrEqual(1);
+    expect(half.tiers).toBeLessThan(all.tiers);
+  });
+});
+
+describe('RET-05 (P1-08): daily tasks mean something', () => {
+  it('no collect task is finished by one collect of an hour of production, at Keeps 3, 8 and 15', () => {
+    for (const keep of [3, 8, 15]) {
+      const { state } = newGame();
+      const limits = data.hall.levels[keep - 1].limits as Record<string, { count: number; maxLevel: number }>;
+      state.buildings = state.buildings.map((b) => (data.buildings[b.type].category === 'hall' ? { ...b, level: keep } : b));
+      // Every collector the Keep allows, at its cap (positions do not matter to a target).
+      for (const [type, l] of Object.entries(limits)) {
+        if (!data.buildings[type]?.produces) continue;
+        for (let i = 0; i < l.count; i++) state.buildings.push({ id: `c-${type}-${i}`, type, level: l.maxLevel, x: 0, y: 0, upgrade: null, collector: { stored: 0, accrueFrom: 0 } });
+      }
+      for (const id of ['collect_acorns', 'collect_dew']) {
+        const tpl = data.pass.dailyTasks.find((t) => t.id === id)!;
+        const kind = tpl.stat === 'collectedAcorns' ? 'acorns' : 'dew';
+        const hour = state.buildings.filter((b) => producedResource(b, data) === kind).reduce((n, b) => n + collectorRatePerHour(b, b.level, data), 0);
+        expect(hour, `Keep ${keep}`).toBeGreaterThan(0);
+        expect(taskTarget(tpl, state, data)!, `Keep ${keep} ${id}`).toBeGreaterThan(hour);
+      }
+    }
+  });
+
+  it('ten instant wall levels do not move the upgrade tasks; a timed upgrade does', () => {
+    expect(data.pass.dailyTasks.find((t) => t.id === 'finish_upgrades')!.stat).toBe('timedUpgradesDone');
+    expect(data.pass.weeklyChallenges.find((t) => t.id === 'w_upgrades')!.stat).toBe('timedUpgradesDone');
+    const { state, clock } = newGame({ acorns: 1e6, dew: 1e6 });
+    const before = state.stats.timedUpgradesDone;
+    // An instant finish (a wall level) and a timed one, both run through advance.
+    const hall = state.buildings.find((b) => data.buildings[b.type].category === 'hall')!;
+    hall.upgrade = { toLevel: 2, startedAt: clock.now(), endsAt: clock.now() + 1000, cost: {} };
+    const wall = Object.keys(data.buildings).find((t) => data.buildings[t].category === 'hedge')!;
+    state.buildings.push({ id: 'w1', type: wall, level: 1, x: 1, y: 1, upgrade: { toLevel: 2, startedAt: clock.now(), endsAt: clock.now(), cost: {} }, collector: null });
+    const after = advance(state, clock.now() + 2000, data).state;
+    expect(after.stats.upgradesDone - state.stats.upgradesDone).toBe(2);
+    expect(after.stats.timedUpgradesDone - before).toBe(1);
+  });
+});

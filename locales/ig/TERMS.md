@@ -48,6 +48,14 @@ Rules (for reviewers):
 | Codex | Akwụkwọ Ọmụma |
 | Sensei Hoshi | Onye Nkuzi Hoshi |
 | Shinobi / Oni Breaker / Kage League | Shinobi / Onye Ntiwa Oni / Otu Kage (different from Otu Onyinyo) |
+| The Gauntlet | Ụzọ Ọnwụnwa |
+| Bounty Hunt / bounty / warlord | Ịchụ Nta Ụgwọ Isi / ụgwọ isi / ọchịagha |
+| festival / festival fortress | mmemme / ebe ike mmemme |
+| step / mark on a reward ladder | nzọụkwụ (n'usoro ihe nrite) |
+| Daily contract | nkwekọrịta kwa ụbọchị |
+| Keep seal / sealed | akara Obi / e tinyela akara |
+| Mastery rank / experience | Ogo / ahụmịhe |
+| Season (name) | Oge … (Oge Nnụnụ Kreen) |
 
 Brand and technical names stay as they are (Kagemura, App Store, Google Play, Game Center, Play Games, IndexedDB, Sentry). Japanese names keep their usual Latin spelling (Kaito, Takeda, Gorō); English epithets are translated.
 

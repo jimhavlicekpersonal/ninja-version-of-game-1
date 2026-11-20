@@ -44,15 +44,22 @@ import { heroShield } from './heroAbilities';
  * (`temper.troopCuts`: healing, auras, the Mountain Shield's splash cover, revives). Rules 6 battles
  * against a Watch base play differently, so 6 is archived in server/rules/v6 and is not compatible;
  * untempered battles still play exactly as under 5 and 4.
+ *
+ * 8 (2026-11-16 replayability pass, Phase 4; docs/prompts/BEAST_MODE_2026-11-16.md): support warriors in position
+ * strike (`warriorRules.supportStrike`), Drum Monk and Herbalist auras cut, the Shadow Captain's Rally once per battle
+ * across the field, faster siege warriors, Thousand Needle / Siege Bombardier / Volcano Cannoneer / Dragon Kite Crew /
+ * Thunder Kite damage and Eclipse Ninja health through the model, Shuriken Storm's fan radius, `counterShare` 0.75,
+ * rival clans' home layouts in raids, `kit.breachRadius` removed. Live warriors behave differently in every battle,
+ * so no older rules stay compatible; rules 7 is archived in server/rules/v7.
  */
-export const SIM_RULES = 7;
+export const SIM_RULES = 8;
 
 /**
  * Older rules this code plays out identically (their battles never use the
  * newer setup fields). Their replays stay watchable, and the server checks
  * their battles with this code. Empty it on the next change to combat itself.
  */
-export const SIM_RULES_COMPATIBLE: readonly number[] = [5, 4];
+export const SIM_RULES_COMPATIBLE: readonly number[] = [];
 
 /** Whether a record can be replayed faithfully with the current rules. */
 export function replayable(record: Pick<BattleRecord, 'rules'>): boolean {
@@ -118,7 +125,7 @@ export function createBattle(setup: BattleSetup, data: GameData): BattleSim {
       def.category === 'hall' ? 'hall' : def.category === 'defense' ? 'defense' : def.category === 'hedge' ? 'hedge' : def.category === 'trap' ? 'trap' : 'other';
     // Shadow Trials scale defenses (and walls) beyond the normal level caps.
     // Rules 10 (lab): `battle.wallHp` multiplies every wall's health, so a closed wall is worth breaching.
-    const mult = kind === 'defense' || kind === 'trap' ? setup.base.power ?? 1 : kind === 'hedge' ? (setup.base.wallPower ?? 1) * ((data.battle as { wallHp?: number }).wallHp ?? 1) : 1;
+    const mult = kind === 'defense' || kind === 'trap' ? setup.base.power ?? 1 : kind === 'hedge' ? (setup.base.wallPower ?? 1) * (data.battle.wallHp ?? 1) : 1;
     const hp = mult === 1 ? ld.hp : ld.hp * mult;
     // A building being upgraded neither fires nor runs its counter effect (one downtime rule for both).
     const active = activeInBattle(bb);
@@ -153,7 +160,7 @@ export function createBattle(setup: BattleSetup, data: GameData): BattleSim {
   applyBaseWide(buildings, profile, data);
   // Rules 9 (lab): towers need room. Each other defence within `radius` tiles slows a defence's fire by `slow`
   // (up to `max`), so packing every tower round the Keep is no longer free (data: battle.crowding, absent = off).
-  const crowd = (data.battle as { crowding?: { radius: number; slow: number; max: number } }).crowding;
+  const crowd = data.battle.crowding;
   if (crowd) {
     const defs = buildings.filter((x) => x.kind === 'defense' && x.combat);
     for (const x of defs) {
@@ -494,7 +501,7 @@ function stepTroop(sim: BattleSim, ti: number): void {
     const c = center(target);
     t.facing = c.x - c.y >= t.x - t.y ? 1 : -1;
     if (t.cooldown <= 0) {
-      t.cooldown = def.attackIntervalTicks;
+      t.cooldown = def.attackIntervalTicks + Math.min(0, t.cooldown); // Phase 4 review #3: a hasted countdown's overshoot carries (0 exactly without haste)
       const damage = attackDamage(sim, t, target);
       if (def.projectile) {
         const d = dist(t.x, t.y, c.x, c.y);
@@ -549,7 +556,7 @@ function stepTroop(sim: BattleSim, ti: number): void {
     if (hi >= 0 && (!ignoresHedges || springBlocks(t, sim.buildings[hi]))) {
       t.attacking = true;
       if (t.cooldown <= 0) {
-        t.cooldown = def.attackIntervalTicks;
+        t.cooldown = def.attackIntervalTicks + Math.min(0, t.cooldown); // Phase 4 review #3: a hasted countdown's overshoot carries (0 exactly without haste)
         resolveWarriorHit(sim, t, hi, attackDamage(sim, t, sim.buildings[hi]), warriorActions);
       }
       return;
@@ -710,7 +717,7 @@ function stepTraps(sim: BattleSim): void {
  * the one-shot breakpoints that make a 3% stat change swing a raid by 30 points. 0 or absent = off (no RNG drawn).
  */
 function shotSpread(sim: BattleSim): number {
-  const spread = (sim.data.battle as { damageSpread?: number }).damageSpread ?? 0;
+  const spread = sim.data.battle.damageSpread ?? 0;
   return spread > 0 ? 1 + spread * (next(sim.rng) * 2 - 1) : 1;
 }
 /** Rules 8 (lab): a tuned tower's shot does more to the class of warrior it hunts. */

@@ -116,7 +116,7 @@ export function buildPages(code, { names = files, writePublic = true } = {}) {
     }
     for(const [start,end,text]of edits.sort((a,b)=>b[0]-a[0]))html=html.slice(0,start)+text+html.slice(end);
     for(const [key,u]of Object.entries(units).filter(([,u])=>u.name===name&&u.kind==='attribute')) html=html.replaceAll(`="${encode(u.en)}"`,`="${encode(ws[key].text)}"`);
-    html=html.replace(/<html lang="[^"]+">/,`<html lang="${code}"${rtl(code)?' dir="rtl"':''}>`).replaceAll('href="./legal.css"','href="../legal.css"').replaceAll('src="./legal','src="../legal');
+    html=html.replace(/<html lang="[^"]+">/,`<html lang="${code}"${rtl(code)?' dir="rtl"':''}>`).replaceAll('href="./legal.css"','href="../legal.css"').replaceAll('href="./licenses.html"','href="../licenses.html"').replaceAll('src="./legal','src="../legal');
     // The account form must not expose English provider/network diagnostics.
     if(name==='account' && ACCOUNT_FAILURE[code]) html=html.replace('err.message;',JSON.stringify(ACCOUNT_FAILURE[code])+';');
     result[name]=html;

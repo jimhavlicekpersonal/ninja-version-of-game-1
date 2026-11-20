@@ -136,7 +136,10 @@ describe('task counters count finished work (#10)', () => {
   it('the pass tasks and the achievement use the finished-upgrade counter', () => {
     const all = [...data.pass.dailyTasks, ...data.pass.weeklyChallenges];
     expect(all.some((t) => t.stat === 'upgradesStarted')).toBe(false);
-    expect(all.some((t) => t.stat === 'upgradesDone')).toBe(true);
+    // P1-08 (2026-11-18): the tasks count finished upgrades that took a builder's time; the achievement keeps
+    // counting every finished upgrade.
+    expect(all.some((t) => t.stat === 'timedUpgradesDone')).toBe(true);
+    expect(data.achievements.some((a) => a.stat === 'upgradesDone')).toBe(true);
     expect(data.achievements.some((a) => a.stat === 'upgradesStarted')).toBe(false);
   });
 });

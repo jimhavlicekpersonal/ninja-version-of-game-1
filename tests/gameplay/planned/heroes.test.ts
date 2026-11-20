@@ -4,7 +4,7 @@
  */
 import { describe, expect, it } from 'vitest';
 import { createBattle, deploy, step, type BattleSim } from '../../../src/gameplay/sim/battle/battle';
-import { attackDamage } from '../../../src/gameplay/sim/battle/warriors';
+import { attackDamage, auraStrength } from '../../../src/gameplay/sim/battle/warriors';
 import { defaultData } from '../../../src/gameplay/sim/data';
 import { PREVIEW, previewHeroDef, previewHeroIds, withPreview } from '../../../src/gameplay/sim/plannedContent';
 import { HEROES } from '../../../src/gameplay/sim/progression';
@@ -84,7 +84,8 @@ describe('Iron Matriarch: Bulwark', () => {
 });
 
 describe('Sky Admiral: Squall', () => {
-  it('pushes every flyer toward its target and halves the damage defenses do to them', () => {
+  // P4-10 step 5 (restated): the cut is the kit's strength (0.5 -> 0.7, BNL-03).
+  it('pushes every flyer toward its target and cuts the damage defenses do to them by the kit\'s strength', () => {
     const s = sim('sky_admiral', [b('k', 'firefly_tower', 20, 10)], { sky_admiral: 1, owl_bomber: 1, beetle_brute: 1 });
     s.buildings[1].combat = null;
     const admiral = place(s, 'sky_admiral', 19, 11);
@@ -99,7 +100,7 @@ describe('Sky Admiral: Squall', () => {
     const hp = t.hp;
     shot(s, kite, 21, 11);
     step(s);
-    expect(hp - t.hp).toBeCloseTo(10 * 0.5, 6);
+    expect(hp - t.hp).toBeCloseTo(10 * (1 - withPreview(defaultData).battle.heroes!.sky_admiral.kit!.strength!), 6);
   });
 });
 
@@ -138,8 +139,11 @@ describe('Rally: once per battle or on every target (RM-3 flag)', () => {
     attackDamage(s, t, s.buildings[2]);
     return { first, second: t.rallyUntil };
   };
-  it('re-arms on every new target by default (today\'s rules, unchanged)', () => {
-    const r = rallies(defaultData);
+  // P4-02 (CMB-05, SIM_RULES 8, restated): the shipped Rally is once per battle; without the flag it re-arms.
+  it('re-arms on every new target without the flag', () => {
+    const data = structuredClone(defaultData);
+    delete data.battle.heroes!.shadow_captain.kit!.oncePerBattle;
+    const r = rallies(data);
     expect(r.second).toBeGreaterThan(r.first!);
   });
   it('fires only once with kit.oncePerBattle', () => {
@@ -148,7 +152,21 @@ describe('Rally: once per battle or on every target (RM-3 flag)', () => {
     const r = rallies(data);
     expect(r.second).toBe(r.first);
   });
-  it('the shipped data does not set the flag', () => {
-    expect(defaultData.battle.heroes!.shadow_captain.kit!.oncePerBattle).toBeUndefined();
+  it('a Rally lasts its 15 seconds even if the Captain falls (Phase 4 review #10, as the card says)', () => {
+    const s = createBattle({ seed: 3, base: { name: 'r', hallLevel: 15, buildings: [b('h', 'elder_toadstool', 40, 40), b('k', 'acorn_cannon', 20, 10)] }, army: { beetle_brute: 1 }, levels: {}, hero: { id: 'shadow_captain', level: 1 } }, defaultData);
+    const cap = place(s, 'shadow_captain', 19, 11);
+    const ally = place(s, 'beetle_brute', 18, 12);
+    attackDamage(s, s.troops[cap], s.buildings[1]);
+    const strength = defaultData.battle.heroes!.shadow_captain.kit!.strength!;
+    expect(auraStrength(s, s.troops[ally], 'rally')).toBe(strength);
+    s.troops[cap].dead = true;
+    s.troops[cap].hp = 0;
+    expect(auraStrength(s, s.troops[ally], 'rally')).toBe(strength);
+    s.tick = s.troops[cap].rallyUntil!;
+    expect(auraStrength(s, s.troops[ally], 'rally')).toBe(0);
+  });
+  it('the shipped data sets the flag (P4-02): once per battle, as the text says', () => {
+    expect(defaultData.battle.heroes!.shadow_captain.kit!.oncePerBattle).toBe(true);
+    expect(rallies(defaultData).second).toBe(rallies(defaultData).first);
   });
 });

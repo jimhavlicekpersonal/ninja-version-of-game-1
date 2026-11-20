@@ -14,6 +14,8 @@
 | Gang / Gang War / Gang leader | പട / പടയുദ്ധം / പടനേതാവ് (നേതാവ് ലിംഗനിരപേക്ഷം) |
 | Friendly Duel / duel layout | സൗഹൃദ ദ്വന്ദ്വം / ദ്വന്ദ്വ വിന്യാസം |
 | Shadow Trials / tier | നിഴൽ പരീക്ഷകൾ / ഘട്ടം |
+| Daily drill / drill (verb) | ദിവസ അഭ്യാസം / അഭ്യസിക്കുക |
+| storage / loot / stun | സംഭരണി / കൊള്ളമുതൽ / മയക്കം |
 | Season Scroll / premium track / Pass (rail) | സീസൺ ചുരുൾ / പ്രീമിയം പാത / ചുരുൾ |
 | Smoke Bomb / smoke | പുകബോംബ് / പുക |
 | Saboteur / Sabotage / jam | അട്ടിമറിക്കാർ (യൂണിറ്റിന്റെ പേര്) / അട്ടിമറി / സ്തംഭിപ്പിക്കുക |

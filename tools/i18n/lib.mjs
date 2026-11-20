@@ -34,7 +34,7 @@ export function targets() {
 /** Fields whose string value is player-facing text. */
 const TEXT_KEYS = new Set(['name', 'description', 'text', 'label', 'title', 'summary', 'bio', 'leader']);
 /** Whole string lists that are player-facing (generated names, bot chat). */
-const LISTS = [/^names\.(placeFirst|placeSecond|playerFirst|playerSecond)$/, /^social\.chatLines\.\w+$/, /^social\.groveNames\.\w+$/];
+const LISTS = [/^names\.(placeFirst|placeSecond|playerFirst|playerSecond)$/, /^social\.chatLines\.\w+$/, /^social\.groveNames\.\w+$/, /^pass\.seasonNames$/];
 /** Never translated: comments, art descriptions, moderation lists, codes. */
 const SKIP = new Set(['$comment', 'look', 'visualStages', 'profanity', 'currency', 'productId']);
 

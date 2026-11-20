@@ -270,7 +270,11 @@ export function chargeRod(sim: BattleSim, rodIndex: number, amount: number, t: S
   const rod = sim.buildings[rodIndex];
   const e = rod.effect!;
   rod.charge = (rod.charge ?? 0) + amount;
-  sim.events.push({ k: 'counter', building: rodIndex, troop: t.id, target: -1, what: 'absorbed' });
+  // P4-10 (BNL): at most one `absorbed` callout a second per rod (every hit used to raise one).
+  if (rod.absorbedAt === undefined || sim.tick - rod.absorbedAt >= sim.data.battle.ticksPerSecond) {
+    rod.absorbedAt = sim.tick;
+    sim.events.push({ k: 'counter', building: rodIndex, troop: t.id, target: -1, what: 'absorbed' });
+  }
   if (rod.charge < rod.maxHp * (e.capacity ?? 1)) return;
   const back = rod.charge * (e.returnPct ?? 0);
   rod.charge = 0;

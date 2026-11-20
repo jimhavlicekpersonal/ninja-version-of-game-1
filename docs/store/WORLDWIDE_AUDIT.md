@@ -907,6 +907,312 @@ Each gap was revalidated against the code, then fixed with a test that failed on
 
 Checks run on the final tree: `npm test`, `npm run test:slow`, `npm run lint`, `npm run build`, `npm run typecheck:server`, `npm run server:build`, `npm run i18n:check`, and every `tests/backend` file one at a time against a local Postgres 16 and Redis. Not run: CI, a multi-instance load test, a device, store or browser check.
 
+### 2026-11-18 replayability pass, Phases 0 and 1: green pipeline, exploits and honesty defects (integration session; agent prompt `docs/prompts/BEAST_MODE_2026-11-16.md`, evidence `docs/audit/understand-2026-11-16/`, ledger `docs/audit/understand-2026-11-16/PROGRESS.md`), commits `80d180d` to `2627bf6` on `claude/magical-cray-wkpcl1`
+
+**Read first: no build of this branch may be released yet.** The pass makes one save bump (`SAVE_VERSION` 24, introduced here); a village written by a v24 build never runs the v24 step again, so until the pass's last stored field lands (later phases), no build of this branch ships and no server holds villages written by it. When it does ship: the server deploys before the game (what the server replays changed), and older games meeting a v24 server village see "Update Kagemura".
+
+Each item was revalidated against the code first; each defect got a test that failed on the old code (checked by restoring the old file locally for the exploit tests). No battle rule changed (`SIM_RULES` unchanged; the combat fingerprint unchanged). Protocol: additive only (`CommandOutcome.chestSalt`, hello feature `chest-entropy`; `docs/PROTOCOL.md` "Exploit fixes 2026-11-18").
+
+| Item | Finding | Status | What changed | Evidence | Remaining limitations |
+|---|---|---|---|---|---|
+| P0-01 | baseline | done | `npm test` at the merge of main's `0c5eeb7`: 1 failure, caused by `0c5eeb7` itself (a relabelled verified purchase); fixed | `villageImport.test.ts` | — |
+| P0-02 | PUB-01 deploy check rejects every right-to-left page | fixed | `tools/release/page-language.mjs` reads `lang` and `dir` separately | `release-tools.test.ts`; the real checker passed all 49 translated languages of a local build (`vite preview`), the old one failed on `ar/community.html` | Not run against GitHub Pages |
+| P0-03 | PUB-03 Postgres tests time out at 5 s | fixed | 30 s test/hook timeout only with `TEST_DATABASE_URL`; two workers on the Postgres CI steps | three consecutive local runs (Postgres 16, Redis 7): 66 files, 692 tests each, all green | Not shown that 5 s fails on this machine; CI not run from here |
+| P0-04 | PUB-02 / XPL-07 matched test fails on CI only | cause not found, guarded | `.node-version` (24.22.3) read by every workflow, same as the Dockerfile; the test asserts levels and opponent Keep before stars and prints battle hashes; new `matchmaking-pins.test.ts`, run again in CI with `--no-turbofan --no-maglev` | `det.ts` byte-identical on Node 22.23.4 and 24.22.3 with and without TurboFan, Maglev, Sparkplug and the JIT | The GitHub runner itself could not be run here; the 2.2 gate's one-star margin is Phase 4 (P4-08) |
+| P1-11 | XPL-01 battle commands trust the client's setup | fixed | `sanitizeBattleSetup`: whitelist, Infiltration forced, the village's own hero at most at its level, no relay damage; clears/steps/wins need warriors | Keep 1 cleared Trials 1-40 with no army, before; refused after, also through `replayVillage` | Old records replay with their own setup by design |
+| P1-12 | XPL-02 record times bounded only above | fixed | lower bound (battle length + `raids.battleResumeHours` 72) and no older Bounty occurrence | 700 Jade in 20 commands, before; refused after | A cheater can still attack a Bounty up to 72 h after it ended, once |
+| P1-13 | XPL-03 import liabilities, attacker-sized loops | fixed (with main's `0c5eeb7`) | import strips top-up shares and `armyPaid`, clamps timer costs; league catch-up pays at most 2 seasons; war catch-up starts near now; `season`/`settledWeek` validated | forged file: 500 → 280,500 Jade before; capped after; season 0 settles in milliseconds | An honest player away for months now gets 2 league chests, not one per month |
+| P1-14 | XPL-04 top-up wipes a refund debt | fixed | no top-up while a needed resource is negative | test | — |
+| P1-15 | XPL-05 hero-only exits | fixed (server half in `0c5eeb7`) | hero-only battle or abandon of a scouted raid is a lost attack | tests; the DZ-3 test restated | — |
+| P1-16 | XPL-06 client picks tomorrow's chest | fixed | server entropy logged as replayed, `chestSalt` returned and adopted (`setChestSalt`, device-only) | `attacks-economy.test.ts` (main's version of it never applied the chest) | Older games keep their own next salt until the economy hash corrects them |
+| P1-17 | XPL-08 `Math.pow`/`log2` in Trials | fixed | repeated multiplication, exact `log2` for powers of two, safe floor | rewards at tiers 2/4/16/32/64 pinned | — |
+| P1-18 | XPL-09 Provisions top-up exchange | fixed | priced in the currency the action pays | test | — |
+| P1-19 | XPL-10 12 h backdating | fixed (backend decision) | timer commands dated at most 10 min back; others keep 12 h | `exploits-2026-11-16.test.ts` | A timer started offline counts from sync (corrected on the device) |
+| P1-20 | XPL-12 missed stake shields; fed honor | fixed | no shield or exhaustion without loot; ≤ 40 honor per attacker per defender per day | `balance-round2.test.ts` | — |
+| P1-21 | XPL-13 low-value holes | fixed | `setProfile` booleans only; whole donations; war base and target rebuilt; Bounty Keep-below only after a Keep upgrade mid-battle (`keepReachedAt`, save v24) | tests | — |
+| P1-22 | BNL-07 shared replay mastery | fixed | dropped unless `features.mastery`; hero validated | test | — |
+| P1-01 | RET-03/ECO-02 unclaimed Scroll rewards vanish | fixed | rollover grants unclaimed tiers (premium recorded on the purchase), `pass.lastSeason` in the welcome back | 20 tiers paid Jade +0 before; all granted after; refund takes premium back | — |
+| P1-02 | RET-04 the paid look repeats | fixed | 8 seasonal looks, 60 Jade for an owned one, estimate leaves owned looks out; LISTING.md and 49 store copies reworded | tests incl. the listing row against `pass.json` | 7 new looks are two colours and a name (no art) |
+| P1-03 | RET-02/ECO-03 tasks pay nothing past tier 30 | fixed | Keep-scaled resource bonus every 300 points, ≤ 17 a season, no Jade | test: a full season stays under the free track's supply | — |
+| P1-04 | ECO-05 Artisan's Bundle offered when hollow | fixed | only while its Jade buys the next hut | test | — |
+| P1-05 | ECO-06 Scroll estimate 65× the pack | first half fixed; open until P3-08 | pace-scaled reachable tiers; past 6× the pack only the Jade, supplies listed | Keep 15: 18,176 → 260 Jade + supplies listed | Second half (re-check after the top-up re-curve) open |
+| P1-06 | RET-06 the "endless" ladder ends; unreachable achievement | fixed | growth 0.06 → 0.02, rewards +0.3%/tier past 60, `trial_walker` last step 100 → 53 (measured cap 58 − 5), true intro text | measured: 2+ stars in ≥ 4/8 combos through tier 58 at every growth; tier 60 (maxed fortress, no growth) 2/8; achievement reachability test | The wall is the maxed Keep 15 fortress, not growth: only a stronger army moves it |
+| P1-07 | RET-07 Ironclad never meets walls | fixed | modifier offsets; three rival-temper modifiers | tests for tiers 1-120 | — |
+| P1-08 | RET-05 tasks done by one collect / wall taps | fixed | collect targets 25% of the village's daily output; upgrade tasks count timed upgrades | Keep 12 target 35,000 → 2,500,000 (424,000 an hour) | — |
+| P1-09 | English date in reminders | mostly no longer true | the date was already localized at delivery; now read without `Date.parse` | test with `Date.parse` disabled | — |
+| P1-10 | ECO-13 retired Rebuild Kit listed | fixed | removed from the product map (never sold), StoreKit 13 products | — | — |
+| P7-02 | PUB-05 legacy package name | fixed (owner chooses the id) | one `APP_ID`; signed jobs refuse the legacy id unless allowed | `release-config.test.ts` | Not built with Gradle or Xcode here |
+| P7-04 | PUB-07 / C05 age-rating answers | fixed | Contests Frequent, Age assurance present, Parental controls No, with reasoning | `store-compliance.test.ts` | Apple's page re-read by a helper from a page summary: re-read it in App Store Connect before submitting |
+| P7-08 | PUB-11 privacy date | fixed | `policyUpdated` 2026-11-14, tied to a hash of the English text | test | — |
+
+Free Jade: a returning Season Scroll buyer gets at most 60 Jade a season for a look they own (P1-02); nothing else in this phase pays Jade (the task bonus pays resources only). Translations: 17 strings and one listing sentence in 49 languages, machine translation by one agent per language, `npm run i18n:check` clean, then one reviewer per script group; not reviewed by native speakers.
+
+Campaign (`npm run balance:campaign`, after the review fixes; all 13 gates pass): regular Keep 15 on day 113 and casual Keep 15 on day 246, both unchanged from before the phase (an intermediate run gave casual 268: single-seed noise of about ±2 weeks at that Keep). Model-player outcomes are not observed retention or revenue.
+
+Checks run on the final tree of the phase: `npm test` (212 files; the only failure before the campaign re-run was the stale-campaign assertion), `npm run test:slow` (4 files, 7 tests), `npm run lint`, `npm run build`, `npm run typecheck:server`, `npm run server:build`, `npm run i18n:check` (all 50 languages pass); the Postgres and Redis suites three times locally (Phase 0). Not run: CI itself, a device, a store build, a browser playthrough; no person has played any of it.
+
+**Independent review (section 0.5 of the agent prompt), 2026-11-18.** A fresh reviewer read the diff and ran its own scripts against the committed tree. Findings and what was done:
+
+| # | Finding | Outcome |
+|---|---|---|
+| 1 | Two tests failed at the reviewed commit (P1-08 moved the tasks' counter; the restated tests were not yet committed), and this record was uncommitted | fixed in the next commit; full checks re-run (below) |
+| 2 | An abandon with a setup the village cannot have (a forged hero) skipped the lost-attack rule | fixed: a scouted offline raid abandoned with anything deployed is a lost attack whatever the setup; test |
+| 3 | The device can show a daily chest the server did not give: a retried batch returns no `chestSalt`, and two chests opened offline across midnight draw the second from the device's salt (`daily.salt` is outside the economy hash) | open, recorded: the economy is corrected, the chest screen and history are not; a full fix needs the chest to be drawn by the server or a salt-carrying hash |
+| 4 | The import kept `keepReachedAt` (Keep-below Bounty fortress forever with a forged value) | fixed: the import drops it, and the Keep-below choice also needs `keepReachedAt` ≤ now; test |
+| 5 | The import's cost clamp zeroed an honest Provisions-paid upgrade's refund; stripping `armyPaid` changes nothing (the catalog price is the same ceiling) | clamp fixed (Provisions up to the Coin price for Provisions-payable types); test. `armyPaid` strip left (harmless) |
+| 6 | Trial alternates put Ironclad Walls on wall-less layouts | fixed: `TrialModifierDef.layouts`; the walls test covers every alternate |
+| 7 | The Alliance War Keep-below base was still the client's choice | fixed with the same `keepReachedAt` rule (device-only path) |
+| 8 | Costs to honest players: a queue played offline whose second timer depends on the first finishing is refused after the 10-minute clamp (P1-19, R01 gets worse); a player away 3+ months gets 2 league chests (P1-13) | open, recorded: both are the conservative backend choices the prompt asked for; the P1-19 cost goes in `docs/backend/REQUESTS.md` for a better bound (for example, dating a refused timer command at the end of the timer that freed its builder) |
+
+### 2026-11-18 reassessment of open items (P7-10; source `docs/audit/understand-2026-11-16/publish.md` section 4)
+
+A dated reassessment, not an edit of the rows above. Where an earlier row and this table disagree, this table is the newer reading of the code; nothing here closes a finding that needs owner, store or device evidence.
+
+| Item | Earlier row said | Reading on 2026-11-18 | Still open |
+|---|---|---|---|
+| R05 languages | "The game still shows English only" (row of the 2026-11-05 fix pass) | 50 of 50 languages complete in every namespace (`npm run i18n:status`); right-to-left pages for Arabic, Hebrew and Urdu; the deploy check now accepts them (P0-02) | Native review of 49 machine-translated languages; RTL and other scripts on physical devices |
+| LISTING.md languages row | predates all 50 languages being complete | every language's store copy exists in `docs/store/<code>/`; the row's rule "do not list a language whose worksheets are incomplete" still applies | Owner chooses which storefronts to list |
+| GLOBAL-015 live pages | legal config test asserted empty values | pages still say "not published yet" for every missing publisher fact (correct); a store-readiness preflight is Phase 7's P7-01 | Every publisher fact (owner) |
+| R06 moderation | 30 English words | unchanged so far; per-language lists are Phase 7's P7-07 | Native review of the lists; staffing (owner) |
+| Server chest entropy (backend ask 2026-11-13) | open | done (`0c5eeb7`, `989ac53`) | — |
+| Postgres tests and the RTL deploy check (backend ask 2026-11-15) | open | done (`80d180d`) | CI itself not observed from here |
+| Squad orders on screen (art request 2026-11-15) | open | still open: Phase 6's P6-01 | — |
+| Built-not-live content | "when the designer makes them live" | measured not ready (heroes lose to the live hero, ten of fifteen counters change nothing): gated in Phase 4 (P4-10), not switched on | — |
+
+The request files now separate open asks from answered ones (`docs/backend/REQUESTS.md`, `docs/game-theory/REQUESTS.md`: "Done" sections with where each was done).
+
+### 2026-11-18 replayability pass, Phase 2: defense (integration session; agent prompt `docs/prompts/BEAST_MODE_2026-11-16.md` section 7, evidence `docs/audit/understand-2026-11-16/defense-raids.md`, ledger `docs/audit/understand-2026-11-16/PROGRESS.md`), commits `8b072ca` to `bee66b1` on `claude/magical-cray-wkpcl1`
+
+**Read first: online, defense does nothing yet.** With a server configured the game never raids a village with bots (`src/main.ts`, `botRaids: !serverUrl`), so every rule below acts only offline and in the campaigns until P2-12 ships. P2-12 is **not built**; its full design is in `docs/backend/REQUESTS.md`. Same release rule as Phases 0-1: no build of this branch ships yet, and the server deploys before the game (the server replays `rematchEnd`, `battleEnd`/`settleOnlineAttack`, `scout` and `applyDefense` with the new rules). No battle rule changed (`SIM_RULES` unchanged), no save change, no protocol change (`applyDefense` gains an optional server-set `holdReward`).
+
+| Item | Finding | Status | What changed | Evidence | Remaining limitations |
+|---|---|---|---|---|---|
+| P2-01 | DEF-01/02 defense worthless; fractional loot | partial | stars decide what a raider carries (`carryByStars` 0.2/0.5/0.8/1); each star denied pays a third of the hold reward; whole units only; real raids pay too (once per attacker per defender per day) | per-raid nets by Keep and base quality in the ledger | criterion 3 (a caps base within ±10% of a hold) is not met: depends on storage fill, −38% to +28% |
+| P2-02 | DEF-04 raiders summoned by honor | done | raiders from the defender's Keep (a Keep − 1 raider), never above it | `raider_dist` measure | — |
+| P2-03 | DEF-05 one raider army | done | `raiderMixes`: an air raid and a shadow-siege raid beside the line, raider Keeps 7-15 | all mixes 20-85% destruction vs caps − 1 bases; air raid without anti-air K8 29→47%, K12 32→57%, K15 38→97% | defender Keep 7 meets no alternate (raiders are Keep − 1) |
+| P2-04 | DEF-03 campaign cannot see defense; PS-1 known failure | done | `regular_fortress` campaign on a walled lab layout (clone only); three real gates replace KNOWN FAILING PS-1; the model keeps its last 10 raid records | fortress held 45% at Keeps 9-15 (gate 37%), stolen/looted 0.55× the rusher's (gate 0.62×), Keep 12 1.15× the rusher's days (gate 1.25×) | keeping the log changes every campaign's opponents (Tempering counters, losing streak): gate history before 2026-11-18 is not comparable |
+| P2-05/06 | DEF-06/11 a month away empties storage | done | catch-up cap 24 → 3 raids, exhaustion window 24 → 36 h | 30 days away, 30% full: Keep 9 96.6% → 24.9% lost, Keep 12 93.7% → 15.9% | — |
+| P2-07 | DEF-08 Settle the score loses at three stars | partial | pays back `recoverShare` 1.0 × stars/3 of what the raid took (Coins and Provisions, capped) | 3★ vs a normal raid: K10-15 0.81-1.96× | Keep 5 0.76-0.81× (not "a little more"); a lost bot raid answered at 3★ now breaks even minus the army |
+| P2-08 | DEF-09 stakes never worth declaring | done | 1.3 / 1.75 | bot plan EV 0.78 (a loss), 80% hitter 1.04 | — |
+| P2-09 | DEF-10 league bonus fades to 0.7% | done | `winBonusShare` per league | regular 6.8-18.7% of a raid at Keeps 5-15 | casual model at Keep 5 (Cedar) 4% |
+| P2-10 | DEF-12 struggling player's opponents never ease | done | `lossStreakSlack` (camp-housing deployments only), device matchmaking | lose-four-then-raid 0.51-0.62× loot per army of playing straight | server fallback keeps its own floor (decision in REQUESTS); not re-measured per hour |
+| P2-11 | DEF-13 Next priced a Keep too high | done | fee by the earned-strength Keep (state both sides hold) | fee ÷ mean offer K5 4.82 → 1.93%, K15 3.32 → 1.88% | — |
+| P2-12 | DEF-07 no raids with a server | **open** | design only (`docs/backend/REQUESTS.md`) | — | **online, defense does nothing until it ships** |
+| P2-13 | optional: towers in Provisions | skipped | reverted | the model never pays in Provisions, so its pace cannot show the effect | needs a policy that pays towers in Provisions |
+| P2-14 | the garrison crew | done | `economy.garrisonCrew` 2 (defense, trap, support); top-up, objective chip and offer trigger see it | fortress Keep 12 1.34× → 1.15-1.17× the rusher's days with the crew | second builder queue on screen is P6-12 |
+| P2-15 | UIS-07 the first raid carries 85% | done | full carry under two trainable roles; the result screen reads the record | tests | the pending screen reads the roles at battle end, the settlement at settling |
+
+**E26 and PS-1, corrected (dated record; the 2026-11-13 statements above stay as written).** E26 ("is defense worth building? measured: no") is now answered by the fortress campaign: a fortress layout holds 45% of raids at Keeps 9-15 against 0% for the rusher, loses 0.55× the rusher's share of its loot and reaches Keep 12 1.15× slower, with the garrison crew. PS-1's "rusher ≥ 1.1× the defender's days" assertion measured the wrong thing (defense was asked to slow the rusher down); it is replaced by the three gates above. Both answers hold for bot raids only, offline (P2-12).
+
+**Carried red (gates unchanged, to be fixed in Phase 3, which moves the same quantities):** on the final Phase 2 campaign, regular Keep 3 0.83★ (gate 0.9) and the Keep 3 cliff gate (1.2), casual Keep 4 0.86★, regular_defender Keep 7 0.88★, casual Keep 8 59% three-stars (gate 50%), and `test:slow`'s Keep 3 check. One-at-a-time ablations (crew, first-raid carry, losing streak, league share) leave Keep 3 unchanged; the casual Keep 8 rate swings 13-59% across them.
+
+Translations: none needed (no player-visible text changed in this phase; `npm run i18n:extract` unchanged at 682 data strings).
+
+**Independent review (section 0.5), 2026-11-18**, of `8b072ca^..37cebf3`:
+
+| # | Finding | Outcome |
+|---|---|---|
+| 1 | high: a forged defense record made Settle the score pay unlimited Jade (any resource, no expiry for future dates) | fixed `e3faea0`: Coins and Provisions only, ≤ 2× the storage loot cap, future-dated records refused; test |
+| 2 | high: the per-star hold reward for real raids could be minted by an alt's 0-star raids | fixed `e3faea0`: once per attacker per defender per UTC day (server-set `holdReward`); test |
+| 3 | medium: two of the phase's tests failed at the reviewed commit (P2-13 tower test; P2-09 at Keep 15, 22.6%) and five campaign gates are red | fixed `8296584` (shares 0.095; test restated, then reverted with P2-13); the five gates are the carried red above |
+| 4 | medium: the losing streak counted a one-warrior army | fixed `e3faea0`: against camp housing; test |
+| 5 | medium: the Next fee read honor and the battle log, which server and device do not always share | fixed `e3faea0` |
+| 6 | medium: P2-13 measured by a model that never pays in Provisions | P2-13 reverted, skipped `bee66b1` |
+| 7 | medium: keeping 10 battle records changes every campaign's opponents | kept (the model now plays the live rules), recorded above: earlier gate history is not comparable |
+| 8 | medium: items marked done whose "Done when" is not met (P2-01 criterion 3, P2-07 Keep 5, P2-09 casual Keep 5, P2-04 numbers from two runs) | ledger and this record corrected (P2-01 and P2-07 partial) |
+| 9 | low: a lost bot raid plus a 3★ rematch breaks even minus the army | recorded (P2-07 row) |
+| 10 | low: "Keep-1 to Keep" comments; alternates start at defender Keep 8 | comment corrected with Phase 3's first commit; recorded (P2-03 row) |
+| 11 | low: the crew suppressed the artisan offer for overflow builds | fixed `e3faea0` |
+| 12 | low: pending result screen and settlement read roles at different times | recorded (P2-15 row) |
+
+Checks on the phase's last commit: the touched suites (`tests/gameplay/sim`, `control`, `backend/server`, `architecture`) pass except the carried campaign gates and the status file (regenerated with Phase 3); `npm run typecheck:server` and lint on touched files clean. Not run for this phase alone: a full `npm run build` and the Postgres suites (run at the end of Phase 3, which follows directly and shares the campaign).
+
+### 2026-11-18 replayability pass, Phase 3: pacing (integration session; agent prompt `docs/prompts/BEAST_MODE_2026-11-16.md` section 8, evidence `docs/audit/understand-2026-11-16/pacing.md` and `economy.md`, ledger `docs/audit/understand-2026-11-16/PROGRESS.md`), commits `5e40d90` to `26bb529` on `claude/magical-cray-wkpcl1`
+
+Same release rule as Phases 0-2: no build of this branch ships yet, and the server deploys before the game. The server replays the new `drillEnd` command (a `PLAYER_COMMANDS`/`BATTLE_COMMANDS` entry, `docs/PROTOCOL.md`) and the first-attack shield rule (new port `attackedBefore`, Postgres and memory). Save stays v24 (optional fields `drill`, `trials.alternateTier` and stat counters within the pass's one bump). No battle rule changed in this phase.
+
+| Item | Finding | Status | What changed | Evidence | Remaining limitations |
+|---|---|---|---|---|---|
+| P3-01 | PAC-01 casual Keep 5→6 wall | partial | collectors hold 24 h (`collectorHoursCap`), raidable uncollected 25%, shields 16/20/24 h | casual Keep 5→6 26 → 10.0 days; casual Keep 15 246 → 184 | casual Keep 6→7 23.7 days > 21 (see carried red) |
+| P3-02 | PAC-02/08 casual pace ungated, one casual model | partial | casual gates; `casual_hires` and `casual_queues` campaigns | casual Keep 6 day 16.7 (gate 25) | longest casual stretch through Keep 10: 23.7 days (gate 21) |
+| P3-03 | PAC-03/ECO-12 economy buildings eat builder time | done | `buildCapSeconds` 4 days on four economy buildings; collectors keep producing while upgrading | regular Keep 15 113.2 → 101 days, casual 184 → 174.4 | a 3-day cap would put regular under 100 days |
+| P3-04 | PAC-04/UIS-02/PLY-03 first raid late, needs Jade | done | tutorial Keep step done when the Keep is upgrading; Keep 2 build 60 s; Shinobi 10 s, Adept 12 s; no Jade rings | first hour 5 → 7 raids, Keep 3 at minute 58 → 44; browser (360×640): raid step at 163 s, 0 Jade, no page errors | browser run sends the taps' commands, not real taps |
+| P3-05 | Keep 3 cliff | partial | re-measured after P3-04 | regular Keep 3 0.83 → 2.00★, first Keep 3 raid wins | casual Keep 10 three-stars 54.5% > 50% (farming gate) |
+| P3-06 | PAC-09 late starter stuck at tier 1 | done | `trialCatchUpTier`: next attemptable tier from the Keep; cleared tiers below paid once | Keep 10 with nothing cleared: tier 1 → 29 | — |
+| P3-07 | PAC-10 nothing pays when the army is gone | done | daily drill (`drillEnd`): next Trial fortress with a full camp, nothing spent, first one a local day pays 2,500/2,500 | tests | no task uses `drillsDone` yet |
+| P3-08 | ECO-04/CU-5 late top-ups and hollow offers | done | top-up exponent 0.75, monotone raid-price rule, own training-skip formula; Starter Pack 15k | 1 h income at Keeps 5-15 92-207 Jade (Keep 15 550 → 171); Keep Celebration 1.0-2.4 h | — |
+| P3-09 | ECO-10 rushing the Keep unnamed | done | `armyBehindKeep` line on the Keep sheet; objective chip | tests | — |
+| P3-10 | PAC-14 pacing targets stale | done | `PROGRESSION_MODEL.md` targets from the generated campaign | — | — |
+| P3-11 | E06/PLY-04 storage overflows unseen | partial | storage ≥ 90% puts a Keep/storage upgrade before the chest; scouting line when loot won't fit; tutorial end points at the Keep | tests | the scripted three-raid first session with zero overflow not run; Keep 1-2 storage not raised |
+| P3-12 | PLY-11 tutorial raid ends the new-player shield | done | the first attack keeps the shield (`sim/shield.ts`, server) | tests (sim and server) | — |
+
+**Carried red (into Phase 4, which shares its campaign):** casual Keep 6→7 23.7 days (gate 21), casual Keep 10 three-stars 54.5% (gate 50%). Phase 4's rules-8 campaign re-measures both; its closure record gives the outcome.
+
+**Independent review (section 0.5), 2026-11-18**, of `5e40d90^..7367fc3`; fixes `c3488c8`, ledger `26bb529`:
+
+| # | Finding | Outcome |
+|---|---|---|
+| 1 | high: the server kept a 0-honor player's shield through any number of raids on generated bases | fixed: the server asks the ticket store whether the player used a pvp ticket before (`attackedBefore`); server test |
+| 2 | medium: new text not yet translated | the phase's translation run (shared with Phase 4) |
+| 3 | medium: a backdated drill record paid past days | fixed: paid day from now; test |
+| 4 | medium: "try a different fortress" after a failed catch-up tier switched tier 1 | fixed: `trials.alternateTier`; test |
+| 5 | medium: P3-01/P3-05 marked done with red gates | ledger corrected to partial |
+| 6 | low: drills counted in adaptive task rates | fixed: excluded |
+| 7 | low: a collector read the new rate at exactly `endsAt` | fixed (`>=`) |
+| 8 | low: tutorial end named a storage first | fixed (text changed, retranslated) |
+| 9 | low: abandoned raids did not count for the first-attack rule | fixed (stat `raidsAbandoned`) |
+| 10 | low: no task template uses `drillsDone` | recorded |
+| 11 | low: cosmetic drill details | recorded |
+
+Translations: see the Phase 4 record (one run for Phases 3 and 4, section 13).
+
+### 2026-11-18 replayability pass, Phase 4: battle strategy under one rules bump (integration session; agent prompt `docs/prompts/BEAST_MODE_2026-11-16.md` section 9, evidence `docs/audit/understand-2026-11-16/combat.md`, `built-not-live.md` and `phase4/`, ledger `docs/audit/understand-2026-11-16/PROGRESS.md`), commits `60fad9c` to `5a99b3f` on `claude/magical-cray-wkpcl1`
+
+**SIM_RULES 7 → 8, the pass's one rules bump.** Rules 7 was archived before any combat change (`server/rules/v7`, `60fad9c`); `SIM_RULES_COMPATIBLE` is empty, so every older replay shows as unavailable and the server keeps the old engines. **Deploy the server before the game**; `docs/backend/REQUESTS.md` lists everything riding the bump (combat data and rules, raid layouts, `powerSlackByKeep`, Next fees, the haste carry, support strikes, Rally after the Captain falls). No released build plays rules 8 yet.
+
+| Item | Finding | Status | What changed | Gate cells before → after | Remaining limitations |
+|---|---|---|---|---|---|
+| P4-01 | CMB-01 support family weak | partial | support warriors strike (`warriorRules.supportStrike` 1); Drum Monk haste 0.25 → 0.10, Herbalist heal 0.025 → 0.015 | support family 27.2/22.0/37.8 → 36.8/34.8/51.8 (Keeps 7/8/15); support@6 and @10 now gated too (pass) | went against the item's "do not ship 1.0; raise the auras instead" (review #2); support kits still measure negative against kit-off; support@8 below the 30% floor (KNOWN_BELOW) |
+| P4-02 | CMB-05 Rally changes nothing; text wrong | done | Rally B: once per battle, whole field, 50% for 15 s; lasts after the Captain falls (review #10) | Rally vs none −0.7/−1.0/+4.1 → +7.9/+3.8/+5.9 | — |
+| P4-03 | CMB-07 Smoke Bomb weak | open | not shipped | under Rally B the radius-4 smoke gains +0.9 to +3.7 (was +6.2/+7.8) | no measured gain once Rally lifts the baseline |
+| P4-04 | CMB-06 siege too slow | done | ram 0.15, fire/bomb/volcano 0.17 | siege@8 25.5 → 40.7, @7 38.5 → 42.5, @15 33.8 → 38.8 | measured before later Phase 4 data changes; re-checked by the phase's slow run |
+| P4-05 | CMB-04 newer tiers weaker | partial | Shuriken radius 2.5, Thousand Needle 0.8, Bombardier 0.4, Volcano 1.1; slow kit/tier gates | Thousand Needle 73.4 → 89.5 | 17 kits and 13 tier pairs listed as known gaps |
+| P4-06 | CMB-03 single-warrior armies flatten Keep 15 | done | counterShare 0.75; Eclipse hpScale 0.9; Dragon Kite 0.85, Thunder Kite 0.9 | Eclipse ×180 96.8 → 76.4%, Dragon Kite ×90 83.2 → 67.3% | Keep 12 one-army-best gap (it.todo) |
+| P4-07 | CMB-08 layout decides the raid | done | rival clans' home layouts with level-bias offsets from Keep 6 | layout gap K8/12/15 → 11.8/13.4/7.2 (gate 15) | — |
+| P4-08 | CMB-12 six-battle cells swing | done | lab cells 4 seeds; campaign per-Keep bounds on adjacent pairs, plus the single-Keep farming bound kept (review #1) | — | melee@8 27.3 and support@8 listed KNOWN_BELOW (melee@8 measures 27.3 on rules 7 too: not a regression) |
+| P4-09 | PAC-07 newest warriors lose from Keep 8 | partial | gate raised to what the run gives | casual explorer Keeps 8-15: 0.1/0.3 gate → 0.80 stars (gate 0.55 per pair, 0.75 mean) | **target 0.9 not met**: the newest tiers the explorer fields score below the tier before them (TIER_KNOWN_BELOW) |
+| P4-10 | BNL-03..13 built-not-live | done (nothing live) | hooks typed and tested; Hall cap trap and texts fixed; preview decides; go-live gate as a slow test | only the Lightning Rod passes the gate | the three heroes and 14 counters fail; going live needs server, callouts, painter and all balance artefacts |
+| P4-11 | CMB-10 closed approaches a hash | open | design in `docs/game-theory/REQUESTS.md` | — | stretch, not built |
+
+**Rules-8 balance fix** (`8f36d57`, after the first rules-8 campaign failed two gates): `powerSlackByKeep` Keep 8 0.75 → 0.5, Keeps 9-10 0.5 → 0.25, Keep 12 0.75 → 0.5; economy build cap 4 → 5 days (a P3-03 retune: regular Keep 15 day 98 → 103, gate 100-140); Next fee Keeps 9 and 12 raised to stay inside P2-11's 1.5-2.5% band. Matched raids Keep 8 2.33 → 1.33 and Keep 12 2.33 → 1.83 stars (gate 1-2.2; both were red at the bump `477b894`); casual Keeps 7-8 three-star 67% → 42%. Campaign at the Phase 4 code alone: `phase4/` (all gates pass; played before the fee change).
+
+**Final campaign for Phases 3-5** (`fac1ceb`, `docs/game-theory/campaign.json`, rules 8 with the Phase 4 review fixes and Phase 5): all 18 campaign gates pass, including the single-Keep farming bound and the casual gates that Phase 3 carried red. Keep 12/15 days: regular 49/102.6, sandbagger 51.6/102.6, rusher 47.2/100.2, fortress 54.6/130.6, casual 103.4/179.4, casual explorer 121.4/207.4. It took one more change: Keep 7 slack 0.15 → 0 (the sandbagger three-starred 52.5% at Keeps 6-7; a research floor of 1.25 also worked but dropped the explorer under its gate). `matchmaking.test` was restated (it rides the rules-8 matchmaking change): a researched Keep 7 attacker meets Keep 7 or 8 bases. The slow suite on the final tree: `kits-tiers` lists re-measured (`6800999`), the slow pacing pin restated (`ba406a3`), go-live gate 2/2 (`70044d7`).
+
+**Independent review (section 0.5), 2026-11-18**, of `60fad9c^..1eb5747` and the uncommitted balance fix; fixes `5a99b3f`, `de1def2`, `fac1ceb`, `6800999`:
+
+| # | Finding | Outcome |
+|---|---|---|
+| 1 | high: the pair rule hid a farming Keep (regular Keep 7 three-starred 71% over 14 raids) | fixed: the single-Keep bound (≥ 10 raids, ≤ 50%) is back beside the pairs (`de1def2`); Keep 7 slack 0 (`fac1ceb`); passes |
+| 2 | high: P4-01 shipped strike share 1.0 against the item's instruction; support@10 ungated | partly: support@6 and @10 gated (pass, `5a99b3f`); the deviation stands and P4-01 stays partial |
+| 3 | high: the Drum Monk's 10% attack haste did nothing for 10-tick warriors | fixed: a hasted countdown's overshoot carries (exactly 0 without haste); test |
+| 4 | medium: P4-09's gate cited no saved run | fixed: the final campaign is committed and the gate derives from it; target 0.9 not met (0.80), P4-09 partial |
+| 5 | medium: done items measured before later data changes | fixed: slow suite re-run on the final tree (kit/tier lists `6800999`) |
+| 6 | medium: melee@8 added to KNOWN_BELOW without a rules-7 check | recorded: 27.3 on rules 7 too (not a regression) |
+| 7 | medium: Next fee raise unrecorded | recorded: Keeps 9 and 12 raised to stay inside P2-11's 1.5-2.5% band after the slack change |
+| 8 | medium: economy build cap 4 → 5 days re-tunes P3-03 | recorded above (regular Keep 15 day 98 → 103) |
+| 9 | low: support strikes could pick a trap | fixed |
+| 10 | low: Rally stopped when the Captain fell; the card says 15 s | fixed: it lasts its 15 s; test |
+| 11 | low: stale Hero Hall comment; `localeCompare` sort | fixed |
+| — | REQUESTS missed slack and fees riding the bump | fixed (`5a99b3f`) |
+
+Translations (Phases 3 and 4, section 13): `31bb36a` (22 new and changed strings into 49 languages), `ee52404` (six script-group reviewers read all 1,078 pairs and fixed 13 clear errors). `i18n:check` passes for every language. Machine translation checked for structure, not reviewed by native speakers.
+
+### 2026-11-18 replayability pass, Phase 5: reasons to come back (integration session; agent prompt `docs/prompts/BEAST_MODE_2026-11-16.md` section 10, evidence `docs/audit/understand-2026-11-16/retention.md`, ledger `docs/audit/understand-2026-11-16/PROGRESS.md`), commits `a52a64c` to `d7cc5d7` on `claude/magical-cray-wkpcl1`
+
+No battle rule changed in this phase (the Phase 4 review fixes that ride rules 8 are recorded with Phase 4). Save stays v24 (optional fields within the pass's one bump: `goalEvents` replacing `goalEvent`, `seals`, `daily.local`, `stipend.local`, `pass.startStats`, `pass.lastSeason` recap fields; `repairStats` fills the new counters). **Deploy the server before the game**: it replays `claimKeepSeal`, the new goal events in `bountyEnd` and the contract in `settleOnlineAttack`, and sends `contractAt` (`docs/backend/REQUESTS.md`). An operator schedule file naming `bounty_hunt` or `raiders_moon_2` must be rewritten first (`docs/SHIPPING.md` 3k). Every new hook has its line in `docs/DECISIONS.md`.
+
+| Item | Finding | Status | What changed | Evidence | Remaining limitations |
+|---|---|---|---|---|---|
+| P5-01 | RET-01 events: 4 kinds, 14 days | done | 28-day loop (13 windows, 10 names) + 5 dated festivals with earned looks; goal progress per occurrence | a year: 18 names (gate 12), no two weeks alike, 45.8% of hours (gate 50%) | festival names and dates need the owner's review |
+| P5-02 | weekly shared challenge | done | the Gauntlet: one fortress per occurrence and Keep | identical for two seeds at one Keep (tested) | friends' board not built (backend REQUESTS) |
+| P5-03 | RET-11 no rotating context | done | daily contract, carry cap 2.2 | cap holds over two years of events; regular Keep 15 day 102.6 with contracts, 103.6 without (1.0%, gate < 3%) | online, the server's ticket start decides the contract (`contractAt`) |
+| P5-04 | RET-05 15 templates | done | 23 templates, 3 new counters | same three daily tasks 0.3% (gate 1%), two of three 10.8% (gate 15%) | r1 assumes every template eligible; "stars denied" left out until P2-12 |
+| P5-05 | RET-08 achievements | done | 21 achievements | +575 Jade once (2,540 → 3,115); every tier reachable | — |
+| P5-06 | RET-09/13 collection | done | 15 earned looks + "N of M" | — | Trial 60 → 55 (ceiling 58); old villages' chests before the counter do not count |
+| P5-07 | BNL-02 mastery | done | ranks, no stat bonus, XP for raids and first Trial clears | no setup carries mastery (tested) | stat bonus open (DECISIONS) |
+| P5-08 | PAC-11 Keep seals | done | `claimKeepSeal` | builders excluded (review H1) | — |
+| P5-09 | RET-12 two clocks | done | chest, skip week, stipend on the local day | UTC+10 and UTC−8 tested | west of UTC the switch may wait one more local day |
+| P5-10 | season identity | done | 12 names, recap at the rollover with Share | tested | — |
+| P5-11 | ECO-09 Jade sinks | done | 6 Jade looks (450/650/900) | no power, no product (tested) | open ideas recorded |
+
+**Independent review (section 0.5), 2026-11-18**, of `a52a64c^..403372d`; fixes `d7cc5d7`:
+
+| # | Finding | Outcome |
+|---|---|---|
+| H1 | Keep seals counted the Artisan's Huts, three of which cost Jade | fixed: builders left out; test seals a village with only the free huts |
+| M1 | an online raid's contract came from each side's own clock | fixed: the server sends `AttackResponse.contractAt` and settles with it; without it, no contract; test |
+| M2 | west of UTC the clock switch gave a second chest the same UTC day | fixed: the later of the UTC and local day is stored; tests at UTC−8 |
+| M3 | the recap said "Best league" for the league at the rollover | fixed: "League at season end" |
+| M4 | a v24 save from before `goalEvents` crashed | fixed: repaired on every load and validated; test |
+| M5 | a goal event could be settled 72 h after it ended | fixed: a battle's length plus 30 minutes; test |
+| L1-L3 | restated XPL-02 assertion; festivals as goal kind `festival`; offline contract time unbounded | fixed |
+| L4, L6, L7 | old villages' chest count from 0; the panel names the full event bonus when the cap cuts it; festival review | recorded (`DECISIONS.md`; `SHIPPING.md` 3k for the owner) |
+| — | 14 sim refusals had no `messages.json` entry | fixed: added, so they are translated |
+
+Translations (section 13): `f777dc8` (the phase's 150 new strings into 49 languages), `bce783f` (six script-group reviewers, about 2,500 pairs; fixed ur, ru, uk, el, zh-Hant, kn and te errors listed in the commit). `i18n:check` passes for every language. Machine translation checked for structure, not reviewed by native speakers.
+
+
+### 2026-11-18 replayability pass, Phase 6: screens, so that what was built can be found and felt (integration session; agent prompt `docs/prompts/BEAST_MODE_2026-11-16.md` section 11, evidence `docs/audit/understand-2026-11-16/ui-surface.md`, `playthrough.md` and `phase6/`, ledger `docs/audit/understand-2026-11-16/PROGRESS.md`), commits `83c139a` to `f0ad1d4` on `claude/magical-cray-wkpcl1`
+
+No battle rule changed (speed scales real time only; squad orders and the review go through the ordinary deploy path) and no save field was added (only device `localStorage` keys: `tk.squad`, `tk.stakeHelpSeen`, `tk.crewSeen`, `tk.milestones`, `tk.railSeen`). `sim/objective.ts`, `sim/defenseReport.ts` and `sim/defenseTest.ts` are pure and device-side; the campaign fingerprint is unchanged (the test raid was moved out of `defense.ts` for that, `3356c96`). Browser checks use `tools/ui/surfaces.mjs` (`npm run ui:surfaces`, Playwright with Chromium, touch, hit tests at element centres): an estimate of phones, not device certification. Playwright itself could not be added as a development dependency here (the install was refused in this environment); the driver uses the globally installed one.
+
+| Item | Finding | Status | What changed | Evidence | Remaining limitations |
+|---|---|---|---|---|---|
+| P6-01 | CMB-09/UIS-03 squad orders had no screen | done | a row of formations (Together, Pincer, Single file) and one cycling wave-order chip, Hold with the waiting count; a ring tap sends the squad | three-tap raid replays to its hash; row fits at the four sizes in en, ar, de | the reserve is not offered: best alone on 1/3/0 of 10 bases at Keeps 9/12/15 (bar: 2 of 10) |
+| P6-02 | CMB-02 the entry point cannot be learned | done | "What if…" on the result screen: the same deployments through another point, a real battle in slices | equals `runBattle` with its deployments; CPU ×6 longest task 129 ms (low) | emulation, not a cheap phone |
+| P6-03 | defense report | done | kept share, stars denied, entry point, first to fall (replay, same rules only), reward; `defendSide` objective | sim and DOM tests | entry points only for records under today's rules |
+| P6-04 | test my defenses | done | a simulated test raid as a replay (labelled practice); practice against a past raider's army | pure; exact replay | — |
+| P6-05 | objective chip cut, dead ends | done | claim, rematch, goal event, drill, trial kinds; shortfall as cost chips; two lines; camera focus | return-hooks | — |
+| P6-06 | Trials ladder | done | ten tiers ahead with layout, modifiers and Jade; replay stepper | DOM | — |
+| P6-07 | result screen ends the loop | done | progress block (tasks, honor to next league, Scroll tier); Refill / Next / next tier / different fortress; contradictions fixed | DOM | — |
+| P6-08 | no moments | done | milestone card (Keep, hero, tempering, league), offers wait for it; hero cards; hero callouts; pill count-up and haptics | DOM | no new art |
+| P6-09 | playthrough defects | done | skip confirm, kind tags, sticky sheet, bubble placement, no ring through a sheet, Dojo unlocks row, Build redraw, unit names, banners after the tutorial, web Store, Army panel fit, chevrons | four sizes in English (`p6-09-surfaces-en.txt`); Arabic and German below | — |
+| P6-10 | text leaks | done | five leaks removed | source test | — |
+| P6-11 | tiny passive battles | done | action frame (0.14 → 0.25-0.49 zoom); live speed button | same hash at 1×/2×/4×/mixed | — |
+| P6-12 | garrison crew invisible | done | builder panel with two named queues; crew badge; one-time line | DOM; 320 and 844 wide | — |
+| P6-13 | blind bets | done | stake help under the chips, drawer once, staked star; carry share before the raid | DOM | — |
+| P6-14 | side modes hard to find | done | first-appearance labels, Trials icon, Events and log badges, calendar above the odds, Honor button | DOM | — |
+| P6-15 | no test built the HUD | done | happy-dom harness; panels, tutorial, six result kinds, eleven objective kinds; the Playwright driver | `tests/presentation/dom/` | — |
+| P6-16 | dead ends and keyboards | partial | no-army Attack and unaffordable Next explain; long press; dialog focus, Tab, Escape; hotkeys 1-9, S, Esc | DOM | the other ~24 `title` attributes in village panels not reviewed one by one |
+| P6-17 | nothing to play while training | done | empty-camp choices on Attack and the result screen | DOM | — |
+| P6-18 | rules no one can read | partial | Codex page; numbers from data; counter pairs only where confirmed in battle | 5 of 18 live pairs confirmed (`p6-18-counters.md`) | 13 pairs unconfirmed with one-warrior armies; a mixed-army check is open |
+
+**Browser checks** (`tools/ui/surfaces.mjs`; `phase6/p6-09-surfaces-en.txt`, `p6-11-battle-en.txt`, `p6-01-p6-11-battle-en.txt`, `p6-surfaces-ar-de.txt`): the village and its panels (Army, Store, Daily, News, the builder panel, the Keep sheet), the tutorial's Keep step and a battle with squad orders, at 320×568, 360×640, 390×844 and 844×390, in English, Arabic and German, with touch and hit tests at element centres. Everything passes after two German fixes (the objective chip's arrow; the squad row wraps). Low end (`p6-02-lowend-quality.json`): one review point at CPU ×6 took 284-817 ms, the longest main-thread task 129 ms on the low profile. Chromium emulation, not devices.
+
+**Independent review (section 0.5), 2026-11-18**, of `83c139a^..HEAD` (src, tools, tests); fixes `f0ad1d4` and the reserve commit:
+
+| # | Finding | Outcome |
+|---|---|---|
+| M1 | an offer could beat a Keep card a dialog delayed | fixed: offers wait while a milestone is due; test |
+| M2 | the reserve measurement counted ties, so any order passed | fixed: decided on bases where an order is best alone (1/3/0 of 10): the reserve is not offered |
+| M3 | the test-raid replay header read "loot taken" | fixed: practice header and tag; test |
+| M4 | the objective chip offered a Trial with empty camps | fixed: only with warriors standing; test |
+| M5 | P6-09 marked done before Arabic and German | fixed: run, two German fixes, all pass |
+| L6-L10 | speed button waited for the hero; entry point every second; entry point under older rules; practice dropped hero and reinforcements; long press also selected | fixed |
+| L11 | ledger test counts | fixed |
+
+Translations (section 13): `907db45`, the phase's 52 new and changed strings into 49 languages by eleven script-group translators; `i18n:check` passes for every language and `i18n:status` reports all complete. "Garrison crew" and "Tanks first" are new terms in most languages. Machine translation checked for structure, not reviewed by native speakers.
+
+### 2026-11-18 replayability pass, Phase 7: what code can still do toward a store release (integration session; agent prompt `docs/prompts/BEAST_MODE_2026-11-16.md` section 12, evidence `docs/audit/understand-2026-11-16/publish.md`, ledger `docs/audit/understand-2026-11-16/PROGRESS.md`)
+
+P7-01 to P7-04, P7-08 and P7-10 are recorded in the Phases 0-1 record and the reassessment above. Nothing here changes a battle, a save or the economy hash; the word lists change the data the server loads (deploy together, `docs/backend/REQUESTS.md`). Nothing in this phase makes the game publishable: `docs/store/OWNER_CHECKLIST.md` is the list, and `npm run release:preflight` still reports open items, six of them blocking.
+
+| Item | Finding | Status | What changed | Evidence | Remaining limitations |
+|---|---|---|---|---|---|
+| P7-05 | PUB-08 no licence notices | done | `tools/release/licenses.mjs` → `public/licenses.html`: 11 shipped packages (with `eventemitter3`, without the server-only `fastify`, `pg`), the Apache-2.0 native libraries with the licence text, the two fonts with OFL 1.1; one support-page key changed | `tests/backend/licenses.test.ts` | native libraries listed by family (AndroidX, Cordova layer, Firebase Messaging), not per artifact |
+| P7-06 | PUB-09 iOS image | done | `macos-26`; an SDK under 26 stops the job | release-config | **the workflow has never run** |
+| P7-07 | PUB-10 English-only filter | done | ten launch-language lists, applied to every line | corpus of ordinary sentences in 16 languages passes | **no list reviewed by a native speaker** (`docs/localization/WORD_LISTS.md`); 39 languages have no list; moderation quality, not legal compliance |
+| P7-09 | PUB-12 previews and screenshots | done | absolute og/twitter tags with `VITE_PUBLIC_URL`; two screenshots in every manifest, not precached | a build both ways; release-config | screenshot labels in English in the localized manifests |
+| P7-11 | PUB-14 local-day statistics | done | `vars.VITE_STATS_TZ`, off by default, in the three client workflows | release-config | the owner decides when (checklist) |
+| P7-12 | BNL-14 preview content unplayable | done | `content-preview.yml`: manual, input off by default, a downloadable artifact (not a web path under the public host, a deliberate change from section 12), tester checklist | verification-client | whether it may exist and who tests: owner |
+| P7-13 | listing sells an older game | done | the English listing and all 49 translated listings name what the game now has; each claim tied to data or a test; `store:storekit` rerun | store-compliance, claims table | "castle", "samurai" keywords flagged for the owner; 49 listings unreviewed by native speakers |
+| P7-14 | what's new | done | one entry in News until seen, never for a new player; the same text is `docs/store/RELEASE_NOTES.md` | DOM and source tests | — |
+| P7-15 | uncompilable native items | done (text) | ambient audio session; `MARKETING_VERSION` 0.1.0 | release-config | **not compiled, not run on a device**: the audio change, the app-level `PrivacyInfo.xcprivacy` (an Xcode target step, not made), the Game Center / Play Games achievements plugin (not made) |
+| P7-16 | owner checklist | done | `docs/store/OWNER_CHECKLIST.md` (identity, legal, stores, signing for both platforms, hosting, devices, decisions, playtests) | preflight checks the machine-checkable lines | no code can empty it |
+| P7-17..20 | not taken (section 12) | open | — | — | accessibility statement (C21), late raid report message (R02), `keepalive` (GLOBAL-010), release tags |
+
+**Independent review (section 0.5), 2026-11-18**, of the Phase 7 commits; fixes in the review-fix commit:
+
+| # | Finding | Outcome |
+|---|---|---|
+| H1 | the word lists censored ordinary words in other launch languages (hr *puta*, ro *pute*, ja 死ねない/ガイジン; English *hell*/*dick* are German) | fixed: removed or narrowed; the corpus covers 16 languages |
+| M1 | localized support pages linked a missing `licenses.html` | fixed: `../licenses.html`; test |
+| M2 | the licence page missed shipped code and listed server code | fixed |
+| M3 | section 12's not-taken items missing from the ledger | fixed (P7-17..20) |
+| M4 | What's new showed on every open | fixed: until seen; never for a new player |
+| Lows | listing citation, keywords note, preview checklist, comment, checklist review place and Apple secrets | fixed |
+
+Translations (section 13): the footer link, What's new and the listing additions in all 49 languages by eleven script-group translators; `i18n:check` passes for every language. Machine translation checked for structure, not reviewed by native speakers.
 ### 2026-11-20 exploit and strategy audit (audited commit `0c5eeb7`), fixes in commit `37c1b59` and this record's commit
 
 The audit (four parallel audits: economy commands, battles and rewards, server, strategy balance) reproduced 14 exploits and 4 low items and found 3 structural design problems. Every exploit was revalidated against the code and fixed with a regression test (`tests/gameplay/economy/exploit-audit-2026-11-20.test.ts`, `tests/backend/server/exploit-audit-2026-11-20.test.ts`); the #9 and #11 tests were also run against the old code and failed there (191 Provisions recorded of 199 bought; 6 tickets where the limit is 2). No battle rule change (`SIM_RULES` unchanged: no combat data changed), no save change, no migration, no protocol bump (behaviour only, `docs/PROTOCOL.md` "Exploit audit 2026-11-20").

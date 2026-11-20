@@ -26,8 +26,15 @@ Ongoza ukoo wa ninja, jenga kijiji kilichofichwa milimani, funza aina hamsini za
 **Panga kisha uvamie**
 
 - Wapiganaji huingia tu kupitia Vituo vya Kupenya. Chunguza njia na minara inayozilinda.
-- Rusha Bomu la Moshi wapiganaji wako wanapoingia kwenye masafa ya mnara, na tuma Wahujumu kukwamisha ulinzi.
+- Tuma kikosi chako kwa amri moja (pamoja, koleo au mstari mmoja; wakingaji kwanza au vamia kasi), au weka kila mpiganaji kwa mkono.
+- Rusha Bomu la Moshi wapiganaji wako wanapoingia kwenye masafa ya mnara, na tuma Wahujumu kukwamisha ulinzi. Kuanzia Ngome ya Ukoo ngazi 7, Kapteni wa Kivuli huhamasisha kikosi chako chote mara moja kila pambano.
+- Baada ya uvamizi, ona jeshi lile lile lingefanya nini kupitia kituo kingine.
 - Shambulio lililopangwa vizuri hushinda jeshi kubwa zaidi.
+
+**Linda kijiji chako**
+
+- Kila uvamizi kwenye kijiji chako huja na ripoti: ulichohifadhi, nyota ulizozuia, na mahali mvamizi alipoingia.
+- Jaribu ulinzi wako dhidi ya mvamizi wa kuigwa, na fanya mazoezi dhidi ya jeshi lililokushinda.
 
 **Chezeni pamoja** (mtandaoni)
 
@@ -38,7 +45,12 @@ Ongoza ukoo wa ninja, jenga kijiji kilichofichwa milimani, funza aina hamsini za
 
 **Majaribio ya Kivuli**
 
-- Mfululizo usio na mwisho wa ngome: kila daraja ni gumu zaidi na hutoa zawadi mara moja tu.
+- Mfululizo usio na mwisho wa ngome: kila daraja ni gumu zaidi na hutoa zawadi mara moja tu. Zoezi la kila siku hukuruhusu kufanya mazoezi wakati jeshi lako linafunzwa.
+
+**Kitu kipya kila siku**
+
+- Matukio kwenye kalenda maalum ya wiki nne, matamasha matano ya kila mwaka yenye ngome na Mwonekano wa Ngome wa kujishindia, Changamoto Kuu ya kila wiki, na mkataba wa kila siku.
+- Mafanikio, mihuri ya Ngome, vyeo vya ustadi wa wapiganaji na mionekano unayojishindia kwa kucheza.
 
 **Mchezo wa haki**
 
@@ -46,7 +58,7 @@ Ongoza ukoo wa ninja, jenga kijiji kilichofichwa milimani, funza aina hamsini za
 - Wapinzani waliotengenezwa na kompyuta huonyeshwa hivyo kila mara.
 - Wachezaji walio chini ya miaka 18 wana kikomo cha matumizi; arifa ni zile tu unazochagua, na zimezimwa hadi uziwashe.
 
-Kagemura ni bure kupakua na kucheza. Kila jengo, mpiganaji, ngazi ya Ngome na hali ya mchezo vinapatikana bila kulipa, na hakuna matangazo. Jade, sarafu ya kulipia, hupatikana kidogo kidogo kwa kucheza (malengo, ligi, kasha la kila siku na mstari wa bure wa Gombo la Msimu) na pia inaweza kununuliwa. Baadhi ya vitu hupatikana kwa kununua tu: mstari wa kulipia wa Gombo la Msimu (zawadi za ziada, ujenzi wa haraka zaidi msimu mzima na mwonekano wa Ngome "Tamasha la Taa") na vifurushi vya Jade na rasilimali vya muda maalum.
+Kagemura ni bure kupakua na kucheza. Kila jengo, mpiganaji, ngazi ya Ngome na hali ya mchezo vinapatikana bila kulipa, na hakuna matangazo. Jade, sarafu ya kulipia, hupatikana kidogo kidogo kwa kucheza (malengo, ligi, kasha la kila siku na mstari wa bure wa Gombo la Msimu) na pia inaweza kununuliwa. Baadhi ya vitu hupatikana kwa kununua tu: mstari wa kulipia wa Gombo la Msimu (zawadi za ziada, ujenzi wa haraka zaidi msimu mzima na mwonekano wa Ngome unaobadilika kila msimu) na vifurushi vya Jade na rasilimali vya muda maalum.
 
 ## Viungo vya kuchapisha
 

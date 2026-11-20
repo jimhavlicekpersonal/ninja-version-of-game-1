@@ -49,6 +49,6 @@ window.KAGEMURA_LEGAL = {
   termsUrl: './terms.html',
   /** Date the terms of service came into force. Empty: terms.html shows itself as a draft for legal review. */
   termsEffective: '',
-  /** Date the privacy policy text was last changed. */
-  policyUpdated: '2026-11-05',
+  /** Date the privacy policy text was last changed (tests/presentation/store-compliance.test.ts pins it to the English text: change both together). */
+  policyUpdated: '2026-11-14',
 };

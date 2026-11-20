@@ -26,8 +26,15 @@ Veď klan nindžů, postav skrytou vesnici v horách, vycvič padesát druhů bo
 **Naplánuj nájezd**
 
 - Bojovníci vstupují jen přes Body průniku. Prozkoumej cesty a věže, které je hlídají.
-- Hoď Dýmovnici, když bojovníci vejdou do dosahu věží, a pošli sabotéry vyřadit obranu.
+- Pošli oddíl do boje jedním rozkazem (spolu, do kleští nebo v zástupu; tanky vpřed nebo náporem), nebo rozmísti každého bojovníka ručně.
+- Hoď Dýmovnici, když bojovníci vejdou do dosahu věží, a pošli sabotéry vyřadit obranu. Od úrovně 7 Klanové pevnosti shromáždí Stínový kapitán jednou za bitvu celý tvůj oddíl.
+- Po nájezdu se podívej, co by stejná armáda dokázala jiným bodem.
 - Promyšlený útok porazí i větší armádu.
+
+**Ubraň svou vesnici**
+
+- Ke každému nájezdu na tvou vesnici dostaneš hlášení: co se uchránilo, kolik hvězd bylo uhájeno a kudy nájezdník pronikl dovnitř.
+- Otestuj obranu proti simulovanému nájezdníkovi a cvič proti armádě, která tě porazila.
 
 **Hraj s ostatními** (online)
 
@@ -38,7 +45,12 @@ Veď klan nindžů, postav skrytou vesnici v horách, vycvič padesát druhů bo
 
 **Stínové zkoušky**
 
-- Nekonečná řada pevností: každý stupeň je těžší a odměnu dává jen jednou.
+- Nekonečná řada pevností: každý stupeň je těžší a odměnu dává jen jednou. Denní cvičení ti umožní trénovat, zatímco tvoje armáda prochází výcvikem.
+
+**Každý den něco nového**
+
+- Akce v pevném čtyřtýdenním kalendáři, pět každoročních svátků s vlastní pevností a vzhledem Pevnosti k získání, týdenní Velká výzva a denní zakázka.
+- Úspěchy, pečeti Pevnosti, hodnosti mistrovství bojovníků a vzhledy, které získáš hraním.
 
 **Férová hra**
 
@@ -46,7 +58,7 @@ Veď klan nindžů, postav skrytou vesnici v horách, vycvič padesát druhů bo
 - Soupeři generovaní počítačem jsou vždy jasně označeni.
 - Hráči do 18 let mají limit útrat; dostáváš jen upozornění, která si vybereš, a ta jsou vypnutá, dokud je nezapneš.
 
-Kagemura je zdarma ke stažení i hraní. Všechny budovy, bojovníci, úrovně Pevnosti a herní režimy jsou dostupné bez placení a hra nemá žádné reklamy. Nefrit, prémiová měna, se postupně získává hraním (úspěchy, ligy, denní truhla a bezplatná cesta Sezónního svitku) a dá se také koupit. Některé věci jsou jen za skutečné peníze: prémiová cesta Sezónního svitku (odměny navíc, rychlejší stavění po celou sezónu a vzhled Pevnosti „Svátek luceren“) a časově omezené balíčky nefritu a zdrojů.
+Kagemura je zdarma ke stažení i hraní. Všechny budovy, bojovníci, úrovně Pevnosti a herní režimy jsou dostupné bez placení a hra nemá žádné reklamy. Nefrit, prémiová měna, se postupně získává hraním (úspěchy, ligy, denní truhla a bezplatná cesta Sezónního svitku) a dá se také koupit. Některé věci jsou jen za skutečné peníze: prémiová cesta Sezónního svitku (odměny navíc, rychlejší stavění po celou sezónu a vzhled Pevnosti, který se každou sezónu mění) a časově omezené balíčky nefritu a zdrojů.
 
 ## Odkazy pro vydání
 

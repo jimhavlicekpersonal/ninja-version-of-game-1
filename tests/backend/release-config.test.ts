@@ -253,3 +253,91 @@ describe('the Dockerfile parses (A26 follow-up)', () => {
     expect(list.at(-1)!.op).toBe('CMD');
   });
 });
+
+describe('one app id variable (PUB-05, P7-02)', () => {
+  it('capacitor, gradle and both signed workflows read APP_ID and refuse the legacy id unless allowed', async () => {
+    const { appIdProblem, LEGACY_APP_ID } = await import('../../tools/release/app-id.mjs');
+    expect(appIdProblem(undefined)).toMatch(/APP_ID is not set/);
+    expect(appIdProblem(LEGACY_APP_ID)).toMatch(/legacy/);
+    expect(appIdProblem(LEGACY_APP_ID, true)).toBeNull();
+    expect(appIdProblem(undefined, true)).toBeNull();
+    expect(appIdProblem('com.Example.App')).toMatch(/not a valid/);
+    expect(appIdProblem('com.example.kagemura')).toBeNull();
+    const read = (p: string) => readFileSync(p, 'utf8');
+    expect(read('capacitor.config.ts')).toContain('process.env.APP_ID || LEGACY_APP_ID');
+    expect(read('android/app/release.gradle')).toMatch(/readProp\('tkApplicationId', 'APP_ID'\)/);
+    expect(read('android/app/build.gradle')).toContain('applicationId project.ext.tkApplicationId');
+    expect(read('.github/workflows/android.yml')).toContain('node tools/release/check-app-id.mjs');
+    expect(read('.github/workflows/ios-testflight.yml')).toContain('node tools/release/check-app-id.mjs');
+    // strings.xml keeps the legacy package_name and custom_url_scheme (cap sync does not rewrite them): listed in
+    // docs/SHIPPING.md section 6 as staying until the owner moves to the new id.
+    expect(read('docs/SHIPPING.md')).toMatch(/custom_url_scheme/);
+  });
+});
+
+describe('native projects list every Capacitor plugin the game depends on (PUB-06, P7-03)', () => {
+  it('each @capacitor/* and @capacitor-community/* plugin is in the Android settings, the app build and the iOS package', () => {
+    const pkg = JSON.parse(readFileSync('package.json', 'utf8')) as { dependencies: Record<string, string> };
+    const plugins = Object.keys(pkg.dependencies).filter((d) => /^@capacitor(-community)?\//.test(d) && !['@capacitor/core', '@capacitor/android', '@capacitor/ios', '@capacitor/cli'].includes(d));
+    expect(plugins.length).toBeGreaterThanOrEqual(5);
+    const settings = readFileSync('android/capacitor.settings.gradle', 'utf8');
+    const build = readFileSync('android/app/capacitor.build.gradle', 'utf8');
+    const swift = readFileSync('ios/App/CapApp-SPM/Package.swift', 'utf8');
+    for (const p of plugins) {
+      expect(settings, `${p}: run npm run build && npx cap sync`).toContain(`node_modules/${p}/`);
+      expect(build, p).toContain(`':${p.slice(1).replace('/', '-')}'`);
+      expect(swift, p).toContain(`node_modules/${p}"`);
+    }
+  });
+});
+
+describe('P7-06 (PUB-09): the iPhone release runs on an image with the required SDK', () => {
+  it('runs on macos-26 and stops (not warns) below iOS SDK 26', () => {
+    const y = read('.github/workflows/ios-testflight.yml');
+    expect(y).toMatch(/runs-on: macos-26/);
+    expect(y).not.toMatch(/runs-on: macos-15/);
+    expect(y).toMatch(/::error::iOS SDK .* older than 26.*\n?.*exit 1|older than 26[^\n]*exit 1/);
+  });
+});
+
+describe('P7-11 (PUB-14): local-day statistics stay the owner\'s switch', () => {
+  it('every client workflow passes VITE_STATS_TZ from a repository variable, off when unset', () => {
+    for (const f of ['deploy.yml', 'android.yml', 'ios-testflight.yml']) {
+      const y = read(`.github/workflows/${f}`);
+      expect(y, f).toMatch(/VITE_STATS_TZ: \$\{\{ vars\.VITE_STATS_TZ \|\| '0' \}\}/);
+      expect(y, f).not.toMatch(/VITE_STATS_TZ: ['"]?1/);
+    }
+  });
+});
+
+describe('P7-15: plain-text native settings that cannot be compiled here', () => {
+  it("the Xcode project's marketing version is package.json's (the workflow sets it too)", () => {
+    const version = JSON.parse(read('package.json')).version as string;
+    const pbx = read('ios/App/App.xcodeproj/project.pbxproj');
+    const found = [...pbx.matchAll(/MARKETING_VERSION = ([^;]+);/g)].map((m) => m[1]);
+    expect(found.length).toBeGreaterThan(0);
+    for (const v of found) expect(v).toBe(version);
+  });
+  it('game sound is ambient on iOS (respects the silent switch, mixes with other audio)', () => {
+    expect(read('ios/App/App/AppDelegate.swift')).toMatch(/setCategory\(\.ambient/);
+  });
+});
+
+describe('P7-09 (PUB-12): link previews and install screenshots', () => {
+  it('the manifest lists two screenshots that exist, narrow and wide, kept out of the precache', () => {
+    const m = JSON.parse(read('public/manifest.webmanifest')) as { screenshots: { src: string; form_factor: string; sizes: string }[] };
+    expect(m.screenshots.map((s) => s.form_factor).sort()).toEqual(['narrow', 'wide']);
+    const cfg = read('vite.config.ts');
+    for (const s of m.screenshots) {
+      expect(readFileSync(new URL(`../../public/${s.src}`, import.meta.url)).length).toBeLessThan(150_000);
+      expect(cfg).toContain(`'${s.src}'`);
+    }
+    expect(read('tools/i18n/build.mjs')).toMatch(/screenshots: manifest\.screenshots\.map/);
+  });
+  it('a build with VITE_PUBLIC_URL writes absolute og:image, twitter:image and og:url; deploy passes it', () => {
+    const cfg = read('vite.config.ts');
+    expect(cfg).toMatch(/absoluteLinkPreview\(process\.env\.VITE_PUBLIC_URL\)/);
+    expect(cfg).toMatch(/og:url/);
+    expect(read('.github/workflows/deploy.yml')).toMatch(/VITE_PUBLIC_URL: \$\{\{ vars\.VITE_PUBLIC_URL \}\}/);
+  });
+});

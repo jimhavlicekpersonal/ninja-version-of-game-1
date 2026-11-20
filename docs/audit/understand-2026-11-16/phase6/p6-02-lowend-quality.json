@@ -1,0 +1,226 @@
+[
+ {
+  "label": "high (?quality=high)",
+  "readyMs": 6606,
+  "canvas": "1080x1920",
+  "village": {
+   "textureMB": 63.4,
+   "textures": 163,
+   "kinds": {
+    "island": {
+     "n": 1,
+     "MB": 34.9
+    },
+    "construction+rubble": {
+     "n": 8,
+     "MB": 3.8
+    },
+    "other": {
+     "n": 37,
+     "MB": 6.4
+    },
+    "warriors": {
+     "n": 59,
+     "MB": 9.3
+    },
+    "badges": {
+     "n": 50,
+     "MB": 5.4
+    },
+    "buildings": {
+     "n": 8,
+     "MB": 3.6
+    }
+   }
+  },
+  "villageFrames": {
+   "fps": 4.8,
+   "workMsPerFrame": 2.7
+  },
+  "deployed": 24,
+  "battleFrames": {
+   "fps": 5.3,
+   "workMsPerFrame": 7.1
+  },
+  "afterBattleTextureMB": 69.5,
+  "afterBattleTextures": 184,
+  "heapMB": 18,
+  "review": {
+   "reviewMs": 817,
+   "longestTaskMs": 265,
+   "longTasks": 6,
+   "result": "0★ · 0% destroyed · 16 of 24 warriors fit through this point"
+  },
+  "readyMsRuns": [
+   6606
+  ]
+ },
+ {
+  "label": "low (?quality=low)",
+  "readyMs": 3613,
+  "canvas": "720x1280",
+  "village": {
+   "textureMB": 25.7,
+   "textures": 159,
+   "kinds": {
+    "island": {
+     "n": 1,
+     "MB": 15.5
+    },
+    "construction+rubble": {
+     "n": 8,
+     "MB": 1.4
+    },
+    "other": {
+     "n": 33,
+     "MB": 1
+    },
+    "warriors": {
+     "n": 59,
+     "MB": 4.1
+    },
+    "badges": {
+     "n": 50,
+     "MB": 2.4
+    },
+    "buildings": {
+     "n": 8,
+     "MB": 1.3
+    }
+   }
+  },
+  "villageFrames": {
+   "fps": 13.8,
+   "workMsPerFrame": 1.5
+  },
+  "deployed": 24,
+  "battleFrames": {
+   "fps": 12.4,
+   "workMsPerFrame": 6.8
+  },
+  "afterBattleTextureMB": 27.9,
+  "afterBattleTextures": 180,
+  "heapMB": 21,
+  "review": {
+   "reviewMs": 284,
+   "longestTaskMs": 129,
+   "longTasks": 5,
+   "result": "0★ · 0% destroyed · 16 of 24 warriors fit through this point"
+  },
+  "readyMsRuns": [
+   3613
+  ]
+ },
+ {
+  "label": "auto, 2 GB / 8 cores",
+  "readyMs": 3935,
+  "canvas": "720x1280",
+  "village": {
+   "textureMB": 25.7,
+   "textures": 159,
+   "kinds": {
+    "island": {
+     "n": 1,
+     "MB": 15.5
+    },
+    "construction+rubble": {
+     "n": 8,
+     "MB": 1.4
+    },
+    "other": {
+     "n": 33,
+     "MB": 1
+    },
+    "warriors": {
+     "n": 59,
+     "MB": 4.1
+    },
+    "badges": {
+     "n": 50,
+     "MB": 2.4
+    },
+    "buildings": {
+     "n": 8,
+     "MB": 1.3
+    }
+   }
+  },
+  "villageFrames": {
+   "fps": 9.4,
+   "workMsPerFrame": 2.1
+  },
+  "deployed": 24,
+  "battleFrames": {
+   "fps": 9.5,
+   "workMsPerFrame": 6.8
+  },
+  "afterBattleTextureMB": 27.9,
+  "afterBattleTextures": 180,
+  "heapMB": 22,
+  "review": {
+   "reviewMs": 578,
+   "longestTaskMs": 140,
+   "longTasks": 6,
+   "result": "0★ · 0% destroyed · 16 of 24 warriors fit through this point"
+  },
+  "readyMsRuns": [
+   3935
+  ]
+ },
+ {
+  "label": "auto, 8 GB / 8 cores",
+  "readyMs": 6286,
+  "canvas": "1080x1920",
+  "village": {
+   "textureMB": 63.4,
+   "textures": 163,
+   "kinds": {
+    "island": {
+     "n": 1,
+     "MB": 34.9
+    },
+    "construction+rubble": {
+     "n": 8,
+     "MB": 3.8
+    },
+    "other": {
+     "n": 37,
+     "MB": 6.4
+    },
+    "warriors": {
+     "n": 59,
+     "MB": 9.3
+    },
+    "badges": {
+     "n": 50,
+     "MB": 5.4
+    },
+    "buildings": {
+     "n": 8,
+     "MB": 3.6
+    }
+   }
+  },
+  "villageFrames": {
+   "fps": 4.4,
+   "workMsPerFrame": 2.7
+  },
+  "deployed": 24,
+  "battleFrames": {
+   "fps": 6.8,
+   "workMsPerFrame": 6.6
+  },
+  "afterBattleTextureMB": 69.5,
+  "afterBattleTextures": 184,
+  "heapMB": 22,
+  "review": {
+   "reviewMs": 730,
+   "longestTaskMs": 206,
+   "longTasks": 7,
+   "result": "0★ · 0% destroyed · 16 of 24 warriors fit through this point"
+  },
+  "readyMsRuns": [
+   6286
+  ]
+ }
+]

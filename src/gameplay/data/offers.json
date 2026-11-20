@@ -12,9 +12,10 @@
       "usd": 1.99,
       "contents": {
         "moonstones": 300,
-        "acorns": 5000,
-        "dew": 5000
+        "acorns": 15000,
+        "dew": 15000
       },
+      "$commentP308": "P3-08 (2026-11-18): 5,000 -> 15,000 each: after the top-up re-curve it was 17-20 minutes of production at Keeps 3-5 (now about an hour); still Keep-scaled by topUpScaleByHall.",
       "durationHours": 72,
       "oncePerAccount": true,
       "cooldownHours": 0,

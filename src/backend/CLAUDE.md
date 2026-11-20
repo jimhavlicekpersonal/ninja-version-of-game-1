@@ -137,3 +137,8 @@ Server localization build inputs: Docker copies `locales/` and `tools/i18n/`; `v
 - `groves.ts` `donateIn`: a device-held donor cannot fill a server-held receiver's request (`404 no_village`).
 - `village.ts`: `setProfile` needs a boolean `under18` (without `ageBand`); only `true` passes once the server holds under 18.
 - `referrals.ts`: an imported recruit village qualifies after `REFERRAL_IMPORT_MIN_DAYS` (`net/growth.ts`).
+## Replayability pass 2026-11-18 (`docs/backend/REQUESTS.md` top entry; `docs/SHIPPING.md` 3m)
+
+- Deploy order: server migrations, the server (rules 8 with rules 7 archived; `drillEnd`, `claimKeepSeal`; `attackedBefore`; `AttackResponse.contractAt`; the new events, raid, matchmaking and word-list data), then the game (save v24) in the same window; `MIN_CLIENT_BUILD` to the first build of this release.
+- Still open: P2-12, raids against villages when a server is configured (design in REQUESTS). Until it ships, defense does nothing online.
+- Workflows: `content-preview.yml` (manual, off by default, artifact only), `VITE_STATS_TZ` and `VITE_PUBLIC_URL` repository variables, `ios-testflight.yml` on `macos-26` (never run yet).

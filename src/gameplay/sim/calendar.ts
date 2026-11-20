@@ -4,7 +4,8 @@
  * Local days: task days and weeks used to roll at UTC midnight (19:00 in New York, 16:00 in Los Angeles),
  * mid-session for much of the world. They now roll at the player's own midnight (`localTime.offsetMinutes`,
  * set from the device by `setLocalTime`; changed at most once a week, so moving the clock cannot farm task
- * days). The free chest and the stipend keep the UTC day: the chest's draw depends on it.
+ * days). Since P5-09 the free chest, the streak's skip week and the stipend also roll on the player's own day
+ * (`daily.local`, `stipend.local`, set by the first claim after the switch).
  *
  * The calendar: a fixed list of 28 rewards (`daily.json` `calendar`), one claim per local day, nothing random,
  * never sold. A missed day loses nothing (the next claim is the next day on the list), like the streak. Day 28
@@ -65,8 +66,10 @@ export function calendarReward(state: VillageState, n: number, hall: number, dat
   if (!def) return {};
   const entry = def.days[Math.max(1, Math.min(def.days.length, n)) - 1];
   if (entry.skin) {
-    const owned = state.cosmetics.owned.includes(entry.skin);
-    return owned ? { moonstones: def.repeatJade } : { skin: entry.skin };
+    if (!state.cosmetics.owned.includes(entry.skin)) return { skin: entry.skin };
+    // P5-06: cycles 2 to 6 each give their own look on that day before the Jade.
+    const cycleLook = def.skins?.[(state.calendar?.cycles ?? 0) - 1];
+    return cycleLook && !state.cosmetics.owned.includes(cycleLook) ? { skin: cycleLook } : { moonstones: def.repeatJade };
   }
   const { moonstones, ...res } = entry.reward ?? {};
   return { ...scaleReward(res, hall, data), ...(moonstones ? { moonstones } : {}) };

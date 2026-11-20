@@ -1,4 +1,5 @@
 {
+  "$commentWinBonusShare": "P2-09 (DEF-10, ECO-08, 2026-11-18): winBonusShare per league, a share of the Keep's lowest generated raid loot (Coins and Provisions), larger of it and winBonus, x stars/3. Fitted to the regular campaign: 6.8-18.7% of an average raid's banked loot at Keeps 5-15 (Obsidian, Ember and Storm 0.095 after the Phase 2 campaign put Keep 15 at 22.6% with 0.115; Shadow 0.13 -> 0.11 after Phase 3 put the regular Keep 15 in Shadow at 20.2%) (was 22% at Keep 5 falling to 0.7% at Keep 15). Iron's flat winBonus 5000 -> 4000 each so Keep 5 stays under 20%.",
   "startingTrophies": 0,
   "attackWin": {
     "base": 24,
@@ -15,6 +16,7 @@
   },
   "matchTrophyRange": 80,
   "seasonResetFloor": 400,
+  "seasonCatchUpMax": 2,
   "leagues": [
     {
       "id": "sprout",
@@ -29,6 +31,7 @@
     },
     {
       "id": "fern",
+      "winBonusShare": 0.02,
       "name": "Cedar League",
       "min": 400,
       "chest": {
@@ -43,6 +46,7 @@
     },
     {
       "id": "oak",
+      "winBonusShare": 0.09,
       "name": "Iron League",
       "min": 1000,
       "chest": {
@@ -51,12 +55,14 @@
         "moonstones": 50
       },
       "winBonus": {
-        "acorns": 5000,
-        "dew": 5000
+        "acorns": 4000,
+        "dew": 4000
       }
     },
     {
       "id": "elder",
+      "look": "league_obsidian",
+      "winBonusShare": 0.095,
       "name": "Obsidian League",
       "min": 2000,
       "chest": {
@@ -71,6 +77,7 @@
     },
     {
       "id": "jade",
+      "winBonusShare": 0.095,
       "name": "Ember League",
       "min": 2800,
       "chest": {
@@ -85,6 +92,8 @@
     },
     {
       "id": "storm",
+      "look": "league_storm",
+      "winBonusShare": 0.095,
       "name": "Storm League",
       "min": 3600,
       "chest": {
@@ -99,6 +108,7 @@
     },
     {
       "id": "shadow",
+      "winBonusShare": 0.11,
       "name": "Shadow League",
       "min": 4400,
       "chest": {
@@ -113,6 +123,8 @@
     },
     {
       "id": "kage",
+      "look": "league_kage",
+      "winBonusShare": 0.15,
       "name": "Kage League",
       "min": 5200,
       "chest": {
@@ -133,7 +145,16 @@
     "hallsAbove": 1,
     "trophyJitter": 30,
     "powerSlack": 0.25,
-    "powerSlackByKeep": [0.75, 0.75, 1, 0.75, 0.25, 0.5, 0.15, 0.75, 0.5, 0.5, 0.5, 0.75, 0.75, 0.5, 0.5],
+    "$commentPowerSlackRules8": "Phase 4 (SIM_RULES 8, 2026-11-18): Keep 8 0.75 -> 0.5, Keeps 9-10 0.5 -> 0.25 and Keep 12 0.75 -> 0.5; Keep 7 (the hero arrives) 0.15 -> 0 after the Phase 5 campaign (the sandbagger three-starred 52% at Keeps 6-7 and reached Keep 12 a day before the regular player). Rally B and support strikes made raids easier, so the slack measured against rules-7 dips let casual Keeps 7-8 three-star 67% and the rusher Keeps 9-10 58% (farming gate 50%), and matched raids at Keep 12 2.33 stars (gate 2.2); after: 42%, under 50%, and 1.83 stars (docs/audit/understand-2026-11-16/phase4/).",
+    "powerSlackByKeep": [0.75, 0.75, 1, 0.75, 0.25, 0.5, 0, 0.5, 0.25, 0.25, 0.5, 0.5, 0.75, 0.5, 0.5],
+    "$commentLossStreak": "P2-10 (DEF-12, 2026-11-18): each consecutive lost raid (0 stars, at least minDeployShare of the army's housing deployed) lowers the earned-strength floor by perLoss, up to max; a win resets it. Device matchmaking only (the server's generated fallback keeps its own, lower floor).",
+    "lossStreakSlack": { "perLoss": 0.25, "max": 1, "minDeployShare": 0.8 },
+    "$commentLayouts": "P4-07 (CMB-08, 2026-11-18, SIM_RULES 8): from fromKeep, a rival clan's outposts use one of its home layouts (picked by the seed) with that layout's level-bias offset, so the easiest and hardest layout differ by 15 points or less with the raid bots' mix (measured over 20 battles a layout: through opponentForRank, clan bias and home tempers included: Keep 8 49.0-60.8, Keep 12 45.6-59.0, Keep 15 57.4-64.5 (gaps 11.8 / 13.4 / 7.2); one ring generator before, and the five layouts differed by 35 / 23 / 16 at level bias 0.5).",
+    "layouts": {
+      "fromKeep": 6,
+      "clanHome": { "crimson_lotus": ["kunai_ring", "twin_gates"], "iron_tide": ["walled_keep", "mortar_core"], "moon_veil": ["open_court"] },
+      "biasOffset": { "kunai_ring": 0.2, "open_court": 0.35, "walled_keep": -0.35, "twin_gates": -0.15, "mortar_core": -0.1 }
+    },
     "researchFloorKeeps": 1.5,
     "exposureHours": 12
   },

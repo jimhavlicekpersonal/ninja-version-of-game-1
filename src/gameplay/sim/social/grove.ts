@@ -97,7 +97,9 @@ export function hasContact(text: string): boolean {
 /** Censor without chat's length limit: names already have a grapheme width cap. */
 export function censorText(text: string, data: GameData): string {
   let out = text.normalize('NFC');
-  for (const word of data.social.profanity) {
+  // P7-07: the per-language lists apply to every line (chat and names mix languages).
+  const byLanguage = Object.entries(data.social.profanityByLanguage ?? {}).flatMap(([k, v]) => (k.startsWith('$') || !Array.isArray(v) ? [] : v));
+  for (const word of [...data.social.profanity, ...byLanguage]) {
     if (!word.trim()) continue;
     const body = word.normalize('NFC').replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/ /g, '\\s+');
     // Word edges in every script; scripts written without spaces (Chinese, Japanese, Thai…) match anywhere.
@@ -258,7 +260,8 @@ export function donate(state: VillageState, requestId: string, troop: string, co
   const req = g.requests.find((r) => r.id === requestId);
   const def = data.troops[troop];
   if (!req || !def) return { ok: false, message: 'That request is gone.' };
-  if ((state.army[troop] ?? 0) < count || count <= 0) return { ok: false, message: 'Not enough of that warrior.' };
+  // XPL-13 (P1-21): a whole number of warriors (a fraction left an army the next load called damaged).
+  if (!Number.isInteger(count) || (state.army[troop] ?? 0) < count || count <= 0) return { ok: false, message: 'Not enough of that warrior.' };
   const room = req.size - req.donated;
   const n = Math.min(count, Math.floor(room / def.housing));
   if (n <= 0) return { ok: false, message: 'That request is full.' };

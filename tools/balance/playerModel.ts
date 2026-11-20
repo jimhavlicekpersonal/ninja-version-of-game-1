@@ -32,7 +32,7 @@
  * `engaged` adds the other long-term goals: a Shadow Trial attempt when the
  * army is full after raiding, and claiming finished tasks and pass tiers.
  */
-import { armyHousing, barracksLevel, housingCapacity, queueHousing, troopUnlock } from '../../src/gameplay/sim/army';
+import { armyHousing, barracksLevel, housingCapacity, queueHousing, trainingQueueLimit, troopUnlock } from '../../src/gameplay/sim/army';
 import { newestInFamily, type Family } from './armyLab';
 import { currentTasks, unlockedTier } from '../../src/gameplay/sim/pass';
 import { nextTrialTier, trialBase, trialVariant } from '../../src/gameplay/sim/trials';
@@ -60,6 +60,8 @@ export interface ModelOptions {
   fortressGap?: number;
   /** Hire another Village Artisan whenever the Jade is there (a real player's first purchase). */
   hireBuilders?: boolean;
+  /** P3-02 (PAC-08): also fill the next-army queue (`economy.queuedArmies`), not only the camps. */
+  queueArmy?: boolean;
   /** 'entry': try the six ways in with the bots' formation and keep the best (a competent raider). */
   pilot?: 'entry';
   /** Replicate number: reseeds the village so the same policy plays a different run. */
@@ -268,7 +270,8 @@ export class ModelPlayer {
     const mix = this.mix();
     if (!mix.length) return;
     for (let i = 0; i < 400; i++) {
-      const cap = housingCapacity(this.state, d);
+      // P3-02: `queueArmy` fills the next-army queue too (the camps' size again); off, the camps only, as before.
+      const cap = this.opts.queueArmy ? trainingQueueLimit(this.state, d) : housingCapacity(this.state, d);
       const used = armyHousing(this.state.army, d) + queueHousing(this.state.training, d);
       if (used >= cap) return;
       // Train the troop furthest below its share; fall back to the cheapest.
@@ -349,8 +352,9 @@ export class ModelPlayer {
       this.state = res.state;
       const rec = this.state.battleLog[this.state.battleLog.length - 1];
       this.raidLog.push({ hall: hl, opponentHall: base.hallLevel, stars: rec.result.stars, destruction: rec.result.destruction, loot: this.state.resources.acorns + this.state.resources.dew - before, trophies: this.state.trophies, strength });
-      // Replays are not needed here, and cloning them on every command is slow.
-      this.state.battleLog = [];
+      // Replays are not needed here, and cloning them on every command is slow; but the live rules read the latest
+      // raids (P2-10's losing streak, Tempering's counters), so the last ten stay (`temper.offers.recentRaids`), as a real player's log keeps them.
+      this.state.battleLog = this.state.battleLog.slice(-10);
       this.raids++;
     }
   }

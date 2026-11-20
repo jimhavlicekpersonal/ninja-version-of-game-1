@@ -104,13 +104,15 @@ describe('outcome gates: no composition dominates (audit F22, F23, F37)', () => 
   // Keep 7 is where armies gain two research levels and a new tier while its
   // bases used to field only Keep 6 levels (every army scored ~100% there).
   const keeps = [7, 8, 15];
-  const rows = runLab({ keeps, layouts: ['random', 'kunai_ring', 'mortar_core'], seeds: 2 });
+  // P4-08 (CMB-12, 2026-11-18): four seeds a cell (12 battles), up from two, before anything was re-pinned: six-battle
+  // cells swung 10 to 15 points.
+  const rows = runLab({ keeps, layouts: ['random', 'kunai_ring', 'mortar_core'], seeds: 4 });
   const cell = (comp: string, keep: number) => {
     const r = rows.filter((x) => x.comp === comp && x.keep === keep);
     return { destruction: r.reduce((s, x) => s + x.destruction, 0) / r.length, threeStar: r.reduce((s, x) => s + x.threeStar, 0) / r.length };
   };
 
-  it('no army flattens same-Keep bases: under 92% destruction and at most 60% three-star raids', { timeout: 120_000 }, () => {
+  it('no army flattens same-Keep bases: under 92% destruction and at most 60% three-star raids', { timeout: 300_000 }, () => {
     for (const keep of keeps) {
       for (const c of COMPOSITIONS) {
         const v = cell(c.id, keep);
@@ -137,13 +139,30 @@ describe('outcome gates: no composition dominates (audit F22, F23, F37)', () => 
   // siege 25.5 % at Keep 8). They are held to stay below the floor, so the test fails when one is fixed (then
   // remove it from the list) and a new failure is never absorbed silently. The floor is not lowered for them.
   const FAMILY_FLOOR = 30;
-  const KNOWN_BELOW = new Set(['support@7', 'support@8', 'siege@8']);
+  // P4-01 (2026-11-18, SIM_RULES 8): support warriors strike (warriorRules.supportStrike): support@7 and @8 left the list.
+  // P4-04 (2026-11-18, SIM_RULES 8): faster siege warriors: siege@8 left the list too. P4-08 (four seeds a cell): the
+  // steadier cells show melee@8 at 27.3 and support@8 at 27.6 (support was 22.0 before P4-01); listed, not hidden.
+  const KNOWN_BELOW = new Set<string>(['melee@8', 'support@8']);
   it(`every family reaches ${FAMILY_FLOOR}% destruction at every Keep (known gaps listed, not hidden)`, () => {
     for (const keep of keeps) {
       for (const c of COMPOSITIONS) {
         const d = cell(c.id, keep).destruction;
         if (KNOWN_BELOW.has(`${c.id}@${keep}`)) expect(d, `${c.id} @ Keep ${keep} now reaches the floor: remove it from KNOWN_BELOW`).toBeLessThan(FAMILY_FLOOR);
         else expect(d, `${c.id} @ Keep ${keep}`).toBeGreaterThanOrEqual(FAMILY_FLOOR);
+      }
+    }
+  });
+
+  // P4-01 (CMB-01): the light-support mix where support strikes add the most (Keeps 6 and 10) is gated too, and (Phase 4
+  // review #2) the pure support family there, whose Keep 10 cell rose most with the strike share.
+  const light = runLab({ keeps: [6, 10], layouts: ['random', 'kunai_ring', 'mortar_core'], seeds: 4, compositions: COMPOSITIONS.filter((c) => c.id === 'support_light' || c.id === 'support') });
+  it('the support mixes do not flatten same-Keep bases at Keeps 6 and 10 either: under 92% and at most 60% three stars', () => {
+    for (const comp of ['support_light', 'support']) {
+      for (const keep of [6, 10]) {
+        const r = light.filter((x) => x.keep === keep && x.comp === comp);
+        expect(r.length, `${comp} @ Keep ${keep}`).toBeGreaterThan(0);
+        expect(r.reduce((s, x) => s + x.destruction, 0) / r.length, `${comp} @ Keep ${keep}`).toBeLessThan(92);
+        expect(r.reduce((s, x) => s + x.threeStar, 0) / r.length, `${comp} @ Keep ${keep}`).toBeLessThanOrEqual(0.6);
       }
     }
   });

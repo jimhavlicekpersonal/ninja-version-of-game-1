@@ -59,6 +59,8 @@ export interface SeasonReward {
   trophiesAfter: number;
   /** Chest contents that did not fit in storage. */
   overflow?: Cost;
+  /** P5-06: the league look this season gave (the first season finished in that league). */
+  look?: string;
 }
 
 /** A league's monthly chest for a player at this Keep level. */
@@ -75,6 +77,14 @@ export function rollSeasons(state: VillageState, now: number, data: GameData): S
   const out: SeasonReward[] = [];
   const current = seasonOf(now);
   const hall = Math.max(1, state.buildings.find((b) => data.buildings[b.type]?.category === 'hall')?.level ?? 1);
+  // XPL-03: seasons older than the last `seasonCatchUpMax` pay nothing. Their honor reset still applies (it stops
+  // changing after a few halvings, so the loop is bounded however far behind a forged save claims to be).
+  const max = data.ranks.seasonCatchUpMax;
+  if (max !== undefined && current - state.season > max) {
+    const floor = data.ranks.seasonResetFloor;
+    for (let i = 0; i < Math.min(64, current - state.season - max) && state.trophies > floor; i++) state.trophies = floor + Math.floor((state.trophies - floor) / 2);
+    state.season = current - max;
+  }
   while (state.season < current) {
     const league = leagueFor(state.trophies, data);
     const before = state.trophies;

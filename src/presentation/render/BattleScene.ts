@@ -7,7 +7,7 @@ import { drainEvents, type BattleSession } from '../../gameplay/control/battleSe
 import { buildingDef } from '../../gameplay/sim/data';
 import { airborne, deployBlock, destruction, isAbility, stars as starsOf, type SimBuilding, type SmokeCloud } from '../../gameplay/sim/battle/battle';
 import { coverLeft, pointAt } from '../../gameplay/sim/battle/infiltration';
-import { WARRIORS } from '../../gameplay/sim/progression';
+import { HEROES, WARRIORS } from '../../gameplay/sim/progression';
 import { isHidden } from '../../gameplay/sim/battle/warriors';
 import { GROUND_PAD, Keys, TEX_SCALE, addSurroundings, groundScale, buildingOrigin, buildingScale, buildingTexture, ensureTextures, troopSize, holdBuildingTextures, releaseBuildingTextures } from './assets';
 import { CameraControl } from './cameraControl';
@@ -17,7 +17,7 @@ import { expectedFps, frames, refreshHz, slowDown } from './frameRate';
 import { addScenery, canvasRenderer, tintedTexture, debris, deathPuff, keepCollapse, makeTracer, muzzleFlash, perfectBanner, ruinFamily, ruinTexture, starSlam, targetLine, troopRing, updateTracer } from './fx';
 import { haptic, sound } from '../audio/sound';
 import { placeCallout, type CalloutBox } from './calloutLayout';
-import { OPENING_GLIDE_MS, OPENING_HOLD_MS, battleOpening } from './cameraFrame';
+import { OPENING_GLIDE_MS, OPENING_HOLD_MS, actionShot, battleOpening, type WorldBox } from './cameraFrame';
 import { DAMAGE_TINT, damageStage, reducedMotion, turnToward, warriorPose } from './motion';
 import { BARREL_ORIGIN_X, BARREL_REACH, barrelTexture, crackTexture } from './battleMarks';
 
@@ -34,6 +34,13 @@ export interface BattleHooks {
   attachView?(view: BattleView): void;
   /** A one-line message for the player (the battle HUD's toast). */
   notice?(text: string): void;
+  /**
+   * P6-11: a card the player can still drop from is selected (warriors left, or an ability with charges). While it is,
+   * the camera stays on the entry points; once it is not, it follows the fight.
+   */
+  cardArmed?(): boolean;
+  /** P6-01: a tap on Infiltration Point `point` with a squad formation armed; returns how many warriors were ordered in (0: not a squad tap). */
+  squadTap?(point: number): number;
 }
 
 /** A camera position: zoom (CSS px per world px) and the world point at the canvas centre. */
@@ -125,7 +132,8 @@ interface TView {
 
 const OVER = 1_000_000;
 /** Ability names by live troop id, for the floating callouts. */
-const ABILITY_NAME = new Map(WARRIORS.filter((w) => w.liveTroop).map((w) => [w.liveTroop!, w.ability.name]));
+// P6-08: heroes too (the Shadow Captain's Rally had no callout: the names came from roster warriors only).
+const ABILITY_NAME = new Map([...WARRIORS.filter((w) => w.liveTroop).map((w) => [w.liveTroop!, w.ability.name] as const), ...HEROES.map((h) => [h.id, h.ability.name] as const)]);
 const COUNTER_LABEL: Record<string, string> = { lit: 'Lit up!', repair: 'Repaired!', grounded: 'Grounded!' };
 /** Milliseconds between callouts over the same troop or building, so a fight stays readable. */
 const CALLOUT_GAP_MS = 1400;
@@ -251,6 +259,14 @@ export class BattleScene extends Phaser.Scene {
     };
     this.scale.on(Phaser.Scale.Events.RESIZE, refit);
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.scale.off(Phaser.Scale.Events.RESIZE, refit));
+    // P6-11: a touch on the map is the player's camera: the action frame waits 3 s after one.
+    const touched = () => {
+      this.lastTouchAt = this.time.now;
+      this.glide?.stop();
+      this.glide = null;
+    };
+    this.input.on('pointerdown', touched);
+    this.input.on('wheel', touched);
     this.hooks.attachView?.({
       entries: () => this.entriesOnScreen(),
       showPoint: (i) => this.showPoint(i),
@@ -397,8 +413,97 @@ export class BattleScene extends Phaser.Scene {
     });
   }
 
+  // ------------------------------------------------------------ P6-11: the action frame
+
+  private actionOn = false;
+  private actionNextAt = 0;
+  private lastTouchAt = -Infinity;
+  private glide: Phaser.Tweens.Tween | null = null;
+
+  /** Glide (log-space zoom, centre following) to a shot; instant with reduced motion. */
+  private glideTo(to: CameraShot, ms: number): void {
+    this.glide?.stop();
+    this.glide = null;
+    if (reducedMotion() || ms <= 0) return this.applyShot(to);
+    const cam = this.cameras.main;
+    const from: CameraShot = { zoom: this.cam.userZoom, x: cam.midPoint.x, y: cam.midPoint.y };
+    this.glide = this.tweens.addCounter({
+      from: 0,
+      to: 1,
+      duration: ms,
+      ease: 'Sine.easeInOut',
+      onUpdate: (tw) => {
+        const k = tw.getValue() ?? 0;
+        this.applyShot({ zoom: from.zoom * Math.pow(to.zoom / from.zoom, k), x: from.x + (to.x - from.x) * k, y: from.y + (to.y - from.y) * k });
+      },
+    });
+  }
+
+  /** The living warriors and the buildings they are hitting, in world px. */
+  private actionBox(): WorldBox | null {
+    const sim = this.session.sim;
+    let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+    const add = (tx: number, ty: number) => {
+      const w = tileToWorld(tx, ty);
+      x0 = Math.min(x0, w.x); y0 = Math.min(y0, w.y); x1 = Math.max(x1, w.x); y1 = Math.max(y1, w.y);
+    };
+    // The main group: the three quarters of the living warriors nearest their middle (a straggler or a far flank
+    // would otherwise frame the whole base again).
+    const alive = sim.troops.filter((t) => !t.dead && !t.summoned);
+    if (!alive.length) return null;
+    const mx = alive.reduce((a, t) => a + t.x, 0) / alive.length;
+    const my = alive.reduce((a, t) => a + t.y, 0) / alive.length;
+    const near = [...alive].sort((a, z) => Math.hypot(a.x - mx, a.y - my) - Math.hypot(z.x - mx, z.y - my)).slice(0, Math.max(1, Math.ceil(alive.length * 0.75)));
+    for (const t of near) {
+      add(t.x, t.y);
+      const b = t.target >= 0 ? sim.buildings[t.target] : undefined;
+      if (b && !b.destroyed) add(b.x + b.size / 2, b.y + b.size / 2);
+    }
+    return x0 === Infinity ? null : { x0, y0, x1, y1 };
+  }
+
+  /**
+   * Once the player has deployed and no card with warriors left is selected, follow the fight (re-framed at most once
+   * a second, never within 3 s of a touch); arming a card again glides back to the entry points.
+   */
+  private actionCamera(time: number): void {
+    const s = this.session;
+    if (s.mode !== 'live' || this.opening || !s.deployments.length || s.sim.ended) return;
+    const armed = this.hooks.cardArmed?.() ?? true;
+    if (armed) {
+      if (this.actionOn) {
+        this.actionOn = false;
+        const f = this.entryFit();
+        if (f) this.glideTo(f, 450);
+      }
+      return;
+    }
+    if (time - this.lastTouchAt < 3000 || time < this.actionNextAt) return;
+    this.actionNextAt = time + 1000;
+    const box = this.actionBox();
+    if (!box) return;
+    const fit = this.entryFit();
+    const fa = this.freeArea();
+    const shot = actionShot(box, fa, Math.max(fit?.zoom ?? FIT_FLOOR, this.cam.minZoom()));
+    // A small change is not worth moving for.
+    const cam = this.cameras.main;
+    const dz = Math.abs(Math.log(shot.zoom / this.cam.userZoom));
+    const dp = Math.hypot(shot.x - cam.midPoint.x, shot.y - cam.midPoint.y) * shot.zoom;
+    if (this.actionOn && dz < 0.08 && dp < 40) return;
+    this.actionOn = true;
+    this.glideTo(shot, 900);
+  }
+
   /** Glide the camera (same zoom) until the point is inside the free area, a little in from its edge. */
   private showPoint(index: number): void {
+    // P6-11: from the action frame, a chevron's tap first goes back to the entry points.
+    if (this.actionOn) {
+      this.actionOn = false;
+      this.lastTouchAt = this.time.now;
+      const f = this.entryFit();
+      if (f) this.glideTo(f, 350);
+      return;
+    }
     const p = this.session.sim.entry?.points[index];
     if (!p) return;
     const fa = this.freeArea();
@@ -574,6 +679,23 @@ export class BattleScene extends Phaser.Scene {
     // A held finger keeps deploying troops, but each ability needs its own tap.
     if (ability && !isTap) return;
     let t = worldToTile(wx, wy);
+    // P6-01: a tap on a ring with a formation armed sends the whole undeployed army through that point.
+    if (isTap && !ability && s.sim.entry && this.hooks.squadTap) {
+      const snapped = pointAt(s.sim.entry, t.tx, t.ty) >= 0 ? t : this.snapToPoint(wx, wy);
+      const point = snapped ? pointAt(s.sim.entry, snapped.tx, snapped.ty) : -1;
+      if (point >= 0) {
+        const n = this.hooks.squadTap(point);
+        if (n > 0) {
+          this.hooks.deployed();
+          haptic('medium');
+          sound.play('deploy');
+          const p = s.sim.entry.points[point];
+          const w = tileToWorld(p.x, p.y);
+          this.puff(w.x, w.y, 1.4);
+          return;
+        }
+      }
+    }
     // Warriors only (smoke goes anywhere): a near miss of a small ring goes to the nearest free tile inside it.
     if (!ability && s.sim.entry && pointAt(s.sim.entry, t.tx, t.ty) < 0) t = this.snapToPoint(wx, wy) ?? t;
     if (!s.tryDeploy(troop, t.tx, t.ty)) {
@@ -942,6 +1064,7 @@ export class BattleScene extends Phaser.Scene {
 
   update(time: number, delta: number): void {
     this.cam.update(delta);
+    this.actionCamera(time);
     // While the battle runs (never idle-throttled), sample the frame rate once a second.
     if (this.session.running && time >= this.nextFpsSample) {
       this.nextFpsSample = time + 1000;

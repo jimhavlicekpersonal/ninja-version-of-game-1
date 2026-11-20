@@ -10,7 +10,7 @@
  * pay less and losses cost more: trophies settle where the player wins about
  * as often as the trophy formula demands instead of climbing forever.
  */
-import { generateOpponent } from './battle/basegen';
+import { generateOpponent, LAYOUTS } from './battle/basegen';
 import type { BaseLayout } from './battle/types';
 import { maxHousingAtHall, troopUnlock } from './army';
 import { troopDef } from './data';
@@ -19,7 +19,7 @@ import { createRng, mixSeed, next, type Rng } from './rng';
 import type { GameData, ResourceKind, Temper, VillageState } from './types';
 import { dominantFamily, temperBase } from './battle/temper';
 import { rivalFor } from './rivals';
-import { hallLevel } from './village';
+import { hallLevel } from './keep';
 
 export interface MatchStrength {
   /** Keep level of the opponent. */
@@ -161,13 +161,59 @@ export function powerSlackAt(hall: number, data: GameData): number {
 }
 
 /**
+ * P2-10 (DEF-12): the slack a losing streak earns. Counts the player's latest raids (generated or real opponents;
+ * not Trials, wars, bounties or rematches), newest first: a raid with stars ends the streak; a lost raid counts only
+ * when it deployed at least `minDeployShare` of the Keep's camp housing (a one-warrior loss neither counts nor resets).
+ */
+export function lossStreakSlack(state: VillageState, data: GameData): number {
+  const cfg = data.ranks.matchmaking.lossStreakSlack;
+  if (!cfg) return 0;
+  let losses = 0;
+  const camps = maxHousingAtHall(hallLevel(state, data), data);
+  const log = state.battleLog ?? [];
+  for (let i = log.length - 1; i >= 0 && losses * cfg.perLoss < cfg.max; i--) {
+    const r = log[i];
+    if (r.kind !== 'attack' || r.war || r.trial !== undefined || r.goalEvent || r.rematch || r.drill || r.settlement === 'rejected' || r.settlement === 'pending') continue;
+    if (r.result.stars > 0) break;
+    // Independent review 2026-11-18: against the camps, not the army brought (a one-warrior "army" sent in full).
+    const army = camps;
+    let sent = 0;
+    for (const [t, n] of Object.entries(r.result.used)) sent += (data.troops[t]?.housing ?? 0) * n;
+    if (army > 0 && sent >= cfg.minDeployShare * army) losses++;
+  }
+  return Math.min(cfg.max, losses * cfg.perLoss);
+}
+
+/** The lowest strength a player's generated opponents may have: earned strength minus the Keep's and the streak's slack. */
+export function strengthFloor(state: VillageState, data: GameData): number {
+  return attackerStrength(state, data) - powerSlackAt(hallLevel(state, data), data) - lossStreakSlack(state, data);
+}
+
+/**
+ * The Keep a player's next generated opponent will usually have, before the base is known (P2-11, DEF-13): the
+ * earned-strength floor `opponentFor` uses (`attackerStrength - powerSlackAt`, clamped to the hall window), read as a
+ * Keep the way `matchStrength` does (`floor(s) + 1`). Honor can only raise the match above it.
+ */
+export function matchedKeep(state: VillageState, data: GameData): number {
+  const mm = data.ranks.matchmaking;
+  const own = hallLevel(state, data);
+  const hi = Math.min(maxHall(data), own + mm.hallsAbove) - 1e-6;
+  // Independent review 2026-11-18: only state the server's copy and the device always share (the Keep, the army and
+  // research): honor (moved on the player row by a forfeit) and the losing streak (pending vs settled records) are
+  // left out, so a replayed Next is priced the same on both sides.
+  const floor = attackerStrength(state, data) - powerSlackAt(own, data);
+  const s = Math.min(hi, Math.max(0, own - mm.hallsBelow - 1, floor));
+  return Math.max(1, Math.min(own, Math.floor(s) + 1));
+}
+
+/**
  * The generated opponent behind a scout seed, for this player. Trophies pick
  * the strength, but never below what the player's own army has earned (minus
  * a little slack): climbing research while honor lags no longer turns the late
  * game into farming bases a whole Keep below.
  */
 export function opponentFor(seed: number, state: VillageState, data: GameData): BaseLayout {
-  const floor = attackerStrength(state, data) - powerSlackAt(hallLevel(state, data), data);
+  const floor = strengthFloor(state, data);
   return opponentForRank(seed, state.trophies, hallLevel(state, data), data, floor, recentRaidArmies(state, data));
 }
 
@@ -184,8 +230,14 @@ export function opponentForRank(seed: number, trophies: number, ownHall: number,
   const def = data.battle.temper;
   const clan = rivalFor(seed, data);
   const rival = def && clan && st.hall >= def.unlockKeep ? def.rivals[clan.id] : undefined;
-  const bias = rival ? Math.max(0, Math.min(1, st.bias + rival.biasShift)) : st.bias;
-  const base = generateOpponent(seed, st.hall, data, { levelBias: bias });
+  // P4-07 (CMB-08): from `layouts.fromKeep` a rival clan's outpost uses one of its home layouts, chosen by the seed,
+  // with that layout's level-bias offset (so no layout is far easier than another).
+  const lay = data.ranks.matchmaking.layouts;
+  const homes = lay && clan && st.hall >= lay.fromKeep ? lay.clanHome[clan.id] ?? [] : [];
+  const layout = homes.length ? LAYOUTS.find((l) => l.id === homes[(mixSeed(seed, 0x1a70) >>> 0) % homes.length]) : undefined;
+  const offset = layout ? lay!.biasOffset[layout.id] ?? 0 : 0;
+  const bias = Math.max(0, Math.min(1, (rival ? st.bias + rival.biasShift : st.bias) + offset));
+  const base = generateOpponent(seed, st.hall, data, { levelBias: bias, ...(layout ? { layout } : {}) });
   if (rival && rival.lootScale !== 1) {
     for (const b of base.buildings) {
       if (!b.loot) continue;
@@ -202,7 +254,7 @@ export function recentRaidArmies(state: VillageState, data: GameData): Record<st
   const n = data.battle.temper?.offers.recentRaids ?? 0;
   if (!n) return [];
   return (state.battleLog ?? [])
-    .filter((r) => r.kind === 'attack' && !r.war && r.trial === undefined && !r.goalEvent && !r.rematch && r.settlement !== 'rejected')
+    .filter((r) => r.kind === 'attack' && !r.war && r.trial === undefined && !r.goalEvent && !r.rematch && !r.drill && r.settlement !== 'rejected')
     .slice(-n)
     .map((r) => r.setup.army);
 }
@@ -239,7 +291,11 @@ export interface BotAttacker {
 /** A full army for a bot at a hall level, made from that hall's mix in raids.json. */
 export function botArmy(hall: number, bias: number, data: GameData): Record<string, number> {
   const mixes = data.raids.botArmyMix;
-  const mix = mixes[Math.max(1, Math.min(mixes.length, hall)) - 1];
+  return armyFromMix(mixes[Math.max(1, Math.min(mixes.length, hall)) - 1], hall, bias, data);
+}
+
+/** A full army for a hall level from one mix (troop -> housing share), the rounding filled with its cheapest troop. */
+function armyFromMix(mix: Record<string, number>, hall: number, bias: number, data: GameData): Record<string, number> {
   const housing = Math.floor(maxHousingAtHall(hall, data) * (0.85 + 0.15 * bias));
   const army: Record<string, number> = {};
   let used = 0;
@@ -271,7 +327,7 @@ export function attackerFor(rng: Rng, state: VillageState, data: GameData): BotA
   let st = matchStrength(rng, state.trophies, hallLevel(state, data), data, true);
   // Rules 9 (lab): `raids.raiderMatch {lo, hi}` — bot raiders come from the defender's Keep (a strength drawn
   // between Keep+lo and Keep+hi), not from its honor, so a better defence holds more instead of meeting stronger raiders.
-  const rm = (data.raids as { raiderMatch?: { lo: number; hi: number } }).raiderMatch;
+  const rm = data.raids.raiderMatch;
   if (rm) {
     const own = hallLevel(state, data) - 1;
     const sv = Math.max(0, Math.min(maxHall(data) - 1e-6, own + rm.lo + next(rng) * (rm.hi - rm.lo)));
@@ -281,7 +337,10 @@ export function attackerFor(rng: Rng, state: VillageState, data: GameData): BotA
   const soft = data.raids.newPlayerRaids;
   const softened = Boolean(soft && (state.stats?.defensesFaced ?? 0) < soft.count);
   const lvl = Math.max(1, cap - (st.bias < 0.5 ? 1 : 0) - (softened ? soft!.levelsBelowCap : 0));
-  const full = botArmy(st.hall, st.bias, data);
+  // P2-03 (DEF-05): with `raids.raiderMixes` for this Keep, the raid's seed picks today's line or an alternate.
+  const alts = data.raids.raiderMixes?.[st.hall - 1] ?? [];
+  const pick = alts.length && !softened ? Math.floor(next(rng) * (alts.length + 1)) : 0;
+  const full = pick ? armyFromMix(alts[pick - 1], st.hall, st.bias, data) : botArmy(st.hall, st.bias, data);
   const army: Record<string, number> = {};
   if (softened) {
     for (const [t, n] of Object.entries(full)) {

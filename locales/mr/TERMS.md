@@ -35,6 +35,9 @@
 | Codex | ज्ञानकोश |
 | Sensei Hoshi | सेन्सेई होशी |
 | Shinobi / Oni Breaker / Kage League | शिनोबी / ओनी भंजक / कागे लीग (छाया लीगपेक्षा वेगळी) |
+| The Gauntlet / Bounty Hunt / warlord / fortress | कसोटी / इनामाची शिकार / सरदार / गढी |
+| Daily contract / Keep seal / Season (name) | रोजचा करार / किल्ल्याचा शिक्का / सीझन (सारसाचा सीझन) |
+| pine (new names) | पाइन (चीड नाही: त्याचा अर्थ राग) |
 
 Kagemura, Kagemura: Ninja Clans, Apple, Google, Game Center, Play Games, App Store, Safari, StoreKit, IndexedDB, Sentry लॅटिन अक्षरांतच राहतात. जपानी व्यक्तिनामे देवनागरीत लिप्यंतरित (काइतो, हाना, ताकेदा). कोड, URL, ईमेल, आयडी अनुवादित होत नाहीत.
 

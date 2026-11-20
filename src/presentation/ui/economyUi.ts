@@ -11,10 +11,11 @@ import { askAgeBand } from './ageScreen';
 import { canPurchase, productGrantsFor, productInfo, spentThisMonth, spentTotal, storeProductId } from '../../gameplay/sim/monetization';
 import { stipendStatus } from '../../gameplay/sim/stipend';
 import type { StorePrice } from '../../backend/payments/provider';
-import { currentTasks, passPremiumValue, passSaleOpen, passSeasonEndsAt, unlockedTier } from '../../gameplay/sim/pass';
+import { currentTasks, passBonusCount, passPremiumValue, passSaleOpen, passSeasonEndsAt, passSeasonSkin, seasonName, unlockedTier } from '../../gameplay/sim/pass';
 import type { Cost, OfferRule, ResourceKind } from '../../gameplay/sim/types';
 import { RESOURCE_KINDS } from '../../gameplay/sim/types';
 import { hallLevel, passTierReward, rewardOverflow } from '../../gameplay/sim/village';
+import { scaleReward } from '../../gameplay/sim/economy';
 import { clear, h, icon } from './dom';
 import { formatDuration, formatNumber } from './format';
 import { icons } from './icons';
@@ -67,7 +68,11 @@ export class EconomyUi {
 
   private skinName = (id: string) => localizedData(this.c.data).cosmetics.hallSkins.find((s) => s.id === id)?.name ?? id;
   /** The pass-only Keep look, by its data name (it was hard-coded as "Lantern Elder"; the data calls it Lantern Festival). */
-  private passLookName = () => localizedData(this.c.data).cosmetics.hallSkins.find((s) => s.passOnly)?.name ?? 'season';
+  /** P1-02: this season's Scroll look (it changes each season). */
+  private passLookName = () => {
+    const id = passSeasonSkin(this.c.state.pass.season, this.c.data, this.c.data.cosmetics.hallSkins.find((s) => s.passOnly)?.id);
+    return localizedData(this.c.data).cosmetics.hallSkins.find((s) => s.id === id)?.name ?? 'season';
+  };
   /** The Scroll's build speed bonus as the data has it (a balance bundle can change it; the text used to say 20 regardless). */
   private passSpeedPct = () => Math.round(this.c.data.pass.premiumBuildSpeedBonus * 100);
 
@@ -257,18 +262,28 @@ export class EconomyUi {
           return b;
         })),
       );
+      // P6-09: where nothing can be bought (the web build), the reason comes first and no row of
+      // "Not available" Jade cards follows it.
+      const noStore = this.c.payments.name !== 'mock' && !this.c.payments.available();
+      if (noStore) body.append(h('p', { class: 'note store-note store-unavailable', 'data-id': 'store-unavailable' }, i18nText("ui.purchases_are_not_available_in_this_ve_15307f1254")));
       if (current === 'moonstones') {
         const claim = this.stipendCard(draw);
         if (claim) body.append(claim);
-        body.append(this.packsGrid());
+        if (!noStore) body.append(this.packsGrid());
       }
       else if (current === 'offers') body.append(this.offersList());
       else if (current === 'pass') body.append(this.passProduct(draw));
-      else body.append(this.looksGrid(draw));
+      else {
+        // P5-06: the collection count.
+        const all = this.c.data.cosmetics.hallSkins;
+        const owned = all.filter((k) => this.c.state.cosmetics.owned.includes(k.id)).length;
+        body.append(h('p', { class: 'muted small' }, t('store.looksCollected', { n: owned, total: all.length })), this.looksGrid(draw));
+      }
       this.loadPrices(draw);
       if (this.c.payments.name === 'mock') body.append(h('p', { class: 'muted small store-note' }, i18nText("ui.sandbox_test_store_purchases_complete__c4b42410c2")));
-      else if (!this.c.payments.available()) body.append(h('p', { class: 'muted small store-note' }, i18nText("ui.purchases_are_not_available_in_this_ve_15307f1254")));
-      else if (this.storePrices === 'failed') body.append(h('p', { class: 'muted small store-note' }, i18nText("ui.the_store_could_not_be_reached_for_pri_867d731094")));
+      else if (noStore) {
+        /* said at the top */
+      } else if (this.storePrices === 'failed') body.append(h('p', { class: 'muted small store-note' }, i18nText("ui.the_store_could_not_be_reached_for_pri_867d731094")));
       if (this.c.payments.store && this.c.payments.available()) {
         // App Store rule: a way to get back what was bought (this season's Scroll, purchases paid but not delivered).
         const restore = h('button', { class: 'btn ghost', type: 'button' }, i18nText("ui.restore_purchases_c6399925b3")) as HTMLButtonElement;
@@ -417,7 +432,8 @@ export class EconomyUi {
     const sale = passSaleOpen(now, d, this.c.state);
     const check = canPurchase(this.c.state, d.pass.productId, now, d);
     const closed = !sale.open && !check.ok && check.code === 'SEASON_ENDING';
-    const value = h('div', { class: 'small pass-value' }, t('pass.value', { jade: v.total, tiers: v.tiers, total: v.tiersTotal, days: v.daysLeft }));
+    // P1-05: past the guard the line shows the Jade alone, with the supplies listed by amount.
+    const value = h('div', { class: 'small pass-value' }, t('pass.value', { jade: v.total, tiers: v.tiers, total: v.tiersTotal, days: v.daysLeft }), v.guarded ? h('span', {}, ' ', rewardChips(v.supplies)) : null);
     const buy = closed ? h('span', { class: 'claim-flat' }, i18nText("ui.not_on_sale_51a77c4bdf")) : this.buyButton(d.pass.productId, 'gold', redraw);
     return h(
       'div',
@@ -450,6 +466,7 @@ export class EconomyUi {
       } else if (skin.passOnly) action = h('span', { class: 'chip' }, i18nText("ui.reward_45b24062a2", { arg1: localizedData(this.c.data).pass.name }));
       // Remnant audit (2026-11-06): a calendar look showed a 0 Jade buy button that always failed.
       else if (skin.calendarOnly) action = h('span', { class: 'chip' }, t('store.calendarLook'));
+      else if (skin.earned) action = h('span', { class: 'chip' }, t('store.earnedLook'));
       else if (skin.minKeep && hallLevel(s, localizedData(this.c.data)) < skin.minKeep) action = h('span', { class: 'chip' }, i18nText("ui.unlocks_at_keep_53e015b015", { arg1: skin.minKeep }));
       else {
         action = h('button', { class: 'btn gold', type: 'button' }, icon(icons.moonstones), String(skin.moonstones));
@@ -457,7 +474,7 @@ export class EconomyUi {
           void this.spendMoonstones(i18nText("ui.buy_this_look_1b89833db0"), i18nText("ui.purely_visual_19c28485fc", { arg1: skin.name }), skin.moonstones, () => this.c.dispatch({ type: 'buySkin', skin: skin.id }).ok).then(redraw);
         });
       }
-      const about = !owned && !skin.passOnly && !skin.calendarOnly ? this.jadeAbout(skin.moonstones) : null;
+      const about = !owned && !skin.passOnly && !skin.calendarOnly && !skin.earned ? this.jadeAbout(skin.moonstones) : null;
       grid.append(h('div', { class: 'shop-card' }, swatch, h('div', { class: 'shop-name' }, skin.name), h('div', { class: 'muted small' }, i18nText("ui.clan_keep_look_9be1099dbe")), action, about ? h('div', { class: 'muted small jade-about' }, about) : null));
     }
     return grid;
@@ -492,9 +509,18 @@ export class EconomyUi {
       const tier = unlockedTier(s, d);
       const into = s.pass.points - tier * d.pass.pointsPerTier;
       body.append(
+        seasonName(this.c.state.pass.season, d) ? h('p', {}, t('season.current', { name: seasonName(this.c.state.pass.season, d)! })) : '',
         h('p', { class: 'muted' }, i18nText("ui.season_ends_in_complete_tasks_to_earn__300938261c", { arg1: formatDuration(passSeasonEndsAt(this.c.now(), d) - this.c.now()) })),
         h('div', { class: 'progress-row' }, h('div', { class: 'progress' }, h('i', { style: `width:${tier >= d.pass.tiers.length ? 100 : (into / d.pass.pointsPerTier) * 100}%` })), h('span', {}, i18nText("ui.tier_pts_805378a19e", { arg1: tier, arg2: d.pass.tiers.length, arg3: s.pass.points }))),
       );
+      // P1-03: past the last tier, tasks keep paying a bonus (Keep-scaled resources) every `everyPoints`.
+      const bonus = d.pass.bonus;
+      if (bonus && tier >= d.pass.tiers.length) {
+        const got = passBonusCount(s.pass.points, d);
+        const left = got >= bonus.maxPerSeason ? 0 : bonus.everyPoints - ((s.pass.points - d.pass.tiers.length * d.pass.pointsPerTier) % bonus.everyPoints);
+        const one = scaleReward({ ...bonus.reward }, hallLevel(s, d), d);
+        body.append(h('div', { class: 'pass-premium' }, h('div', {}, h('b', {}, i18nText('pass.bonus.title')), h('div', { class: 'muted small' }, i18nText('pass.bonus.detail', { got, max: bonus.maxPerSeason, left }))), rewardChips(one)));
+      }
       if (!s.pass.premium) {
         body.append(
           h(

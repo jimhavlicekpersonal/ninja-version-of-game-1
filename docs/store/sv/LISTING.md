@@ -26,8 +26,15 @@ Led en ninjaklan. Bygg en dold bergsby, träna femtio sorters krigare, spana på
 **Gör räder med en plan**
 
 - Krigarna kommer bara in genom infiltrationspunkter: spana på vägarna och tornen som täcker dem.
-- Kasta Rökbomber när krigarna går in i tornens räckvidd, och skicka Sabotörer för att blockera försvaren.
+- Skicka in din trupp med en enda order (samlat, i en tång eller på led; tanks först eller i storm), eller placera varje krigare för hand.
+- Kasta Rökbomber när krigarna går in i tornens räckvidd, och skicka Sabotörer för att blockera försvaren. Från Klanborg 7 samlar Skuggkaptenen hela din trupp en gång per strid.
+- Efter en räd kan du se vad samma armé hade gjort genom en annan punkt.
 - Ett genomtänkt anfall är värt mer än ett enormt.
+
+**Försvara din by**
+
+- Varje räd mot din by får en rapport: vad du behöll, stjärnorna du nekade och var anfallaren bröt sig in.
+- Testa ditt försvar mot en simulerad anfallare, och öva mot armén som besegrade dig.
 
 **Spela tillsammans** (online)
 
@@ -38,7 +45,12 @@ Led en ninjaklan. Bygg en dold bergsby, träna femtio sorters krigare, spana på
 
 **Skuggprövningarna**
 
-- En oändlig stege av fästningar. Varje steg betalar ut sin belöning en gång och är svårare.
+- En oändlig stege av fästningar. Varje steg betalar ut sin belöning en gång och är svårare. Med den dagliga övningen kan du öva medan armén tränar.
+
+**Något nytt varje dag**
+
+- Evenemang enligt en fast fyraveckorskalender, fem årliga fester med en fästning och ett utseende för Borgen att förtjäna, ett veckovis Gatlopp och ett dagligt kontrakt.
+- Prestationer, Borgsigill, mästerskapsrang för krigare och utseenden som du förtjänar genom att spela.
 
 **Rent spel**
 
@@ -46,7 +58,7 @@ Led en ninjaklan. Bygg en dold bergsby, träna femtio sorters krigare, spana på
 - Motståndare som genereras av datorn är alltid märkta.
 - Utgiftsgränser för spelare under 18 och påminnelser som du väljer, avstängda tills du slår på dem.
 
-Kagemura är gratis att ladda ner och spela: alla byggnader, krigare, Borgnivåer och spellägen är tillgängliga utan att betala, och det finns inga annonser. Jade, premiumvalutan, tjänas i små mängder genom att spela (mål, ligor, den dagliga kistan och Säsongsrullens gratisspår) och kan också köpas. Visst innehåll säljs bara för riktiga pengar: Säsongsrullens premiumspår (extra belöningar, snabbare byggen under säsongen och Borgutseendet Lyktfest) och tidsbegränsade paket med Jade och resurser.
+Kagemura är gratis att ladda ner och spela: alla byggnader, krigare, Borgnivåer och spellägen är tillgängliga utan att betala, och det finns inga annonser. Jade, premiumvalutan, tjänas i små mängder genom att spela (mål, ligor, den dagliga kistan och Säsongsrullens gratisspår) och kan också köpas. Visst innehåll säljs bara för riktiga pengar: Säsongsrullens premiumspår (extra belöningar, snabbare byggen under säsongen och ett Borgutseende som byts varje säsong) och tidsbegränsade paket med Jade och resurser.
 
 ## Länkar för versionen
 

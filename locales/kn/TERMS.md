@@ -38,6 +38,7 @@
 | Settings / Store / Online play / Sign-ins | ಸೆಟ್ಟಿಂಗ್‌ಗಳು / ಸ್ಟೋರ್ / ಆನ್‌ಲೈನ್ ಆಟ / ಸೈನ್-ಇನ್‌ಗಳು |
 | Privacy and help | ಗೌಪ್ಯತೆ ಮತ್ತು ಸಹಾಯ |
 | Codex | ಜ್ಞಾನಕೋಶ |
+| Daily drill / stun | ದೈನಂದಿನ ಕವಾಯತು / ಮೂರ್ಛೆ (jam = ಸ್ತಬ್ಧಗೊಳಿಸು ಬೇರೆ) |
 | Sensei Hoshi | ಸೆನ್ಸೈ ಹೋಶಿ |
 | Shinobi / Oni Breaker / Kage League | ಶಿನೋಬಿ / ಓನಿ ಭಂಜಕ / ಕಗೆ ಲೀಗ್ (ನೆರಳು ಲೀಗ್‌ನಿಂದ ಬೇರೆ) |
 

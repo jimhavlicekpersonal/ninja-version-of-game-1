@@ -1,0 +1,381 @@
+{
+ "problems": [
+  {
+   "id": "ECO-01",
+   "title": "Raids against the village take more than a casual player loots, and defense returns nothing",
+   "severity": "critical",
+   "verified": "measured",
+   "evidence": "docs/game-theory/CAMPAIGN.md (generated): regular 972 M taken vs 1,534 M looted (63%); casual 549 M vs 352 M (156%); casual explorer 859 M vs 322 M (266%). Held 0% at every Keep from 4 for every policy, including the defender. Paid for held raids over a whole campaign: 0 (regular), 600 Coins (defender). Defender and raider both reach Keep 15 on day 113. A bot raid costs 2.6-3.2 h of production from Keep 8; an own raid nets 0.4-1.7 h after the army. Mechanism: economy.json collectorHoursCap 8 with raidableUncollectedFraction 0.5, outside storageLootCapByHall (defense.ts:63): full Keep 15 collectors expose 7.1 M per resource. Attacking drops the shield (village.ts:1803). raids.json defenseWin.shareOfRaidLoot 0.05 is 5-16 minutes of production. campaign-gates.test.ts:87-89 gates only the regular player; :102-108 holds the failing rusher expectation.",
+   "proposedFix": "Set the values already hooked but not live (docs/game-theory/rules10/rules10_data_patch.json raidsAndEconomy; hooks at defense.ts:206-245, matchmaking.ts:272, village.ts:427): raids.carryByStars [0.1,0.4,0.7,1], raids.defenseWin {shareOfRaidLoot 0.15, perStar, uncapped}, raids.raiderMatch {lo -1, hi 0}, economy.garrisonCrew 2. Also economy.json raidableUncollectedFraction 0.5 -> 0.3 and collectorHoursCap 8 -> 12. Re-run the campaign; add a gate that casual stolen/looted is under 0.75 and turn the rusher expectation into the real gate. I could not run the campaign, so these numbers are untested here.",
+   "fixCost": "L",
+   "touches": [
+    "DATA_ONLY",
+    "BALANCE_GATES",
+    "SERVER",
+    "DOCS"
+   ],
+   "needsOwner": false,
+   "whyItMatters": "The core loop is net-negative for once-a-day players and building defenses is never the right choice, so half the game's buildings carry no decision."
+  },
+  {
+   "id": "ECO-02",
+   "title": "Unclaimed Season Scroll rewards, including paid premium ones, vanish at the season roll",
+   "severity": "high",
+   "verified": "reproduced",
+   "evidence": "pass.ts:306 replaces the pass state when a season starts. Scratch test: premium Scroll bought, 20 tiers unlocked and unclaimed, advance past the season end gives Jade +0 and Coins +0 (260 premium Jade, 70 free Jade and all supplies lost). No auto-claim or warning exists (grep of village.ts, economyUi.ts, hud.ts).",
+   "proposedFix": "In advance (village.ts:373-379), before rollPeriods resets a finished season, grant every unlocked unclaimed tier with grantReward (free always, premium when pass.premium), add it to the Scroll purchase's premium record, and emit a season-summary event the HUD shows.",
+   "fixCost": "M",
+   "touches": [
+    "SERVER",
+    "UI",
+    "I18N"
+   ],
+   "needsOwner": false,
+   "whyItMatters": "A paid product silently fails to deliver; this breaks the project's own honesty and money rules and is a store-review and refund risk."
+  },
+  {
+   "id": "ECO-03",
+   "title": "Daily and weekly tasks pay nothing for the last third of a season",
+   "severity": "high",
+   "verified": "read-in-code",
+   "evidence": "claimTask grants only pass points (village.ts:1317-1328); tiers end at 30 (pass.json). passPointsPerDay is 471, so a player who does everything finishes on day 19 of 30 and the remaining 11 days of tasks pay nothing. Targets are also trivial late: collect_acorns at Keep 15 is 44,000 against 1.78 M an hour.",
+   "proposedFix": "pass.json: add a repeatable bonus tier past tier 30 (every pointsPerTier points, free track, Keep-scaled supplies such as acorns 15000 + dew 15000, no Jade); claimTier and unlockedTier accept it, with a pass.bonusClaimed counter. Scale collect targets by rewardScaleByHall instead of perHall.",
+   "fixCost": "M",
+   "touches": [
+    "SAVE_VERSION",
+    "PLAYER_COMMANDS",
+    "SERVER",
+    "UI",
+    "I18N",
+    "DATA_ONLY"
+   ],
+   "needsOwner": false,
+   "whyItMatters": "The most engaged players lose their daily reason to play for 11 days of every 30."
+  },
+  {
+   "id": "ECO-04",
+   "title": "Top-up and army-finish prices are out of line at late Keeps, and offers scaled by the same table are hollow",
+   "severity": "high",
+   "verified": "measured",
+   "evidence": "store.json topUpScaleByHall and trainingSkipScaleByHall: one hour of income costs 15 Jade at Keep 1, 97 at Keep 5, 550 at Keep 15; a day of income 8,079 Jade at Keep 15 against 180 for a 24 h skip. Finishing a 1.45 h Keep 15 army costs 461 Jade (19 for the same time on a building). Offers use the same scale (monetization.ts:65-77): Keep Celebration supplies are 2.29 h of production at Keep 5 and 0.34 h at Keep 15; War Supplies is 1.4 armies at Keep 5 and 0.095 of one at Keep 15.",
+   "proposedFix": "tools/balance/topup.mjs: EXPONENT 0.5 -> 0.75 and write trainingSkipScaleByHall separately so a top-up stays 4.5-7x skip-and-raid (1 at Keeps 1-5, about 3-5 at Keep 15, now 15.1). Result from econ3.cjs: 70-207 Jade per hour of income from Keep 5, a raid's loot 268-830, full rush 27,205 Jade (now 44,944), offer supplies 1-3.3 h of production at every Keep. Re-tune topup.test.ts (lines 30-56, 170-185) and update docs/game-theory/TOP_UP.md.",
+   "fixCost": "M",
+   "touches": [
+    "DATA_ONLY",
+    "SERVER",
+    "DOCS"
+   ],
+   "needsOwner": false,
+   "whyItMatters": "After Keep 5 the only rational Jade use is time skips; the purchase that means \"let me play another raid now\" is priced out, and real-money offers deliver almost nothing but their Jade."
+  },
+  {
+   "id": "ECO-05",
+   "title": "The Artisan's Bundle is offered when it cannot do what its text says",
+   "severity": "high",
+   "verified": "reproduced",
+   "evidence": "economy.json builderHutCosts [250,500,1000]; offers.json builder_pack gives 650 Jade with the text \"Jade to hire another Village Artisan, plus a little extra.\" canHireArtisan (village.ts:464) is true with four huts, where the next costs 1,000. Scratch test: with four huts, triggerOffer all_builders_busy returns offer_shown for builder_pack.",
+   "proposedFix": "At village.ts:867 raise the Bundle only when builderHutCosts[have - 2] is at most the rule's Jade (pass the rule's contents into canHireArtisan). No text change needed.",
+   "fixCost": "S",
+   "touches": [],
+   "needsOwner": false,
+   "whyItMatters": "A real-money offer whose description is false in one state; small to fix, costly if a reviewer or regulator finds it."
+  },
+  {
+   "id": "ECO-06",
+   "title": "The Scroll's \"≈ N Jade value\" line is inflated, up to 65x the same-price pack",
+   "severity": "medium",
+   "verified": "reproduced",
+   "evidence": "passPremiumValue (pass.ts:75-101) prices premium supplies as top-ups and assumes every daily and weekly task is done. Shown for the $4.99 Scroll on day 1: 1,573 Jade at Keep 3, 2,314 at Keep 5, 6,480 at Keep 10, 18,176 at Keep 15; the $99.99 Hoard is 7,500. Text: locales/en/ui.json pass.value, shown at economyUi.ts:420.",
+   "proposedFix": "Count only the Scroll's own Jade as Jade, and state supplies as hours of the player's own production (amount / production per hour); project reachable tiers from the player's own pace this season, falling back to the full pace only on the first days.",
+   "fixCost": "M",
+   "touches": [
+    "UI",
+    "I18N",
+    "DOCS"
+   ],
+   "needsOwner": false,
+   "whyItMatters": "A value claim next to a real price that uses the worst exchange rate in the game is the kind of reference-value claim consumer rules object to."
+  },
+  {
+   "id": "ECO-07",
+   "title": "\"Settle the score\" loses resources even at three stars",
+   "severity": "medium",
+   "verified": "measured",
+   "evidence": "raids.json rematch.shareOfRaidLoot 0.15; rematchReward (rematch.ts:44-48). Three stars pay 5,250 + 5,250 at Keep 5 against a 17.4 k army, 96 k + 96 k at Keep 10 against 267 k, 1.44 M + 1.44 M at Keep 15 against 3.98 M Provisions.",
+   "proposedFix": "raids.json rematch.shareOfRaidLoot 0.15 -> 0.6 (Keep 10 three stars: 385 k + 385 k), still below an ordinary raid. The model player does not rematch, so the campaign is unaffected.",
+   "fixCost": "S",
+   "touches": [
+    "DATA_ONLY",
+    "SERVER",
+    "DOCS"
+   ],
+   "needsOwner": false,
+   "whyItMatters": "The one revenge feature is something a thinking player never uses."
+  },
+  {
+   "id": "ECO-08",
+   "title": "League win bonuses are noise after the early Keeps (E10 still open)",
+   "severity": "medium",
+   "verified": "measured",
+   "evidence": "leagueWinBonus (village.ts:1773-1782) pays ranks.json winBonus unscaled: 1 k to 80 k of each resource per three-star win. With the campaign's honor and stars that is about 22% of a raid's banked loot at Keep 5, 4.8% at Keep 10 and 0.7% at Keep 15.",
+   "proposedFix": "ranks.json: replace winBonus with a share of banked loot per league (for example 0, 3, 6, 9, 12, 15, 18, 20%), applied in bankRaidLoot by stars/3; show it on the Ranks screen. Re-run the campaign.",
+   "fixCost": "M",
+   "touches": [
+    "DATA_ONLY",
+    "SERVER",
+    "BALANCE_GATES",
+    "UI",
+    "I18N"
+   ],
+   "needsOwner": false,
+   "whyItMatters": "Honor has no economic meaning between monthly chests, so the ladder gives no reason to push."
+  },
+  {
+   "id": "ECO-09",
+   "title": "Jade sinks are thin while free Jade is about the $9.99 Box every month (E19 partly fixed)",
+   "severity": "medium",
+   "verified": "measured",
+   "evidence": "Every sink in code: huts 1,750, six looks 2,750 (cosmetics.json), decor 680, skips, top-ups. Free Jade per 30 days: casual 232-275, regular 480-523, engaged 595-637 (econ2.cjs), plus 3,161 one-time. The audit's 130-390 is out of date since the calendar. A free daily player owns all five huts in about six weeks (my estimate).",
+   "proposedFix": "Keep the faucets. Add sinks that sell no power: 6-8 more Keep looks (two colours each, data only, minKeep tiers, 300-1,200 Jade) and paid army-preset slots beyond economy.maxArmyPresets 4. Correct the free-Jade figure in the docs.",
+   "fixCost": "M",
+   "touches": [
+    "DATA_ONLY",
+    "I18N",
+    "UI",
+    "SAVE_VERSION",
+    "DOCS"
+   ],
+   "needsOwner": false,
+   "whyItMatters": "Payers and savers run out of things to want; the only late purchase is time."
+  },
+  {
+   "id": "ECO-10",
+   "title": "Paying to rush the Keep still harms the buyer, and the game nudges toward it (E06)",
+   "severity": "medium",
+   "verified": "reproduced",
+   "evidence": "Rushing Keeps 1-15 costs 44,944 Jade ($600-750). Scratch test: a Keep 15 village with level-1 research has attackerStrength 13.5 and meets only Keep 14 bases (8 of 8 seeds); raiders are Keep 14 armies of 293 housing. No warning text exists. nextObjective picks the Keep whenever it is affordable (objective.ts:93-96).",
+   "proposedFix": "Show a readiness summary on the Keep upgrade sheet and on its top-up confirm (research against the cap, camps, the Keep opponents will be). In objective.ts prefer the Keep only when attackerStrength is within 0.5 of the current Keep.",
+   "fixCost": "M",
+   "touches": [
+    "UI",
+    "I18N"
+   ],
+   "needsOwner": false,
+   "whyItMatters": "The largest single purchase a player can make leaves them unable to win a raid."
+  },
+  {
+   "id": "ECO-11",
+   "title": "The two currencies carry unequal loads (CU-1 still open)",
+   "severity": "medium",
+   "verified": "measured",
+   "evidence": "Research costs are 100% Provisions at every Keep (econ2.cjs). New demand in days of production, Coins / Provisions: Keep 6 14.1 / 4.8, Keep 7 19.5 / 4.2, Keep 15 8.0 / 4.0 plus 35.7 days of Provisions for full-roster research (1.53 B). All 125 walls to level 13 cost 52.5 M Coins, 30 hours of Keep 15 production, so Coins have no late sink.",
+   "proposedFix": "economy.json: add coinsPayable ['research'] mirroring provisionsPayable, with pay on the research command (researchStartQuoteOn). Smaller alternative: move Keep 6-7 collector and storage costs partly to Provisions in buildings.json. Re-run the campaign.",
+   "fixCost": "L",
+   "touches": [
+    "PLAYER_COMMANDS",
+    "SERVER",
+    "UI",
+    "I18N",
+    "BALANCE_GATES",
+    "DATA_ONLY"
+   ],
+   "needsOwner": false,
+   "whyItMatters": "Builders sit idle for Coins at Keeps 6-7, and trying a different army late costs days of Provisions, which discourages variety."
+  },
+  {
+   "id": "ECO-12",
+   "title": "Timer cliff at Keeps 8 and 9",
+   "severity": "medium",
+   "verified": "measured",
+   "evidence": "Builder-days unlocked per Keep: 14.7 (Keep 7), 80.9 (Keep 8), 114.9 (Keep 9), 227.5 (Keep 10). Average step 6.7 h, 37.5 h, 76 h, 105 h. From Keep 9 there are 214 week-long steps, 120 on collectors (levels 15-24) and 48 on storages.",
+   "proposedFix": "buildings.json: cap collector and storage buildSeconds at 96 h (168 of the 214 week-long steps), keep 7 days for the Keep and defenses. buildSeconds is outside the combat fingerprint (rules-version.test.ts TEXT set). Re-run the campaign and curves.test.ts.",
+   "fixCost": "M",
+   "touches": [
+    "DATA_ONLY",
+    "BALANCE_GATES",
+    "DOCS"
+   ],
+   "needsOwner": false,
+   "whyItMatters": "The game turns from active to idle in one Keep level, a likely point for players to leave."
+  },
+  {
+   "id": "ECO-13",
+   "title": "The retired Rebuild Kit is still listed as a store product",
+   "severity": "low",
+   "verified": "read-in-code",
+   "evidence": "offers.json rebuild_pack has retired: true, but offer_rebuild is still in store.json storeProductIds, ios/App/Products.storekit, docs/SHIPPING.md:179 and the count of 14 products in docs/STATUS.md.",
+   "proposedFix": "Mark it \"do not create\" in docs/SHIPPING.md 3b; keep the id mapped so an old receipt still resolves.",
+   "fixCost": "S",
+   "touches": [
+    "DOCS"
+   ],
+   "needsOwner": true,
+   "whyItMatters": "The owner would create and submit a product the game never sells."
+  },
+  {
+   "id": "ECO-14",
+   "title": "Small inconsistencies in overflow and fixed-reward scaling",
+   "severity": "low",
+   "verified": "measured",
+   "evidence": "Keep 2: eight hours of collectors is 12.8 k against a 10 k store. rewardScaleByHall follows loot, not production, so the daily chest is worth 0.51-1.13 h of production depending on the Keep. Offers bought at full storage convert supplies to Jade at top-up prices (Keep Celebration 714 Jade for $4.99, monetization.ts:79-87). The training queue can hold two armies of Provisions at 100% refund.",
+   "proposedFix": "economy.json: raise the Keep 2 storage or leave it (Keep 2 lasts under a day). Convert offer overflow at a fixed Jade value per offer instead of topUpOne. Leave the rest.",
+   "fixCost": "S",
+   "touches": [
+    "DATA_ONLY",
+    "SERVER"
+   ],
+   "needsOwner": false,
+   "whyItMatters": "Minor on their own; the offer conversion makes the best Jade rate in the store depend on having full storage."
+  }
+ ],
+ "geniusElements": [
+  {
+   "title": "Top-ups are exact and immediate, never an exchange",
+   "where": "src/gameplay/sim/village.ts topUp/topUpTarget/shortfallQuote (950-1022); docs/game-theory/TOP_UP.md",
+   "whyKeep": "Jade buys only the shortfall for one action and the action runs in the same command, so a failure buys nothing, bought resources never sit in storage for raiders or friends, and nothing counts toward collection achievements. It closes laundering and collusion by structure, not by policing."
+  },
+  {
+   "title": "The refund ledger",
+   "where": "village.ts grantPurchase/revokePurchase/reinstatePurchase (1054-1195), cancelRefund/payRefund (1619-1653), noteTopUp (1030-1052)",
+   "whyKeep": "A purchase records what it delivered, a refund becomes a debt that income repays, and a reversed refund returns exactly what was taken. Cancels give a top-up's share back as Jade and are refused when the refund would not fit. I found no arbitrage through buy, cancel, dismiss or refund."
+  },
+  {
+   "title": "The Clan Stipend as a consumable, not a subscription",
+   "where": "src/gameplay/sim/stipend.ts; store.json stipend",
+   "whyKeep": "Missed days are never lost, it cannot be stacked, and an old stipend keeps the rate it was sold at. It is a monthly card with no fear-of-missing-out and no renewal trap, at a rate (120 Jade per dollar) that is an entry product without undercutting the ladder."
+  },
+  {
+   "title": "The daily chest and streak",
+   "where": "src/gameplay/sim/daily.ts; daily.json; village.ts openDailyChest (1553-1577)",
+   "whyKeep": "Odds are shown first, the draw is seeded and salted so it cannot be rerolled or fished, it is never sold, a missed day steps back one rung instead of wiping, and the streak's Jade is paid once a week. An honest return hook that still rewards coming back."
+  },
+  {
+   "title": "Season Scroll honesty rules",
+   "where": "src/gameplay/sim/pass.ts passSaleOpen, taskEligible, taskTarget, rollPeriods; village.ts passTierKeep",
+   "whyKeep": "No sale in the last four days unless 15 tiers are unlocked, tiers scale by the Keep at unlock, tasks and targets are fixed when the period begins, star and win targets follow the player's recent results, and tasks the village cannot do are not offered."
+  },
+  {
+   "title": "Offer rules",
+   "where": "src/gameplay/sim/offers.ts triggerOffer; monetization.ts productGrantsFor",
+   "whyKeep": "Offers appear only for players who said they are adults, one a session, with fixed deadlines, the Starter first, and the Store shows exactly what this village would receive. Keep the rules; fix only the two content faults (ECO-04, ECO-05)."
+  },
+  {
+   "title": "Raid-loot shaping",
+   "where": "raids.json exhaustion/diversity/stakes; ranks.json lootPenaltyByHallDiff and lootPenaltyUpByHallDiff; battle.json scoutFeeByHall; sim/carry.ts, defense.ts exhaustionFactor",
+   "whyKeep": "Each lost raid halves the next raider's take, hitting down or up a Keep pays less, mixed armies carry more, stakes are opt-in, and Next costs 3% of average loot against rival clans that differ in loot, which makes pressing Next a real stopping decision."
+  },
+  {
+   "title": "Fixed-reward plumbing and the event schedule",
+   "where": "sim/economy.ts scaleReward; village.ts grantReward/rewardOverflow/dailyChestOverflowRisk; sim/goalEvents.ts; events.json",
+   "whyKeep": "One Keep table scales every fixed reward, every grant reports what was received and what overflowed, and the UI warns before a claim that would overflow. Events come from a fixed 14-day schedule so every countdown is real, and Bounty and Trial ladders pay each step once."
+  }
+ ],
+ "opportunities": [
+  {
+   "title": "Shadow Trial attempts that spend no warriors",
+   "description": "Trial rewards are already paid once per tier, so attempts can be free without creating a farm. trialEnd would stop calling spendTroops.",
+   "where": "village.ts trialEnd (1925-1955); trials.json",
+   "cost": "M",
+   "touches": [
+    "PLAYER_COMMANDS",
+    "SERVER",
+    "BALANCE_GATES",
+    "I18N",
+    "DOCS"
+   ],
+   "expectedEffect": "There is always a skill ladder to play while the army trains; today every mode consumes the same army and a session ends after two raids."
+  },
+  {
+   "title": "A league ladder that pays",
+   "description": "Win bonus as a share of banked loot by league (the fix for ECO-08), shown on the Ranks screen with the next league's share.",
+   "where": "ranks.json leagues; village.ts leagueWinBonus/bankRaidLoot",
+   "cost": "M",
+   "touches": [
+    "DATA_ONLY",
+    "SERVER",
+    "BALANCE_GATES",
+    "UI",
+    "I18N"
+   ],
+   "expectedEffect": "Honor becomes worth climbing every day, not only at the monthly chest."
+  },
+  {
+   "title": "Revenge that returns what the raider took",
+   "description": "Pay a rematch the defense record's own loss times stars/3 (capped by storage) instead of a flat share.",
+   "where": "sim/rematch.ts rematchReward; village.ts rematchEnd",
+   "cost": "M",
+   "touches": [
+    "PLAYER_COMMANDS",
+    "SERVER",
+    "I18N"
+   ],
+   "expectedEffect": "Being raided creates a personal, time-limited goal with a true number on it."
+  },
+  {
+   "title": "Bonus tiers after tier 30",
+   "description": "A repeatable free-track tier of Keep-scaled supplies (the fix for ECO-03).",
+   "where": "pass.json; pass.ts unlockedTier; village.ts claimTier",
+   "cost": "M",
+   "touches": [
+    "SAVE_VERSION",
+    "PLAYER_COMMANDS",
+    "SERVER",
+    "UI",
+    "I18N"
+   ],
+   "expectedEffect": "Tasks keep paying to the last day of every season."
+  },
+  {
+   "title": "More event kinds on the existing code",
+   "description": "New passive effects beside collectBonus, raidLootBonus and trainingDiscount (scout fee off, research discount, Trial reward bonus) and a second goal event on the Bounty ladder code.",
+   "where": "events.json; sim/events.ts eventEffect; sim/goalEvents.ts",
+   "cost": "M",
+   "touches": [
+    "DATA_ONLY",
+    "SERVER",
+    "I18N",
+    "UI"
+   ],
+   "expectedEffect": "The 14-day cycle has four kinds today; six to eight gives each week a different best thing to do."
+  },
+  {
+   "title": "Skill tasks on stats that already exist",
+   "description": "Daily or weekly tasks on defensesWon, rematchesWon, donations and a daily trialsCleared, each with a taskEligible check.",
+   "where": "pass.json dailyTasks/weeklyChallenges; pass.ts taskEligible",
+   "cost": "S",
+   "touches": [
+    "DATA_ONLY",
+    "SERVER",
+    "I18N"
+   ],
+   "expectedEffect": "Tasks ask for different play, not only two raids and a collect."
+  },
+  {
+   "title": "Jade sinks that sell no power",
+   "description": "More Keep looks (two colours each in data) and paid army-preset slots.",
+   "where": "cosmetics.json; economy.json maxArmyPresets; village.ts saveArmyPreset",
+   "cost": "M",
+   "touches": [
+    "DATA_ONLY",
+    "I18N",
+    "UI",
+    "SAVE_VERSION"
+   ],
+   "expectedEffect": "Something to save Jade for after the fifth hut, without touching combat."
+  },
+  {
+   "title": "A second queued army",
+   "description": "economy.json queuedArmies 1 -> 2, so three raids are ready per visit instead of two.",
+   "where": "economy.json; army.ts trainingQueueLimit (79)",
+   "cost": "S",
+   "touches": [
+    "DATA_ONLY",
+    "SERVER",
+    "BALANCE_GATES"
+   ],
+   "expectedEffect": "Longer sessions for players who want them; the campaign must be re-run because loot per visit rises."
+  }
+ ],
+ "reportPath": "docs/audit/understand-2026-11-16/scripts/economy.md",
+ "summary": "The money side is honest and closed against abuse, but the resource economy has one structural fault: raids against the village take 63% of what a regular player loots and 156-266% of what a once-a-day player loots, while defenses hold 0% of raids and pay nothing (generated CAMPAIGN.md). I found no working arbitrage through top-up, cancel, dismiss, refund, stipend or pass timing; every fix claimed in this area is real in today's code. Still open are E06, E10, E19 (partly), CU-1, CU-5, DM-2 and PS-1. Three faults are new: unclaimed Season Scroll tiers, paid ones included, vanish at the season roll (reproduced); tasks pay nothing after tier 30, which a full player reaches on day 19; and the Artisan's Bundle is offered with 650 Jade when the next hut costs 1,000 (reproduced). A regular daily player earns about 480-520 free Jade a month, roughly the $9.99 Box, and after the five huts has only time skips to spend it on. Top-ups cost 37 times more per hour of income at Keep 15 than at Keep 1, and offers scaled by the same table deliver 20 minutes of production at Keep 15. Rushing the Keep costs about $600-750 and still leaves the buyer unable to win a raid. First change: switch on the raid and defense values that are already built but not live, soften collector exposure, and gate the casual result in the campaign. Second: auto-claim Scroll tiers at the roll, add bonus tiers past 30 and guard the Bundle. Third: regenerate the top-up scale at exponent 0.75 with a separate army-finish scale. I did not run npm test, the build or the campaign, so the proposed raid numbers are untested."
+}

@@ -1,0 +1,40 @@
+name: Content preview build (manual, off by default)
+
+# P7-12 (BNL-14): a build in which ?debug&preview adds the built-but-not-live content (sandbox save, never online),
+# for testers the owner names. It never runs on a push, never deploys and never touches the public site: it only
+# uploads a downloadable artifact, and only when started by hand with "build" ticked. Whether such a build may exist
+# and who tests it is the owner's decision (docs/store/OWNER_CHECKLIST.md); the tester checklist is
+# docs/store/PREVIEW_TESTING.md. deploy.yml must never set VITE_ALLOW_PREVIEW (tests/backend/verification-client.test.ts).
+on:
+  workflow_dispatch:
+    inputs:
+      build:
+        description: 'Build the content preview (an artifact only; never deployed)'
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  preview:
+    if: ${{ inputs.build }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
+        with:
+          node-version-file: .node-version
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      # No server URL: the preview never goes online. The preview content opens only with ?debug&preview.
+      - run: npm run build
+        env:
+          VITE_ALLOW_PREVIEW: '1'
+          VITE_SERVER_URL: ''
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: kagemura-content-preview
+          path: dist
+          retention-days: 14

@@ -1,0 +1,83 @@
+✓ ar 320x568 village
+✓ ar 320x568 builders
+✓ ar 320x568 army
+✓ ar 320x568 store
+✓ ar 320x568 daily
+✓ ar 320x568 news
+✓ ar 320x568 keep-sheet
+✓ ar 360x640 village
+✓ ar 360x640 builders
+✓ ar 360x640 army
+✓ ar 360x640 store
+✓ ar 360x640 daily
+✓ ar 360x640 news
+✓ ar 360x640 keep-sheet
+✓ ar 390x844 village
+✓ ar 390x844 builders
+✓ ar 390x844 army
+✓ ar 390x844 store
+✓ ar 390x844 daily
+✓ ar 390x844 news
+✓ ar 390x844 keep-sheet
+✓ ar 844x390 village
+✓ ar 844x390 builders
+✓ ar 844x390 army
+✓ ar 844x390 store
+✓ ar 844x390 daily
+✓ ar 844x390 news
+✓ ar 844x390 keep-sheet
+✗ de 320x568 village
+    cut text "▸" 3/17px
+✓ de 320x568 builders
+✓ de 320x568 army
+✓ de 320x568 store
+✓ de 320x568 daily
+✓ de 320x568 news
+✓ de 320x568 keep-sheet
+✗ de 360x640 village
+    cut text "▸" 4/17px
+✓ de 360x640 builders
+✓ de 360x640 army
+✓ de 360x640 store
+✓ de 360x640 daily
+✓ de 360x640 news
+✓ de 360x640 keep-sheet
+✗ de 390x844 village
+    cut text "▸" 5/17px
+✓ de 390x844 builders
+✓ de 390x844 army
+✓ de 390x844 store
+✓ de 390x844 daily
+✓ de 390x844 news
+✓ de 390x844 keep-sheet
+✓ de 844x390 village
+✓ de 844x390 builders
+✓ de 844x390 army
+✓ de 844x390 store
+✓ de 844x390 daily
+✓ de 844x390 news
+✓ de 844x390 keep-sheet
+✓ ar 320x568 tutorial-keep
+✓ ar 360x640 tutorial-keep
+✓ ar 390x844 tutorial-keep
+✓ ar 844x390 tutorial-keep
+✓ de 320x568 tutorial-keep
+✓ de 360x640 tutorial-keep
+✓ de 390x844 tutorial-keep
+✓ de 844x390 tutorial-keep
+✓ ar 320x568 battle (zoom 0.14 -> 0.248, speed true)
+✓ ar 360x640 battle (zoom 0.14 -> 0.292, speed true)
+✓ ar 390x844 battle (zoom 0.14 -> 0.338, speed true)
+✓ ar 844x390 battle (zoom 0.14 -> 0.264, speed true)
+✗ de 320x568 battle (zoom 0.14 -> 0.202, speed true)
+      squad row scrolls (304/342)
+      camera stayed near the entry fit: 0.14 0.2 0.202 0.202 0.202 0.202 0.202 0.202 0.202 0.202 0.202 0.202 0.202
+✓ de 360x640 battle (zoom 0.14 -> 0.484, speed true)
+✗ de 390x844 battle (zoom 0.14 -> 0.415, speed true)
+      squad row scrolls (374/394)
+✓ de 844x390 battle (zoom 0.14 -> 0.31, speed true)
+DONE
+✓ de 320x568 village
+✓ de 360x640 village
+✓ de 390x844 village
+(after the squad-row wrap) de 320x568 battle zoom 0.14 -> 0.272; de 390x844 battle zoom 0.14 -> 0.273: pass

@@ -1,10 +1,23 @@
-import { describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { armyHousing, housingCapacity } from '../../../src/gameplay/sim/army';
 import { capacity } from '../../../src/gameplay/sim/resources';
 import { generateOpponent } from '../../../src/gameplay/sim/battle/basegen';
 import { migrate } from '../../../src/gameplay/sim/save';
 import { advance, applyCommand } from '../../../src/gameplay/sim/village';
-import { data, find, must, newGame } from './helpers';
+import { data, find, must, newGame, pointDeploys } from './helpers';
+
+// P3-04 (2026-11-18): Shinobi now train in 10 s and Kunai Adepts in 12 s. These tests check the queue's mechanics,
+// written against the old 20 s and 25 s; the timings are pinned here for this file only (one module instance per file).
+const LIVE_TRAIN = { shinobi: data.troops.hedgehog_roller.trainSeconds, adept: data.troops.frog_lobber.trainSeconds };
+beforeAll(() => {
+  data.troops.hedgehog_roller.trainSeconds = 20;
+  data.troops.frog_lobber.trainSeconds = 25;
+});
+afterAll(() => {
+  data.troops.hedgehog_roller.trainSeconds = LIVE_TRAIN.shinobi;
+  data.troops.frog_lobber.trainSeconds = LIVE_TRAIN.adept;
+});
+
 
 function withArmyBuildings() {
   const g = newGame({ acorns: 1500, dew: 1500 });
@@ -93,13 +106,14 @@ describe('scouting and battle results', () => {
     const { state, clock } = newGame({ acorns: 0, dew: 0 });
     const s0 = { ...state, army: { hedgehog_roller: 20 } };
     const base = { name: 'Dummy', hallLevel: 1, buildings: [{ id: 'h', type: 'elder_toadstool', level: 1, x: 18, y: 18, loot: { acorns: 5000, dew: 100 } }] };
-    const deployments = Array.from({ length: 12 }, (_, i) => ({ tick: i, troop: 'hedgehog_roller', x: 25, y: 19 }));
+    const deployments = pointDeploys({ seed: 4, base, army: s0.army }, 'hedgehog_roller', 12);
     const s1 = must(s0, { type: 'battleEnd', record: { at: clock.now(), opponentName: 'Dummy', setup: { seed: 4, base, army: s0.army }, deployments } }, clock.now());
     expect(s1.army.hedgehog_roller).toBe(8);
     expect(s1.resources.acorns).toBe(capacity(s0, data).acorns); // capped by storage
-    // A one-role army carries `diversity.minShare` of the loot (balance audit 2026-11-08, sim/carry.ts).
-    expect(s1.resources.dew).toBe(Math.floor(100 * data.raids.diversity!.minShare));
-    expect(s1.battleLog[0].carry).toBe(data.raids.diversity!.minShare);
+    // A one-role army carries `diversity.minShare` of the loot (balance audit 2026-11-08, sim/carry.ts), but not while
+    // the village can train only one role (P2-15, 2026-11-18): this village is new, so it carries everything.
+    expect(s1.resources.dew).toBe(100);
+    expect(s1.battleLog[0].carry).toBeUndefined();
     expect(s1.battleLog).toHaveLength(1);
     expect(s1.battleLog[0].result.stars).toBe(3);
     expect(find(s1, 'elder_toadstool')).toHaveLength(1);

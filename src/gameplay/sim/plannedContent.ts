@@ -167,6 +167,6 @@ export function withPreview(data: GameData, opts: { playable?: boolean } = {}): 
       if (max > 0) h.limits[id] = { count: PREVIEW.buildings[id].count, maxLevel: max };
     });
   }
-  out.features = { ...PREVIEW.features };
+  out.features = { ...data.features, ...PREVIEW.features };
   return out;
 }

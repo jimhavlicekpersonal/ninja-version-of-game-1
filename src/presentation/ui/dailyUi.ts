@@ -9,7 +9,8 @@ import { t as i18nText, fmtPercent } from './i18n';
 import { t } from './i18n';
 import { chestContents, chestOdds, chestReady, nextChestAt, streakAfterClaim, streakJadeDue } from '../../gameplay/sim/daily';
 import { activeEvents, upcomingEvents, type EventWindow } from '../../gameplay/sim/events';
-import { goalEventView } from '../../gameplay/sim/goalEvents';
+import { contractEndsAt, contractFor } from '../../gameplay/sim/carry';
+import { goalEventViews } from '../../gameplay/sim/goalEvents';
 import type { BaseLayout } from '../../gameplay/sim/battle/types';
 import { dayIndex } from '../../gameplay/sim/pass';
 import { calendarView } from '../../gameplay/sim/calendar';
@@ -85,7 +86,7 @@ export class DailyUi {
   openDaily(): void {
     const c = this.kit.c;
     const body = h('div', { class: 'daily' });
-    let opened: { outcome: string; grants: Record<string, number>; overflow?: Cost; skipped: number; steppedBack: number } | null = null;
+    let opened: { outcome: string; grants: Record<string, number>; overflow?: Cost; skipped: number; steppedBack: number; looks?: string[] } | null = null;
     /** Play the reveal once, right after the chest is opened (re-audit design item 15). */
     let revealNext = false;
     const render = () => {
@@ -141,6 +142,8 @@ export class DailyUi {
         const notes: string[] = [];
         if (opened.skipped) notes.push(i18nText("ui.a_free_skip_covered_you_missed_d762c066c0", { arg1: opened.skipped === 1 ? i18nText("ui.the_day_9f7fd2ef42") : i18nText("ui.days_d7f711040e", { arg1: opened.skipped }) }));
         if (opened.steppedBack) notes.push(t('daily.missed', { n: opened.steppedBack }));
+        // P5-06: a lifetime chest milestone's look.
+        for (const id of opened.looks ?? []) notes.push(t('events.lookEarned', { name: gd.cosmetics.hallSkins.find((k) => k.id === id)?.name ?? id }));
         // Only what was really added is shown as received; anything that did not fit is listed as such.
         const lost = opened.overflow && Object.values(opened.overflow).some((v) => (v ?? 0) > 0) ? h('p', { class: 'note' }, i18nText("ui.did_not_fit_in_your_storage_e281ba747c"), rewardChips(opened.overflow)) : null;
         body.append(h('div', { class: 'chest-result' }, h('b', {}, i18nText("ui.you_got_16558d9a7d", { arg1: label })), rewardChips(opened.grants), lost, ...notes.map((n) => h('p', { class: 'muted small' }, n))));
@@ -158,6 +161,8 @@ export class DailyUi {
           ),
         );
       }
+      // P6-14: the 28-day calendar sits above the odds table (it was at the bottom of the panel).
+      body.append(this.calendarSection(render));
       body.append(h('h3', {}, i18nText("ui.what_s_inside_exact_odds_410a56fa88")), table, h('p', { class: 'muted small' }, i18nText("ui.contents_are_sized_for_your_clan_keep__e282ce8f31", { arg1: hall, arg2: Math.max(1, step) })));
 
       const actions = h('div', { class: 'actions' });
@@ -176,16 +181,15 @@ export class DailyUi {
             return;
           }
           const e = r.events.find((x) => x.kind === 'daily_chest');
-          if (e && e.kind === 'daily_chest') opened = { outcome: e.outcome, grants: e.grants as Record<string, number>, overflow: e.overflow, skipped: e.skipped, steppedBack: e.steppedBack };
+          if (e && e.kind === 'daily_chest') opened = { outcome: e.outcome, grants: e.grants as Record<string, number>, overflow: e.overflow, skipped: e.skipped, steppedBack: e.steppedBack, looks: e.looks };
           revealNext = true;
           render();
         });
         actions.append(btn);
       } else {
-        actions.append(h('p', { class: 'muted' }, t('daily.next', { time: formatDuration(nextChestAt(now, gd) - now) })));
+        actions.append(h('p', { class: 'muted' }, t('daily.next', { time: formatDuration(nextChestAt(s, now, gd) - now) })));
       }
       body.append(actions);
-      body.append(this.calendarSection(render));
     };
     render();
     this.kit.modal(i18nText("ui.daily_chest_f40fff0e7c"), body, [], 'normal');
@@ -206,34 +210,43 @@ export class DailyUi {
     const live = activeEvents(now, gd);
     body.append(h('h3', {}, live.length ? i18nText("ui.running_now_cb9581b3d2") : i18nText("ui.nothing_running_right_now_a010eefe12")));
     for (const e of live) body.append(row(e, true));
-    // A goal event (sim/goalEvents.ts): its ladder, what each step pays at this Keep, what is paid, the best try.
-    const view = goalEventView(c.state, now, gd);
-    if (view) {
-      const best = view.progress.key === view.event.key ? view.progress : { best: 0, bestDestruction: 0 };
+    // Goal events (sim/goalEvents.ts): each running one's ladder, what each step pays at this Keep, what is paid, the best try.
+    for (const view of goalEventViews(c.state, now, gd)) {
+      const gauntlet = view.event.goal.kind === 'gauntlet';
+      const festival = view.event.goal.kind === 'festival';
+      const best = view.progress;
       const ladder = h('div', { class: 'goal-ladder' });
       for (const l of view.ladder) {
         const need = i18nList([l.step.at > 0 ? `${l.step.at}★` : '', l.step.destruction !== undefined ? `${l.step.destruction}%` : ''].filter(Boolean), 'disjunction');
-        ladder.append(h('div', { class: `log-row${l.paid ? ' current' : ''}` }, h('b', {}, need), rewardChips(l.reward), l.paid ? h('span', { class: 'chip good' }, i18nText("ui.paid_cdc49c0e76")) : h('span', { class: 'claim-flat' }, i18nText("ui.not_yet_a9549d7d06"))));
+        const look = l.step.look ? gd.cosmetics.hallSkins.find((k) => k.id === l.step.look) : undefined;
+        ladder.append(h('div', { class: `log-row${l.paid ? ' current' : ''}` }, h('b', {}, need), rewardChips(l.reward), look ? h('span', { class: 'chip' }, t('events.look', { name: look.name })) : null, l.paid ? h('span', { class: 'chip good' }, i18nText("ui.paid_cdc49c0e76")) : h('span', { class: 'claim-flat' }, i18nText("ui.not_yet_a9549d7d06"))));
       }
-      const attack = h('button', { class: 'btn danger', type: 'button' }, i18nText("ui.attack_the_bounty_fortress_0d8fd46d63"));
+      const attack = h('button', { class: 'btn danger', type: 'button' }, gauntlet ? t('events.gauntlet.attack') : festival ? t('events.festival.attack') : i18nText("ui.attack_the_bounty_fortress_0d8fd46d63"));
       attack.addEventListener('click', () => {
         this.kit.closeAllModals();
         this.opts.onBounty?.(view.event.key, view.base);
       });
       body.append(
         h('h3', {}, i18nText("ui.the_bounty_5926de348f", { arg1: view.event.name })),
-        h('p', { class: 'small' }, h('b', {}, i18nText("ui.bounty_fortress_generated_f5b15022f2")), i18nText("ui.a_computer_made_fortress_at_your_keep__c3734d68ef")),
+        gauntlet
+          ? h('p', { class: 'small' }, h('b', {}, t('events.gauntlet.generated')), ' ', t('events.gauntlet.about'))
+          : festival
+            ? h('p', { class: 'small' }, h('b', {}, t('events.festival.generated')), ' ', t('events.festival.about'))
+          : h('p', { class: 'small' }, h('b', {}, i18nText("ui.bounty_fortress_generated_f5b15022f2")), i18nText("ui.a_computer_made_fortress_at_your_keep__c3734d68ef")),
         h('p', { class: 'muted small' }, i18nText("ui.your_best_1a23394f2a", { arg1: best.best, arg2: best.bestDestruction })),
         ladder,
       );
       if (this.opts.onBounty) body.append(h('div', { class: 'actions' }, attack));
     }
+    // P5-03: the daily contract (the same for everyone; it changes only what a won raid carries home).
+    const contract = contractFor(now, gd);
+    if (contract) body.append(h('h3', {}, t('contract.title', { name: contract.name })), h('p', { class: 'small' }, contract.text), h('p', { class: 'muted small' }, t('contract.about', { time: formatDuration(contractEndsAt(now) - now) })));
     // Growth batch 2026-11-14 (G10): the calendar of the next 4 weeks, from the schedule in force.
     body.append(h('h3', {}, t('events.calendar.title')));
     const windows = calendarWindows(now, gd);
     for (const e of windows.length ? windows : upcomingEvents(now, 4, gd)) body.append(row(e, false));
     body.append(h('p', { class: 'muted small' }, t(this.opts.scheduleSource?.() === 'server' ? 'events.calendar.server' : 'events.calendar.builtIn')));
-    body.append(h('p', { class: 'muted small' }, i18nText("ui.events_follow_a_fixed_schedule_that_re_423f6e2134")));
+    body.append(h('p', { class: 'muted small' }, t('events.fixed')));
     this.kit.modal(i18nText("ui.events_8d14f6e72d"), body, [], 'normal');
   }
 

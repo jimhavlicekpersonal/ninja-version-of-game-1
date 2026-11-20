@@ -111,6 +111,10 @@ export interface BattleRecord {
   leagueBonus?: Cost;
   /** Limited-time event bonus included in the banked loot. */
   eventBonus?: Cost;
+  /** P5-07: the Warrior Mastery experience this attack paid (all types together). */
+  masteryXp?: number;
+  /** P5-03: the daily contract this raid met (its id), when it carried more for it. */
+  contract?: string;
   /** A raid made up by the offline raid simulation (not a real player). */
   simulated?: boolean;
   /**
@@ -145,6 +149,8 @@ export interface BattleRecord {
    */
   raider?: { seed: number; hall: number; bias: number };
   rematch?: string;
+  /** P3-07: a daily drill (practice against the next Trial fortress; nothing spent, never a raid). */
+  drill?: boolean;
   goalEvent?: string;
   /** A Shadow Trial attack: its tier (save v16; older trial records have none). */
   trial?: number;

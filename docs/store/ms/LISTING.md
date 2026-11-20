@@ -26,8 +26,15 @@ Pimpin klan ninja, bina kampung tersembunyi di pergunungan, latih lima puluh jen
 **Serbu dengan rancangan**
 
 - Pahlawan hanya boleh masuk melalui Titik Penyusupan. Intip laluannya dan menara yang mengawalnya.
-- Lontar Bom Asap ketika pahlawan kamu memasuki jarak menara, dan hantar Pensabotaj untuk melumpuhkan pertahanan.
+- Hantar skuad kamu dengan satu arahan (bersama, sepit atau satu barisan; tank dahulu atau rempuh), atau letakkan setiap pahlawan secara manual.
+- Lontar Bom Asap ketika pahlawan kamu memasuki jarak menara, dan hantar Pensabotaj untuk melumpuhkan pertahanan. Bermula dari Kubu Klan tahap 7, Kapten Bayang membakar semangat seluruh skuad kamu sekali dalam setiap pertempuran.
+- Selepas serbuan, lihat apa yang mampu dicapai oleh tentera yang sama melalui titik lain.
 - Serangan yang dirancang mengalahkan tentera yang lebih besar.
+
+**Pertahankan kampung kamu**
+
+- Setiap serbuan ke atas kampung kamu disertakan laporan: apa yang dikekalkan, bintang yang kamu nafikan dan tempat penyerbu menceroboh masuk.
+- Uji pertahanan kamu menentang penyerbu simulasi, dan berlatih menentang tentera yang mengalahkan kamu.
 
 **Main bersama** (dalam talian)
 
@@ -38,7 +45,12 @@ Pimpin klan ninja, bina kampung tersembunyi di pergunungan, latih lima puluh jen
 
 **Ujian Bayang**
 
-- Rangkaian kubu yang tiada penghujung. Setiap tingkat semakin sukar dan hanya memberi ganjaran sekali.
+- Rangkaian kubu yang tiada penghujung. Setiap tingkat semakin sukar dan hanya memberi ganjaran sekali. Latihan harian membolehkan kamu berlatih sementara tentera kamu dilatih.
+
+**Sesuatu yang baharu setiap hari**
+
+- Acara mengikut kalendar tetap empat minggu, lima perayaan tahunan dengan kubu dan rupa Kubu untuk diraih, Ujian Ketahanan mingguan dan kontrak harian.
+- Pencapaian, meterai Kubu, pangkat penguasaan pahlawan dan rupa yang kamu raih dengan bermain.
 
 **Main adil**
 
@@ -46,7 +58,7 @@ Pimpin klan ninja, bina kampung tersembunyi di pergunungan, latih lima puluh jen
 - Lawan yang dijana komputer sentiasa dilabel dengan jelas.
 - Had perbelanjaan untuk pemain bawah 18 tahun; hanya peringatan yang kamu pilih, dan semuanya dimatikan sehingga kamu menghidupkannya.
 
-Kagemura percuma untuk dimuat turun dan dimainkan. Setiap bangunan, pahlawan, tahap Kubu dan mod permainan boleh dicapai tanpa membayar, dan tiada iklan. Jed, mata wang premium, diperoleh sedikit demi sedikit dengan bermain (pencapaian, liga, peti harian dan laluan percuma Skrol Musim) dan juga boleh dibeli. Sesetengah perkara hanya dijual dengan wang sebenar: laluan premium Skrol Musim (ganjaran tambahan, pembinaan lebih pantas sepanjang musim dan rupa Kubu "Pesta Tanglung") serta berkas Jed dan sumber untuk masa terhad.
+Kagemura percuma untuk dimuat turun dan dimainkan. Setiap bangunan, pahlawan, tahap Kubu dan mod permainan boleh dicapai tanpa membayar, dan tiada iklan. Jed, mata wang premium, diperoleh sedikit demi sedikit dengan bermain (pencapaian, liga, peti harian dan laluan percuma Skrol Musim) dan juga boleh dibeli. Sesetengah perkara hanya dijual dengan wang sebenar: laluan premium Skrol Musim (ganjaran tambahan, pembinaan lebih pantas sepanjang musim dan rupa Kubu yang berubah setiap musim) serta berkas Jed dan sumber untuk masa terhad.
 
 ## Pautan pelancaran
 

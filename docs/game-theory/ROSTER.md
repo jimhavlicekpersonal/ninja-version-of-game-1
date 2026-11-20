@@ -32,7 +32,7 @@
 | 7 | **Shuriken Storm** `shuriken_storm` | Thrower | 2 Adept | 4 | Fan Throw: Throws three shuriken at once; small splash. | 34 / 10 | 18 | 426 / 124 | 8650 | yes (`shuriken_storm`) |
 | 8 | **Blowgun Hunter** `blowgun_hunter` | Thrower | 3 Veteran | 7 | Venom Dart: Darts keep damaging a building for 5 seconds. | 64 / 19 | 16 | 443 / 129 | 10k | yes (`blowgun_hunter`) |
 | 9 | **Chain-Sickle Reaper** `chain_sickle_reaper` | Thrower | 4 Master | 10 | Armor Shred: Hits make the target take 20% more damage from everyone. | 121 / 35 | 14 | 461 / 135 | 12k | yes (`chain_sickle_reaper`) |
-| 10 | **Thousand Needle** `thousand_needle` | Thrower | 5 Legend | 13 | Needle Rain: Very long range and rapid fire; must stay behind cover. | 265 / 46 | 12 | 480 / 84 | 14k | yes (`thousand_needle`) |
+| 10 | **Thousand Needle** `thousand_needle` | Thrower | 5 Legend | 13 | Needle Rain: Very long range and rapid fire; must stay behind cover. | 265 / 62 | 12 | 480 / 112 | 14k | yes (`thousand_needle`) |
 | 11 | **Armored Guardian** `armored_guardian` | Guardian | 1 Initiate | 2 | Stand Firm: Walks straight into defenses and soaks their fire. | 755 / 19 | 20 | 11k / 280 | 37k | yes (`beetle_brute`) |
 | 12 | **Iron Monk** `iron_monk` | Guardian | 2 Adept | 4 | Iron Skin: Warriors beside him take 15% less damage. | 918 / 24 | 18 | 11k / 293 | 43k | yes (`iron_monk`) |
 | 13 | **Bell Warden** `bell_warden` | Guardian | 3 Veteran | 7 | Alarm Bell: Rings a bell that makes defenses in range target him first. | 1729 / 44 | 16 | 12k / 305 | 51k | yes (`bell_warden`) |
@@ -51,18 +51,18 @@
 | 26 | **Kite Raider** `kite_raider` | Sky | 1 Initiate | 3 | Firebomb: Glides over walls on a war kite and bombs defenses. | 89 / 33 | 20 | 1302 / 482 | 58k | yes (`owl_bomber`) |
 | 27 | **Crane Glider** `crane_glider` | Sky | 2 Adept | 5 | Swift Glide: Very fast flyer that raids storehouses. | 128 / 47 | 18 | 1369 / 507 | 69k | yes (`crane_glider`) |
 | 28 | **Lantern Balloon** `lantern_balloon` | Sky | 3 Veteran | 8 | Ember Drop: Slow balloon that drops burning embers in a wide area. | 239 / 89 | 16 | 1423 / 527 | 82k | yes (`lantern_balloon`) |
-| 29 | **Thunder Kite** `thunder_kite` | Sky | 4 Master | 11 | Chain Lightning: Lightning hits a defense and up to three nearby defenses for 35% damage each. | 525 / 194 | 14 | 1481 / 549 | 97k | yes (`thunder_kite`) |
-| 30 | **Dragon Kite Crew** `dragon_kite_armada` | Sky | 5 Legend | 14 | Bomber Crew: A heavy dragon kite carrying a crew of bombers. | 1146 / 424 | 12 | 1541 / 571 | 115k | yes (`dragon_kite_armada`) |
+| 29 | **Thunder Kite** `thunder_kite` | Sky | 4 Master | 11 | Chain Lightning: Lightning hits a defense and up to three nearby defenses for 35% damage each. | 525 / 175 | 14 | 1481 / 494 | 97k | yes (`thunder_kite`) |
+| 30 | **Dragon Kite Crew** `dragon_kite_armada` | Sky | 5 Legend | 14 | Bomber Crew: A heavy dragon kite carrying a crew of bombers. | 1146 / 360 | 12 | 1541 / 485 | 115k | yes (`dragon_kite_armada`) |
 | 31 | **Herbalist** `herbalist` | Mystic | 1 Initiate | 2 | Mend: Heals nearby warriors over time. | 222 / 16 | 20 | 3204 / 235 | 8772 | yes (`herbalist`) |
-| 32 | **Drum Monk** `drum_monk` | Mystic | 2 Adept | 5 | War Drum: Nearby warriors move and attack 25% faster within 3 tiles. Multiple drums do not stack. | 310 / 23 | 18 | 3334 / 245 | 10k | yes (`drum_monk`) |
+| 32 | **Drum Monk** `drum_monk` | Mystic | 2 Adept | 5 | War Drum: Nearby warriors move and attack 10% faster within 3 tiles. Multiple drums do not stack. | 310 / 23 | 18 | 3334 / 245 | 10k | yes (`drum_monk`) |
 | 33 | **Mist Weaver** `mist_weaver` | Mystic | 3 Veteran | 8 | Veil: Wraps nearby warriors in thin mist (a small moving smoke cloud). | 584 / 43 | 16 | 3467 / 254 | 12k | yes (`mist_weaver`) |
 | 34 | **Spirit Caller** `spirit_caller` | Mystic | 4 Master | 11 | Second Wind: Brings one fallen warrior back to its feet. | 1277 / 94 | 14 | 3607 / 265 | 15k | yes (`spirit_caller`) |
 | 35 | **Sage of Clouds** `sage_of_clouds` | Mystic | 5 Legend | 14 | Cloud Shelter: Once per battle, heals nearby warriors for 25% and grants a 4-second, one-hit shield (blocks up to half their maximum health). Shields cannot be refreshed for 10 seconds. | 2790 / 205 | 12 | 3754 / 275 | 17k | yes (`sage_of_clouds`) |
 | 36 | **Ram Crew** `ram_crew` | Siege | 1 Initiate | 3 | Battering Ram: Four times damage against walls and gates. | 114 / 38 | 20 | 1648 / 549 | 8772 | yes (`ram_crew`) |
 | 37 | **Fire Monk** `fire_monk` | Siege | 2 Adept | 6 | Flame Breath: Short-range fire that burns a small area of buildings. | 185 / 62 | 18 | 1714 / 571 | 10k | yes (`fire_monk`) |
 | 38 | **Bomb Carrier** `bomb_carrier` | Siege | 3 Veteran | 9 | Big Bang: Runs to the nearest wall or defense and explodes. | 404 / 135 | 16 | 1783 / 594 | 12k | yes (`bomb_carrier`) |
-| 39 | **Siege Bombardier** `siege_bombardier` | Siege | 4 Master | 12 | Long Shot: Artillery with 5-tile range that fires on defenses. Stops to fire every 2.5 seconds; vulnerable while approaching and cannot move while firing. | 762 / 127 | 14 | 1856 / 309 | 15k | yes (`siege_bombardier`) |
-| 40 | **Volcano Cannoneer** `volcano_cannoneer` | Siege | 5 Legend | 15 | Eruption: Huge splash that leaves burning ground. | 1931 / 644 | 12 | 1931 / 644 | 17k | yes (`volcano_cannoneer`) |
+| 39 | **Siege Bombardier** `siege_bombardier` | Siege | 4 Master | 12 | Long Shot: Artillery with 5-tile range that fires on defenses. Stops to fire every 2.5 seconds; vulnerable while approaching and cannot move while firing. | 762 / 102 | 14 | 1856 / 247 | 15k | yes (`siege_bombardier`) |
+| 40 | **Volcano Cannoneer** `volcano_cannoneer` | Siege | 5 Legend | 15 | Eruption: Huge splash that leaves burning ground. | 1931 / 708 | 12 | 1931 / 708 | 17k | yes (`volcano_cannoneer`) |
 | 41 | **Hound Handler** `hound_handler` | Beast | 1 Initiate | 3 | Unleash: Fights alongside two hunting dogs. The handler and dogs share one health and damage budget. | 196 / 25 | 20 | 2840 / 355 | 8772 | yes (`hound_handler`) |
 | 42 | **Hawk Tamer** `hawk_tamer` | Beast | 2 Adept | 6 | Hawk Harass: Her hawk harries a defense from range, slowing its fire. | 319 / 24 | 18 | 2955 / 222 | 10k | yes (`hawk_tamer`) |
 | 43 | **Boar Rider** `boar_rider` | Beast | 3 Veteran | 9 | Charge: Charges through the first wall in its way. | 697 / 87 | 16 | 3074 / 384 | 12k | yes (`boar_rider`) |
@@ -72,7 +72,7 @@
 | 47 | **Mirage Twin** `mirage_twin` | Shadow | 2 Adept | 6 | Decoy: Leaves a decoy that draws fire for 4 seconds. | 191 / 48 | 18 | 1760 / 440 | 6920 | yes (`mirage_twin`) |
 | 48 | **Night Blade** `night_blade` | Shadow | 3 Veteran | 9 | Smoke Hunter: Deals double damage to buildings inside smoke. | 416 / 104 | 16 | 1830 / 458 | 8190 | yes (`night_blade`) |
 | 49 | **Void Walker** `void_walker` | Shadow | 4 Master | 12 | Shadow Step: Steps through shadows straight onto its target. | 782 / 195 | 14 | 1905 / 476 | 9692 | yes (`void_walker`) |
-| 50 | **Eclipse Ninja** `eclipse_ninja` | Shadow | 5 Legend | 15 | Eclipse: Unseen until its first attack, immune to traps, and has a 25% chance of double damage on each hit. | 1982 / 495 | 12 | 1982 / 495 | 11k | yes (`eclipse_ninja`) |
+| 50 | **Eclipse Ninja** `eclipse_ninja` | Shadow | 5 Legend | 15 | Eclipse: Unseen until its first attack, immune to traps, and has a 25% chance of double damage on each hit. | 1784 / 495 | 12 | 1784 / 495 | 11k | yes (`eclipse_ninja`) |
 
 ## Heroes
 
@@ -80,10 +80,10 @@ Built, not live: implemented in the battle sim from `src/gameplay/data/planned.j
 
 | Hero | Leads | Unlock Keep | Ability | Live |
 |---|---|---|---|---|
-| **Shadow Captain** `shadow_captain` | Blade | 7 | Rally: Nearby warriors fight 30% harder for 8 seconds. Recharges each battle. | yes |
-| **Iron Matriarch** `iron_matriarch` | Guardian | 9 | Bulwark: Raises a wall of shields that blocks defense fire in a cone for 6 seconds. | built, not live |
-| **Sky Admiral** `sky_admiral` | Sky | 11 | Squall: Pushes all flyers forward and shields them from anti-air for 5 seconds. | built, not live |
-| **Grand Sensei** `grand_sensei` | Mystic | 13 | Inner Calm: Every warrior on the field heals 40% and ignores the next jam, trap or splash. | built, not live |
+| **Shadow Captain** `shadow_captain` | Blade | 7 | Rally: The whole squad fights 50% harder for 15 seconds, once per battle. | yes |
+| **Iron Matriarch** `iron_matriarch` | Guardian | 9 | Bulwark: Raises a wall of shields that blocks defense fire in a cone for 12 seconds. | built, not live |
+| **Sky Admiral** `sky_admiral` | Sky | 11 | Squall: Pushes all flyers forward and shields them from anti-air for 10 seconds. | built, not live |
+| **Grand Sensei** `grand_sensei` | Mystic | 13 | Inner Calm: Every warrior on the field heals 40% and ignores the next stun, trap or splash. | built, not live |
 
 ## Warrior level caps by Clan Keep level
 
@@ -171,18 +171,18 @@ Implemented in `sim/mastery.ts` behind `features.mastery`, which the shipped dat
 
 | Mastery | Total EXP | Stat bonus |
 |---|---|---|
-| 1 | 50 | +2.4% |
-| 2 | 118 | +4.6% |
-| 3 | 209 | +6.6% |
-| 5 | 498 | +10.2% |
-| 8 | 1433 | +14.6% |
-| 10 | 2730 | +17.0% |
-| 15 | 13k | +21.4% |
-| 20 | 58k | +24.3% |
-| 30 | 1.2M | +27.5% |
-| 50 | 469.5M | +29.5% |
-| 75 | 851009.9M | +29.9% |
-| 100 | 1542690515.5M | +30.0% |
+| 1 | 1500 | +0.0% |
+| 2 | 3525 | +0.0% |
+| 3 | 6259 | +0.0% |
+| 5 | 15k | +0.0% |
+| 8 | 43k | +0.0% |
+| 10 | 82k | +0.0% |
+| 15 | 382k | +0.0% |
+| 20 | 1.7M | +0.0% |
+| 30 | 34.8M | +0.0% |
+| 50 | 14083.5M | +0.0% |
+| 75 | 25530296.1M | +0.0% |
+| 100 | 46280715465.9M | +0.0% |
 
 ## Buildings: max level by Clan Keep level
 
@@ -257,7 +257,7 @@ Rock-paper-scissors, checked by `tests/gameplay/balance/building-matchups.test.t
 | **Clockwork Repair Crane** `clockwork_repairer` | support | 6 | A mechanic's crane that reaches over nearby defenses: jams, stuns and a Hawk Tamer's slowing on defenses within 3 tiles are cut short. A few repairs per battle. | Saboteur, Gearbreaker, Ghost Engineer, Hawk Tamer | Fuse Master, Tunnel Runner, Wall Phantom |
 | **Bitter Smoke Brazier** `bitter_incense_burner` | support | 6 | Burns bitter herbs: warriors within 3 tiles receive less healing, and healing, haste and toughness auras and shelter shields work at reduced strength on them. | Herbalist, Drum Monk, Iron Monk, Sage of Clouds | Blowgun Hunter, Kunai Adept, Dragon Kite Crew |
 | **Straw Scarecrow** `straw_scarecrow` | trap | 6 | Animals cannot resist it, and birds are terrified of it. Beasts, their companions and charging mounts within 3 tiles must attack it first, and crane gliders swerve away from it. Lots of health, no damage, very flammable. | Hound Handler, Boar Rider, Crane Glider | Shuriken Storm, Lantern Balloon, Fire Monk |
-| **Bronze Mirror Screen** `mirror_screen` | defense | 7 | Polished bronze panels: every third projectile that hits the screen flies back at whoever threw it. Melee warriors just walk up and smash it. | Kunai Adept, Chain-Sickle Reaper, Siege Bombardier | Oni Breaker, Wind-Step Assassin, Tiger Lord |
+| **Bronze Mirror Screen** `mirror_screen` | defense | 7 | Polished bronze panels: every third projectile that hits the screen flies back at whoever threw it. | Kunai Adept, Chain-Sickle Reaper, Siege Bombardier | Oni Breaker, Wind-Step Assassin, Tiger Lord |
 | **Sand Bucket Post** `sand_bucket_post` | support | 7 | A bucket crew that smothers explosions and embers: splash damage within 3 tiles is 30% smaller, and they defuse up to two planted charges per battle. | Fuse Master, Bomb Carrier, Shuriken Storm, Lantern Balloon | Hound Handler, Boar Rider, Twin-Fang Dancer |
 | **Kite-Cutter Ballista** `kite_cutter_ballista` | defense | 8 | Air only. Fires a spinning bolas that tangles anything with wings or strings: a flyer it hits is grounded for 3 seconds, where ground defenses can reach it. A flyer that breaks free can't be tangled again for 3 seconds. | Crane Glider, Thunder Kite, Dragon Kite Crew, Lantern Balloon | Saboteur, Shadow Stalker, Burrow Ambusher |
 | **Discipline Banner** `discipline_banner` | support | 9 | A clan banner that keeps nearby defenders focused: defenses within 3 tiles ignore taunting bells and decoys. | Bell Warden, Mirage Twin | Gearbreaker, Ghost Engineer, Moonblade Master |
@@ -266,7 +266,7 @@ Rock-paper-scissors, checked by `tests/gameplay/balance/building-matchups.test.t
 | **Sleep Dart Tower** `sleep_dart_tower` | defense | 10 | Darts that barely scratch but put a warrior to sleep for 2 seconds. The same warrior can only be put to sleep once. Best against a few big fighters. | Bear Warrior, Oni Breaker, Armored Guardian, Moonblade Master | Sage of Clouds, Mist Weaver, Drum Monk |
 | **Rolling Log Chute** `rolling_log_chute` | trap | 8 | Releases a log down a 1-tile lane: heavy damage to every ground warrior in the line. It is not splash, so tower shields do not stop it. Punishes clumped buff squads. | Mountain Shield, Iron Monk, Drum Monk, Tiger Lord | Crane Glider, Bear Warrior, Spirit Caller |
 | **Moonlit Gravel Garden** `moonlit_gravel` | trap | 12 | Raked gravel that crunches: anything that teleports, lands or rushes onto it is stunned for 1.5 seconds. | Void Walker, Grapple Raider, Bomb Carrier | Eclipse Ninja, Trap Breaker, Kite Raider |
-| **Ink Seal Post** `ink_seal_post` | support | 12 | Warriors who fall within 3 tiles are sealed in ink: they cannot be revived, and nothing bails out of them. | Spirit Caller, Dragon Kite Crew | Herbalist, Void Walker, Iron Monk |
+| **Ink Seal Post** `ink_seal_post` | support | 12 | Warriors who fall within 3 tiles are sealed in ink: they cannot be revived. | Spirit Caller, Dragon Kite Crew | Herbalist, Void Walker, Iron Monk |
 | **Longbow Yagura** `longbow_yagura` | defense | 12 | A tall archery tower with range 13 that outranges every siege warrior. It prefers warriors attacking from 3.5 tiles or more (throwers and artillery), but cannot hit anything closer than 2 tiles. | Siege Bombardier, Thousand Needle, Hawk Tamer | Shinobi, Grapple Raider, Mirage Twin |
 | **Lightning Rod Tower** `lightning_rod_pagoda` | defense | 13 | Grounds lightning: chained slashes and lightning strikes within 3 tiles hit the rod instead, charging it. When fully charged it fires the lightning back. | Storm Sovereign, Thunder Kite | Burrow Ambusher, Chain-Sickle Reaper, Bell Warden |
 
@@ -274,20 +274,20 @@ Rock-paper-scissors, checked by `tests/gameplay/balance/building-matchups.test.t
 
 | Keep | Expected army power | Trial tiers at this Keep | Defense power x | Reward (Coins, first clear) |
 |---|---|---|---|---|
-| 1 | 420 | 1-4 | 1.00 | 500 |
+| 1 | 420 | 1-4 | 1.06 | 500 |
 | 2 | 974 | 5-8 | 1.08 | 1078 |
-| 3 | 1949 | 9-12 | 1.00 | 1975 |
-| 4 | 3528 | 13-16 | 0.94 | 4795 |
-| 5 | 6139 | 17-20 | 1.00 | 12k |
-| 6 | 9495 | 21-24 | 1.00 | 29k |
+| 3 | 1949 | 9-12 | 0.96 | 1975 |
+| 4 | 3528 | 13-16 | 0.98 | 4795 |
+| 5 | 6139 | 17-20 | 0.93 | 12k |
+| 6 | 9495 | 21-24 | 1.06 | 29k |
 | 7 | 14k | 25-28 | 1.08 | 58k |
-| 8 | 17k | 29-32 | 1.00 | 82k |
-| 9 | 25k | 33-36 | 0.94 | 149k |
-| 10 | 31k | 37-40 | 1.00 | 244k |
-| 11 | 42k | 41-44 | 1.00 | 416k |
+| 8 | 17k | 29-32 | 0.96 | 82k |
+| 9 | 25k | 33-36 | 0.98 | 149k |
+| 10 | 31k | 37-40 | 0.93 | 244k |
+| 11 | 42k | 41-44 | 1.06 | 416k |
 | 12 | 51k | 45-48 | 1.08 | 564k |
-| 13 | 75k | 49-52 | 1.00 | 1.2M |
-| 14 | 106k | 53-56 | 0.94 | 2.1M |
-| 15 | 149k | 57-60 | 1.00 | 3.8M |
+| 13 | 75k | 49-52 | 0.96 | 1.2M |
+| 14 | 106k | 53-56 | 0.98 | 2.1M |
+| 15 | 149k | 57-60 | 0.93 | 3.8M |
 
-Tiers past the last live Keep keep growing by 6% per tier with no top: tier 50 = x1.3, tier 100 = x13, tier 200 = x4523.
+Tiers past the last live Keep keep growing by 6% per tier with no top: tier 50 = x1.3, tier 100 = x3, tier 200 = x21.

@@ -47,6 +47,10 @@ export class MemoryBattles extends MemoryBase implements BattleStore {
     t.failures = (t.failures ?? 0) + 1;
     return t.failures;
   }
+  async attackedBefore(attackerId: string, except: string): Promise<boolean> {
+    for (const t of this.tickets.values()) if (t.used && t.kind === 'pvp' && t.attackerId === attackerId && t.id !== except) return true;
+    return false;
+  }
   async openTickets(attackerId: string, kind: Ticket['kind']): Promise<Ticket[]> {
     return [...this.tickets.values()].filter((t) => !t.used && t.attackerId === attackerId && t.kind === kind).sort((a, b) => b.createdAt - a.createdAt).map((t) => this.withBase(t));
   }

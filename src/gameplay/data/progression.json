@@ -118,9 +118,10 @@
     "maxSeconds": 216000
   },
   "mastery": {
-    "xpBase": 50,
+    "$comment": "P5-07 (BNL-02, 2026-11-18): Warrior Mastery ships as ranks with no stat bonus (maxBonus 0; the +30% bonus undid the combat balance and nothing on the server checked it). xpBase 1500 puts rank 5 near 40 raids for a warrior that is a quarter of the army at Keep 12; ranks grow without end.",
+    "xpBase": 1500,
     "xpGrowth": 1.35,
-    "maxBonus": 0.3,
+    "maxBonus": 0,
     "bonusRate": 0.08,
     "xpPerHousingUsed": 1,
     "xpPerStar": 2
@@ -494,7 +495,7 @@
       "unlockKeep": 7,
       "pinnacleMaxLevel": 10,
       "live": false,
-      "description": "Home of a clan hero; one hall per hero."
+      "description": "Home of your clan heroes: its level decides which hero you can choose."
     },
     {
       "id": "temple_bell_tower",
@@ -778,7 +779,7 @@
       "unlockKeep": 7,
       "pinnacleMaxLevel": 10,
       "live": false,
-      "description": "Polished bronze panels: every third projectile that hits the screen flies back at whoever threw it. Melee warriors just walk up and smash it.",
+      "description": "Polished bronze panels: every third projectile that hits the screen flies back at whoever threw it.",
       "effect": {
         "kind": "reflect_projectiles",
         "every": 3
@@ -1000,7 +1001,7 @@
       "unlockKeep": 12,
       "pinnacleMaxLevel": 8,
       "live": false,
-      "description": "Warriors who fall within 3 tiles are sealed in ink: they cannot be revived, and nothing bails out of them.",
+      "description": "Warriors who fall within 3 tiles are sealed in ink: they cannot be revived.",
       "effect": {
         "kind": "no_revive",
         "radius": 3

@@ -1,10 +1,10 @@
 /** Scouting (#1, #2), trophy-based matchmaking (#3), trophy equilibrium (#4) and the loot penalty. */
 import { describe, expect, it } from 'vitest';
 import { totalLoot } from '../../../src/gameplay/sim/battle/basegen';
-import { attackerStrength, matchStrength, opponentFor, opponentForRank, strengthFor } from '../../../src/gameplay/sim/matchmaking';
+import { attackerStrength, matchedKeep, matchStrength, opponentFor, opponentForRank, powerSlackAt, strengthFor } from '../../../src/gameplay/sim/matchmaking';
 import { troopLevelCapAt } from '../../../src/gameplay/sim/research';
 import { lossTrophies, winTrophies } from '../../../src/gameplay/sim/ranks';
-import { createRng, next } from '../../../src/gameplay/sim/rng';
+import { createRng, mixSeed, next } from '../../../src/gameplay/sim/rng';
 import type { VillageState } from '../../../src/gameplay/sim/types';
 import { applyCommand, leagueWinBonus, scoutFee } from '../../../src/gameplay/sim/village';
 import { data, must, newGame } from './helpers';
@@ -53,11 +53,31 @@ describe('scouting (#1, #2)', () => {
   });
 
   it('the Next fee is a steady share of the loot on offer at every hall', () => {
+    // P2-11 (DEF-13, 2026-11-18): restated against the Keep the fee is priced by (the matched Keep), not the
+    // player's own; a fresh village's matched Keep is below its own once it climbs.
     const { state } = newGame();
     for (let h = 1; h <= data.hall.levels.length; h++) {
-      const share = scoutFee(atHall(state, h), data) / avgLoot(h);
+      const v = atHall(state, h);
+      const share = scoutFee(v, data) / avgLoot(matchedKeep(v, data));
       expect(share, `hall ${h}`).toBeGreaterThanOrEqual(0.02);
       expect(share, `hall ${h}`).toBeLessThanOrEqual(0.05);
+    }
+  });
+
+  it('P2-11: the fee is 1.5-2.5% of the mean offer at Keeps 5, 9, 12 and 15 (campaign honor and strength)', () => {
+    // The regular campaign's honor and army strength at those Keeps (docs/game-theory/campaign.json).
+    const cases: [number, number, number][] = [[5, 1042, 3.5], [9, 2215, 8.78], [12, 3217, 11.93], [15, 4308, 14.0]];
+    for (const [K, honor, strength] of cases) {
+      const floor = strength - powerSlackAt(K, data);
+      let sum = 0;
+      for (let i = 0; i < 200; i++) {
+        const t = totalLoot(opponentForRank(mixSeed(12345, i), honor, K, data, floor, []));
+        sum += (t.acorns ?? 0) + (t.dew ?? 0);
+      }
+      const keep = Math.floor(Math.max(K - data.ranks.matchmaking.hallsBelow - 1, floor, strengthFor(honor, data))) + 1;
+      const share = data.battle.scoutFeeByHall[Math.min(K, keep) - 1] / (sum / 200);
+      expect(share, `Keep ${K}`).toBeGreaterThanOrEqual(0.015);
+      expect(share, `Keep ${K}`).toBeLessThanOrEqual(0.025);
     }
   });
 });
@@ -118,11 +138,11 @@ describe('matchmaking by trophies (#3)', () => {
   });
 
   it('higher leagues add a bonus to won attacks', () => {
-    expect(leagueWinBonus(0, 3, data)).toEqual({});
-    expect(leagueWinBonus(2100, 0, data)).toEqual({});
-    const elder = leagueWinBonus(2100, 3, data);
-    expect(elder.acorns!).toBeGreaterThan(leagueWinBonus(1100, 3, data).acorns!);
-    expect(leagueWinBonus(2100, 1, data).acorns).toBe(Math.floor(elder.acorns! / 3));
+    expect(leagueWinBonus(0, 3, 5, data)).toEqual({});
+    expect(leagueWinBonus(2100, 0, 5, data)).toEqual({});
+    const elder = leagueWinBonus(2100, 3, 5, data);
+    expect(elder.acorns!).toBeGreaterThan(leagueWinBonus(1100, 3, 5, data).acorns!);
+    expect(leagueWinBonus(2100, 1, 5, data).acorns).toBe(Math.floor(elder.acorns! / 3));
   });
 });
 
@@ -213,8 +233,14 @@ describe('matchmaking follows earned power, not only honor (audit F22)', () => {
     // Fully researched new tier: the top of Keep 7.
     const maxed = { ...fresh, research: { levels: { wind_step_assassin: troopLevelCapAt(7, data, 'wind_step_assassin') }, active: [] } };
     expect(attackerStrength(maxed, data)).toBeCloseTo(7, 5);
-    // So researched Keep 7 attackers meet Keep 7 bases, not the Keep 6 bases they used to flatten.
-    for (let seed = 1; seed <= 20; seed++) expect(opponentFor(seed, { ...maxed, trophies: 0 }, data).hallLevel).toBe(7);
+    // So researched Keep 7 attackers meet Keep 7 bases, not the Keep 6 bases they used to flatten. (Restated with the
+    // rules-8 matchmaking change: Keep 7's power slack is 0 since the Phase 5 campaign, so a Keep 8 base, one above as
+    // `hallsAbove` allows, can come too.)
+    for (let seed = 1; seed <= 20; seed++) {
+      const k = opponentFor(seed, { ...maxed, trophies: 0 }, data).hallLevel;
+      expect(k).toBeGreaterThanOrEqual(7);
+      expect(k).toBeLessThanOrEqual(7 + data.ranks.matchmaking.hallsAbove);
+    }
   });
 });
 

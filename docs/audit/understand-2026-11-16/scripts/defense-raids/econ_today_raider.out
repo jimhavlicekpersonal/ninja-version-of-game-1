@@ -1,0 +1,17 @@
+raider strength = Keep + U(-1, -1); carry by stars 0.2/0.5/0.8/1; proposed held share 0.15 per star denied; storages full, 6 h in collectors; n=20
+K5  lvl1  stars 0/1/2/3 = 60%/25%/15%/0%   destr 45% | at risk    183k | TODAY lost     75k reward      2k net    -73k | PROPOSED lost     31k reward      9k net    -22k
+K5  b0    stars 0/1/2/3 = 80%/15%/5%/0%    destr 42% | at risk    133k | TODAY lost     52k reward      3k net    -50k | PROPOSED lost     16k reward     10k net     -7k
+K5  b50   stars 0/1/2/3 = 90%/5%/5%/0%     destr 38% | at risk    183k | TODAY lost     67k reward      3k net    -63k | PROPOSED lost     17k reward     10k net     -7k
+K5  b100  stars 0/1/2/3 = 95%/0%/5%/0%     destr 34% | at risk    199k | TODAY lost     64k reward      3k net    -61k | PROPOSED lost     14k reward     10k net     -4k
+K9  lvl1  stars 0/1/2/3 = 0%/0%/0%/100%    destr 100% | at risk   1052k | TODAY lost    947k reward      0k net   -947k | PROPOSED lost    947k reward      0k net   -947k
+K9  b0    stars 0/1/2/3 = 20%/10%/55%/15%  destr 62% | at risk    986k | TODAY lost    574k reward      8k net   -566k | PROPOSED lost    424k reward     53k net   -370k
+K9  b50   stars 0/1/2/3 = 80%/15%/5%/0%    destr 36% | at risk   1052k | TODAY lost    438k reward     32k net   -407k | PROPOSED lost    125k reward    109k net    -17k
+K9  b100  stars 0/1/2/3 = 100%/0%/0%/0%    destr 26% | at risk   1146k | TODAY lost    416k reward     40k net   -376k | PROPOSED lost     83k reward    119k net     35k
+K12 lvl1  stars 0/1/2/3 = 0%/0%/0%/100%    destr 100% | at risk   4254k | TODAY lost   3828k reward      0k net  -3828k | PROPOSED lost   3828k reward      0k net  -3828k
+K12 b0    stars 0/1/2/3 = 30%/40%/30%/0%   destr 52% | at risk   3859k | TODAY lost   1808k reward     44k net  -1765k | PROPOSED lost    965k reward    291k net   -674k
+K12 b50   stars 0/1/2/3 = 80%/20%/0%/0%    destr 37% | at risk   4254k | TODAY lost   1576k reward    117k net  -1460k | PROPOSED lost    401k reward    408k net      6k
+K12 b100  stars 0/1/2/3 = 100%/0%/0%/0%    destr 30% | at risk   4821k | TODAY lost   1656k reward    146k net  -1511k | PROPOSED lost    331k reward    437k net    106k
+K15 lvl1  stars 0/1/2/3 = 0%/0%/0%/100%    destr 100% | at risk  24974k | TODAY lost  22477k reward      0k net -22477k | PROPOSED lost  22477k reward      0k net -22477k
+K15 b0    stars 0/1/2/3 = 40%/20%/40%/0%   destr 54% | at risk  23229k | TODAY lost  12487k reward    384k net -12103k | PROPOSED lost   6676k reward   1920k net  -4756k
+K15 b50   stars 0/1/2/3 = 80%/10%/10%/0%   destr 39% | at risk  24974k | TODAY lost  10619k reward    768k net  -9851k | PROPOSED lost   3096k reward   2592k net   -504k
+K15 b100  stars 0/1/2/3 = 95%/5%/0%/0%     destr 30% | at risk  27485k | TODAY lost  10328k reward    912k net  -9416k | PROPOSED lost   2274k reward   2832k net    558k

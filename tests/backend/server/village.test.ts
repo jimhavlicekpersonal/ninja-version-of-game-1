@@ -38,6 +38,9 @@ for (const [label, makeRepo] of repoFactories) {
       expect(economyHash(game.state)).toBe(v.stateHash);
       placeCollector(game, w.data, w.now(), 'acorns');
       placeCollector(game, w.data, w.now(), 'dew');
+      // Sent while online (XPL-10: a timer command dated hours back would start when the server hears of it).
+      const placed = game.batch();
+      expect((await ann.sendCommands(placed)).corrections).toBeUndefined();
       w.advance(6 * HOUR);
       for (const b of collectors(game.state, w.data)) expect(game.do({ type: 'collect', id: b.id }, w.now())).toMatchObject({ ok: true });
       w.advance(60_000);
@@ -47,7 +50,7 @@ for (const [label, makeRepo] of repoFactories) {
       const r = await ann.sendCommands(batch);
       expect(r.corrections).toBeUndefined(); // same simulation, same times: same economy
       expect(r.stateHash).toBe(economyHash(game.state));
-      expect(r.ackSeq).toBe(batch.commands.length);
+      expect(r.ackSeq).toBe(placed.commands.length + batch.commands.length);
       expect(r.results.every((x) => x.ok)).toBe(true);
       // A retried batch (the answer was lost) changes nothing.
       const again = await ann.sendCommands(batch);

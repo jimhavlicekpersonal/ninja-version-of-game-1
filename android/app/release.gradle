@@ -3,6 +3,7 @@
 // be checked on its own. Sets:
 //   ext.tkVersionCode  increasing build number Play needs for every upload
 //   ext.tkVersionName  the version players see
+//   ext.tkApplicationId the store package name (APP_ID, else the legacy id)
 //   ext.tkSigning      [storeFile, storePassword, keyAlias, keyPassword] or null
 //
 // versionCode (first found): -PtkVersionCode=N, env ANDROID_VERSION_CODE, else 1.
@@ -36,6 +37,12 @@ if (!name) {
     name = pkg.exists() ? new groovy.json.JsonSlurper().parse(pkg).version?.toString() : null
 }
 ext.tkVersionName = name ?: '1.0'
+
+// PUB-05 (P7-02): the application id from APP_ID (the variable capacitor.config.ts and the signed job read),
+// else the legacy id. Only the application id: the Java namespace stays com.toadstoolkingdoms.app.
+def appId = readProp('tkApplicationId', 'APP_ID') ?: 'com.toadstoolkingdoms.app'
+if (!(appId ==~ /[a-z][a-z0-9_]*(\.[a-z][a-z0-9_]*)+/)) throw new GradleException("APP_ID must be a reverse-domain id, got '${appId}'.")
+ext.tkApplicationId = appId
 
 def keystoreProps = new Properties()
 def keystorePropsFile = rootProject.file('keystore.properties')

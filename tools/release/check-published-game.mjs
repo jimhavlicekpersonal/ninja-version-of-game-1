@@ -4,6 +4,7 @@
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { readFileSync, readdirSync } from 'node:fs';
+import { pageLanguageProblem } from './page-language.mjs';
 
 const base = new URL(process.env.GAME_URL || 'http://missing-game-url.invalid/');
 assert.ok(process.env.GAME_URL, 'GAME_URL must be the published game URL');
@@ -37,7 +38,8 @@ async function verify() {
     const manifest = JSON.parse(await get(`${code}/manifest.webmanifest`));
     assert.equal(manifest.lang, code);
     for (const page of readdirSync(`public/${code}`).filter(file => file.endsWith('.html'))) {
-      assert.ok((await get(`${code}/${page}`)).includes(`<html lang="${code}">`), `${code}/${page}: wrong language`);
+      const problem = pageLanguageProblem(await get(`${code}/${page}`), code);
+      assert.equal(problem, null, `${code}/${page}: wrong language (${problem})`);
     }
   }
   console.log(`Verified published game, service worker and ${ready.length} translated language pack(s)/pages at ${base}`);

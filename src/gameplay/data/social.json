@@ -135,7 +135,6 @@
   },
   "profanity": [
     "damn",
-    "hell",
     "crap",
     "stupid",
     "idiot",
@@ -158,13 +157,120 @@
     "bastard",
     "shit",
     "fuck",
-    "dick",
     "piss",
     "slut",
     "whore",
     "retard",
     "cunt"
   ],
+  "profanityByLanguage": {
+    "$comment": "P7-07 (PUB-10): conservative per-language lists for the ten largest launch languages, applied to every chat line and name together with `profanity` (chat mixes languages). Strong insults and slurs only; words that are ordinary in another launch language or inside common words (Japanese くそ in やくそく and 死ね in 死ねない, Chinese 妈的 in 我妈的, Spanish puta = Croatian 'times', French pute = Romanian 'stinks'; English hell and dick are German words) are left out. Each list has a corpus of ordinary sentences that must pass unfiltered (tests/gameplay/sim/profanity-lists.test.ts). NOT reviewed by native speakers: docs/localization/WORD_LISTS.md. Changing a list changes the data the game and the server load: deploy them together.",
+    "es": [
+      "puto",
+      "pendejo",
+      "pendeja",
+      "gilipollas",
+      "cabrón",
+      "cabron",
+      "coño",
+      "mierda",
+      "maricón",
+      "hijo de puta"
+    ],
+    "pt": [
+      "caralho",
+      "merda",
+      "foda-se",
+      "viado",
+      "cuzão",
+      "arrombado",
+      "filho da puta",
+      "babaca"
+    ],
+    "fr": [
+      "merde",
+      "putain",
+      "connard",
+      "connasse",
+      "salope",
+      "enculé",
+      "ta gueule",
+      "fils de pute",
+      "nique ta mère"
+    ],
+    "de": [
+      "scheiße",
+      "scheisse",
+      "arschloch",
+      "fotze",
+      "wichser",
+      "hurensohn",
+      "schlampe",
+      "missgeburt",
+      "fick dich",
+      "halt die fresse"
+    ],
+    "ru": [
+      "сука",
+      "блядь",
+      "хуй",
+      "пизда",
+      "мудак",
+      "долбоёб",
+      "долбоеб",
+      "пидор",
+      "пидорас"
+    ],
+    "ja": [
+      "クソ野郎",
+      "くそ野郎",
+      "バカ野郎",
+      "ばか野郎",
+      "ちんこ",
+      "死ねよ",
+      "死ねや"
+    ],
+    "ko": [
+      "씨발",
+      "병신",
+      "개새끼",
+      "좆까",
+      "지랄",
+      "미친놈",
+      "미친년"
+    ],
+    "zh-Hans": [
+      "傻逼",
+      "煞笔",
+      "操你妈",
+      "草泥马",
+      "你妈逼",
+      "狗日的",
+      "王八蛋",
+      "贱人"
+    ],
+    "ar": [
+      "شرموطة",
+      "كس امك",
+      "كس أمك",
+      "ابن الكلب",
+      "منيوك",
+      "عرص"
+    ],
+    "hi": [
+      "चूतिया",
+      "मादरचोद",
+      "बहनचोद",
+      "भोसड़ी",
+      "हरामी",
+      "गांडू",
+      "chutiya",
+      "madarchod",
+      "behenchod",
+      "bhenchod",
+      "gandu"
+    ]
+  },
   "groveRaid": {
     "epoch": 1767398400000,
     "durationHours": 48,

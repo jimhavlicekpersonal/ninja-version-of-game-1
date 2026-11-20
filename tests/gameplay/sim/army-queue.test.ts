@@ -2,7 +2,7 @@
  * The army's life cycle end to end: train, wait for room, finish with Jade,
  * cancel, refill, save, reload. Each block here guards a bug a player hit.
  */
-import { describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { armyHousing, armyReadyAt, fillCount, housingCapacity, queueFits, retimeQueue, trainingReady } from '../../../src/gameplay/sim/army';
 import { armyView, researchRow, trainRow } from '../../../src/gameplay/sim/armyView';
 import { computeOfflineProgress } from '../../../src/gameplay/sim/offline';
@@ -11,7 +11,20 @@ import { deserialize, migrate, serialize, validateVillage } from '../../../src/g
 import type { TrainingItem } from '../../../src/gameplay/sim/types';
 import { advance, applyCommand, trainingSkipQuote } from '../../../src/gameplay/sim/village';
 import { capacity } from '../../../src/gameplay/sim/resources';
-import { data, must, newGame } from './helpers';
+import { data, must, newGame, pointDeploys } from './helpers';
+
+// P3-04 (2026-11-18): Shinobi now train in 10 s and Kunai Adepts in 12 s. These tests check the queue's mechanics,
+// written against the old 20 s and 25 s; the timings are pinned here for this file only (one module instance per file).
+const LIVE_TRAIN = { shinobi: data.troops.hedgehog_roller.trainSeconds, adept: data.troops.frog_lobber.trainSeconds };
+beforeAll(() => {
+  data.troops.hedgehog_roller.trainSeconds = 20;
+  data.troops.frog_lobber.trainSeconds = 25;
+});
+afterAll(() => {
+  data.troops.hedgehog_roller.trainSeconds = LIVE_TRAIN.shinobi;
+  data.troops.frog_lobber.trainSeconds = LIVE_TRAIN.adept;
+});
+
 
 const SHINOBI = 'hedgehog_roller'; // housing 1, 20 s
 const ADEPT = 'frog_lobber';
@@ -387,7 +400,7 @@ describe('warriors over time', () => {
     s = advance(s, clock.now(), data).state;
     expect(s.training).toHaveLength(5);
     const base = { name: 'Dummy', hallLevel: 1, buildings: [{ id: 'h', type: 'elder_toadstool', level: 1, x: 18, y: 18 }] };
-    const deployments = Array.from({ length: 12 }, (_, i) => ({ tick: i, troop: SHINOBI, x: 25, y: 19 }));
+    const deployments = pointDeploys({ seed: 4, base, army: s.army }, SHINOBI, 12);
     s = must(s, { type: 'battleEnd', record: { at: clock.now(), opponentName: 'Dummy', setup: { seed: 4, base, army: s.army }, deployments } }, clock.now());
     expect(s.army[SHINOBI]).toBe(8);
     clock.advanceSeconds(1);

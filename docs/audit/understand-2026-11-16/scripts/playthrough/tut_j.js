@@ -1,0 +1,11 @@
+const W = 1000;
+await ft('.scout-toggle', W);
+await ft('.b-name', W);
+await ft('.big-attack', 1200);
+s.marks.firstRaidStart = elapsed();
+await shot('r23-battle-start');
+await text('#battle-hud', 800);
+await dump(30, '#battle-hud');
+await sleep(1500);
+await shot('r24-battle-2.7s');
+log(elapsed(), 'taps', s.taps);

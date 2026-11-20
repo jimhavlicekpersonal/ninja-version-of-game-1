@@ -72,6 +72,8 @@ export interface TemperAxisDef {
   splashRadius?: number;
   /** Fire interval lengthened by this share at full weight. */
   fireSlow?: number;
+  /** Rules 10 hook, not set in shipped data (P4-10, BNL-10): extra damage against a warrior class (`cls`). */
+  versus?: { cls: string; bonus: number };
 }
 
 /** What a tempered base takes off the attackers' support (`TemperDef.troopCuts`). */
@@ -194,7 +196,31 @@ export interface VillageState {
    * `tierKeep[t - 1]`: the Keep level when tier `t` unlocked (save v22, balance audit CU-6). A tier's resources scale
    * by it, so claiming later, after a Keep upgrade, no longer multiplies them.
    */
-  pass: { season: number; points: number; premium: boolean; claimedFree: number[]; claimedPremium: number[]; tierKeep?: number[] };
+  /**
+   * `lastSeason` (save v24, P1-01): what the rollover granted from the season that just ended (every unlocked tier
+   * not claimed by then, premium ones while the Scroll was owned), for the welcome-back summary.
+   */
+  pass: {
+    season: number;
+    points: number;
+    premium: boolean;
+    claimedFree: number[];
+    claimedPremium: number[];
+    tierKeep?: number[];
+    /** P5-10: the season recap (`tiers` reached, `league` at the rollover, `raidsWon`/`stars` in the season when known). */
+    lastSeason?: { season: number; granted: Cost; overflow: Cost; tiers?: number; league?: string; raidsWon?: number; stars?: number };
+    /** P5-10 (save v24, optional): the counters as this season began, for the recap. */
+    startStats?: { raidsWon: number; starsEarned: number };
+  };
+  /**
+   * Save v24 (P1-21): when the Clan Keep reached its current level. A Bounty attack may use the fortress of the Keep
+   * below only if it began before this moment (an upgrade that finished mid-battle). Absent on older villages.
+   */
+  keepReachedAt?: number;
+  /** Save v24 (P3-07): the local day the daily drill last paid (sim/drill.ts). Absent: never. */
+  drill?: { day: number };
+  /** Save v24 (P5-08): the Keep levels whose seal was claimed (sim/seals.ts). Absent: none. */
+  seals?: number[];
   /** Task periods; `dayIds`/`weekIds` are the tasks chosen when the period began (absent on older saves until the next roll). */
   tasks: { day: number; dayBaseline: Stats; dayClaimed: string[]; week: number; weekBaseline: Stats; weekClaimed: string[]; dayIds?: string[]; weekIds?: string[]; dayTargets?: Record<string, number>; weekTargets?: Record<string, number> };
   cosmetics: { owned: string[]; hallSkin: string };
@@ -212,7 +238,8 @@ export interface VillageState {
    * alternate fortress chosen for the next tier, and the next tier if the last
    * attempt at it failed (which allows switching).
    */
-  trials: { best: number; alternate?: number; failedTier?: number };
+  /** `alternateTier` (save v24, P3-06 review fix): the tier the alternate fortress applies to (absent: the next tier). */
+  trials: { best: number; alternate?: number; failedTier?: number; alternateTier?: number };
   /**
    * A raid in progress (saved from the first deployment). If the app closes
    * mid-battle it is resolved on the next launch as if it had played out.
@@ -230,8 +257,12 @@ export interface VillageState {
   calendar: CalendarState;
   /** The device's offset from UTC; task days roll at the player's midnight (sim/calendar.ts, save v19). */
   localTime?: { offsetMinutes: number; setAt: number };
-  /** Goal events (sim/goalEvents.ts, save v16): progress in the current goal event occurrence. */
-  goalEvent: GoalEventState | null;
+  /**
+   * Goal events (sim/goalEvents.ts): progress per occurrence, newest last (P5-01, save v24: was one slot, `goalEvent`,
+   * reset whenever the key differed, so two overlapping goal events paid a ladder again on every switch). At most
+   * `GOAL_PROGRESS_KEPT` entries; an occurrence that drops off has long ended and can no longer be attacked.
+   */
+  goalEvents: GoalEventState[];
   /**
    * Warrior Mastery (save v23, sim/mastery.ts): EXP per warrior type. Earned only while `features.mastery` is on
    * (off in the shipped data), so it stays empty in the live game.
@@ -253,8 +284,10 @@ export interface CalendarState {
 export interface StipendState {
   /** Daily payments still to claim (0 = no stipend). */
   left: number;
-  /** Day index (pass days) of the last claim; -1 = never. */
+  /** Day index (pass days) of the last claim; -1 = never. A local day when `local` (P5-09), else a UTC day. */
   lastDay: number;
+  /** P5-09 (save v24, optional): set by the first claim on the player's own day; absent = the old UTC day. */
+  local?: boolean;
   /**
    * Jade still owed by the payments left (save v18). A stipend keeps the Jade it was sold with when
    * the price list changes (report section 5 step 6 lowered it from 20 to 12 a payment).
@@ -279,8 +312,10 @@ export interface ArmyPreset {
 }
 
 export interface DailyState {
-  /** Day index (pass days) the chest was last opened; -1 = never. */
+  /** Day index (pass days) the chest was last opened; -1 = never. A local day when `local` (P5-09), else a UTC day. */
   lastDay: number;
+  /** P5-09 (save v24, optional): set by the first claim on the player's own day; absent = the old UTC day. */
+  local?: boolean;
   /** Current step on the streak ladder (0 before the first chest). */
   step: number;
   /** Free skips left this week, and the week they belong to. */
@@ -363,10 +398,15 @@ export interface GroveState {
  * Lifetime counters. `upgradesDone` and `troopsTrained` count finished work
  * (cancelled timers never count), so tasks cannot be farmed by start-and-cancel.
  */
-export type StatKey = 'collectedAcorns' | 'collectedDew' | 'upgradesStarted' | 'upgradesDone' | 'troopsTrained' | 'raidsWon' | 'starsEarned' | 'obstaclesCleared' | 'moonstonesSpent' | 'donations' | 'researchDone' | 'trialsCleared' | 'defensesFaced' | 'defensesWon' | 'rematchesWon' | 'raidDestruction';
+export type StatKey = 'collectedAcorns' | 'collectedDew' | 'upgradesStarted' | 'upgradesDone' | 'troopsTrained' | 'raidsWon' | 'starsEarned' | 'obstaclesCleared' | 'moonstonesSpent' | 'donations' | 'researchDone' | 'trialsCleared' | 'defensesFaced' | 'defensesWon' | 'rematchesWon' | 'raidDestruction' | 'timedUpgradesDone' | 'drillsDone' | 'raidsAbandoned' | 'raidsThreeStar' | 'stakesWon' | 'goalSteps' | 'gauntletLadders' | 'chestsOpened';
 export type Stats = Record<StatKey, number>;
-/** `defensesFaced`/`defensesWon`: raids against the village and the ones it held (no stars lost); `rematchesWon`: won "settle the score" rematches; `raidDestruction`: summed destruction % of settled raids (save v16). */
-export const STAT_KEYS: readonly StatKey[] = ['collectedAcorns', 'collectedDew', 'upgradesStarted', 'upgradesDone', 'troopsTrained', 'raidsWon', 'starsEarned', 'obstaclesCleared', 'moonstonesSpent', 'donations', 'researchDone', 'trialsCleared', 'defensesFaced', 'defensesWon', 'rematchesWon', 'raidDestruction'];
+/**
+ * `defensesFaced`/`defensesWon`: raids against the village and the ones it held (no stars lost); `rematchesWon`: won
+ * "settle the score" rematches; `raidDestruction`: summed destruction % of settled raids (save v16).
+ * `timedUpgradesDone` (save v24, P1-08): finished upgrades that took a builder's time (instant wall levels do not).
+ * A key added after v24 is filled on every load (`repairStats` in save.ts), so it needs no further bump.
+ */
+export const STAT_KEYS: readonly StatKey[] = ['collectedAcorns', 'collectedDew', 'upgradesStarted', 'upgradesDone', 'troopsTrained', 'raidsWon', 'starsEarned', 'obstaclesCleared', 'moonstonesSpent', 'donations', 'researchDone', 'trialsCleared', 'defensesFaced', 'defensesWon', 'rematchesWon', 'raidDestruction', 'timedUpgradesDone', 'drillsDone', 'raidsAbandoned', 'raidsThreeStar', 'stakesWon', 'goalSteps', 'gauntletLadders', 'chestsOpened'];
 export function emptyStats(): Stats {
   return Object.fromEntries(STAT_KEYS.map((k) => [k, 0])) as Stats;
 }
@@ -571,8 +611,6 @@ export interface WarriorKit {
   chargeMultiplier?: number;
   stunTicks?: number;
   wallMultiplier?: number;
-  /** Built, not live (Rules 10): when this warrior brings a wall down, the walls within this many tiles fall with it. */
-  breachRadius?: number;
   openWalls?: boolean;
   /** 'rally' (heroes, report section 5 step 8): allies near the source deal `strength` more damage for `durationTicks` after its first hit. */
   aura?: 'heal' | 'haste' | 'veil' | 'resist' | 'splash' | 'taunt' | 'rally';
@@ -643,8 +681,17 @@ export interface SabotageDef {
 export interface BattleDef {
   /** Heroes (report section 5 step 8, SIM_RULES 5): troop-shaped, never trained, one per battle from `unlockKeep`. */
   heroes?: Record<string, TroopDef & { unlockKeep: number }>;
+  /**
+   * Rules 8/10 hooks, none set in shipped data (P4-10, BNL-10; tests/gameplay/battle/rules10-hooks.test.ts): walls' health
+   * multiplier; defenses packed together fire slower (`crowding`); each defense shot varies by up to +-`damageSpread`.
+   */
+  wallHp?: number;
+  crowding?: { radius: number; slow: number; max: number };
+  damageSpread?: number;
   warriorRules: {
     supportIntervalTicks: number;
+    /** P4-01: share of its damage a support warrior in position strikes with (absent or 0: it never strikes). */
+    supportStrike?: number;
     /** A support troop tries this many of the nearest allies for one it can reach without breaking a wall. */
     supportAllyTries: number;
     defaultAuraRadius: number;
@@ -716,6 +763,8 @@ export interface BuildingDef {
   effect?: BuildingEffect;
   /** Forest obstacles: what clearing costs and the Moonstones it gives. */
   clear?: { cost: Cost; seconds: number; moonstones: number };
+  /** P3-03: the longest one of its levels takes to build (else `economy.buildSecondsCap`). */
+  buildCapSeconds?: number;
   levels: LevelDef[];
 }
 
@@ -748,6 +797,15 @@ export interface EconomyDef {
    * instead of Coins, one for one (`place`/`upgrade` with `pay: 'dew'`), so a defender's idle Provisions build walls.
    */
   provisionsPayable?: string[];
+  /** P4-10 (BNL-11): the Hero Hall level each hero needs to be chosen, by the heroes' unlock order (not live). */
+  heroHallLevels?: number[];
+  /** P3-03: the longest any level takes to build, unless the building names its own `buildCapSeconds`. */
+  buildSecondsCap?: number;
+  /**
+   * P2-14 (built-not-live opportunity 4): the garrison crew. That many builds at a time of the `garrisonCategories`
+   * (defense, trap and support: every counter) take no Village Artisan. Free and never sold. Absent or 0: as before.
+   */
+  garrisonCrew?: number;
   mapSize: number;
   startingResources: Resources;
   startingLayout: StartingBuilding[];
@@ -781,10 +839,17 @@ export interface LeagueDef {
   id: string;
   name: string;
   min: number;
+  /** P5-06: the look the first season finished in this league gives (`cosmetics.json`, earned), once. */
+  look?: string;
   /** Monthly chest; Coins and Provisions are scaled by `rewardScaleByHall`. */
   chest: Cost;
   /** Extra loot for a won attack in this league (paid in full at 3 stars, a third per star). */
   winBonus: Cost;
+  /**
+   * P2-09 (DEF-10): a share of the attacker's Keep's lowest generated raid loot (`battle.generatedLootByHall[keep-1].min`)
+   * in Coins and Provisions; the bonus is the larger of this and `winBonus`, per resource, x stars/3. Absent: 0.
+   */
+  winBonusShare?: number;
 }
 
 /** Settings for the hidden Attack and Base Ratings (ranks.json `rating`). */
@@ -824,6 +889,12 @@ export interface RanksDef {
   attackLoss: { base: number; perTrophyDiff: number; min: number; max: number };
   matchTrophyRange: number;
   seasonResetFloor: number;
+  /**
+   * Exploit audit XPL-03 (P1-13): at most this many ended seasons pay their league chest when a village catches
+   * up (the war has `settleWeeksMax`). Older ones still soften honor but pay nothing, and the loop no longer runs
+   * once per forged month. Absent: every season pays.
+   */
+  seasonCatchUpMax?: number;
   leagues: LeagueDef[];
   /**
    * Generated opponents and bot raiders are picked by trophies. Strength is
@@ -844,6 +915,13 @@ export interface RanksDef {
     powerSlack: number;
     /** `powerSlack` per own Keep (index 0 = Keep 1); a Keep past the table uses `powerSlack`. */
     powerSlackByKeep?: number[];
+    /**
+     * P2-10 (DEF-12): extra slack per consecutive lost raid (`perLoss`, up to `max`), reset by a win; only raids that
+     * deployed at least `minDeployShare` of the army's housing count (`lossStreakSlack` in sim/matchmaking.ts).
+     */
+    lossStreakSlack?: { perLoss: number; max: number; minDeployShare: number };
+    /** P4-07 (CMB-08): rival clans' home layouts for raid bases from `fromKeep`, and each layout's level-bias offset. */
+    layouts?: { fromKeep: number; clanHome: Record<string, string[]>; biasOffset: Record<string, number> };
     /** Earned strength reads research behind the caps as earlier Keeps, but never more than this many below the own Keep (design re-audit). */
     researchFloorKeeps?: number;
     /**
@@ -867,6 +945,12 @@ export interface RanksDef {
 
 export interface RaidsDef {
   newPlayerShieldHours: number;
+  /**
+   * Exploit audit XPL-02 (P1-12): how long after a battle could have ended its result is still accepted (an
+   * interrupted battle settles on the next launch). A record dated earlier than now − battle length − this is
+   * refused, so a past Bounty Hunt, rematch or Alliance War cannot be attacked later. Absent: no lower bound.
+   */
+  battleResumeHours?: number;
   /** Shield after a raid, by destruction (highest tier reached wins). */
   shieldTiers: { destruction: number; hours: number }[];
   /**
@@ -881,17 +965,37 @@ export interface RaidsDef {
   graceMinutes: number;
   /** Safety cap on raids simulated in one catch-up. */
   maxRaidsPerCatchUp: number;
+  /** P3-12 (PLY-11): a village's first attack does not end its shield (`sim/shield.ts`). */
+  firstAttackKeepsShield?: boolean;
   maxDefenseLog: number;
   /** Bot army make-up by attacker hall level: share of housing per troop. */
   botArmyMix: Record<string, number>[];
+  /**
+   * P2-03 (DEF-05): alternate raider armies per Keep (index = the raider's Keep - 1), beside `botArmyMix` (today's
+   * line): an air raid and a shadow and siege raid. `attackerFor` picks one of the line and these by the raid's seed.
+   */
+  raiderMixes?: Record<string, number>[][];
   /** Most of each resource raiders can take from storages, by the defender's hall level. */
   storageLootCapByHall: number[];
   /** The first `count` bot raids a village faces bring `housingShare` of a full army, `levelsBelowCap` levels under the research cap. */
   newPlayerRaids?: { count: number; housingShare: number; levelsBelowCap: number };
-  /** A bot raid held to 0 stars pays this share of the Keep's lowest raid loot. */
-  defenseWin?: { shareOfRaidLoot: number };
+  /**
+   * A bot raid held to 0 stars pays this share of the Keep's lowest raid loot (storage-capped; what did not fit is
+   * reported). `perStar` (P2-01): every star denied pays a third of it, so each defence level earns something.
+   * `uncapped` is a lab hook live data never sets.
+   */
+  defenseWin?: { shareOfRaidLoot: number; perStar?: boolean; uncapped?: boolean };
+  /** P2-01 (DEF-01): the share of what it broke open a bot raider carries home, by stars won (index 0-3). */
+  carryByStars?: number[];
+  /** P2-02 (DEF-04): bot raiders come from the defender's Keep (strength Keep+lo to Keep+hi), not from honor. */
+  raiderMatch?: { lo: number; hi: number };
+  /** Lab only (`tools/balance`): model villages are laid out on a generated base; live data never sets these. */
+  labAutoLayout?: boolean;
+  labWalls?: boolean;
+  /** Rules 10 hook, not set in shipped data (P4-10, BNL-10): an attack carries this share of its loot by stars won. */
+  attackCarryByStars?: number[];
   /** Settle-the-score rematches against a bot raider's base (sim/rematch.ts). */
-  rematch?: { windowHours: number; shareOfRaidLoot: number };
+  rematch?: { windowHours: number; shareOfRaidLoot: number; /** P2-07: share of what the raid took a three-star rematch pays back (x stars/3). Absent: 0. */ recoverShare?: number };
   /**
    * Exhausted stores (balance audit 2026-11-08): each raid the village lost (1+ star) in the last `windowHours`
    * multiplies what the next raider can take by `factor`.
@@ -902,13 +1006,31 @@ export interface RaidsDef {
    * `minShare + (1 - minShare) x min(1, D / fullAt)`, D the Gini-Simpson diversity of the warriors fought by role
    * (housing shares; 0 for one role, 0.9 for ten equal ones).
    */
-  diversity?: { minShare: number; fullAt: number };
+  diversity?: { minShare: number; fullAt: number; /** P2-15: the carry is full while the village can train fewer roles than this (absent: always applies). */ fullBelowRoles?: number };
   /**
    * Declared stakes (balance audit 2026-11-08, opt-in): before a raid the attacker may declare a star count from
    * `byStars`; reaching it carries the loot times its multiplier, missing it carries nothing and a real defender keeps
    * the loot. Without a declaration the loot is carried as before.
    */
   stakes?: { byStars: Record<string, number> };
+  /**
+   * P5-03 (RET-11): one contract a UTC day, the same for everyone (`contractFor`): what a won raid carries home that
+   * day, never the battle. `list[day mod length]`.
+   */
+  contracts?: { list: ContractDef[] };
+  /** P5-03: a raid carries at most this many times its plain loot (contract x stake x diversity x event bonus). */
+  carryCap?: number;
+}
+
+/** A daily contract (P5-03): `rival` (outposts of `clan`), `stakes` (a met declared stake), `diversity` (diversity counts double), `threeStar`. */
+export interface ContractDef {
+  id: string;
+  name: string;
+  text: string;
+  kind: 'rival' | 'stakes' | 'diversity' | 'threeStar';
+  clan?: string;
+  /** Extra share of the loot when the contract is met (not used by `diversity`). */
+  bonus?: number;
 }
 
 export interface PackDef {
@@ -981,6 +1103,8 @@ export interface TaskTemplate {
   perHall: number;
   /** Star/win tasks: raids assumed in the period; the target follows the recent star or win rate (sim/pass.ts). */
   adaptive?: number;
+  /** P1-08: a collect task's target is this share of the village's own daily collector output (base/perHall the floor). */
+  ofDailyProduction?: number;
 }
 
 export interface PassDef {
@@ -998,11 +1122,21 @@ export interface PassDef {
   /** How star/win task targets follow recent raids. */
   adaptiveTasks?: { recentRaids: number; minRecent: number; minExpected: number };
   tiers: { tier: number; free: Cost & { skin?: string }; premium: Cost & { skin?: string } }[];
+  /** P1-02: the season's look, by season number modulo the list (a tier's `skin` stands for it). */
+  seasonSkins?: string[];
+  /** P1-02: Jade for a look tier when the buyer already owns this season's look. */
+  repeatJade?: number;
+  /** P1-05: how the value estimate reads the player's pace, and when it stops converting supplies to Jade. */
+  estimate?: { defaultPace: number; minDaysForPace: number; guardPackMultiple: number };
+  /** P1-03: past the last tier, every `everyPoints` pay `reward` (resources only, Keep-scaled), at most `maxPerSeason`. */
+  bonus?: { everyPoints: number; reward: Cost; maxPerSeason: number };
   dailyTaskPoints: number;
   weeklyChallengePoints: number;
   dailyTasks: TaskTemplate[];
   weeklyChallenges: TaskTemplate[];
   weeklyCount: number;
+  /** P5-10: twelve season names; season n is `seasonNames[n mod 12]` (Scroll and league seasons alike). */
+  seasonNames?: string[];
 }
 
 export interface SkinDef {
@@ -1012,6 +1146,8 @@ export interface SkinDef {
   passOnly?: boolean;
   /** Only from the 28-day calendar (never sold). */
   calendarOnly?: boolean;
+  /** P5-01/P5-06: earned in play (a festival ladder, a season, a Trial tier, a calendar cycle, a chest milestone); never sold. */
+  earned?: boolean;
   /** Can be bought from this Keep level (report section 5 step 6: a look to aim for at each stage). */
   minKeep?: number;
   cap: string;
@@ -1022,7 +1158,8 @@ export interface AchievementDef {
   id: string;
   name: string;
   text: string;
-  stat: StatKey | 'hallLevel';
+  /** A counter, or (P5-05) a value read from the village: calendar days claimed, warriors unlocked, looks owned, tower kinds tempered. */
+  stat: StatKey | 'hallLevel' | 'calendarDays' | 'warriorsUnlocked' | 'looksOwned' | 'towerTypesTempered';
   tiers: [number, number][];
 }
 
@@ -1047,6 +1184,8 @@ export interface SocialDef {
   xpLevels: number[];
   chatLines: Record<'random' | 'greet' | 'thanks' | 'raidStart' | 'raidEnd' | 'reply' | 'donated', string[]>;
   profanity: string[];
+  /** P7-07: per-language lists, applied to every line together with `profanity` (`$comment` holds the note). */
+  profanityByLanguage?: Record<string, string[] | string>;
   groveRaid: {
     epoch: number;
     durationHours: number;
@@ -1082,8 +1221,15 @@ export interface DailyDef {
   chest: { outcomes: { id: string; label: string; weight: number; reward: Cost }[] };
   /** `jadeEveryDays`: a step's own Jade is paid at most once in this many days (report section 5 step 6, economy E05). */
   streak: { steps: { bonus: number; moonstones?: number }[]; skipsPerWeek: number; stepsLostPerMissedDay: number; historyDays: number; jadeEveryDays?: number };
-  /** The 28-day calendar (report section 5 step 8): fixed rewards; a `skin` day gives `repeatJade` once owned. */
-  calendar?: { days: { reward?: Cost; skin?: string }[]; repeatJade: number };
+  /**
+   * The 28-day calendar (report section 5 step 8): fixed rewards; a `skin` day gives `repeatJade` once owned. P5-06:
+   * `skins[n - 2]` is cycle n's look on that day (cycles 2 to 6), before `repeatJade`.
+   */
+  calendar?: { days: { reward?: Cost; skin?: string }[]; repeatJade: number; skins?: string[] };
+  /** P5-06: looks given once when the lifetime count of chests opened reaches `at` (a missed day cannot touch them). */
+  chestLooks?: { at: number; look: string }[];
+  /** P3-07: the daily drill's reward (written at the Keep 5 economy, Keep-scaled like the chest), once per local day. */
+  drill?: { reward: Cost };
 }
 
 export interface EventEffect {
@@ -1103,14 +1249,38 @@ export interface GoalLadderStep {
   destruction?: number;
   /** Soft resources are scaled by the Keep (`rewardScaleByHall`); Jade is not. */
   reward: Cost;
+  /** P5-01: a look (`cosmetics.json` skin id, `earned`) this step also grants, once; owned looks are never granted twice. */
+  look?: string;
 }
 
-/** What a goal event asks for. `bounty`: attack the occurrence's bounty fortress (a generated base at your Keep, the same for every attempt). */
+/**
+ * What a goal event asks for. `bounty`: attack the occurrence's bounty fortress (a generated base at your Keep, the
+ * same for every attempt, seeded by the village). `gauntlet` (P5-02): one fortress per occurrence and Keep, seeded by
+ * the occurrence key and the Keep only, so every player at a Keep attacks the identical base that week.
+ */
 export interface GoalDef {
-  kind: 'bounty';
-  /** Defense power multiplier on the bounty fortress (1 = a same-Keep base at mid levels). */
+  /** `festival` (review L2): a dated festival's fortress, built like a Bounty's (the village's own) but named as a festival. */
+  kind: 'bounty' | 'gauntlet' | 'festival';
+  /** Defense power multiplier on the fortress (1 = a same-Keep base at mid levels). */
   power: number;
+  /** Gauntlet: wall HP multiplier (Trial-style modifier; absent = 1). */
+  wallPower?: number;
+  /** Gauntlet: tempers of these rival clans (battle.json `temper.rivals`), one picked per occurrence; absent = untempered. */
+  rivals?: string[];
   ladder: GoalLadderStep[];
+}
+
+/** P5-01: a festival on a fixed calendar date each year (UTC), occurrence key `<id>#<year>`. */
+export interface DatedEventDef {
+  id: string;
+  name: string;
+  description: string;
+  /** 1-12 and 1-31: the UTC day it starts (at 00:00). */
+  month: number;
+  day: number;
+  durationHours: number;
+  effect: EventEffect;
+  goal?: GoalDef;
 }
 
 export interface EventsDef {
@@ -1120,6 +1290,8 @@ export interface EventsDef {
   /** How long before a battle command arrives its own start time is believed (exploit audit 2026-11-20 #4). */
   settleSlackSeconds?: number;
   schedule: { id: string; name: string; description: string; startHour: number; durationHours: number; effect: EventEffect; goal?: GoalDef }[];
+  /** P5-01: festivals on fixed dates, merged with the loop (an operator's schedule retimes the loop only). */
+  dated?: DatedEventDef[];
 }
 
 export interface NotificationsDef {
@@ -1145,7 +1317,8 @@ export interface GameData {
   /** Absent in the shipped data: every feature off. */
   features?: FeatureFlags;
   buildings: Record<BuildingType, BuildingDef>;
-  hall: { levels: HallLevelDef[] };
+  /** P5-08: `seal`, what a Keep's seal pays once (Keep-scaled) when every building that Keep allows is at its cap. */
+  hall: { levels: HallLevelDef[]; seal?: { reward: Cost } };
   economy: EconomyDef;
   troops: Record<string, TroopDef>;
   battle: BattleDef;
@@ -1168,19 +1341,31 @@ export interface GameData {
 export interface TrialModifierDef {
   id: string;
   every: number;
+  /** P1-07: the modifier lands on tiers t with (t − offset) mod every = 0 (absent: 0). */
+  offset?: number;
   name: string;
   description: string;
   power?: number;
   wallPower?: number;
+  /** P1-07: the fortress is tempered as this rival clan tempers its outposts (`battle.json` `temper.rivals`), from the temper unlock Keep. */
+  rival?: string;
+  /** P1-07: only on fortresses of these layouts (an alternate fortress of another layout does not carry it). */
+  layouts?: string[];
 }
 
 export interface TrialsDef {
   tiersPerHall: number;
+  /** P5-06: looks given once when the best cleared tier first reaches `tier`. */
+  looks?: { tier: number; look: string }[];
+  /** P3-06: a village may attempt the first tier of the Keep this many below its own (`trialCatchUpTier`). */
+  catchUpKeepsBelow?: number;
   powerGrowthPerTier: number;
   maxPower: number;
   starsToClear: number;
   rewardShareOfRaidLoot: number;
   rewardLog2Growth: number;
+  /** P1-06: past the Keep ladder each tier's reward grows by this share per tier (linear, so it keeps growing a little). */
+  rewardGrowthPerTierBeyond?: number;
   jadeEveryTiers: number;
   jadeReward: number;
   modifiers: TrialModifierDef[];

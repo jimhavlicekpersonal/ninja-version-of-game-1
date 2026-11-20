@@ -1,0 +1,10 @@
+cells: mean destruction % over layouts random,kunai_ring,mortar_core x 2 seeds (the army-lab gate cells), no hero, game bot plan
+noJamChase     K7: mixed 50.0 | melee 39.8 | artillery 48.2 | support 26.3 | air 38.0 | shadow 50.8 | siege 31.5 | support_light 47.3 | breach 49.5
+noJamChase     K8: mixed 72.7 | melee 24.5 | artillery 73.5 | support 19.7 | air 31.7 | shadow 63.3 | siege 32.0 | support_light 73.3 | breach 68.8
+noJamChase     K15: mixed 75.3 | melee 45.0 | artillery 63.0 | support 37.7 | air 47.0 | shadow 65.0 | siege 37.7 | support_light 54.2 | breach 50.5
+storm25        K7: mixed 65.5 | melee 54.3 | artillery 60.8 | support 27.2 | air 46.5 | shadow 57.2 | siege 38.5 | support_light 50.7 | breach 51.0
+storm25        K8: mixed 74.5 | melee 37.8 | artillery 73.3 | support 22.0 | air 39.3 | shadow 65.3 | siege 25.5 | support_light 60.7 | breach 60.8
+storm25        K15: mixed 78.7 | melee 44.3 | artillery 67.3 | support 37.8 | air 49.0 | shadow 70.7 | siege 33.8 | support_light 47.3 | breach 50.0
+all3           K7: mixed 50.0 | melee 39.8 | artillery 49.0 | support 42.7 | air 38.0 | shadow 50.8 | siege 31.5 | support_light 50.5 | breach 51.0
+all3           K8: mixed 72.7 | melee 24.5 | artillery 73.5 | support 56.8 | air 31.7 | shadow 63.3 | siege 32.0 | support_light 77.8 | breach 70.3
+all3           K15: mixed 75.3 | melee 45.0 | artillery 63.0 | support 51.5 | air 47.0 | shadow 65.0 | siege 37.7 | support_light 54.7 | breach 50.5

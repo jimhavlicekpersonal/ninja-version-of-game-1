@@ -3,7 +3,7 @@
  * every game release, and the game-versions dashboard.
  */
 import { execFile } from 'node:child_process';
-import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { createServer, type Server } from 'node:http';
@@ -92,5 +92,63 @@ describe('report section 5 step 2: a release that did nothing says so', () => {
     expect(server).toMatch(/TARGET: production/);
     expect(server).toMatch(/::warning title=No staging contract tests::/);
     expect(readFileSync('.github/workflows/android.yml', 'utf8')).toMatch(/GITHUB_STEP_SUMMARY/);
+  });
+});
+
+describe('PUB-01: the deploy check reads lang and dir separately', () => {
+  it('accepts every ready language page, right-to-left ones included', async () => {
+    const { pageLanguageProblem } = await import('../../../tools/release/page-language.mjs');
+    const { readdirSync } = await import('node:fs');
+    // Every language with published pages (readiness can drop inside a phase that added English text).
+    const languages = JSON.parse(readFileSync('locales/languages.json', 'utf8')).languages as { code: string }[];
+    const ready = languages.map((l) => l.code).filter((code) => code !== 'en' && existsSync(`public/${code}`));
+    expect(ready.length).toBeGreaterThan(40);
+    let rtlPages = 0;
+    for (const code of ready) {
+      for (const page of readdirSync(`public/${code}`).filter((f) => f.endsWith('.html'))) {
+        const html = readFileSync(`public/${code}/${page}`, 'utf8');
+        expect(pageLanguageProblem(html, code), `${code}/${page}`).toBeNull();
+        // The old check, the exact text `<html lang="code">`, rejected every right-to-left page.
+        if (!html.includes(`<html lang="${code}">`)) rtlPages++;
+      }
+    }
+    expect(rtlPages).toBeGreaterThan(0);
+    expect(pageLanguageProblem('<html lang="ar">', 'ar')).toMatch(/right-to-left/);
+    expect(pageLanguageProblem('<html lang="de" dir="rtl">', 'de')).toMatch(/left-to-right/);
+    expect(pageLanguageProblem('<html lang="es">', 'de')).toMatch(/expected/);
+  });
+});
+
+describe('PUB-02 / XPL-07: CI, the server image and the test runs share one exact Node', () => {
+  it('every workflow reads .node-version and the Dockerfile pins the same version', async () => {
+    const { readdirSync } = await import('node:fs');
+    const version = readFileSync('.node-version', 'utf8').trim();
+    expect(version).toMatch(/^\d+\.\d+\.\d+$/);
+    expect(readFileSync('Dockerfile', 'utf8')).toContain(`node:${version}-slim@sha256:`);
+    for (const f of readdirSync('.github/workflows')) {
+      const yml = readFileSync(`.github/workflows/${f}`, 'utf8');
+      expect(yml, f).not.toMatch(/node-version:\s/);
+      if (yml.includes('setup-node')) expect(yml, f).toContain('node-version-file: .node-version');
+    }
+  });
+});
+
+describe('PUB-04 (P7-01): the store-readiness preflight', () => {
+  const run = (args: string[], env: Record<string, string>) =>
+    new Promise<{ code: number; out: string }>((resolve) => {
+      const clean = Object.fromEntries(Object.entries(process.env).filter(([k]) => !['APP_ID', 'ALLOW_LEGACY_APP_ID', 'GITHUB_STEP_SUMMARY', 'VITE_SERVER_URL'].includes(k)));
+      execFile(process.execPath, ['tools/release/check-store-ready.mjs', ...args], { env: { ...clean, ...env } }, (err, stdout) => resolve({ code: err ? Number((err as { code?: number }).code ?? 1) : 0, out: stdout }));
+    });
+
+  it('lists what is missing as a notice, and fails a store build on the blocking items', async () => {
+    const notice = await run([], {});
+    expect(notice.code).toBe(0);
+    expect(notice.out).toMatch(/legal-config\.js operator: empty/);
+    expect(notice.out).toMatch(/Terms of service: draft/);
+    expect(notice.out).toMatch(/App id: APP_ID is not set/);
+    const store = await run(['--store'], { APP_ID: 'com.example.kagemura' });
+    expect(store.code).toBe(1);
+    expect(store.out).toMatch(/::error title=Not ready for a store build::/);
+    expect(store.out).not.toMatch(/✗ App id/);
   });
 });

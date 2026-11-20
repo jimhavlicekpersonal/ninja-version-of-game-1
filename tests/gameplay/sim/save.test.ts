@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { decodeExportCode, deserialize, encodeExportCode, serialize, SAVE_VERSION } from '../../../src/gameplay/sim/save';
+import { decodeExportCode, deserialize, encodeExportCode, serialize, SAVE_VERSION, validateVillage } from '../../../src/gameplay/sim/save';
 import { data, newGame, must } from './helpers';
 
 describe('save and load', () => {
@@ -32,5 +32,13 @@ describe('save and load', () => {
     const broken = code.slice(0, 20) + (code[20] === 'A' ? 'B' : 'A') + code.slice(21);
     expect(() => decodeExportCode(broken)).toThrow();
     expect(() => decodeExportCode('hello')).toThrow();
+  });
+});
+
+describe('validateVillage without resources', () => {
+  it('reports the village as damaged instead of throwing (the resources check once hung on the trials check)', () => {
+    const v = structuredClone(newGame().state) as unknown as Record<string, unknown>;
+    delete v.resources;
+    expect(validateVillage(v as never, data)).toContain('resources missing');
   });
 });

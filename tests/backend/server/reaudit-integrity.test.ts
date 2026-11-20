@@ -203,7 +203,7 @@ describe('abandoned battles and imports (re-audit)', () => {
     forged.cosmetics = { owned: ['classic', look.id], hallSkin: look.id };
     const out = checkProvenance(forged, T, data, []).state;
     for (const def of data.achievements) {
-      const value = achievementValue(out, def, hallLevel(out, data));
+      const value = achievementValue(out, def, hallLevel(out, data), data);
       expect(out.achievements[def.id]).toBe(def.tiers.filter((t) => value >= t[0]).length);
     }
     expect(out.cosmetics.owned).not.toContain(look.id);

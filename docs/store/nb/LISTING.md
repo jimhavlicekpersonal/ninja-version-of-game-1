@@ -26,8 +26,15 @@ Led en ninjaklan. Bygg en skjult fjellandsby, tren femti slags krigere, speid p�
 **Plyndre med en plan**
 
 - Krigerne kommer bare inn gjennom infiltrasjonspunkter: speid på veiene og tårnene som dekker dem.
-- Kast Røykbomber når krigerne går inn i tårnenes rekkevidde, og send Sabotører for å blokkere forsvarene.
+- Send troppen din inn med én ordre (samlet, i en knipetang eller på rekke; tanks først eller som storm), eller plasser hver kriger selv.
+- Kast Røykbomber når krigerne går inn i tårnenes rekkevidde, og send Sabotører for å blokkere forsvarene. Fra Klanborg 7 samler Skyggekapteinen hele troppen din én gang per kamp.
+- Etter et tokt kan du se hva den samme hæren ville ha gjort gjennom et annet punkt.
 - Et gjennomtenkt angrep er verdt mer enn et enormt.
+
+**Forsvar landsbyen din**
+
+- Hvert tokt mot landsbyen din kommer med en rapport: hva du beholdt, stjernene du nektet, og hvor plyndreren brøt seg inn.
+- Test forsvaret ditt mot en simulert plyndrer, og øv mot hæren som slo deg.
 
 **Spill sammen** (på nett)
 
@@ -38,7 +45,12 @@ Led en ninjaklan. Bygg en skjult fjellandsby, tren femti slags krigere, speid p�
 
 **Skyggeprøvene**
 
-- En endeløs stige av festninger. Hvert trinn utbetaler belønningen sin én gang og er vanskeligere.
+- En endeløs stige av festninger. Hvert trinn utbetaler belønningen sin én gang og er vanskeligere. Med den daglige øvelsen kan du øve mens hæren din trener.
+
+**Noe nytt hver dag**
+
+- Hendelser på en fast kalender på fire uker, fem årlige festivaler med en festning og et utseende for Borgen å tjene opp, en ukentlig Spissrotgang og en daglig kontrakt.
+- Prestasjoner, Borgsegl, mesterskapsrang for krigere og utseender du tjener opp ved å spille.
 
 **Rettferdig spill**
 
@@ -46,7 +58,7 @@ Led en ninjaklan. Bygg en skjult fjellandsby, tren femti slags krigere, speid p�
 - Motstandere som lages av datamaskinen, er alltid merket.
 - Forbruksgrenser for spillere under 18 og påminnelser du velger selv, slått av til du slår dem på.
 
-Kagemura er gratis å laste ned og spille: alle bygninger, krigere, Borgnivåer og spillmoduser er tilgjengelige uten betaling, og det finnes ingen reklame. Jade, premiumvalutaen, tjenes i små mengder ved å spille (mål, ligaer, den daglige kisten og Sesongrullens gratisspor) og kan også kjøpes. Noe innhold selges bare for ekte penger: Sesongrullens premiumspor (ekstra belønninger, raskere bygging i sesongen og Borgutseendet Lyktefest) og tidsbegrensede pakker med Jade og ressurser.
+Kagemura er gratis å laste ned og spille: alle bygninger, krigere, Borgnivåer og spillmoduser er tilgjengelige uten betaling, og det finnes ingen reklame. Jade, premiumvalutaen, tjenes i små mengder ved å spille (mål, ligaer, den daglige kisten og Sesongrullens gratisspor) og kan også kjøpes. Noe innhold selges bare for ekte penger: Sesongrullens premiumspor (ekstra belønninger, raskere bygging i sesongen og et Borgutseende som skifter hver sesong) og tidsbegrensede pakker med Jade og ressurser.
 
 ## Lenker for versjonen
 

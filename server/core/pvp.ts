@@ -12,6 +12,7 @@ import type { runBattle } from '../../src/gameplay/sim/battle/battle';
 import type { BaseLayout, BattleResult } from '../../src/gameplay/sim/battle/types';
 import { buildingDef } from '../../src/gameplay/sim/data';
 import { exhaustionFactor, scaleBaseLoot, shieldHoursFor } from '../../src/gameplay/sim/defense';
+import { shieldAfterAttack } from '../../src/gameplay/sim/shield';
 import { applyLootPenalty, hallWindow, powerSlackAt, recentRaidArmies } from '../../src/gameplay/sim/matchmaking';
 import { defenseHonorLoss, lossTrophies, winTrophies } from '../../src/gameplay/sim/ranks';
 import { stakeMet, validStake } from '../../src/gameplay/sim/carry';
@@ -408,7 +409,8 @@ export async function match(ctx: ServerContext, me: Player, client?: ClientInfo)
 /** Raids against a player in the last `hours` (newest last), as `exhaustionFactor` reads them. */
 async function recentDefenses(ctx: ServerContext, id: string, t: number, hours: number): Promise<{ at: number; result: { stars: number } }[]> {
   if (!(hours > 0)) return [];
-  return (await ctx.repo.defensesFor(id, t - hours * HOUR, 50)).map((a) => ({ at: a.at, result: { stars: a.result.stars } }));
+  // XPL-12 (P1-20): a raid that took nothing (a missed stake) does not exhaust the stores.
+  return (await ctx.repo.defensesFor(id, t - hours * HOUR, 50)).map((a) => ({ at: a.at, result: { stars: Object.values(a.result.loot ?? {}).some((v) => (v ?? 0) > 0) ? a.result.stars : 0 } }));
 }
 
 /**
@@ -668,6 +670,9 @@ export function battleSeed(ticket: Ticket, sub: BattleReport): number {
  * with ledger lines. An attacker whose server-held village lacks the troops is
  * refused (nothing changes and the ticket stays unused).
  */
+/** XPL-12 (P1-20): the most honor one attacker's lost attacks give one defender in a UTC day. */
+export const MAX_HONOR_FROM_ONE_ATTACKER = 40;
+
 export async function attack(ctx: ServerContext, me: Player, sub: BattleReport): Promise<AttackResponse> {
   const { data, repo } = ctx;
   const { ticket, answered } = await takeTicket(ctx, me, sub?.ticket, 'pvp');
@@ -719,13 +724,26 @@ export async function attack(ctx: ServerContext, me: Player, sub: BattleReport):
     const defTrophies = defender?.trophies ?? ticket.defenderTrophies;
     const delta = result.stars >= 1 ? winTrophies(attacker.trophies, defTrophies, data) : -lossTrophies(attacker.trophies, defTrophies, data);
     const playerTrophies = Math.max(0, attacker.trophies + delta);
-    const response: AttackResponse = { attackId, result, trophies: delta, playerTrophies, ...(stake !== undefined ? { stake } : {}) };
+    // P5-03 (review M1): the daily contract is the one of the ticket's start (the server's clock), sent back so the
+    // game settles with the same contract; the device's own clock never picks it.
+    const contractAt = ticket.startedAt ?? ticket.createdAt;
+    const response: AttackResponse = { attackId, result, trophies: delta, playerTrophies, ...(stake !== undefined ? { stake } : {}), contractAt };
     // Staked honor (balance audit 2026-11-08): a lost defence costs `defenseHonorLossShare` of the raider's gain
     // (none by default); step 30's daily cap still applies. A held raid pays the defender as before.
     const lostToday = defender?.honorLoss?.day === day ? defender.honorLoss.lost : 0;
-    const defLoss = delta > 0 ? Math.max(0, Math.min(defenseHonorLoss(delta, data), rdef.defenderDailyHonorLossCap - lostToday)) : delta;
+    // XPL-12 (P1-20): a lost attack pays the defender honor, but one attacker gives one defender at most
+    // MAX_HONOR_FROM_ONE_ATTACKER a day (an alternate account feeding a main with 0-star raids had no limit).
+    const todayFromMe = defender ? (await tx.defensesFor(defender.id, day * 86_400_000, 200)).filter((a) => a.attackerId === me.id) : [];
+    const fromThisAttacker = delta < 0 ? todayFromMe.reduce((n, a) => n + Math.max(0, a.defenderTrophies ?? 0), 0) : 0;
+    // Independent review 2026-11-18 (P2-01): the per-star hold reward is paid for one raid per attacker per defender a day.
+    const holdReward = todayFromMe.length === 0;
+    const defLoss = delta > 0 ? Math.max(0, Math.min(defenseHonorLoss(delta, data), rdef.defenderDailyHonorLossCap - lostToday)) : -Math.min(-delta, Math.max(0, MAX_HONOR_FROM_ONE_ATTACKER - fromThisAttacker));
     const defPatch: { trophies: number; shieldUntil?: number; honorLoss?: { day: number; lost: number }; ratings?: { attack: Rating; base: Rating } } = { trophies: Math.max(0, (defender?.trophies ?? 0) - defLoss) };
-    const mePatch: { trophies: number; shieldUntil: number; ratings?: { attack: Rating; base: Rating } } = { trophies: playerTrophies, shieldUntil: Math.min(attacker.shieldUntil, t) };
+    // P3-12: one rule with the game (sim/shield.ts): the player's first attack keeps its shield.
+    // Independent review 2026-11-18: any earlier used pvp ticket (generated opponents too: they write no attack row),
+    // or any honor (a shielded newcomer cannot be raided, so honor means raids).
+    const attackedBefore = (attacker.trophies ?? 0) > 0 || (await tx.attackedBefore(me.id, ticket.id));
+    const mePatch: { trophies: number; shieldUntil: number; ratings?: { attack: Rating; base: Rating } } = { trophies: playerTrophies, shieldUntil: shieldAfterAttack(attacker.shieldUntil, t, attackedBefore, data) };
     if (defender) {
       defPatch.honorLoss = { day, lost: lostToday + Math.max(0, defLoss) };
       // Step 28: the attacker's Attack Rating and the defender's Base Rating move; bots never move a rating.
@@ -733,7 +751,9 @@ export async function attack(ctx: ServerContext, me: Player, sub: BattleReport):
       mePatch.ratings = { attack: rated.attack, base: ratingsOf(attacker, t, ctx).base };
       defPatch.ratings = { attack: ratingsOf(defender, t, ctx).attack, base: rated.base };
     }
-    const shield = shieldHoursFor(result.destruction, data);
+    // XPL-12 (P1-20): a raid that took nothing (a missed stake) gives no shield: an alternate account declaring
+    // three stars and stopping at two used to shield a main for 14 to 16 hours at no cost.
+    const shield = kept ? 0 : shieldHoursFor(result.destruction, data);
     if (defender && shield > 0) defPatch.shieldUntil = Math.max(defender.shieldUntil, t + shield * HOUR);
     const lootFrom = !defender ? 'generated-base' : (await hasServerVillage(tx, defender.id)) ? 'server-village' : 'uploaded-base';
     // Exploit audit 2026-11-20 #7: a base the device uploaded holds whatever loot it claims (within the storage cap),
@@ -746,7 +766,7 @@ export async function attack(ctx: ServerContext, me: Player, sub: BattleReport):
     // A village the server keeps: the troops must be there, they are spent, and the loot is banked.
     const mine = await applyServerResult(tx, ctx, attacker, [
       { cmd: { type: 'battleEnd', record: { at: t, opponentName: ticket.defenderName, setup, deployments, endTick: sub.endTick, ticket: ticket.id, ...(stake !== undefined ? { stake } : {}) }, known: result }, reason: 'attack:troops' },
-      { cmd: { type: 'settleOnlineAttack', ticket: ticket.id, result: paid, trophies: delta, playerTrophies, ...(stake !== undefined ? { stake } : {}) }, reason: lootFrom === 'server-village' ? 'attack:loot' : `attack:loot:${lootFrom}` },
+      { cmd: { type: 'settleOnlineAttack', ticket: ticket.id, result: paid, trophies: delta, playerTrophies, ...(stake !== undefined ? { stake } : {}), contractAt }, reason: lootFrom === 'server-village' ? 'attack:loot' : `attack:loot:${lootFrom}` },
     ], attackId);
     if (mine && !mine.ok) throw fail(400, 'bad_request', 'village.says', { detail: mine.message });
     await tx.updatePlayer(attacker.id, mePatch);
@@ -756,7 +776,7 @@ export async function attack(ctx: ServerContext, me: Player, sub: BattleReport):
       // A missed stake: the defender keeps everything, so its record (and a game that holds its own village) shows no loss.
       const defResult = kept ? { ...paid, loot: {} } : paid;
       const record = { id: attackId, at: t, kind: 'defense' as const, opponentName: attacker.name, setup: { seed, base: ticket.base, army, levels, infiltration: true }, deployments, endTick: sub.endTick, result: defResult, trophies: -defLoss };
-      await applyServerResult(tx, ctx, defender, [{ cmd: { type: 'applyDefense', record, lost: defResult.loot, trophies: defPatch.trophies, shieldUntil: defPatch.shieldUntil ?? defender.shieldUntil, fallen }, reason: 'defense:loss' }], attackId);
+      await applyServerResult(tx, ctx, defender, [{ cmd: { type: 'applyDefense', record, lost: defResult.loot, trophies: defPatch.trophies, shieldUntil: defPatch.shieldUntil ?? defender.shieldUntil, fallen, holdReward }, reason: 'defense:loss' }], attackId);
       await tx.addAttack({ id: attackId, at: t, attackerId: attacker.id, attackerName: attacker.name, defenderId: defender.id, seed, army, levels, ...(setup.reinforcements ? { reinforcements } : {}), ...(hero ? { hero } : {}), base: ticket.base, deployments, endTick: sub.endTick, result: defResult, infiltration: true, rules: ticket.rules ?? engine.rules, attackerTrophies: delta, defenderTrophies: -defLoss });
     }
     return { response, attacker, defender, defTrophies: defPatch.trophies };

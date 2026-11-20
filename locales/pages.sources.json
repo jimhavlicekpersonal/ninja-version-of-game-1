@@ -1379,8 +1379,8 @@
     "file": "public/support.html",
     "name": "support",
     "start": 5510,
-    "end": 5767,
-    "en": "Kagemura: Ninja Clans · {t0}Privacy policy{t1} · {t2}Community rules{t3} · {t4}Terms of service{t5} · {t6}特定商取引法に基づく表記{t7} · {t8}資金決済法に基づく表示{t9}",
+    "end": 5820,
+    "en": "Kagemura: Ninja Clans · {t0}Privacy policy{t1} · {t2}Community rules{t3} · {t4}Terms of service{t5} · {t6}特定商取引法に基づく表記{t7} · {t8}資金決済法に基づく表示{t9} · {t10}Third-party licences{t11}",
     "tokens": [
       "<a href=\"./privacy.html\">",
       "</a>",
@@ -1391,6 +1391,8 @@
       "<a href=\"./tokushoho.html\">",
       "</a>",
       "<a href=\"./shikin-kessai.html\">",
+      "</a>",
+      "<a href=\"./licenses.html\">",
       "</a>"
     ],
     "kind": "html"

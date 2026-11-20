@@ -9,6 +9,7 @@ import { FakeClock } from '../../../src/gameplay/sim/clock';
 import { defaultData as data } from '../../../src/gameplay/sim/data';
 import { trialBase } from '../../../src/gameplay/sim/trials';
 import { trialBattleSeed } from '../../../src/gameplay/sim/village';
+import { pointDeploys } from '../sim/helpers';
 
 const deps = (clock: FakeClock, store: MemorySaveStore) => ({ clock, store, data, analytics: new Analytics(new MemoryEventStore(), clock, 'test'), botRaids: false });
 
@@ -20,8 +21,8 @@ describe('interrupted raids', () => {
     c1.state.army = { hedgehog_roller: 20 };
     const trophies = c1.state.trophies;
     const base = generateOpponent(77, 1, data);
-    const setup = { seed: 5, base, army: { hedgehog_roller: 20 } };
-    const deployments: Deployment[] = Array.from({ length: 8 }, (_, i) => ({ tick: i * 2, troop: 'hedgehog_roller', x: 1, y: 10 + i }));
+    const setup = { seed: 5, base, army: { hedgehog_roller: 20 }, infiltration: true };
+    const deployments: Deployment[] = pointDeploys(setup, 'hedgehog_roller', 8);
     c1.trackBattle({ kind: 'raid', opponentName: base.name, setup, deployments, at: clock.now() });
     await c1.save();
 

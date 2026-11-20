@@ -4,7 +4,9 @@
 import { describe, expect, it } from 'vitest';
 import { calendarView, localDayIndex, LOCAL_TIME_CHANGE_DAYS } from '../../../src/gameplay/sim/calendar';
 import { defaultData as data } from '../../../src/gameplay/sim/data';
-import { nextObjective } from '../../../src/gameplay/sim/objective';
+import { armyBehindKeep, nextObjective } from '../../../src/gameplay/sim/objective';
+import { achievementViews } from '../../../src/gameplay/sim/achievements';
+import { capacity } from '../../../src/gameplay/sim/resources';
 import { migrate, serialize } from '../../../src/gameplay/sim/save';
 import { PLAYER_COMMANDS } from '../../../src/gameplay/sim/serverEconomy';
 import type { VillageState } from '../../../src/gameplay/sim/types';
@@ -69,9 +71,11 @@ describe('growth 19: the 28-day calendar', () => {
     // The look is never sold.
     s.resources.moonstones = 10_000;
     expect(applyCommand(s, { type: 'buySkin', skin: 'moonlit_shrine' }, T + 40 * DAY, data).ok).toBe(false);
-    // Second cycle: day 28 gives Jade instead.
+    // P5-06 (restated): the second cycle's day 28 gives that cycle's look; Jade once cycles 2-6 have given theirs.
     const view = calendarView(s, T + 40 * DAY, 1, data)!;
-    expect(view.days[27].reward).toEqual({ moonstones: data.daily.calendar!.repeatJade });
+    expect(view.days[27].reward).toEqual({ skin: data.daily.calendar!.skins![0] });
+    const done = { ...s, calendar: { ...s.calendar, cycles: 6 }, cosmetics: { ...s.cosmetics, owned: [...s.cosmetics.owned, ...data.daily.calendar!.skins!] } };
+    expect(calendarView(done, T + 40 * DAY, 1, data)!.days[27].reward).toEqual({ moonstones: data.daily.calendar!.repeatJade });
   });
 
   it('save v19 adds the calendar to older saves', () => {
@@ -94,5 +98,78 @@ describe('growth 7: the next objective', () => {
     // Nothing affordable: what is missing for the cheapest upgrade.
     s.resources = { ...s.resources, acorns: 0, dew: 0 };
     expect(nextObjective(s, T, data).kind).toBe('save');
+  });
+
+  it('P3-11: with storage at 90% an affordable Keep upgrade comes before the chest', () => {
+    const s = createNewVillage(T, data);
+    expect(nextObjective(s, T, data).kind).toBe('chest');
+    const cap = capacity(s, data);
+    const full: VillageState = { ...s, resources: { ...s.resources, acorns: Math.floor(cap.acorns * 0.95), dew: Math.floor(cap.dew * 0.95) } };
+    const o = nextObjective(full, T, data);
+    expect(o.kind).toBe('upgrade');
+    if (o.kind === 'upgrade') expect(['hall', 'storage']).toContain(data.buildings[o.type].category);
+  });
+
+  it('P3-09: a Keep more than one Keep ahead of its army points at research or training, not the Keep', () => {
+    let s = createNewVillage(T, data);
+    s = run(s, { type: 'openDailyChest' }, T);
+    s = run(s, { type: 'claimCalendar' }, T);
+    // Level 1 Shinobi at a Keep 6: research reads 1.5 Keeps behind (the floor of `researchFloorKeeps`).
+    const rushed: VillageState = { ...s, army: { hedgehog_roller: 20 }, resources: { ...s.resources, acorns: 1e7, dew: 1e7 }, buildings: s.buildings.map((b) => (data.buildings[b.type].category === 'hall' ? { ...b, level: 6 } : b)) };
+    expect(armyBehindKeep(rushed, data)).toBe(true);
+    expect(armyBehindKeep({ ...s, army: { hedgehog_roller: 20 } }, data)).toBe(false);
+    const o = nextObjective(rushed, T, data);
+    if (o.kind === 'upgrade') expect(data.buildings[o.type].category).not.toBe('hall');
+  });
+});
+
+describe('P6-05 (RET-10, UIS-04): the objective chip reaches what is already earned or free', () => {
+  const base = () => {
+    let s = createNewVillage(T, data);
+    s = run(s, { type: 'openDailyChest' }, T);
+    s = run(s, { type: 'claimCalendar' }, T);
+    // Storage under 90%, so P3-11's "make room first" does not come first.
+    s.resources = { ...s.resources, acorns: 100, dew: 100 };
+    return s;
+  };
+
+  it('a finished task or an unlocked Scroll tier comes right after the chest, before any upgrade', () => {
+    const s = base();
+    s.pass.points = data.pass.pointsPerTier;
+    expect(nextObjective(s, T, data)).toEqual({ kind: 'claim', what: 'pass' });
+  });
+
+  it('a claimable achievement, then the Keep seal', () => {
+    const s = base();
+    const def = data.achievements[0];
+    s.achievements = {};
+    (s.stats as unknown as Record<string, number>)[def.stat as string] = def.tiers[0][0];
+    const view = achievementViews(s, 1, data).find((a) => a.def.id === def.id)!;
+    expect(view.claimable).toBe(true);
+    expect(nextObjective(s, T, data)).toEqual({ kind: 'claim', what: 'achievement' });
+  });
+
+  it('with a full army, an open rematch or a goal event step comes before a plain raid; never anything paid', () => {
+    const s = base();
+    const at = s.buildings[0];
+    s.buildings.push({ id: 'camp-x', type: 'army_camp', level: 1, x: at.x + 8, y: at.y + 8, upgrade: null, collector: null } as never);
+    s.army = { hedgehog_roller: 100 };
+    const o = nextObjective(s, T, data);
+    expect(['raid', 'rematch', 'goalEvent']).toContain(o.kind);
+    expect(JSON.stringify(o)).not.toMatch(/moonstones|jade|store|offer/i);
+  });
+
+  it('with nothing to build, the next Trial tier at or below the Keep comes before waiting for builders', () => {
+    const s = base();
+    const at = s.buildings[0];
+    s.buildings.push({ id: 'camp-y', type: 'army_camp', level: 1, x: at.x + 8, y: at.y + 8, upgrade: null, collector: null } as never);
+    s.resources = { ...s.resources, acorns: 0, dew: 0 };
+    for (const b of s.buildings) b.upgrade = { startedAt: T, endsAt: T + HOUR, toLevel: b.level + 1 } as never;
+    // With empty camps the chip never sends the player to a Trial they cannot fight (review M4).
+    expect(nextObjective(s, T, data).kind).not.toBe('trial');
+    s.army = { hedgehog_roller: 5 };
+    const o = nextObjective(s, T, data);
+    expect(['trial', 'drill']).toContain(o.kind);
+    if (o.kind === 'trial') expect(o.tier).toBeGreaterThanOrEqual(1);
   });
 });

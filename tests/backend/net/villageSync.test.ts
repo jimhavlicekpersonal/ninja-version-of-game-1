@@ -88,9 +88,11 @@ describe('server-owned village: the game side', () => {
     expect(placeCollector(s.controller, 'dew').ok).toBe(true);
     s.controller.dispatch({ type: 'syncRank', trophies: 500 }); // a server result: never sent back
     expect(s.conn.village!.pending).toBe(2);
+    // Sent while online (XPL-10: a timer command dated hours back would start when the server hears of it).
+    await s.conn.village!.flush();
     s.w.advance(6 * HOUR);
     for (const b of s.controller.state.buildings.filter((x) => s.controller.data.buildings[x.type].produces)) s.controller.dispatch({ type: 'collect', id: b.id });
-    expect(s.conn.village!.pending).toBe(4);
+    expect(s.conn.village!.pending).toBe(2);
     await s.conn.village!.flush();
     expect(s.conn.village!.pending).toBe(0);
     expect(s.conn.village!.corrections).toBe(0);

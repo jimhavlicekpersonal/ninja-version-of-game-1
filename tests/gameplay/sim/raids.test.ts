@@ -83,9 +83,10 @@ describe('raid schedule (#9)', () => {
 describe('shields (#18)', () => {
   it('heavier damage gives a longer shield', () => {
     expect(shieldHoursFor(10, data)).toBe(0);
-    expect(shieldHoursFor(30, data)).toBe(12);
-    expect(shieldHoursFor(65, data)).toBe(14);
-    expect(shieldHoursFor(95, data)).toBe(16);
+    // P3-01 (PAC-01, 2026-11-18, authorised): 12/14/16 -> 16/20/24 hours.
+    expect(shieldHoursFor(30, data)).toBe(16);
+    expect(shieldHoursFor(65, data)).toBe(20);
+    expect(shieldHoursFor(95, data)).toBe(24);
   });
 });
 
@@ -138,7 +139,9 @@ describe('bot raiders (#8)', () => {
     }
   });
 
-  it('get stronger as the defender climbs (attackers mirror the player’s own matchmaking)', () => {
+  // P2-02 (DEF-04, 2026-11-18; this item changes the rule the old test pinned): raiders come from the defender's
+  // Keep, not its honor, so holding raids (which raises honor) no longer summons a stronger raider.
+  it('come from the defender\'s Keep whatever its honor', () => {
     const { state } = raidable();
     const hall6 = { ...state, buildings: state.buildings.map((b) => (b.type === 'elder_toadstool' ? { ...b, level: 6 } : b)) };
     const avgHousing = (trophies: number) => {
@@ -147,7 +150,7 @@ describe('bot raiders (#8)', () => {
       return sum / 20;
     };
     expect(strengthFor(1800, data)).toBeGreaterThan(5);
-    expect(avgHousing(1900)).toBeGreaterThan(avgHousing(1200));
+    expect(avgHousing(1900)).toBe(avgHousing(1200));
     // Even a hall 6 village at very low trophies is raided by hall 5+ armies.
     expect(avgHousing(0)).toBeGreaterThanOrEqual(maxHousingAtHall(5, data) * 0.85);
   });

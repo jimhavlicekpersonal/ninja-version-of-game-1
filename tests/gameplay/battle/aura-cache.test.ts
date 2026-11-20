@@ -47,7 +47,7 @@ describe('aura lookups by kind (quality 28)', () => {
         }
       });
     }
-    expect(SIM_RULES).toBe(7);
-    expect(fnv64(parts.join('|'))).toBe('017e7540026ee6ec');
+    expect(SIM_RULES).toBe(8);
+    expect(fnv64(parts.join('|'))).toBe('7b32daf5ecedecb2'); // re-pinned for SIM_RULES 8 (2026-11-18), again for the haste carry and Rally after the Captain falls (review #3, #10)
   }, 120_000);
 });

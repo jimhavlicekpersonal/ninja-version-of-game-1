@@ -284,6 +284,8 @@ export interface BattleStore {
   /** Last gaps 2026-11-14: whether a recorded raid on this defender since `since` had this seed (a shared defense replay). */
   defendedBySeed(defenderId: string, seed: number, since: number): Promise<boolean>;
   recentTargets(attackerId: string, since: number): Promise<string[]>;
+  /** P3-12 review fix: whether this attacker has used a pvp ticket before (generated opponents included), other than `except`. */
+  attackedBefore(attackerId: string, except: string): Promise<boolean>;
   /** Retention: delete old battle records and tickets, then base versions nothing refers to. */
   prune(cutoffs: PruneCutoffs): Promise<PruneResult>;
 }

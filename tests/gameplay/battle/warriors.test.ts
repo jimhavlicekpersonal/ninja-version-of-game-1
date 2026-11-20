@@ -185,17 +185,33 @@ describe('support and companions', () => {
   it('heals allies over time, without healing dead warriors', () => {
     const sim = arena('herbalist', 'hedgehog_roller');
     sim.troops[1].hp = 10; step(sim);
-    expect(sim.troops[1].hp).toBeCloseTo(10 + sim.troops[1].maxHp * .025);
+    // P4-01 (SIM_RULES 8, restated): the heal is data (0.025 -> 0.015).
+    expect(sim.troops[1].hp).toBeCloseTo(10 + sim.troops[1].maxHp * data.troops.herbalist.kit!.strength!);
     sim.troops[1].dead = true; sim.troops[1].hp = 0; advance(sim, 10);
     expect(sim.troops[1].hp).toBe(0);
   });
   it('haste and resistance auras do not stack', () => {
-    const sim = arena('drum_monk', 'drum_monk', 'iron_monk', 'iron_monk', 'hedgehog_roller');
+    // P4-01/P4-08 (restated): haste speeds attacks in whole ticks, so the 10% drum shortens a 12-tick interval to 11 (it
+    // cannot shorten 8- or 10-tick ones); the target is an Armored Guardian.
+    const sim = arena('drum_monk', 'drum_monk', 'iron_monk', 'iron_monk', 'beetle_brute');
     const target = sim.troops[4];
-    expect(auraStrength(sim, target, 'haste')).toBe(.25);
+    // P4-01 (SIM_RULES 8, restated): the haste is data (0.25 -> 0.12).
+    expect(auraStrength(sim, target, 'haste')).toBe(data.troops.drum_monk.kit!.strength);
     expect(auraStrength(sim, target, 'resist')).toBe(.15);
-    step(sim); advance(sim, 7);
-    expect(target.hits).toBe(2); // base interval is 8 ticks, reduced by haste
+    step(sim); advance(sim, 11);
+    expect(target.hits).toBe(2); // hits on ticks 1 and 12: the 12-tick interval is 11 with haste (12 without)
+  });
+  it('a 10-tick warrior attacks about 10% more often beside a Drum Monk (the overshoot carries, review #3)', () => {
+    const hits = (types: string[]) => {
+      const sim = arena(...types);
+      const t = sim.troops[sim.troops.length - 1];
+      step(sim); advance(sim, 219);
+      return t.hits;
+    };
+    const plain = hits(['iron_monk']);
+    const drummed = hits(['drum_monk', 'iron_monk']);
+    expect(plain).toBe(22);
+    expect(drummed).toBeGreaterThanOrEqual(24);
   });
   it('Bell Warden takes targeting priority over a closer warrior', () => {
     const sim = arena('hedgehog_roller', 'bell_warden');

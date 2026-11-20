@@ -235,6 +235,12 @@ html, body {
   background: var(--paper); border-radius: 24px; box-shadow: var(--edge), var(--hairline), var(--shadow-soft), inset 0 -4px 0 rgba(38, 48, 61, 0.06);
   padding: 12px 14px 14px; animation: sheet-in .3s cubic-bezier(.3, 1.5, .5, 1); max-height: 60vh; overflow: auto;
 }
+/* P6-09 (PLY-02): the sheet is a column whose head and action row stay in view while the middle scrolls, so
+   Upgrade, Collect and Finish are never below the scroll box or under the bottom bar. */
+.sheet { display: flex; flex-direction: column; overscroll-behavior: contain; }
+.sheet > * { flex: none; }
+.sheet > .sheet-head { position: sticky; top: -12px; z-index: 2; background: #fbf6ea; margin: -12px -14px 0; padding: 12px 14px 4px; border-radius: inherit; }
+.sheet > .actions:last-child { position: sticky; bottom: -14px; z-index: 2; background: #f3e9d4; margin: 8px -14px -14px; padding: 8px 14px 14px; box-shadow: 0 -1px 0 rgba(38, 48, 61, .1); }
 @keyframes sheet-in { from { transform: translate(-50%, 24px) scale(.95); opacity: 0; } to { transform: translate(-50%, 0); opacity: 1; } }
 .sheet-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
 .sheet-title { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
@@ -550,6 +556,9 @@ details summary { cursor: pointer; font-weight: 800; margin: 8px 0 4px; }
 
 .tut-bubble button { pointer-events: auto; }
 .tut-bubble.low { top: auto; bottom: calc(12px + var(--safe-b)); padding: 8px 12px; opacity: .97; }
+/* P6-09: the skip link in the bubble's top corner (never beside the bottom bar), and room for it in the text. */
+.tut-bubble .tut-skip.corner { position: absolute; top: 2px; inset-inline-end: 10px; padding: 4px 2px; min-height: 0; }
+.tut-bubble .tut-body { padding-top: 14px; }
 .tut-bubble.low .tut-face { width: 36px; height: 36px; }
 .tut-bubble.low .tut-body p { font-size: 0.8125rem; margin-bottom: 4px; }
 
@@ -605,11 +614,13 @@ details summary { cursor: pointer; font-weight: 800; margin: 8px 0 4px; }
 .army-bar .coming { background: linear-gradient(#ffe08a, var(--sun)); }
 .army-strip-line { display: flex; align-items: center; gap: 8px; margin-top: 8px; min-height: 42px; }
 .army-strip-line img { width: 34px; height: 32px; object-fit: contain; flex: none; }
-.army-active { flex: 1; min-width: 0; }
-.army-active-name { display: flex; gap: 6px; }
-.army-active-name b { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* P6-09: the name keeps the column's width (it was cut to "S…" at 320 px); the time drops under it when they
+   do not fit side by side, inside the line's fixed 42 px so the strip keeps its height. */
+.army-active { flex: 1 1 5.5rem; min-width: 5.5rem; }
+.army-active-name { display: flex; flex-wrap: wrap; column-gap: 6px; row-gap: 0; line-height: 1.2; }
+.army-active-name b { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1 1 auto; }
 .army-active-name span { flex: none; }
-.chip.army-noroom { font-size: 0.75rem; color: #8a4b12; }
+.chip.army-noroom { font-size: 0.75rem; color: #8a4b12; min-width: 0; flex: 0 1 auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .army-strip-line .btn { min-height: 44px; padding: 4px 10px; font-size: 0.8125rem; }
 .progress.thin { height: 6px; margin-top: 3px; }
 .army-note { color: #8a4b12; font-weight: 700; }
@@ -660,7 +671,34 @@ details summary { cursor: pointer; font-weight: 800; margin: 8px 0 4px; }
 .army-pill.busy { background: linear-gradient(#d9a03a, var(--sun-dark)); }
 .takeover { position: fixed; inset: 0; z-index: 10000; display: grid; place-items: center; padding: 16px; background: rgba(20, 26, 34, .72); }
 /* Sideways on a phone the pinned strip would take half the screen: let it scroll away. */
-@media (max-height: 480px) { .army-head { position: static; } }
+/* P6-09 (PLY-14): sideways on a phone the Army panel opened with no warrior row in view. The strip and the tabs
+   share one row, the empty detail line goes, and the head stays pinned at that height. */
+@media (max-height: 480px) {
+  .army-head { display: flex; align-items: center; gap: 12px; padding-bottom: 6px; }
+  .army-head .army-strip { flex: 1 1 0; min-width: 0; }
+  .army-head .army-tabrow { flex: none; }
+  .army-head .army-tabs { margin-bottom: 0; }
+  .army-strip-line { margin-top: 2px; min-height: 36px; }
+  .army-strip p.army-detail { margin: 0; }
+  .army-strip p.army-detail.empty { display: none; }
+  /* A shorter dialog title bar and one-line descriptions leave the first card's buttons in view at 390 px. */
+  .modal-head { padding-block: 4px 3px; }
+  .modal-head::after { bottom: 2px; }
+  .training .army-desc { display: -webkit-box; -webkit-line-clamp: 1; line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
+  .training .stack-row.refill .muted.small { display: -webkit-box; -webkit-line-clamp: 1; line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
+}
+/* P6-09: on a short or narrow phone the first warrior card's buttons are in view when the panel opens. */
+@media (max-height: 600px) { .training .dojo-speed { display: none; } }
+@media (max-width: 400px) {
+  .army-tabrow { gap: 6px; }
+  .army-tabs.shop-tabs { flex-wrap: nowrap; gap: 4px; }
+  .army-tabs.shop-tabs button { padding-inline: 9px; min-width: 0; }
+  .training .stack-row.refill .muted.small { display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+}
+/* Under 400 px the Codex button is its icon, so the three tabs keep one row. */
+@media (max-width: 400px) { .codex-btn .codex-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; } .codex-btn { min-width: 44px; padding-inline: 10px; } }
+/* P6-09: the daily chest's Open button stays in view under the odds while the panel scrolls. */
+.daily > .actions { position: sticky; bottom: -12px; z-index: 2; background: #f3e9d4; margin-inline: -16px; padding: 8px 16px 12px; box-shadow: 0 -1px 0 rgba(38, 48, 61, .1); }
 /* Keep the expanded roster filters comfortable to use on phones. */
 .training .actions select {
   min-height: 44px;
@@ -828,6 +866,12 @@ a.btn.primary, a.btn.danger, a.btn.sky { color: #fff; }
 .objective-chip { display: inline-flex; align-items: center; gap: 6px; pointer-events: auto; max-width: 100%; min-height: 36px; padding-block: 5px; padding-inline: 6px 12px; border: 0; border-radius: 999px; background: rgba(20, 26, 34, .82); color: #fff; font: inherit; font-size: 0.8125rem; font-weight: 700; text-align: start; box-shadow: 0 2px 8px rgba(0, 0, 0, .3); }
 .objective-chip .icon { width: 22px; height: 22px; flex: none; }
 .objective-chip span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* P6-05 (UIS-04): the chip's sentence takes two lines before it is cut (a 76-106 character line on a 20-40 character
+   chip); the shortfall shows as cost chips. */
+.objective-chip { border-radius: 18px; }
+.objective-chip > span:not([aria-hidden]) { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; line-height: 1.2; min-width: 0; }
+.objective-chip .cost { display: inline-flex; gap: 3px; flex: none; }
+.objective-chip .cost .chip { font-size: 0.75rem; padding: 1px 6px; min-height: 0; background: rgba(255, 255, 255, .16); color: #fff; }
 .objective-chip:disabled { opacity: .85; }
 .unlock-chip { display: flex; align-items: center; gap: 4px; pointer-events: auto; max-width: 100%; }
 /* min-width 0: a long translated label truncates instead of pushing the dismiss button under the side rail. */
@@ -979,6 +1023,12 @@ html[dir="rtl"] .objective-chip, html[dir="rtl"] .log-row { text-align: right; }
 .b-left.collapsed .b-caret::before { content: '▸'; }
 html[dir="rtl"] .b-left.collapsed .b-caret::before { content: '◂'; }
 .b-left.collapsed .b-more { display: none; }
+/* P6-09: the opponent's kind stays visible on the folded line. */
+.b-name .b-kind { flex: none; font-size: 0.75rem; padding: 1px 6px; min-height: 0; margin-inline-start: 4px; }
+/* P6-09/P6-11: with the kind tag on the line, the level and tag wrap under the name instead of squeezing it into
+   "Thund er Gate"; a single word longer than the card still breaks. */
+.b-left .b-name { flex-wrap: wrap; row-gap: 2px; }
+.b-left .b-name bdi { overflow-wrap: break-word; flex: 0 1 auto; }
 .b-left.collapsed { padding-top: 4px; padding-bottom: 4px; }
 /* Art audit F12: battle cards show the warrior's badge (role disc and tier ring) instead of the dark field sprite. */
 .troop-card.badge-art img { height: 46px; padding: 2px 6px 0; filter: drop-shadow(0 1px 1px rgba(38, 48, 61, .3)); }
@@ -1119,3 +1169,55 @@ html[dir="rtl"] .training .actions.army-filters select { padding: 6px 8px 6px 20
 @media (max-height: 480px) {
   html[dir="rtl"] .hud-head { right: calc(8px + var(--safe-r)); left: calc(8px + var(--safe-l) + 108px); }
 }
+
+/* P6-09: sideways on a phone the sheet is a side panel from under the top bar to the bottom edge (in the lower
+   strip its sticky head and action row covered each other). */
+@media (max-height: 480px) and (orientation: landscape) {
+  .sheet { top: calc(96px + var(--safe-t)); bottom: calc(8px + var(--safe-b)); max-height: none; left: calc(8px + var(--safe-l)); transform: none; width: min(460px, 56vw); animation: none; }
+}
+/* P6-09 (PLY-02): on a phone the sheet is as wide as the screen and the rail's fold toggle sat over its close
+   button: the rail steps aside while a sheet is open (the sheet's close button brings it back). */
+@media (max-width: 600px) { #hud:has(.sheet:not([hidden])) .side-rail { visibility: hidden; } }
+/* P6-13: the declared stake's star wears a ring all fight; its downside sits right under the stake chips. */
+.b-stars .star.staked { border-radius: 50%; box-shadow: 0 0 0 2px var(--sun-dark), 0 0 8px rgba(233, 180, 76, .7); }
+.scout-report .stake-help { margin: 2px 0 4px; color: #8a4b12; font-weight: 700; }
+.carry-preview { color: #8a4b12; }
+/* P6-01: squad orders, one row above the troop cards (live battles). */
+.squad-row {
+  position: absolute; left: 50%; transform: translateX(-50%); bottom: calc(160px + var(--safe-b)); z-index: 1;
+  display: flex; gap: 6px; align-items: center; max-width: calc(100% - 16px); pointer-events: auto; touch-action: pan-x;
+  padding: 4px 6px; border-radius: 999px; background: rgba(247, 240, 225, .9); box-shadow: 0 2px 8px rgba(15, 20, 30, .2);
+}
+.squad-row .squad-group { display: flex; gap: 4px; }
+.squad-row .chip { min-height: 44px; border: none; cursor: pointer; font: 700 0.8125rem var(--font); padding: 4px 10px; white-space: nowrap; }
+.squad-row .chip.on { background: linear-gradient(#463c63, var(--plum)); color: #fff; }
+.squad-row .squad-order { background: #ffe8a8; gap: 4px; }
+.squad-row .squad-hold { background: linear-gradient(#ff8c7a, var(--berry)); color: #fff; }
+@media (max-width: 360px) { .squad-row .chip { padding: 4px 7px; font-size: 0.75rem; } .squad-row { gap: 3px; padding: 3px 4px; } }
+@media (max-height: 480px) {
+  #battle-hud .squad-row { bottom: calc(76px + var(--safe-b)); left: calc(158px + var(--safe-l)); transform: none; max-width: calc(100% - 316px - var(--safe-l) - var(--safe-r)); }
+}
+/* P6-02: the post-raid review, one row per point. */
+.what-if { display: grid; gap: 6px; margin-top: 6px; }
+.what-if-row { display: flex; align-items: center; gap: 10px; }
+.what-if-row .btn { min-width: 56px; }
+.what-if-btn { margin-top: 8px; }
+/* P6-12: the builders pill is a button; the garrison crew's free places sit beside the artisans' count. */
+button.res.res-builders { border: none; font: inherit; color: inherit; cursor: pointer; }
+.res-builders .crew-badge { display: inline-flex; align-items: center; gap: 2px; margin-inline-start: 4px; font-weight: 800; font-size: 0.75rem; }
+.res-builders .crew-badge .icon { width: 14px; height: 14px; }
+/* P6-08: a resource gain pulses the pill once (no movement with reduced motion: the global rule ends it). */
+.res.gain { animation: res-gain .6s ease-out; }
+@keyframes res-gain { 0% { box-shadow: 0 0 0 0 rgba(255, 210, 63, .8); } 100% { box-shadow: 0 0 0 10px rgba(255, 210, 63, 0); } }
+.milestone .ceremony-card p.small { margin: 4px 0; }
+/* P6-14: a rail button's label beside it the first time it appears; the Honor pill as a button. */
+.side-rail .rail-intro { position: absolute; inset-inline-end: calc(100% + 8px); top: 50%; transform: translateY(-50%); white-space: nowrap; padding: 4px 10px; border-radius: 999px; background: rgba(20, 26, 34, .85); color: #fff; font: 700 0.8125rem var(--font); pointer-events: none; animation: fade .3s ease-out; }
+html[dir="rtl"] .side-rail .rail-intro { inset-inline-end: auto; inset-inline-start: calc(100% + 8px); }
+button.res.res-trophies { border: none; font: inherit; color: inherit; cursor: pointer; }
+.round-btn .badge.dot { min-width: 18px; }
+/* P6-16: an unaffordable Next stays tappable (it says why) but reads as unavailable. */
+.btn.gold.unaffordable { filter: grayscale(.7); opacity: .7; }
+/* The objective chip's arrow never shrinks (in German the two-line text squeezed it to 3-5 px). */
+.objective-chip > span[aria-hidden] { flex: none; overflow: visible; }
+/* German at 320-390 px: the squad chips wrap to a second line instead of scrolling (the row's height is in the safe area). */
+.squad-row { flex-wrap: wrap; justify-content: center; border-radius: 18px; row-gap: 4px; }

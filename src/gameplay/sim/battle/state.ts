@@ -74,6 +74,8 @@ export interface SimBuilding {
   reflectHits?: number;
   /** Lightning Rod Tower: absorbed damage not yet fired back. */
   charge?: number;
+  /** Lightning Rod Tower: the tick its last `absorbed` event went out (P4-10: at most one a second; not in the hash). */
+  absorbedAt?: number;
 }
 
 /** A Smoke Bomb cloud on the map. Active while tick < endsTick. */

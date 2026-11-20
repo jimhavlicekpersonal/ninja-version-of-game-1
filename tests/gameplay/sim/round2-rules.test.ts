@@ -5,13 +5,13 @@
  */
 import { describe, expect, it } from 'vitest';
 import { generateOpponent } from '../../../src/gameplay/sim/battle/basegen';
-import { armyDiversity, carriedLoot, diversityShare, raidCarry, stakeMet, stakeMultiplier, stakeOptions, validStake } from '../../../src/gameplay/sim/carry';
+import { armyDiversity, carriedLoot, diversityShare, raidCarry, stakeMet, stakeMultiplier, stakeOptions, trainableRoles, validStake } from '../../../src/gameplay/sim/carry';
 import { exhaustionFactor, scaleBaseLoot } from '../../../src/gameplay/sim/defense';
 import { lootPenalty } from '../../../src/gameplay/sim/matchmaking';
 import { defenseHonorLoss, winTrophies } from '../../../src/gameplay/sim/ranks';
 import type { VillageState } from '../../../src/gameplay/sim/types';
 import { applyCommand, payableInProvisions, placeQuote, upgradeQuote } from '../../../src/gameplay/sim/village';
-import { data, newGame } from './helpers';
+import { data, newGame, pointDeploys } from './helpers';
 
 const H = 3_600_000;
 
@@ -41,8 +41,12 @@ describe('exhausted stores', () => {
     expect(exhaustionFactor([], 100 * H, data)).toBe(1);
     expect(exhaustionFactor([lost(2, 1)], 100 * H, data)).toBe(f);
     expect(exhaustionFactor([lost(2, 1), lost(20, 3)], 100 * H, data)).toBe(f * f);
-    // Held raids and raids before the window do not count.
-    expect(exhaustionFactor([lost(2, 0), lost(30, 2)], 100 * H, data)).toBe(1);
+    // Held raids and raids before the window do not count. P2-06 (2026-11-18): the window is 36 hours,
+    // so a raid 30 hours ago (a once-a-day player) now counts.
+    const w = data.raids.exhaustion!.windowHours;
+    expect(w).toBe(36);
+    expect(exhaustionFactor([lost(2, 0), lost(w + 1, 2)], 100 * H, data)).toBe(1);
+    expect(exhaustionFactor([lost(30, 2)], 100 * H, data)).toBe(f);
   });
 
   it('scaleBaseLoot scales every building and rounds down', () => {
@@ -108,14 +112,16 @@ describe('declared stakes', () => {
     const { state, clock } = newGame({ acorns: 0, dew: 0 });
     const s0: VillageState = { ...state, army: { hedgehog_roller: 20 } };
     const base = { name: 'Dummy', hallLevel: 1, buildings: [{ id: 'h', type: 'elder_toadstool', level: 1, x: 18, y: 18, loot: { dew: 100 } }] };
-    const deployments = Array.from({ length: 12 }, (_, i) => ({ tick: i, troop: 'hedgehog_roller', x: 25, y: 19 }));
+    const deployments = pointDeploys({ seed: 4, base, army: s0.army }, 'hedgehog_roller', 12);
     const win = applyCommand(s0, { type: 'battleEnd', record: { at: clock.now(), opponentName: 'Dummy', setup: { seed: 4, base, army: s0.army }, deployments, stake: 3 } }, clock.now(), data);
     expect(win.ok).toBe(true);
     if (!win.ok) return;
     const rec = win.state.battleLog.at(-1)!;
     expect(rec.result.stars).toBe(3);
     expect(rec.stake).toBe(3);
-    expect(rec.carry).toBeCloseTo(data.raids.diversity!.minShare * data.raids.stakes!.byStars['3'], 9);
+    // P2-15 (2026-11-18, restated as the item says): a new village trains one role, so the one-role army carries in full.
+    expect(trainableRoles(s0, data)).toBeLessThan(2);
+    expect(rec.carry).toBeCloseTo(data.raids.stakes!.byStars['3'], 9);
     expect(win.state.resources.dew).toBe(Math.floor(100 * rec.carry!));
     // The same raid stopped after one tick (no star): the declared 2 stars are missed.
     const miss = applyCommand(s0, { type: 'battleEnd', record: { at: clock.now(), opponentName: 'Dummy', setup: { seed: 4, base, army: s0.army }, deployments: deployments.slice(0, 1), endTick: 1, stake: 2 } }, clock.now(), data);
@@ -131,7 +137,7 @@ describe('declared stakes', () => {
     const { state, clock } = newGame({ acorns: 0, dew: 0 });
     const s0: VillageState = { ...state, army: { hedgehog_roller: 20 } };
     const base = { name: 'Dummy', hallLevel: 1, buildings: [{ id: 'h', type: 'elder_toadstool', level: 1, x: 18, y: 18, loot: { dew: 100 } }] };
-    const deployments = Array.from({ length: 12 }, (_, i) => ({ tick: i, troop: 'hedgehog_roller', x: 25, y: 19 }));
+    const deployments = pointDeploys({ seed: 4, base, army: s0.army }, 'hedgehog_roller', 12);
     const r = applyCommand(s0, { type: 'battleEnd', record: { at: clock.now(), opponentName: 'Dummy', setup: { seed: 4, base, army: s0.army }, deployments, stake: 9 } }, clock.now(), data);
     expect(r.ok && r.state.battleLog.at(-1)!.stake).toBeUndefined();
   });
