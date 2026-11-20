@@ -182,6 +182,10 @@ export async function applyCommands(ctx: ServerContext, me: Player, body: Partia
   for (const c of list) {
     if (!c || !Number.isInteger(c.seq) || c.seq < 1 || !Number.isFinite(c.t) || !c.command || typeof c.command.type !== 'string') throw badBatch('Each command needs a seq, a time and a command.');
   }
+  // Security audit 2026-11-20 (C1, critical): refusals are remembered by command number, so a second command
+  // under the same number inherited the first one's verdict and skipped every check below (a staffAdjust or a
+  // forged grantPurchase after a harmless command, battles past the budget). One number, one command.
+  if (new Set(list.map((c) => c.seq)).size !== list.length) throw badBatch('Each command needs its own seq.');
   const sorted = [...list].sort((a, b) => a.seq - b.seq);
   const device = typeof body!.device === 'string' && /^[A-Za-z0-9_-]{8,64}$/.test(body!.device) ? body!.device : null;
   // Refusals decided before the replay, by command number: a retry after a conflict reuses them, so the
@@ -205,7 +209,9 @@ export async function applyCommands(ctx: ServerContext, me: Player, body: Partia
       const type = c.command.type;
       const battle = BATTLE_COMMANDS.has(type);
       let error: string | null;
-      if (decided.has(c.seq)) error = decided.get(c.seq)!;
+      // Only player commands, whatever was decided before (C1: a second guard behind the unique numbers).
+      if (!PLAYER_COMMANDS.has(type)) error = 'NOT_ALLOWED';
+      else if (decided.has(c.seq)) error = decided.get(c.seq)!;
       else {
         error = null;
         if (!PLAYER_COMMANDS.has(type)) error = 'NOT_ALLOWED';

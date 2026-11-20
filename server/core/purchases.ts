@@ -313,6 +313,10 @@ export async function redeem(ctx: ServerContext, me: Player, body: { store?: unk
     // GLOBAL-005: an intent the game released (or whose hold ran out) reserves nothing any more, so the
     // receipt counts now too: a modified game cannot free its hold, buy something else, then pay this one.
     if (!intent || intent.used || intent.holdUntil <= now) await holdOverCap(tx, ctx, me, counted, now);
+    // Security audit 2026-11-20 (P1): an open intent reserved only its own price. A receipt for a dearer
+    // product (reserve $0.99, pay $99.99 with that token) or at a dearer local price counts the difference
+    // now; the intent's own hold is already in what `spentCents` adds up.
+    else if (counted > intent.cents) await holdOverCap(tx, ctx, me, counted - intent.cents, now);
     const heldOnServer = Boolean(await tx.getVillage(me.id));
     const row: PurchaseRow = {
       store,
