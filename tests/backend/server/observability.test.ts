@@ -148,7 +148,7 @@ describe('observability over HTTP', () => {
     const down = await setup({ readiness: { redis: async () => Promise.reject(new Error('connection refused')) } });
     const r = await down.call('GET', '/readyz');
     expect(r.status).toBe(503);
-    expect(r.body).toEqual({ ok: false, checks: { db: 'ok', redis: 'down: connection refused' } });
+    expect(r.body).toEqual({ ok: false, checks: { db: 'ok', redis: 'down' } });
   });
 
   it('sends server errors (5xx) to Sentry, never client errors', async () => {

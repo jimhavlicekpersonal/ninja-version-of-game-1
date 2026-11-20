@@ -97,3 +97,20 @@ export function routeKit(app: FastifyInstance, core: ServerCore, verified: WeakM
       }),
   };
 }
+
+/**
+ * The path a request was routed by, for every check that looks at a path (security audit 2026-11-20, A1).
+ * The router decodes percent-escapes before it matches, so `/%61dmin/…` reaches the `/admin/…` routes and
+ * `/%761/me` reaches `/v1/me`: a check on the raw `req.url` would miss both. The matched route's pattern is
+ * what the router chose; an unmatched request gets its decoded path (it is answered 404 anyway).
+ */
+export function routedPath(req: { url: string; routeOptions?: { url?: string } }): string {
+  const route = req.routeOptions?.url;
+  if (route) return route;
+  const raw = req.url.split('?')[0]!;
+  try {
+    return decodeURIComponent(raw);
+  } catch {
+    return raw;
+  }
+}

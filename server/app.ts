@@ -21,7 +21,7 @@ import type { Player, Repo } from './repo';
 import { battleRoutes } from './routes/battles';
 import { complianceRoutes } from './routes/compliance';
 import { growthRoutes, growthStaffRoutes } from './routes/growth';
-import { bearer, routeKit, type RateConfig } from './routes/kit';
+import { bearer, routedPath, routeKit, type RateConfig } from './routes/kit';
 import { playerRoutes } from './routes/player';
 import { socialRoutes } from './routes/social';
 import { staffRoutes, type StaffRoute } from './routes/staff';
@@ -256,7 +256,8 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
   app.addHook('onRequest', async (req, reply) => {
     const v = req.headers[ClientHeaders.protocol];
     const tooOldBuild = typeof req.headers[ClientHeaders.clientBuild] === 'string' && core.ctx.rules.buildTooOld(req.headers[ClientHeaders.clientBuild] as string);
-    if (v !== undefined && req.url.startsWith('/v1/') && req.url !== Routes.hello && (Number(v) < MIN_PROTOCOL || tooOldBuild)) {
+    const path = routedPath(req);
+    if (v !== undefined && path.startsWith('/v1/') && path !== Routes.hello && (Number(v) < MIN_PROTOCOL || tooOldBuild)) {
       metrics.count('tk_errors_total', { code: 'version_mismatch' });
       metrics.count('tk_refused_total', { reason: tooOldBuild ? 'build_too_old' : 'protocol_too_old', rules: String(req.headers[ClientHeaders.simRules] ?? '?').slice(0, 8) });
       const body = bodyFor('version_mismatch', 'version.too_old');
@@ -315,7 +316,10 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
     return reply.code(429).send(body);
   };
   app.addHook('onRequest', async (req, reply) => {
-    if (req.method === 'OPTIONS' || req.url === '/healthz' || req.url === '/readyz' || req.url === '/metrics') return;
+    // Only the cheap liveness answer skips the address limit: /readyz takes a database connection and
+    // /metrics a token guess (security audit 2026-11-20, A4/A5), and the address limit is loose enough for probes.
+    const path = routedPath(req);
+    if (req.method === 'OPTIONS' || path === '/healthz') return;
     const t = now();
     // IPv6 by /64 (one subscriber's block); IPv4 as it is (rateLimit.ts: why the IP limits are loose).
     const ip = `ip:${ipKey(req.ip)}`;
@@ -326,7 +330,7 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
     // per sign-in). The token is checked here, once (the route reuses the player); a token that is not a
     // player's (junk, a staff token, a suspended account) is counted by its hash, never in the clear.
     let who = token ? `t:${createHash('sha256').update(token).digest('hex').slice(0, 32)}` : ip;
-    if (token && req.url.startsWith('/v1/') && req.url !== Routes.hello && req.url !== Routes.balance) {
+    if (token && path.startsWith('/v1/') && path !== Routes.hello && path !== Routes.balance) {
       try {
         const me = await core.authenticate(token);
         verified.set(req, me);
@@ -350,7 +354,8 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
   const adminAllowed = opts.adminAllowIps?.length ? ipAllowList(opts.adminAllowIps) : null;
   if (adminAllowed) {
     app.addHook('onRequest', async (req, reply) => {
-      if ((req.url === '/admin' || req.url.startsWith('/admin/') || req.url.startsWith('/admin?')) && !adminAllowed(req.ip)) {
+      const path = routedPath(req);
+      if ((path === '/admin' || path.startsWith('/admin/')) && !adminAllowed(req.ip)) {
         metrics.count('tk_errors_total', { code: 'admin_ip_refused' });
         return reply.code(404).send(bodyFor('not_found', 'request.not_found'));
       }
@@ -456,7 +461,7 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
   // Liveness: the process answers (no dependencies, so a database outage never restarts every instance).
   app.get('/healthz', async () => ({ ok: true, version: opts.version ?? 'dev', uptimeS: Math.floor((Date.now() - started) / 1000) }));
   // Readiness: the database (and Redis, …) answer within 2 s each; 503 otherwise.
-  app.get('/readyz', async (_req, reply) => {
+  app.get('/readyz', async (req, reply) => {
     const checks: Record<string, () => Promise<unknown>> = { db: () => opts.repo.ping(), ...opts.readiness };
     const out: Record<string, string> = {};
     let ok = true;
@@ -466,7 +471,9 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
         out[name] = 'ok';
       } catch (e) {
         ok = false;
-        out[name] = `down: ${(e as Error).message}`;
+        // The detail names internal hosts and users: it goes to the log, never to the caller (audit A4).
+        req.log.warn({ check: name, err: (e as Error).message }, 'readiness check failed');
+        out[name] = 'down';
       }
     }
     return reply.code(ok ? 200 : 503).send({ ok, checks: out });
@@ -474,13 +481,20 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
   // Prometheus metrics, only with a token (they describe the traffic).
   if (opts.metricsToken) {
     const want = createHash('sha256').update(opts.metricsToken).digest();
+    // A wrong metrics token is counted and limited per address like a wrong staff token (audit A5).
+    const metricsRefused = async (req: FastifyRequest, reply: FastifyReply) => {
+      metrics.count('tk_staff_auth_failures_total', { reason: bearer(req) ? 'wrong_metrics_token' : 'no_metrics_token' });
+      const d = await limiter.hit('staffAuth', `ip:${ipKey(req.ip)}`, now());
+      if (!d.ok) return tooMany(reply, d, 'rate.staff', 'staffAuth');
+      return reply.code(401).send({ error: 'unauthorized', message: 'Metrics token required.' });
+    };
     app.get('/metrics', async (req, reply) => {
-      if (!sameSecret(bearer(req), want)) return reply.code(401).send({ error: 'unauthorized', message: 'Metrics token required.' });
+      if (!sameSecret(bearer(req), want)) return metricsRefused(req, reply);
       return reply.type('text/plain; version=0.0.4').send(metrics.render());
     });
     // Backend A31: the same address check for whoever holds the metrics token (a monitoring probe).
     app.get('/metrics/ip', async (req, reply) => {
-      if (!sameSecret(bearer(req), want)) return reply.code(401).send({ error: 'unauthorized', message: 'Metrics token required.' });
+      if (!sameSecret(bearer(req), want)) return metricsRefused(req, reply);
       return ipEcho(req);
     });
   }

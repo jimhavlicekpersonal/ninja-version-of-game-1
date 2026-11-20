@@ -185,6 +185,7 @@ export function checkConfig(env: Record<string, string | undefined>): { deploy: 
     if (env.MIGRATE_ON_BOOT === '1') warnings.push('MIGRATE_ON_BOOT=1 in production: run "npm run server:migrate" as a release step instead when there is more than one instance.');
     if (!env.SENTRY_DSN) warnings.push('SENTRY_DSN is not set: server errors are only in the log.');
     if (!env.METRICS_TOKEN) warnings.push('METRICS_TOKEN is not set: there is no /metrics for alerts.');
+    else if (env.METRICS_TOKEN.length < 24) errors.push('METRICS_TOKEN must be at least 24 characters in production (it is guessed like a staff token).');
   }
   if (deploy !== 'production' && env.TRUST_PROXY === 'true') warnings.push('TRUST_PROXY=true lets any client pick its IP address; set the hop count (e.g. "1") instead.');
   for (const [name, check] of [

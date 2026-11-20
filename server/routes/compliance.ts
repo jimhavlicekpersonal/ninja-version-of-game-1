@@ -9,7 +9,7 @@
  */
 import { ComplianceRoutes, type ConsumptionConsentRequest, type ReplayPrivacyRequest, type TermsRequest } from '../../src/backend/net/compliance';
 import { allowedWhileUnder13Offline } from '../core/compliance';
-import { bearer, type RouteKit } from './kit';
+import { bearer, routedPath, type RouteKit } from './kit';
 import { body, boolean, fields, string } from './schema';
 
 export function complianceRoutes({ app, player, core }: RouteKit): void {
@@ -17,7 +17,9 @@ export function complianceRoutes({ app, player, core }: RouteKit): void {
   if (c.under13Mode() === 'offline') {
     app.addHook('preHandler', async (req) => {
       const token = bearer(req);
-      if (!token || !req.url.startsWith('/v1/') || allowedWhileUnder13Offline(req.method, req.url)) return;
+      // The routed path, not the raw URL: `/%761/me` reaches `/v1/me` (security audit 2026-11-20, A2).
+      const path = routedPath(req);
+      if (!token || !path.startsWith('/v1/') || allowedWhileUnder13Offline(req.method, path)) return;
       const me = await core.authenticate(token).catch(() => null);
       if (me) await c.checkUnder13Online(me);
     });

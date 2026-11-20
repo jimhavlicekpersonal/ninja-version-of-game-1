@@ -93,7 +93,7 @@ describe('A9: graceful shutdown', () => {
     draining = true;
     const r = await app.inject({ method: 'GET', url: '/readyz' });
     expect(r.statusCode).toBe(503);
-    expect(r.json().checks.draining).toMatch(/shutting down/);
+    expect(r.json().checks.draining).toBe('down');
     await app.close();
   });
 });
