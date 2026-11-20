@@ -801,7 +801,8 @@ export interface MemberView {
   role: GroveRole;
   trophies: number;
   hallLevel: number;
-  lastSeenAt: number;
+  /** Absent when the member hides being online (every player under 18; security audit 2026-11-20, S4). */
+  lastSeenAt?: number;
   /** Grove XP from donations. */
   xp: number;
 }

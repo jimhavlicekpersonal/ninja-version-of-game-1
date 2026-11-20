@@ -48,7 +48,7 @@ describe('security audit 2026-11-20: one command per seq (C1)', () => {
         ],
       }),
     ).rejects.toMatchObject({ status: 400 });
-    const after = deserialize((await ann.getVillage()).file, data);
+    const after = deserialize((await ann.getVillage())!.file, data);
     expect(after.resources.moonstones).toBe(before.resources.moonstones);
     expect(after.pass.premium).toBe(false);
   });

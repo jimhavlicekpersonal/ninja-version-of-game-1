@@ -116,6 +116,28 @@ export async function baseShareable(ctx: ServerContext, defenderId: string): Pro
   return (await ctx.repo.getCompliance(defenderId))?.noBaseInReplays !== true;
 }
 
+/** A base's layout, whatever its ids, names and loot: the buildings by type, level and tile. */
+function layoutKey(base: BaseLayout): string {
+  return base.buildings
+    .map((b) => `${b.type}:${b.level}:${b.x}:${b.y}`)
+    .sort()
+    .join('|');
+}
+
+/** Most raided players looked at for a layout match (S7): a month of raids by one player, kept bounded. */
+const MAX_LAYOUT_TARGETS = 200;
+
+/** Whether this layout is one this player raided on a base that may not be shared (a minor's, or opted out). */
+async function privateLayoutRaided(ctx: ServerContext, sharerId: string, base: BaseLayout, since: number): Promise<boolean> {
+  const key = layoutKey(base);
+  const targets = [...new Set(await ctx.repo.recentTargets(sharerId, since))].filter((id) => id !== DELETED_PLAYER.id).slice(0, MAX_LAYOUT_TARGETS);
+  for (const id of targets) {
+    if (await baseShareable(ctx, id)) continue;
+    for (const a of await ctx.repo.defensesFor(id, since, 100)) if (a.attackerId === sharerId && a.base && layoutKey(a.base) === key) return true;
+  }
+  return false;
+}
+
 /** How far back the server looks for the raid a shared replay shows (attack records are kept 30 days). */
 const RAID_LOOKBACK_MS = 31 * DAY;
 
@@ -160,6 +182,9 @@ export async function share(ctx: ServerContext, me: Player, body: Partial<ShareR
   const defenderId = typeof s.seed === 'number' ? await g.attackDefenderBySeed(me.id, s.seed, now - RAID_LOOKBACK_MS) : null;
   const realDefender = defenderId && defenderId !== DELETED_PLAYER.id ? defenderId : null;
   if (realDefender && !(await baseShareable(ctx, realDefender))) throw fail(409, 'conflict', 'replay.base_private');
+  // Security audit 2026-11-20 (S7): the seed is the request's, so a private base raided by this player is found by its
+  // layout too (seed + 1 showed a minor's base as "practice").
+  if (!realDefender && (await privateLayoutRaided(ctx, me.id, base, now - RAID_LOOKBACK_MS))) throw fail(409, 'conflict', 'replay.base_private');
   const endTick = Number.isInteger(body.endTick) ? body.endTick : undefined;
   let result;
   try {

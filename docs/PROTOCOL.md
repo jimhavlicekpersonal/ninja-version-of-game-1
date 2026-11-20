@@ -399,6 +399,20 @@ Types in `src/backend/net/compliance.ts` (re-exported from `protocol.ts`); rules
 - Statistics rollup: only events received at least `LAG_MS` (5 min) ago are rolled, and the watermark never passes `now − LAG_MS`, so a batch committed late with an earlier receipt time is not skipped. Replaced by the last gaps (2026-11-14): the watermark follows commit order (`stats_events.txid`, migration 0042), with no lag window (Statistics, above).
 - Friend invites, purchase intents and shared replays: see their sections above. Contract tests: the growth and compliance cases of `protocol.contract.test.ts` (adults-only view, replay privacy).
 
+### Security audit 2026-11-20 (behaviour, one optional field, no protocol bump)
+
+Closure record: `docs/store/WORLDWIDE_AUDIT.md` "2026-11-20 security audit". Tests: `tests/backend/server/security-audit-2026-11-20*.test.ts`.
+
+- Every path check (admin address fence, under-13 offline guard, per-player rate limit key, minimum protocol) uses the route the router matched, so a percent-encoded spelling (`/%61dmin/…`, `/%761/…`) is held to the same rules.
+- `/readyz` answers `ok`/`down` per check (details only in the log) and counts against the address limit; a wrong `/metrics` token counts like a wrong staff token (`staffAuth`). Production refuses a `METRICS_TOKEN` under 24 characters.
+- `POST /v1/village/commands`: a batch with two commands under one `seq` is refused whole (`400`); a command not in `PLAYER_COMMANDS` is `NOT_ALLOWED` whatever was decided for its number before.
+- `POST /v1/purchases/redeem`: a receipt dearer than the open intent it names counts the difference against the under-18 cap (`403 purchase_refused`, `srv.purchase.over_cap_held`). For a server-held village, an offer, Season Scroll or Clan Stipend is delivered only through its own unused intent, and `POST /v1/purchases/intent` refuses one the village could not buy now (`403 purchase_refused`, `srv.purchase.unavailable`).
+- `POST /v1/attacks`: a ticket with a server seed must be started (`POST /v1/attacks/start`) first (`409 conflict`). `POST /v1/attacks/void` on a server-held village's scout ticket answers `{ voided: false }` and keeps the ticket (the same scout shows the same base); the game never calls it.
+- Reports refused `MAX_TICKET_FAILURES` times: a started raid is settled as a forfeit; a Gang War or Alliance War ticket stays open (it counts as an unreported attack); any further report is `409` (`srv.battle.already_reported`). A malformed deployment is a `400` (`srv.army.bad`), and a troop id that is no warrior or hero of the army deploys nothing.
+- `POST /v1/replays/shared`: the base must be one its Keep allows (`validateBase`), the army, Lodge and levels within the top Keep's (`checkArmy`); attempts, stored or not, count against `replayShare` (30 a day); a layout the sharer raided on a base that may not be shared is refused (`409`, `srv.replay.base_private`) whatever seed is sent.
+- Donations from a server-held donor: `level` at most the donor's research level (`400`, `srv.army.bad_level`).
+- `GroveView.members[].lastSeenAt` is now optional: absent for a member who hides being online (every player under 18). Older games read a missing value as offline.
+
 ### Exploit audit 2026-11-20 (behaviour only, no shape change, no protocol bump)
 
 - `POST /v1/attacks` against an uploaded (device-held) base: `AttackResponse.result.loot` (what the attacker banks and the defender's record loses) is capped per resource at the destruction share of `battle.generatedLootByHall[keep − 1].min` (`uploadedBaseResult`). The result hash is the battle's own. A retried report gets the same capped answer back.

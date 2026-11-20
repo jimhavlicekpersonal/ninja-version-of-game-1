@@ -467,7 +467,7 @@ export class RemoteGroveSource implements GroveSource {
       level: groveLevel(s.grove.xp, gd),
       xp: s.grove.xp,
       maxMembers: g?.maxMembers ?? gd.social.membersMax,
-      members: (g?.members ?? []).map((m) => ({ id: m.id, name: m.id === meId ? `${isolateName(m.name)} (you)` : m.name, role: m.role, hall: m.hallLevel, trophies: m.trophies, online: m.id === meId || now - m.lastSeenAt < ONLINE_WINDOW_MS, you: m.id === meId, blocked: blocked.has(m.id) })),
+      members: (g?.members ?? []).map((m) => ({ id: m.id, name: m.id === meId ? `${isolateName(m.name)} (you)` : m.name, role: m.role, hall: m.hallLevel, trophies: m.trophies, online: m.id === meId || now - (m.lastSeenAt ?? -Infinity) < ONLINE_WINDOW_MS, you: m.id === meId, blocked: blocked.has(m.id) })),
       // Blocked players and removed messages disappear at once (the server also leaves them out from now on).
       chat: this.chatRows
         .filter((m) => !this.removed.has(m.id) && !(m.from && blocked.has(m.from.id)))

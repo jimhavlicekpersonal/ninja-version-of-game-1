@@ -171,3 +171,61 @@ describe('security audit 2026-11-20: shared replays are battles the game could p
     expect(await refused(w.core.growth.shareReplay(me, { ...r, setup: { ...r.setup, base: { ...r.setup.base, buildings: [deep] } } } as never))).toBe('bad_request');
   });
 });
+
+describe('security audit 2026-11-20: Alliances (S3, S4)', () => {
+  it('S3: a donor the server keeps gives warriors at most at its own research level', async () => {
+    const w = world();
+    const don = await w.player('Donna');
+    const game = emulator((await don.startVillage()).file, w.data);
+    const keep = game.state.buildings.find((b) => w.data.buildings[b.type].category === 'hall')!;
+    expect(game.do({ type: 'upgrade', id: keep.id }, w.now())).toMatchObject({ ok: true });
+    w.advance(61_000);
+    placeType(game, w.data, 'burrow_barracks', w.now());
+    placeType(game, w.data, 'army_camp', w.now());
+    w.advance(60_000);
+    expect(game.do({ type: 'train', troop: 'hedgehog_roller', count: 5 }, w.now())).toMatchObject({ ok: true });
+    expect((await don.sendCommands(game.batch())).corrections).toBeUndefined();
+    w.advance(10 * 60_000);
+    await don.uploadBase({ base: baseAt(2) });
+    const rec = await w.player('Rex', baseAt(3));
+    const g = await rec.createGrove('Moss Den');
+    await don.joinGrove(g.id);
+    const req = await rec.requestTroops(10);
+    expect(await code(don.donate(req.id, { troop: 'hedgehog_roller', count: 2, level: 2 }))).toBe('bad_request');
+    expect(await code(don.donate(req.id, { troop: 'hedgehog_roller', count: 2, level: 1 }))).toBe('ok');
+  });
+
+  it('S4: a member who hides being online shows no last-seen time in the Alliance list', async () => {
+    const w = world();
+    const teen = await w.player('Tara', baseAt(3));
+    await w.core.stateAge((await w.repo.getPlayer(teen.id))!, { band: '13to17' });
+    const g = await teen.createGrove('Quiet Pines');
+    const stranger = await w.player('Sly', baseAt(3, 9));
+    const view = await stranger.joinGrove(g.id);
+    const row = view.members.find((m) => m.id === teen.id)!;
+    expect(row.lastSeenAt).toBeUndefined();
+    expect(view.members.find((m) => m.id === stranger.id)!.lastSeenAt).toBeTypeOf('number');
+  });
+});
+
+describe('security audit 2026-11-20: a private base stays out of shared replays (S7)', () => {
+  it('a raid on a 13-17 player cannot be shared under another seed', async () => {
+    const w = world();
+    const ann = await w.player('Ann', baseAt(2, 5));
+    await w.core.stateAge((await w.repo.getPlayer(ann.id))!, { band: 'adult' });
+    const teen = await w.player('Teen', baseAt(2, 77, 3000));
+    await w.core.stateAge((await w.repo.getPlayer(teen.id))!, { band: '13to17' });
+    w.pastShields();
+    const m = (await ann.match())!;
+    const seed = await startSeed(ann, m.ticket);
+    const army = { hedgehog_roller: 20 };
+    const pts = createBattle({ seed, base: m.base, army, infiltration: true }, data).entry!.points;
+    const deployments = Array.from({ length: 20 }, (_, i) => ({ tick: i, troop: 'hedgehog_roller', x: Math.floor(pts[i % pts.length].x), y: Math.floor(pts[i % pts.length].y) }));
+    await ann.submitAttack({ ticket: m.ticket, seed, army, deployments } as never);
+    const me = (await w.repo.getPlayer(ann.id))!;
+    const body = (s: number) => ({ setup: { seed: s, base: m.base, army, infiltration: true }, deployments, rules: SIM_RULES, opponent: 'player' as const, showName: true });
+    for (const s of [seed, seed + 1]) {
+      await expect(w.core.growth.shareReplay(me, body(s) as never)).rejects.toMatchObject({ code: 'conflict' });
+    }
+  });
+});

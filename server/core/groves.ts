@@ -3,7 +3,8 @@ import { presetChatId } from '../../src/backend/net/protocol';
 import { filterText } from '../../src/gameplay/sim/social/grove';
 import { CONTACT_REMOVED, enforceChat } from './contactFilter';
 import { isolateName } from '../../src/gameplay/sim/social/names';
-import { troopLevelCapAt } from '../../src/gameplay/sim/research';
+import { troopLevelCapAt, troopLevelOf } from '../../src/gameplay/sim/research';
+import { deserialize } from '../../src/gameplay/sim/save';
 import type { ChatResponse, ChatView, DonateRequest, DonateResponse, GroveSummary, GroveView, GrovesResponse, InboxResponse, MemberView, RequestView, RequestsResponse } from '../../src/backend/net/protocol';
 import type { ChatRow, Grove, Player, TroopRequest } from '../repo';
 import { requireRules } from './rules';
@@ -52,7 +53,9 @@ export async function groveView(ctx: ServerContext, me: Player, grove: Grove): P
   for (const r of rows) {
     const p = await ctx.repo.getPlayer(r.playerId);
     if (!p) continue;
-    members.push({ id: p.id, name: p.name, role: r.role, trophies: p.trophies, hallLevel: p.hallLevel, lastSeenAt: p.lastSeenAt, xp: r.xp });
+    // Security audit 2026-11-20 (S4): as in Gangs and friends, last seen only for a member who shows being online
+    // (players under 18 never do), since anyone can join an open Alliance.
+    members.push({ id: p.id, name: p.name, role: r.role, trophies: p.trophies, hallLevel: p.hallLevel, ...(p.showOnline !== false ? { lastSeenAt: p.lastSeenAt } : {}), xp: r.xp });
   }
   members.sort((a, b) => b.trophies - a.trophies);
   const mine = rows.find((r) => r.playerId === me.id);
@@ -226,6 +229,10 @@ export async function donateIn(ctx: ServerContext, me: Player, scopeId: string, 
     // Exploit audit 2026-11-20 #8: a donor whose village lives on the device spends nothing the server can check, so
     // it may not fill a Lodge the server keeps (that gave top-level warriors from nothing every request cooldown).
     if ((await hasServerVillage(tx, r.playerId)) && !(await hasServerVillage(tx, me.id))) throw fail(404, 'no_village', 'village.on_device');
+    // Security audit 2026-11-20 (S3): a donor the server keeps gives warriors at most at its own research level (the
+    // level was checked only against the Keep, so level-1 warriors arrived at the Keep's cap).
+    const donorRow = await tx.getVillage(me.id);
+    if (donorRow && level > troopLevelOf(deserialize(donorRow.file, ctx.data), req.troop)) throw fail(400, 'bad_request', 'army.bad_level');
     const filled = await tx.fillRequest(r.id, housing);
     if (!filled) throw fail(409, 'full', 'alliance.request_full');
     // A donor whose village the server keeps gives warriors from that real army.
