@@ -26,7 +26,7 @@ export function growthRoutes({ open, player, core }: RouteKit): void {
   player('POST', GrowthRoutes.referralClaim, { body: body(fields<ReferralClaimRequest>()({ install: string() })), rate: 'moderation' }, async (me, { body }) => g.claimReferrals(me, body));
   // Setup and deployments stay objects here: the core bounds them and re-simulates the battle.
   const shareBody = body(fields<ShareReplayRequest>()({ setup: object(), deployments: array(object()), endTick: number(), rules: number(), dataVersion: string(), opponent: string(), showName: boolean() }));
-  player('POST', GrowthRoutes.sharedReplays, { body: shareBody, rate: 'battle', bodyLimit: SHARED_REPLAY_BODY_LIMIT }, async (me, { body, reply }) => reply.code(201).send(await g.shareReplay(me, body)));
+  player('POST', GrowthRoutes.sharedReplays, { body: shareBody, rate: ['battle', 'replayShare'], bodyLimit: SHARED_REPLAY_BODY_LIMIT }, async (me, { body, reply }) => reply.code(201).send(await g.shareReplay(me, body)));
   player('GET', GrowthRoutes.sharedReplays, {}, async (me) => g.myReplays(me));
   // Anyone with the code may watch (a link opened in a browser has no account).
   open('GET', '/v1/replays/shared/:code', { params: code, rate: 'lookup' }, async ({ params, reply }) => reply.header('Cache-Control', 'no-store').send(await g.sharedReplay(params.code)));

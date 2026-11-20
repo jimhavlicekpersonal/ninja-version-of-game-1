@@ -244,7 +244,11 @@ export function canDeploy(sim: BattleSim, troop: string, x: number, y: number): 
   if (tx < 0 || ty < 0 || tx >= n || ty >= n) return false;
   // Abilities can be thrown anywhere on the map while charges last.
   if (isAbility(sim.data, troop)) return (sim.charges[troop] ?? 0) > 0;
-  if ((sim.remaining[troop] ?? 0) <= 0) return false;
+  // Security audit 2026-11-20: only a real warrior or hero of this army. `remaining` is a plain object, so an
+  // id like 'constructor' read the prototype's function, passed, and crashed the battle further on (a 500 on
+  // every report route, and a way to burn a ticket). Valid battles are unchanged (no rules bump).
+  if (!Object.hasOwn(sim.data.troops, troop) && !Object.hasOwn(sim.data.battle.heroes ?? {}, troop)) return false;
+  if (!Object.hasOwn(sim.remaining, troop) || !((sim.remaining[troop] ?? 0) > 0)) return false;
   if (sim.deployable[ty * n + tx] !== 1) return false;
   if (!sim.entry) return true;
   // Infiltration Points: only inside a point, and only while that path still has cover.

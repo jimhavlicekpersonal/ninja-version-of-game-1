@@ -157,7 +157,8 @@ describe('old games on a new server (steps 73, 75)', () => {
     await s.call('PUT', Routes.base, atk.token, { base: baseAt(3, 5) });
     const m = await s.call('GET', Routes.match, atk.token, undefined, game(SIM_RULES - 1));
     const { army, deployments } = rush(20);
-    const r = await s.call('POST', Routes.attacks, atk.token, { ticket: m.body.ticket, seed: m.body.seed, army, deployments, rules: SIM_RULES }, game(SIM_RULES));
+    const started = await s.call('POST', Routes.attackStart, atk.token, { ticket: m.body.ticket }, game(SIM_RULES - 1));
+    const r = await s.call('POST', Routes.attacks, atk.token, { ticket: m.body.ticket, seed: started.body.seed, army, deployments, rules: SIM_RULES }, game(SIM_RULES));
     expect(r.status).toBe(400);
   });
 });

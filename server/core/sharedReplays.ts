@@ -33,6 +33,7 @@ import { masteryOn } from '../../src/gameplay/sim/mastery';
 import { masteryBonus } from '../../src/gameplay/sim/progression';
 import { DELETED_PLAYER, type Player } from '../repo';
 import { ResimBusyError } from '../resim/resim';
+import { checkArmy, validateBase, type BattleReport } from './pvp';
 import { HOUR, type ServerContext } from './context';
 import { ageBandOf } from './ageBand';
 import { busyCode, fail } from './errors';
@@ -133,13 +134,26 @@ export async function share(ctx: ServerContext, me: Player, body: Partial<ShareR
   // bounded like a stored base, and re-simulated as it is, so the stored result is the battle the sharer saw.
   const raw = body.setup.base as unknown as Record<string, unknown> | undefined;
   if (!raw || typeof raw !== 'object' || !Array.isArray(raw.buildings) || !raw.buildings.length || raw.buildings.length > 400) throw fail(400, 'bad_request', 'replay.bad');
-  if (JSON.stringify(body).length > MAX_BYTES) throw fail(400, 'bad_request', 'replay.bad');
+  // D3: a body nested too deep to serialise is refused, not a server fault.
+  let bytes: number;
+  try {
+    bytes = JSON.stringify(body).length;
+  } catch {
+    throw fail(400, 'bad_request', 'replay.bad');
+  }
+  if (bytes > MAX_BYTES) throw fail(400, 'bad_request', 'replay.bad');
   const base = pickBase(raw);
   const deployments = cleanDeployments(body.deployments);
   if (!deployments) throw fail(400, 'bad_request', 'replay.bad');
   const s = body.setup;
   const army = s.army && typeof s.army === 'object' ? s.army : null;
   if (!army || Object.keys(army).length > 80 || !Number.isInteger(s.seed)) throw fail(400, 'bad_request', 'replay.bad');
+  // Security audit 2026-11-20 (D1): the battle is re-simulated, so it is held to what the game can produce: a base
+  // the Keep it names allows (every generated fortress passes this check too), and an army, Lodge and research
+  // the top Keep allows. Unchecked, 400 top-level defenses against 2,000 top-level warriors ran 20 to 43 seconds.
+  if (validateBase({ hallLevel: base.hallLevel, buildings: base.buildings } as BaseLayout, engine.data)) throw fail(400, 'bad_request', 'replay.bad');
+  const topKeep = engine.data.hall.levels.length;
+  checkArmy({ army, levels: s.levels, reinforcements: s.reinforcements } as BattleReport, { ...me, hallLevel: topKeep }, engine.data);
   const setup = pickSetup(s as unknown as Record<string, unknown>, base, engine.data);
   // 8c: a raid the server recorded names its real defender (kept, never shown): an under-18 defender's base, or one
   // whose owner opted out, is never shared, whatever the request says the opponent was.

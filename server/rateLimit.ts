@@ -56,6 +56,11 @@ export interface RateLimits {
   nonce: RateRule;
   /** Compliance complaints (illegal content, UK OSA / EU DSA notices) per IP address, no token. */
   complaint: RateRule;
+  /**
+   * Shared-replay attempts per player per day, stored or not (security audit 2026-11-20, D1): each one is
+   * re-simulated before the stored-share limit (SHARED_REPLAYS_PER_DAY) can count it.
+   */
+  replayShare: RateRule;
 }
 
 const MIN = 60_000;
@@ -89,6 +94,8 @@ export const DEFAULT_RATE_LIMITS: RateLimits = {
   // One per sign-in attempt; a carrier NAT pool signs in many players an hour.
   nonce: { limit: 600, windowMs: HOUR },
   complaint: { limit: 20, windowMs: HOUR },
+  // Ten shares a day are stored; a few retries after a busy answer fit.
+  replayShare: { limit: 30, windowMs: 24 * HOUR },
 };
 
 /**

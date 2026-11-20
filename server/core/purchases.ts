@@ -19,7 +19,8 @@
  */
 import { answerConsumptionRequest } from './compliance';
 import type { IntentReleaseResponse, PurchaseHistoryResponse, PurchaseIntentResponse, PurchaseStore, RedeemResponse } from '../../src/backend/net/protocol';
-import { monthStart, productForStoreId, productInfo, storeProductId } from '../../src/gameplay/sim/monetization';
+import { canPurchase, monthStart, productForStoreId, productInfo, storeProductId } from '../../src/gameplay/sim/monetization';
+import { advance } from '../../src/gameplay/sim/village';
 import { deserialize } from '../../src/gameplay/sim/save';
 import { PurchaseError } from '../payments/apple';
 import { STATE_NOTICES, type Player, type PurchaseRow, type Repo } from '../repo';
@@ -146,6 +147,20 @@ export async function purchaseIntent(ctx: ServerContext, me: Player, body: { sto
       const spent = await tx.spentCents(me.id, monthStart(now), now);
       if (spent + cents(product.usd) > cap) {
         throw fail(403, 'purchase_refused', 'purchase.minor_cap', { limit: (cap / 100).toFixed(2) });
+      }
+    }
+    // Security audit 2026-11-20 (P2): a server-held village buys an offer only while it is offered, a Season Scroll it
+    // does not own, a Clan Stipend with no payments left: checked before the store charges (a verified purchase skips
+    // the game's own check, so a modified game bought the Starter Pack over and over, never shown, to minors too).
+    if (product.kind === 'offer' || product.kind === 'pass' || product.kind === 'stipend') {
+      const row = await tx.getVillage(me.id);
+      if (row) {
+        const state = advance(deserialize(row.file, ctx.data), Math.max(row.at, now), ctx.data).state;
+        const check = canPurchase({ ...state, profile: { ...state.profile, under18 } }, product.id, now, ctx.data);
+        if (!check.ok && check.code !== 'SPEND_CAP') {
+          ctx.metrics.count('tk_refused_total', { reason: 'not_on_offer' });
+          throw fail(403, 'purchase_refused', 'purchase.unavailable');
+        }
       }
     }
     const id = ctx.uuid().toLowerCase();
@@ -318,6 +333,12 @@ export async function redeem(ctx: ServerContext, me: Player, body: { store?: unk
     // now; the intent's own hold is already in what `spentCents` adds up.
     else if (counted > intent.cents) await holdOverCap(tx, ctx, me, counted - intent.cents, now);
     const heldOnServer = Boolean(await tx.getVillage(me.id));
+    // P2: an offer, Season Scroll or Clan Stipend reaches a server-held village only through its own unused intent,
+    // the one checked above. Any other receipt for one (another product's token, none) stays with the store.
+    if (heldOnServer && (product.kind === 'offer' || product.kind === 'pass' || product.kind === 'stipend') && (!intent || intent.used || intent.productId !== product.id)) {
+      ctx.metrics.count('tk_refused_total', { reason: 'not_on_offer_at_redeem' });
+      throw fail(403, 'purchase_refused', 'purchase.unavailable');
+    }
     const row: PurchaseRow = {
       store,
       transactionId: c.transactionId,

@@ -115,7 +115,8 @@ describe('observability over HTTP', () => {
     // One warrior through the first Infiltration Point: a battle where none fights is practice and is refused
     // (balance audit 2026-11-08), and a rush along an edge only fights when an edge tile happens to be in a point.
     const { army, deployments } = noTroops(m);
-    await s.call('POST', Routes.attacks, a.token, { ticket: m.ticket, seed: m.seed, army, deployments, clientHash: 'not-the-real-hash' });
+    const started = (await s.call('POST', Routes.attackStart, a.token, { ticket: m.ticket })).body as { seed: number };
+    await s.call('POST', Routes.attacks, a.token, { ticket: m.ticket, seed: started.seed, army, deployments, clientHash: 'not-the-real-hash' });
     await s.call('POST', Routes.attacks, a.token, { ticket: 'nope', seed: 1, army, deployments });
     expect((await s.call('GET', '/metrics')).status).toBe(401);
     expect((await s.call('GET', '/metrics', 'wrong')).status).toBe(401);

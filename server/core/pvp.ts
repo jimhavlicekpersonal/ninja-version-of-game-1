@@ -454,12 +454,15 @@ async function takeTicket(ctx: ServerContext, me: Player, id: string | undefined
   if (!ticket || ticket.attackerId !== me.id || ticket.kind !== kind) throw fail(404, 'not_found', 'pvp.unknown_ticket');
   if (ticket.used) {
     // Re-audit: a ticket the server closed without a battle (voided, lapsed, forfeited, burned) has no answer to repeat.
-    const closed = ticket.response as { voided?: boolean; lapsed?: boolean; forfeit?: boolean } | undefined;
+    const closed = ticket.response as { voided?: boolean; lapsed?: boolean; forfeit?: boolean; burned?: boolean } | undefined;
     if (closed?.voided || closed?.lapsed) throw fail(409, 'conflict', 'pvp.cancelled');
+    if (closed?.burned) throw fail(409, 'conflict', 'battle.already_reported');
     if (closed?.forfeit) throw fail(410, 'expired', 'pvp.forfeit');
     if (ticket.response !== undefined) return { ticket, answered: ticket.response };
     throw fail(409, 'conflict', 'battle.already_reported');
   }
+  // S1: a ticket whose reports were refused MAX_TICKET_FAILURES times takes no more (and runs no more re-simulations).
+  if ((ticket.failures ?? 0) >= MAX_TICKET_FAILURES) throw fail(409, 'conflict', 'battle.already_reported');
   const deadline = ticket.kind === 'pvp' ? ticket.expiresAt + LATE_REPORT_MS : ticket.expiresAt;
   if (ctx.now() > deadline) throw fail(410, 'expired', 'pvp.too_late');
   return { ticket };
@@ -499,7 +502,12 @@ export async function burnAfterFailures(ctx: ServerContext, ticket: Ticket, e: u
   // not an ApiError) used to skip the count, so it could be re-simulated for ever; it counts like a refusal now.
   if (e instanceof ApiError && (e.status >= 500 || e.status === 429) && !(e instanceof ResimTimedOut)) return;
   if ((await ctx.repo.bumpTicketFailures(ticket.id)) >= MAX_TICKET_FAILURES) {
-    await ctx.repo.useTicket(ticket.id, undefined);
+    // Security audit 2026-11-20 (S1): burning a ticket gave its attack back. A war or Alliance raid ticket now stays
+    // open, so it counts as the unreported attack it is until the war ends (`takeTicket` refuses further reports);
+    // a started raid is a lost raid, as one never reported is (burning it used to dodge the forfeit).
+    if (ticket.kind === 'war' || ticket.kind === 'raid') return;
+    if (ticket.kind === 'pvp' && ticket.startedAt !== undefined && (await forfeitTicket(ctx, ticket))) return;
+    await ctx.repo.useTicket(ticket.id, { burned: true });
     if (ticket.defenderId) await ctx.locks.release(ticket.defenderId, ticket.attackerId);
   }
 }
@@ -532,6 +540,13 @@ export async function voidAttack(ctx: ServerContext, me: Player, body: { ticket?
   if (!ticket || ticket.attackerId !== me.id || ticket.kind !== 'pvp') throw fail(404, 'not_found', 'pvp.unknown_ticket');
   if (ticket.used) return { voided: Boolean((ticket.response as { voided?: boolean } | undefined)?.voided) };
   if (ticket.startedAt !== undefined) throw fail(409, 'conflict', 'pvp.started');
+  // Security audit 2026-11-20 (S2): a server-held village's scout ticket is not voided here, only its defender let go.
+  // Voided, `match` drew a new opponent for the same free scout (six from one scout): the same scout gives the same
+  // base until a new, paid scout (ledger audit A1/E15). The game itself never calls this route.
+  if (ticket.scoutSeed !== undefined) {
+    if (ticket.defenderId) await ctx.locks.release(ticket.defenderId, me.id);
+    return { voided: false };
+  }
   const voided = await ctx.repo.useTicket(ticket.id, { voided: true });
   if (voided && ticket.defenderId) await ctx.locks.release(ticket.defenderId, me.id);
   return { voided };
@@ -626,11 +641,19 @@ export function engineForTicket(ctx: ServerContext, ticket: Ticket, sub: BattleR
   return e;
 }
 
+const wellFormed = (d: unknown): boolean => {
+  const x = d as { tick?: unknown; troop?: unknown; x?: unknown; y?: unknown } | null;
+  return !!x && typeof x === 'object' && typeof x.troop === 'string' && x.troop.length <= 40 && Number.isInteger(x.tick) && (x.tick as number) >= 0 && Number.isFinite(x.x) && Number.isFinite(x.y);
+};
+
 /**
  * Re-run a reported battle, timing it and comparing it with the client's own
  * result hash: a difference is a desync (counted and logged, never trusted).
  */
 export async function resimulate(ctx: ServerContext, kind: 'pvp' | 'raid' | 'duel' | 'war', setup: Parameters<typeof runBattle>[0], deployments: BattleSubmission['deployments'], sub: BattleReport, engine: RulesEngine = ctx.rules.live): Promise<ResimOutcome> {
+  // Security audit 2026-11-20 (D4): every report kind passes here; a deployment that is not one (null, a missing
+  // tick) made the battle throw, a 500 and a server error report for each request. Refused as a bad report.
+  if (!Array.isArray(deployments) || !deployments.every(wellFormed)) throw fail(400, 'bad_request', 'army.bad');
   let out: ResimOutcome;
   try {
     // Step 57: in a worker thread in production, so a long battle never stalls other requests.
@@ -683,6 +706,9 @@ export async function attack(ctx: ServerContext, me: Player, sub: BattleReport):
   const { data, repo } = ctx;
   const { ticket, answered } = await takeTicket(ctx, me, sub?.ticket, 'pvp');
   if (answered) return answered as AttackResponse;
+  // Security audit 2026-11-20 (S2, ledger audit A1 regressed): a ticket with a server seed counts only once started.
+  // Unstarted, a raid played privately with a guessed seed was reported when it won and voided for free when lost.
+  if (ticket.seed !== undefined && ticket.startedAt === undefined) throw fail(409, 'conflict', 'pvp.opponent_gone');
   const engine = engineForTicket(ctx, ticket, sub);
   const seed = battleSeed(ticket, sub);
   const { army, levels, reinforcements, hero } = checkArmy(sub, me, engine.data);
