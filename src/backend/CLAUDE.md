@@ -129,3 +129,11 @@ Server localization build inputs: Docker copies `locales/` and `tools/i18n/`; `v
 - Statistics: the rollup watermark is commit-order safe (last gaps, migration 0042): `stats_events.txid` (the writing transaction, a column default) and `Repo.statsHorizon` (`pg_snapshot_xmin`; memory: the next insert number); `statsTouched(after, limit, before)` reads positions in (watermark, horizon). No lag window; needs PostgreSQL 13+.
 - Game: `payments/select.ts` `previewAllowed` (dev build, or `?debug&preview` with `VITE_ALLOW_PREVIEW=1`, never set by deploy.yml); `analytics/crashReports.ts` `crashReportsAllowed`.
 
+
+## Exploit audit 2026-11-20 (`docs/PROTOCOL.md` "Exploit audit 2026-11-20")
+
+- `pvp.ts`: loot from an uploaded (device) base is capped by `uploadedBaseResult` before the answer is stored; `match` issues its ticket under `lockPlayers(me)` (the first ticket for a scout wins, other unstarted ones are voided); `burnAfterFailures` counts any non-`ApiError` (a simulation that throws).
+- `groveRaid.ts` / `gangWars.ts`: tickets and reports count attacks inside a transaction under `lockPlayers` (Alliance Wars also lock `war-side:<grove>:<week>`); Gang War chests need `gangWar.chestMinAttacks` attacks (checked after `rateIfEnded`).
+- `groves.ts` `donateIn`: a device-held donor cannot fill a server-held receiver's request (`404 no_village`).
+- `village.ts`: `setProfile` needs a boolean `under18` (without `ageBand`); only `true` passes once the server holds under 18.
+- `referrals.ts`: an imported recruit village qualifies after `REFERRAL_IMPORT_MIN_DAYS` (`net/growth.ts`).

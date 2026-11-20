@@ -202,7 +202,9 @@ export async function applyCommands(ctx: ServerContext, me: Player, body: Partia
         error = null;
         if (!PLAYER_COMMANDS.has(type)) error = 'NOT_ALLOWED';
         else if (commandBytes(c.command) > (battle ? MAX_BATTLE_COMMAND_BYTES : MAX_COMMAND_BYTES)) error = 'TOO_LARGE';
-        else if (type === 'setProfile' && (c.command as { under18?: unknown }).under18 === false && (await repo.getAgeGroup(me.id))?.under18) error = 'LOCKED'; // GLOBAL-006: under 18 stays (staff can reset)
+        // Exploit audit 2026-11-20 #14: only true or false is an age answer (`under18: 0` slipped past the check below).
+        else if (type === 'setProfile' && (c.command as { ageBand?: unknown }).ageBand === undefined && typeof (c.command as { under18?: unknown }).under18 !== 'boolean') error = 'NOT_FOUND';
+        else if (type === 'setProfile' && (c.command as { under18?: unknown }).under18 !== true && (await repo.getAgeGroup(me.id))?.under18) error = 'LOCKED'; // GLOBAL-006: under 18 stays (staff can reset)
         else if (battle && ++battles > MAX_BATTLES_PER_BATCH) error = 'TOO_MANY_BATTLES';
         else if (battle) {
           if ((await limiterOf(ctx).hit('battleCommands', me.id, now)).ok) charged++;

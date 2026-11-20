@@ -1070,6 +1070,8 @@ export interface SocialDef {
     relayCarry: number;
     /** Ledger audit E13: whether a war against a generated Gang pays the chest's Jade. */
     generatedOpponentJade: boolean;
+    /** Attacks a member needs in the war for a chest (exploit audit 2026-11-20 #10). */
+    chestMinAttacks?: number;
     botAfterMinutes: number;
     recentOpponents: number;
     rewards: Record<'win' | 'draw' | 'loss', Cost>;
@@ -1115,6 +1117,8 @@ export interface EventsDef {
   /** Schedule start (UTC ms); the schedule repeats every `periodDays`. */
   epoch: number;
   periodDays: number;
+  /** How long before a battle command arrives its own start time is believed (exploit audit 2026-11-20 #4). */
+  settleSlackSeconds?: number;
   schedule: { id: string; name: string; description: string; startHour: number; durationHours: number; effect: EventEffect; goal?: GoalDef }[];
 }
 

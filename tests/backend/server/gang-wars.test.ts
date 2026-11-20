@@ -128,7 +128,9 @@ for (const [label, makeRepo] of repoFactories) {
       const claim = await ann.gangWarClaim(end.id);
       expect(claim).toMatchObject({ outcome: 'win', alreadyClaimed: false });
       expect((await ann.gangWarClaim(end.id)).alreadyClaimed).toBe(true);
-      expect((await cy.gangWarClaim(end.id)).outcome).toBe('loss');
+      // Exploit audit 2026-11-20 #10: Cy never attacked, so no chest; Dee did, and gets the loss chest.
+      expect((await refusal(cy.gangWarClaim(end.id))).code).toBe('not_found');
+      expect((await dee.gangWarClaim(end.id)).outcome).toBe('loss');
       // Step 66: the Gang Ratings moved once, the right way.
       const [mine, theirs] = [(await ann.squad()).squad!.rating, (await cy.squad()).squad!.rating];
       expect(mine).toBeGreaterThan(data.ranks.rating.initial);
@@ -147,7 +149,8 @@ for (const [label, makeRepo] of repoFactories) {
       await ann.gangWar();
       w.advance((data.social.gangWar.prepHours + data.social.gangWar.battleHours + 1) * HOUR);
       const done = await ann.gangWar();
-      await ann.gangWarClaim(done.recent[0].id);
+      // Ann never attacked: no chest (exploit audit 2026-11-20 #10), and the rating still does not move.
+      expect((await refusal(ann.gangWarClaim(done.recent[0].id))).code).toBe('not_found');
       expect((await ann.squad()).squad!.rating).toBe(data.ranks.rating.initial);
     });
 

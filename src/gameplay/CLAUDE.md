@@ -80,3 +80,13 @@ You are the **GAME THEORY AI**. You own `src/gameplay/` (`sim/`, `data/`, `contr
 - **Playtesting:** `?sandbox&preview` (or `?debug&preview`) in `main.ts`; `npm run balance:preview` (`tools/balance/preview.ts`) writes `docs/game-theory/PREVIEW_BALANCE.md` (each building with/without/body-only against the raid mix and the armies it beats and is beaten by; each hero against no hero and the Shadow Captain). Reported only, never gated.
 - **Tests:** `tests/gameplay/planned/` (`counters`, `heroes`, `progression`).
 - **Making one live:** move its generated definition into `buildings.json` / `battle.json` `heroes` and `hall.json`, set `live` in the catalog, run `npm run rules:snapshot` before bumping `SIM_RULES`, then the balance suite and the BACKEND items in `docs/backend/REQUESTS.md`.
+
+## Exploit audit 2026-11-20 (no save change, no SIM_RULES change)
+
+- **Village-built battle setups (root cause A):** `trialEnd`, `bountyEnd` and `rematchEnd` build the setup in `ownedBattleSetup`: the base is rebuilt, `infiltration: true`, no `startDamage`, and the seed must be `trialBattleSeed`/`bountyBattleSeed`/`rematchBattleSeed(state.seed, nextSeed …)` for a `nextSeed` at most `SEED_WINDOW` (256) back. The app and `tools/balance/playerModel.ts` build their setups with those functions; tests use `entryDeployments` (`tests/gameplay/sim/helpers.ts`) to deploy on Infiltration Points.
+- **Hero:** `checkBattleSetup` refuses a `setup.hero` that is not `heroFor(state)`'s id at most its level (a forged Shadow Captain, an ordinary warrior named as the hero). `abandonBattle` counts deployments against the village's own army, Lodge and hero.
+- **Battle start time:** `withBattleStart` settles a battle-end command's `record.at` once, before dispatch (`battleStartedAt`): believed only within `events.settleSlackSeconds` (600) of the command, or exactly when it equals the start the village tracked itself (`battleProgress` clamps that to now). Inside the battle-end functions `rec.at` is already settled. A Bounty Hunt attack on an earlier occurrence is refused once the running occurrence has progress (progress is kept for one key).
+- **Parameter checks:** `claimTier` refuses any track but `free`/`premium`; `setProfile` without `ageBand` needs a boolean `under18`; `topUp` prices `place`/`upgrade` with the action's `pay`.
+- **Top-up shares:** `noteTopUp` spreads what was bought over every new timer (even share, then the rest to timers with room), so the recorded shares add up to the purchase.
+- **Tasks:** instant upgrades of walls, decorations and obstacles no longer count in `stats.upgradesDone`.
+- Data: `events.json` `settleSlackSeconds`, `social.json` `gangWar.chestMinAttacks` (read by the server).

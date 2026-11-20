@@ -1,6 +1,8 @@
 {
   "epoch": 1767225600000,
   "periodDays": 14,
+  "$settleSlack": "Exploit audit 2026-11-20 #4: a battle command's own start time (`rec.at`) is believed for at most this many seconds before the command arrives (a battle lasts 180 s); older claims use the arrival time, so past events cannot be reopened.",
+  "settleSlackSeconds": 600,
   "schedule": [
     {
       "id": "harvest_moon",

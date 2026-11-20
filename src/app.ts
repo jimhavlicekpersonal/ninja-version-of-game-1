@@ -11,7 +11,7 @@ import type { BaseLayout, BattleRecord, BattleSetup } from './gameplay/sim/battl
 import { opponentFor } from './gameplay/sim/matchmaking';
 import { SIM_RULES } from './gameplay/sim/battle/battle';
 import { mixSeed } from './gameplay/sim/rng';
-import { battleArmy, battleLoadout, scoutFee } from './gameplay/sim/village';
+import { battleArmy, battleLoadout, bountyBattleSeed, rematchBattleSeed, scoutFee, trialBattleSeed } from './gameplay/sim/village';
 import { nextTrialTier, trialBase, trialInfo, trialReward, trialVariant } from './gameplay/sim/trials';
 import { rematchBase, rematchStatus } from './gameplay/sim/rematch';
 import { BattleHud } from './presentation/ui/battleHud';
@@ -159,7 +159,7 @@ export class App {
       return;
     }
     const base = trialBase(tier, c.data, trialVariant(c.state.trials, tier));
-    const setup: BattleSetup = { seed: mixSeed(c.state.seed, 0x7a1a1 + tier * 7919 + c.state.nextSeed), base, ...battleLoadout(c.state, c.data), infiltration: true };
+    const setup: BattleSetup = { seed: trialBattleSeed(c.state.seed, c.state.nextSeed, tier), base, ...battleLoadout(c.state, c.data), infiltration: true };
     this.open(new BattleSession(setup, c.data, 'scout'), undefined, undefined, tier);
   }
 
@@ -175,7 +175,7 @@ export class App {
     }
     const b: BaseLayout = { ...base };
     delete b.trophies;
-    const setup: BattleSetup = { seed: mixSeed(c.state.seed, 0xb0b7 + c.state.nextSeed), base: b, ...battleLoadout(c.state, c.data), infiltration: true };
+    const setup: BattleSetup = { seed: bountyBattleSeed(c.state.seed, c.state.nextSeed), base: b, ...battleLoadout(c.state, c.data), infiltration: true };
     this.open(new BattleSession(setup, c.data, 'scout'), undefined, undefined, undefined, false, undefined, { kind: 'bounty', eventKey, title: i18nText("ui.generated_ladder_rewards_no_loot_or_ho_2a269c63a6", { arg1: base.practice ?? 'Bounty fortress' }) });
   }
 
@@ -194,7 +194,7 @@ export class App {
     const base = rematchBase(ok.record, c.data);
     if (!base) return;
     delete base.trophies;
-    const setup: BattleSetup = { seed: mixSeed(c.state.seed, 0x5e771e + c.state.nextSeed), base, ...battleLoadout(c.state, c.data), infiltration: true };
+    const setup: BattleSetup = { seed: rematchBattleSeed(c.state.seed, c.state.nextSeed), base, ...battleLoadout(c.state, c.data), infiltration: true };
     this.open(new BattleSession(setup, c.data, 'scout'), undefined, undefined, undefined, false, undefined, { kind: 'rematch', defenseId, title: i18nText("ui.settle_the_score_simulated_raider_no_h_87da3498b9") });
   }
 

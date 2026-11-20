@@ -399,6 +399,18 @@ Types in `src/backend/net/compliance.ts` (re-exported from `protocol.ts`); rules
 - Statistics rollup: only events received at least `LAG_MS` (5 min) ago are rolled, and the watermark never passes `now − LAG_MS`, so a batch committed late with an earlier receipt time is not skipped. Replaced by the last gaps (2026-11-14): the watermark follows commit order (`stats_events.txid`, migration 0042), with no lag window (Statistics, above).
 - Friend invites, purchase intents and shared replays: see their sections above. Contract tests: the growth and compliance cases of `protocol.contract.test.ts` (adults-only view, replay privacy).
 
+### Exploit audit 2026-11-20 (behaviour only, no shape change, no protocol bump)
+
+- `POST /v1/attacks` against an uploaded (device-held) base: `AttackResponse.result.loot` (what the attacker banks and the defender's record loses) is capped per resource at the destruction share of `battle.generatedLootByHall[keep − 1].min` (`uploadedBaseResult`). The result hash is the battle's own. A retried report gets the same capped answer back.
+- `GET /v1/match`: parallel calls for one scout of a server-held village all get the same ticket (decided under the player's lock); any other unstarted ticket a parallel call made is voided.
+- `POST /v1/grove/raid/ticket`, `POST /v1/grove/raid/attacks`, `POST /v1/squad/war/ticket`, `POST /v1/squad/war/attacks`: the attack count is taken under the player's lock (Alliance Wars also the side's), so parallel requests can no longer pass the limits together (`409 no_attacks_left`).
+- `POST /v1/squad/war/claim`: a member with fewer than `social.gangWar.chestMinAttacks` (1) attacks in the war gets `404 not_found` (`srv.war.not_part`), as an Alliance War chest needs `chestMinAttacks`.
+- Donations: a donor whose village lives on the device cannot fill the request of a player whose village the server keeps (`404 no_village`, `srv.village.on_device`).
+- Village command batches: `setProfile` without `ageBand` needs a boolean `under18` (otherwise refused `NOT_FOUND`); any answer other than `true` is `LOCKED` once the server holds under 18.
+- Battle re-simulation: a report that makes the simulation throw counts against the ticket like a refusal (`MAX_TICKET_FAILURES`).
+- Friend invites: a recruit whose server village arrived by import qualifies only once the account is `REFERRAL_IMPORT_MIN_DAYS` (14) old.
+- Battle commands replayed for a server-held village (`trialEnd`, `bountyEnd`, `rematchEnd`): the village builds the setup (seed from `trialBattleSeed`/`bountyBattleSeed`/`rematchBattleSeed`, Infiltration Points on, no `startDamage`, the hero checked), and a record's `at` is believed for at most `events.settleSlackSeconds` (600) before the command's time.
+
 ## Server-owned village (beta)
 
 | | request | response |

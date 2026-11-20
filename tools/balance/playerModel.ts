@@ -48,7 +48,7 @@ import { researchLanes, troopLevels } from '../../src/gameplay/sim/research';
 import { capacity, collectorAmount } from '../../src/gameplay/sim/resources';
 import { createRng, mixSeed } from '../../src/gameplay/sim/rng';
 import type { GameData, VillageState } from '../../src/gameplay/sim/types';
-import { advance, applyCommand, battleArmy, builderStatus, countOfType, createNewVillage, hallLevel, limitFor, researchStartQuote, scoutFee, type Command } from '../../src/gameplay/sim/village';
+import { advance, applyCommand, battleArmy, builderStatus, countOfType, createNewVillage, hallLevel, limitFor, researchStartQuote, scoutFee, trialBattleSeed, type Command } from '../../src/gameplay/sim/village';
 
 export interface ModelOptions {
   /** Max raids per session (armies permitting). */
@@ -364,7 +364,8 @@ export class ModelPlayer {
     const base = trialBase(tier, d, trialVariant(this.state.trials, tier));
     const army = battleArmy(this.state);
     const levels = troopLevels(this.state, d);
-    const setup = { seed: mixSeed(this.state.seed, tier), base, army, levels, infiltration: true };
+    // The seed the game uses (exploit audit 2026-11-20: trialEnd refuses a seed the village did not issue).
+    const setup = { seed: trialBattleSeed(this.state.seed, this.state.nextSeed, tier), base, army, levels, infiltration: true };
     const probe = createBattle(setup, d);
     const deployments = botDeployments(probe.deployable, probe.grid.size, army, createRng(tier), d, levels, probe.entry);
     if (this.run({ type: 'trialEnd', tier, record: { at: this.clock.now(), opponentName: base.name, setup, deployments } })) this.trialsTried++;

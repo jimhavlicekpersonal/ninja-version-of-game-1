@@ -8,6 +8,7 @@ import type { Deployment } from '../../../src/gameplay/sim/battle/types';
 import { FakeClock } from '../../../src/gameplay/sim/clock';
 import { defaultData as data } from '../../../src/gameplay/sim/data';
 import { trialBase } from '../../../src/gameplay/sim/trials';
+import { trialBattleSeed } from '../../../src/gameplay/sim/village';
 
 const deps = (clock: FakeClock, store: MemorySaveStore) => ({ clock, store, data, analytics: new Analytics(new MemoryEventStore(), clock, 'test'), botRaids: false });
 
@@ -60,7 +61,7 @@ describe('interrupted raids', () => {
     const clock = new FakeClock();
     const c = (await GameController.start(deps(clock, new MemorySaveStore()))).controller;
     c.state.army = { hedgehog_roller: 3 };
-    const setup = { seed: 2, base: trialBase(1, data), army: { hedgehog_roller: 3 } };
+    const setup = { seed: trialBattleSeed(c.state.seed, c.state.nextSeed, 1), base: trialBase(1, data), army: { hedgehog_roller: 3 }, infiltration: true };
     c.trackBattle({ kind: 'trial', tier: 1, opponentName: 'Shadow Trial 1', setup, deployments: [{ tick: 0, troop: 'hedgehog_roller', x: 1, y: 12 }], at: clock.now() });
     const r = c.resolvePendingBattle();
     expect(r?.record.opponentName).toBe('Shadow Trial 1');

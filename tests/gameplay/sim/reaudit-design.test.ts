@@ -19,7 +19,7 @@ import { suggestedArmy } from '../../../src/gameplay/sim/suggest';
 import { housingCapacity, troopUnlock } from '../../../src/gameplay/sim/army';
 import type { BattleRecord } from '../../../src/gameplay/sim/battle/types';
 import type { VillageState } from '../../../src/gameplay/sim/types';
-import { advance, applyCommand, battleLoadout, canHireArtisan, hallLevel } from '../../../src/gameplay/sim/village';
+import { advance, applyCommand, battleLoadout, bountyBattleSeed, canHireArtisan, hallLevel, rematchBattleSeed } from '../../../src/gameplay/sim/village';
 import { data, must, newGame } from './helpers';
 
 const HOUR = 3_600_000;
@@ -197,7 +197,7 @@ describe('Bounty Hunt: a goal event (item 8)', () => {
     const view = goalEventView(s, start + HOUR, data)!;
     const key = view.event.key;
     const loadout = battleLoadout(s, data);
-    const setup = { seed: 5, base: view.base, ...loadout, infiltration: true };
+    const setup = { seed: bountyBattleSeed(s.seed, s.nextSeed), base: view.base, ...loadout, infiltration: true };
     const probe = createBattle(setup, data);
     const deployments = botDeployments(probe.deployable, probe.grid.size, loadout.army, createRng(3), data, loadout.levels, probe.entry);
     const r1 = applyCommand(s, { type: 'bountyEnd', eventKey: key, record: { at: start + HOUR, opponentName: 'x', setup, deployments } }, start + HOUR, data);
@@ -335,7 +335,7 @@ describe('defense: rematches and held raids (item 10), gentler first raids (item
     expect(rematchable(s, clock.now(), data).map((d) => d.id)).toEqual([out.record.id]);
     let v: VillageState = { ...s, army: { hedgehog_roller: 20 } };
     const loadout = battleLoadout(v, data);
-    const setup = { seed: 9, base, ...loadout, infiltration: true };
+    const setup = { seed: rematchBattleSeed(v.seed, v.nextSeed), base, ...loadout, infiltration: true };
     const probe = createBattle(setup, data);
     const deployments = botDeployments(probe.deployable, probe.grid.size, loadout.army, createRng(4), data, loadout.levels, probe.entry);
     const r = applyCommand(v, { type: 'rematchEnd', defenseId: out.record.id, record: { at: clock.now(), opponentName: base.name, setup, deployments } }, clock.now(), data);

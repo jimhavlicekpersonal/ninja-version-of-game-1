@@ -30,6 +30,12 @@ export const REFERRAL_MONTHLY_CAP = 5;
 export const REFERRAL_WINDOW_DAYS = 7;
 /** An inviter's account must be at least this old when the code is entered (a fresh account made to farm). */
 export const REFERRAL_INVITER_MIN_DAYS = 1;
+/**
+ * Exploit audit 2026-11-20 (low): a recruit whose village came onto the server by import (imports up to Keep 5 need
+ * no account age) qualifies only once their account is this old, so a fresh alt cannot import a Keep 5 save and pay
+ * both sides at once.
+ */
+export const REFERRAL_IMPORT_MIN_DAYS = 14;
 
 /** POST /v1/referrals. */
 export interface ReferralRequest {

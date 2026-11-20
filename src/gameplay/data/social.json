@@ -169,6 +169,8 @@
     "epoch": 1767398400000,
     "durationHours": 48,
     "attacksPerMember": 2,
+    "$commentChest": "Exploit audit 2026-11-20 #10: a member's chest needs at least chestMinAttacks attacks in the war, as an Alliance War chest does (a squad with an alt collected a chest a day without fighting).",
+    "chestMinAttacks": 1,
     "$commentLedger": "Ledger audit E12: the offline (computer) Alliance War pays its chest only to a player who attacked at least chestMinAttacks times that week, and a returning player is paid for at most the last settleWeeksMax wars (a year away used to pay 52 chests at once).",
     "chestMinAttacks": 1,
     "settleWeeksMax": 2,

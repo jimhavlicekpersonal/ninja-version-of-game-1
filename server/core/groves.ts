@@ -13,7 +13,7 @@ import { blockedIds, checkNotMuted } from './moderation';
 import { checkChatAllowed, ageBandOf } from './age';
 import { withholdForReader } from './compliance';
 import { maxReinforcementAt } from './pvp';
-import { applyServerResult } from './village';
+import { applyServerResult, hasServerVillage } from './village';
 import { fail } from './errors';
 
 
@@ -223,6 +223,9 @@ export async function donateIn(ctx: ServerContext, me: Player, scopeId: string, 
   const donationId = ctx.uuid();
   // One transaction: the request's room, the gift, and (roadmap step 23) server-held armies on both sides.
   const updated = await ctx.repo.transaction(async (tx) => {
+    // Exploit audit 2026-11-20 #8: a donor whose village lives on the device spends nothing the server can check, so
+    // it may not fill a Lodge the server keeps (that gave top-level warriors from nothing every request cooldown).
+    if ((await hasServerVillage(tx, r.playerId)) && !(await hasServerVillage(tx, me.id))) throw fail(404, 'no_village', 'village.on_device');
     const filled = await tx.fillRequest(r.id, housing);
     if (!filled) throw fail(409, 'full', 'alliance.request_full');
     // A donor whose village the server keeps gives warriors from that real army.

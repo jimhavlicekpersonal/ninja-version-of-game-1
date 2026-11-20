@@ -573,8 +573,10 @@ function afterCommand(s: VillageState, events: SimEvent[], cmd: Command, moonBef
       if (e.resource === 'dew') s.stats.collectedDew += e.amount;
     } else if (e.kind === 'upgrade_start') {
       s.stats.upgradesStarted++;
-      // Instant upgrades (hedges) finish right away; timed ones count in advance().
-      if (e.seconds <= 0) s.stats.upgradesDone++;
+      // Instant upgrades finish right away; timed ones count in advance(). Exploit audit 2026-11-20 (low): walls
+      // and decorations never count (the tasks leave them out when they pick a target, but a ~100-Coin wall
+      // upgrade used to finish an "upgrades" task).
+      if (e.seconds <= 0 && !['hedge', 'decor', 'obstacle'].includes(data.buildings[e.buildingType]?.category ?? '')) s.stats.upgradesDone++;
       // Report section 5 step 6 (economy E01): the flag used to be set before the offer was checked, so a
       // Starter Pack refused that time (age unknown, account under a day old, session slot taken) was gone
       // for good. It is set only when the offer shows (`triggerOffer`), so every long wait re-arms it.
@@ -599,7 +601,8 @@ function afterCommand(s: VillageState, events: SimEvent[], cmd: Command, moonBef
 /** Longest army preset name kept, in UTF-16 units (quality Q20). */
 const ARMY_PRESET_NAME_MAX = 24;
 
-function runCommand(s: VillageState, cmd: Command, now: number, data: GameData): CommandResult {
+function runCommand(s: VillageState, cmd0: Command, now: number, data: GameData): CommandResult {
+  const cmd = withBattleStart(s, cmd0, now, data);
   switch (cmd.type) {
     case 'place':
       return place(s, cmd.buildingType, cmd.x, cmd.y, now, data, cmd.pay);
@@ -659,6 +662,9 @@ function runCommand(s: VillageState, cmd: Command, now: number, data: GameData):
       return { ok: true, state: s, events: [] };
     case 'battleProgress':
       s.pendingBattle = cmd.pending ? structuredClone(cmd.pending) : null;
+      // Exploit audit 2026-11-20 #4: a tracked battle's start is trusted at settlement, so it is never later than now
+      // and never far back (the same slack as an untracked one, measured when the battle is tracked).
+      if (s.pendingBattle) s.pendingBattle.at = battleStartedAt(s.pendingBattle.at, now, data);
       return { ok: true, state: s, events: [] };
     case 'skip':
       return skip(s, cmd.id, now, data);
@@ -682,6 +688,8 @@ function runCommand(s: VillageState, cmd: Command, now: number, data: GameData):
       }
       return { ok: true, state: s, events: [] };
     case 'setProfile':
+      // Exploit audit 2026-11-20 #14: `under18: 0` (or any non-boolean) used to slip past the one-way check below.
+      if (cmd.ageBand === undefined && typeof cmd.under18 !== 'boolean') return fail('NOT_FOUND', 'Unknown age group.');
       // GLOBAL-006: the spending protection only gets stricter in the game. Under 18 is
       // not switched back by the player (support resets it on the server after a check).
       if (s.profile.under18 === true && cmd.under18 === false) return fail('LOCKED', 'Only our support team can change the age group back to 18 or older.');
@@ -784,12 +792,18 @@ function runCommand(s: VillageState, cmd: Command, now: number, data: GameData):
       return settleOnlineAttack(s, cmd, now, data);
     case 'abandonBattle': {
       s.pendingBattle = null;
-      if (checkBattleSetup(s, cmd.record.setup, data)) return { ok: true, state: s, events: [] };
+      // Exploit audit 2026-11-20 #13: deployments are counted against what the village really holds, not the
+      // record's setup, and the hero is the village's own: a forged setup (an ordinary warrior named as the hero,
+      // an empty army) used to walk away from the scouted base with no honor or shield lost.
+      const owned: BattleSetup = { ...cmd.record.setup, army: { ...s.army }, reinforcements: lodgeTroops(s) };
+      const ownHero = heroFor(s, data);
+      if (ownHero) owned.hero = ownHero;
+      else delete owned.hero;
       // Re-audit: no simulation here. An abandoned battle wins nothing, so it only has to spend the
       // warriors the player sent in: count the deployments (each warrior once, never more than the army
       // and the Lodge hold). Running the battle cost a server up to a second for a forged base.
-      const sent = deployedTroops(cmd.record.setup, cmd.record.deployments, data);
-      spendTroops(s, sent, cmd.record.setup);
+      const sent = deployedTroops(owned, Array.isArray(cmd.record.deployments) ? cmd.record.deployments : [], data);
+      spendTroops(s, sent, owned);
       // Economy E16: walking away from the scouted offline opponent after sending warriors in is a lost attack
       // (honor, shield, and the opponent goes), as an online start without a report already is. It used to keep
       // the opponent: drop one warrior, watch the defenses fire, abandon, then attack the same base for real.
@@ -799,8 +813,8 @@ function runCommand(s: VillageState, cmd: Command, now: number, data: GameData):
       // report as a loss; for a village the server keeps, a ticket that is not this player's real ticket is
       // dropped before the replay (server/core/village.ts), so a made-up one changes nothing.
       const scouted = !cmd.record.ticket && s.scout !== null;
-      if (scouted && foughtWithWarriors({ used: sent }, cmd.record.setup)) {
-        const opp = cmd.record.setup.base.trophies ?? s.trophies;
+      if (scouted && foughtWithWarriors({ used: sent }, owned)) {
+        const opp = cmd.record.setup?.base?.trophies ?? s.trophies;
         s.trophies = Math.max(0, s.trophies - lossTrophies(s.trophies, opp, data));
         s.shieldUntil = Math.min(s.shieldUntil, now);
         s.scout = null;
@@ -968,11 +982,13 @@ function topUpTarget(s: VillageState, action: TopUpAction, now: number, data: Ga
   const builderFree = (seconds: number) => seconds <= 0 || builderStatus(s, data, now).free >= 1;
   switch (action.type) {
     case 'upgrade': {
-      const q = short(upgradeQuote(s, action.id, data, now));
+      // Exploit audit 2026-11-20 #6: price what the action really pays with (a wall paid in Provisions used to
+      // buy Coins it never spent, kept in storage, and a cancel refunded the Jade share on top).
+      const q = short(upgradeQuote(s, action.id, data, now, action.pay === 'dew' ? 'dew' : 'acorns'));
       return q && builderFree(q.seconds) ? q.cost : null;
     }
     case 'place': {
-      const q = short(placeQuote(s, data, action.buildingType, now));
+      const q = short(placeQuote(s, data, action.buildingType, now, action.pay === 'dew' ? 'dew' : 'acorns'));
       return q && builderFree(q.seconds) ? q.cost : null;
     }
     case 'research':
@@ -1039,15 +1055,31 @@ function noteTopUp(s: VillageState, action: TopUpAction, events: SimEvent[], bef
   // A finished-at-once action (a wall, a zero-second research) leaves nothing to cancel.
   if (!holders.length) return;
   const n = holders.length;
+  const costs: Cost[] = holders.map(() => ({}));
+  for (const [k, v] of Object.entries(paid.cost) as [ResourceKind, number][]) {
+    // Exploit audit 2026-11-20 #9: the last holder used to take the whole remainder, capped at its own cost, so
+    // part of what was bought went unrecorded and a cancel paid it back as Provisions. An even share first, then
+    // what is left spread over every holder with room, so the recorded shares add up to what was bought.
+    let left = v;
+    holders.forEach((h, i) => {
+      const each = Math.min(Math.floor(v / n), h.cost[k] ?? 0);
+      if (each > 0) costs[i][k] = each;
+      left -= each;
+    });
+    holders.forEach((h, i) => {
+      if (left <= 0) return;
+      const more = Math.min(left, (h.cost[k] ?? 0) - (costs[i][k] ?? 0));
+      if (more > 0) {
+        costs[i][k] = (costs[i][k] ?? 0) + more;
+        left -= more;
+      }
+    });
+    // What no timer holds was never part of a cancellable cost; it is spent either way.
+  }
   holders.forEach((h, i) => {
     const last = i === n - 1;
-    const cost: Cost = {};
-    for (const [k, v] of Object.entries(paid.cost) as [ResourceKind, number][]) {
-      const each = last ? v - Math.floor(v / n) * (n - 1) : Math.floor(v / n);
-      if (each > 0) cost[k] = Math.min(each, h.cost[k] ?? 0);
-    }
     const jade = last ? paid.jade - Math.floor(paid.jade / n) * (n - 1) : Math.floor(paid.jade / n);
-    h.topUp = { cost, jade };
+    h.topUp = { cost: costs[i], jade };
   });
 }
 
@@ -1329,6 +1361,8 @@ function claimTask(s: VillageState, id: string, kind: 'daily' | 'weekly', data: 
 }
 
 function claimTier(s: VillageState, tier: number, track: 'free' | 'premium', data: GameData): CommandResult {
+  // Exploit audit 2026-11-20 #1: any track other than 'free' used to pay the premium reward without the Scroll.
+  if (track !== 'free' && track !== 'premium') return fail('NOT_FOUND', 'No such track.');
   const def = data.pass.tiers.find((t) => t.tier === tier);
   if (!def) return fail('NOT_FOUND', 'No such tier.');
   if (tier > unlockedTier(s, data)) return fail('NOT_READY', 'Earn more pass points first.');
@@ -1678,6 +1712,77 @@ export function scoutBattleSeed(scoutSeed: number): number {
   return mixSeed(scoutSeed, 0xba771e);
 }
 
+/** The battle seed of a Shadow Trial attack begun when the village's `nextSeed` was `nextSeed` (the app builds the setup with it). */
+export function trialBattleSeed(villageSeed: number, nextSeed: number, tier: number): number {
+  return mixSeed(villageSeed, 0x7a1a1 + tier * 7919 + nextSeed);
+}
+
+/** The battle seed of a Bounty Hunt attack (see `trialBattleSeed`). */
+export function bountyBattleSeed(villageSeed: number, nextSeed: number): number {
+  return mixSeed(villageSeed, 0xb0b7 + nextSeed);
+}
+
+/** The battle seed of a settle-the-score rematch (see `trialBattleSeed`). */
+export function rematchBattleSeed(villageSeed: number, nextSeed: number): number {
+  return mixSeed(villageSeed, 0x5e771e + nextSeed);
+}
+
+/**
+ * How many `nextSeed` steps a battle may span (bot raids settled mid-battle each take one). A seed made from an
+ * older `nextSeed` than this is refused: the client could otherwise pick its luckiest seed.
+ */
+const SEED_WINDOW = 256;
+
+/**
+ * When a battle command counts as having begun (exploit audit 2026-11-20 #4): the record's own `at`, but never in
+ * the future and never more than `events.settleSlackSeconds` before the command arrived, so a modified game cannot
+ * backdate an attack into an event, a war or a rematch window that is already over.
+ */
+export function battleStartedAt(recAt: number | undefined, now: number, data: GameData, trackedAt?: number): number {
+  const slack = (data.events.settleSlackSeconds ?? 600) * 1000;
+  const at = typeof recAt === 'number' && Number.isFinite(recAt) ? recAt : now;
+  // The start this village recorded itself when the battle began (`battleProgress`, never later than its own time
+  // then): an attack interrupted by closing the app still counts when it is settled on the next launch.
+  if (trackedAt !== undefined && at === trackedAt) return Math.min(now, at);
+  return Math.min(now, Math.max(at, now - slack));
+}
+
+const BATTLE_END_COMMANDS = new Set<Command['type']>(['battleEnd', 'trialEnd', 'groveBattleEnd', 'bountyEnd', 'rematchEnd']);
+
+/** A battle-end command with its start time settled once (`battleStartedAt`), before anything reads it. */
+function withBattleStart(s: VillageState, cmd: Command, now: number, data: GameData): Command {
+  if (!BATTLE_END_COMMANDS.has(cmd.type) || !('record' in cmd) || !cmd.record) return cmd;
+  const record = cmd.record as { at?: number };
+  return { ...cmd, record: { ...cmd.record, at: battleStartedAt(record.at, now, data, s.pendingBattle?.at) } } as Command;
+}
+
+/**
+ * Root cause A of the exploit audit 2026-11-20: a battle against a base the village rebuilds (Shadow Trial, Bounty
+ * Hunt, rematch) is set up here, not taken from the client. Only the army, levels, Lodge troops, hero and mastery
+ * come from the record, and `checkBattleSetup` checks each against the village; the seed must be one this village
+ * would have issued; Infiltration Points always apply; no relay damage (exploits 2, 3, 5 and the client seeds).
+ */
+function ownedBattleSetup(s: VillageState, client: BattleSetup, base: BattleLayoutOf, seedAt: (nextSeed: number) => number, data: GameData): { setup: BattleSetup } | { bad: string } {
+  if (!client || typeof client !== 'object') return { bad: 'Unknown battle.' };
+  const seed = Number(client.seed) >>> 0;
+  let seedOk = false;
+  for (let n = s.nextSeed; n >= Math.max(0, s.nextSeed - SEED_WINDOW) && !seedOk; n--) seedOk = seedAt(n) >>> 0 === seed;
+  if (!seedOk) return { bad: 'This battle was not started by this village.' };
+  const setup: BattleSetup = {
+    seed,
+    base,
+    army: client.army ?? {},
+    infiltration: true,
+    ...(client.levels ? { levels: client.levels } : {}),
+    ...(client.reinforcements ? { reinforcements: client.reinforcements } : {}),
+    ...(client.hero ? { hero: client.hero } : {}),
+    ...(client.mastery ? { mastery: client.mastery } : {}),
+  };
+  const bad = checkBattleSetup(s, setup, data);
+  return bad ? { bad } : { setup };
+}
+type BattleLayoutOf = BattleSetup['base'];
+
 export function scoutFee(state: VillageState, data: GameData): number {
   const fees = data.battle.scoutFeeByHall;
   return fees[Math.min(fees.length, hallLevel(state, data)) - 1] ?? 0;
@@ -1719,6 +1824,13 @@ function checkBattleSetup(s: VillageState, setup: BattleSetup, data: GameData): 
     if (r.count > 0 && r.level !== lodge[t].level) return 'Donated warrior levels do not match your Lodge.';
   }
   if (!masteryMatches(s, setup, data)) return 'Warrior mastery does not match your village.';
+  // Exploit audit 2026-11-20 #3: the hero is the one this village brings, at most at its level (a Keep upgrade
+  // that finished mid-battle leaves a lower level), never a forged Shadow Captain or an ordinary warrior.
+  if (setup.hero !== undefined && setup.hero !== null) {
+    const own = heroFor(s, data);
+    const lvl = setup.hero?.level;
+    if (!own || typeof setup.hero !== 'object' || setup.hero.id !== own.id || !Number.isInteger(lvl) || lvl < 1 || lvl > own.level) return 'The hero does not match your village.';
+  }
   return null;
 }
 
@@ -1881,7 +1993,7 @@ function settleOnlineAttack(s: VillageState, cmd: Extract<Command, { type: 'sett
   // stakes settles with none, whatever this game recorded.
   const stake = validStake(cmd.stake, data) ? cmd.stake : undefined;
   const carry = raidCarry(result, rec.setup, stake, data);
-  const { banked, overflow, bonus, eventBonus } = bankRaidLoot(s, result, rec.at, data, carry);
+  const { banked, overflow, bonus, eventBonus } = bankRaidLoot(s, result, Math.min(rec.at, now), data, carry);
   awardMastery(s, result, rec.setup, data);
   rec.result = { ...result, loot: { ...result.loot } };
   rec.banked = banked;
@@ -1925,12 +2037,12 @@ function logWarAttack(s: VillageState, rec: Omit<BattleRecord, 'result' | 'id' |
 function trialEnd(s: VillageState, tier: number, rec: Omit<BattleRecord, 'result' | 'id' | 'kind'>, now: number, data: GameData): CommandResult {
   if (!Number.isInteger(tier) || tier < 1) return fail('INVALID_BATTLE', 'Unknown Shadow Trial.');
   if (tier > nextTrialTier(s.trials.best)) return fail('LOCKED', `Clear Shadow Trial ${s.trials.best + 1} first.`, { tier: s.trials.best + 1 });
-  const setup: BattleSetup = { ...rec.setup, base: trialBase(tier, data, trialVariant(s.trials, tier)) };
   // Relay damage is server-issued for Gang War tickets only. Trials must always
   // begin from the intact generated fortress.
-  if (setup.startDamage && Object.keys(setup.startDamage).length) return fail('INVALID_BATTLE', 'Trial fortress damage is not allowed.');
-  const bad = checkBattleSetup(s, setup, data);
-  if (bad) return fail('INVALID_BATTLE', bad);
+  if (rec.setup?.startDamage && Object.keys(rec.setup.startDamage).length) return fail('INVALID_BATTLE', 'Trial fortress damage is not allowed.');
+  const built = ownedBattleSetup(s, rec.setup, trialBase(tier, data, trialVariant(s.trials, tier)), (n) => trialBattleSeed(s.seed, n, tier), data);
+  if ('bad' in built) return fail('INVALID_BATTLE', built.bad);
+  const setup = built.setup;
   const { result } = runBattle(setup, rec.deployments, data, rec.endTick);
   spendTroops(s, result.used, setup);
   awardMastery(s, result, setup, data);
@@ -1958,16 +2070,21 @@ function trialEnd(s: VillageState, tier: number, rec: Omit<BattleRecord, 'result
  * ladder step the result newly reaches pays once (Keep-scaled, storage-capped).
  */
 function bountyEnd(s: VillageState, key: string, rec: Omit<BattleRecord, 'result' | 'id' | 'kind'>, now: number, data: GameData): CommandResult {
-  const at = Math.min(now, rec.at ?? now);
+  const at = rec.at ?? now;
   const ev = activeGoalEvent(at, data);
   if (!ev || ev.key !== key || ev.goal.kind !== 'bounty') return fail('NOT_AVAILABLE', 'The Bounty Hunt is not running.');
+  // Exploit audit 2026-11-20 #4: progress is kept for one occurrence, so going back to an earlier one after
+  // progress in the running one would pay its whole ladder again. An attack begun just before an occurrence
+  // ended still counts, but not once the next occurrence has progress.
+  const running = activeGoalEvent(now, data);
+  if (running && running.key !== key && s.goalEvent?.key === running.key) return fail('NOT_AVAILABLE', 'The Bounty Hunt is not running.');
   const keep = hallLevel(s, data);
   // The Keep the attack began with: the current one, or one below if a Keep upgrade finished mid-battle.
-  const asked = rec.setup.base?.hallLevel;
+  const asked = rec.setup?.base?.hallLevel;
   const baseKeep = asked === keep - 1 ? asked : keep;
-  const setup: BattleSetup = { ...rec.setup, base: bountyBase(s.seed, key, baseKeep, ev.goal, data) };
-  const bad = checkBattleSetup(s, setup, data);
-  if (bad) return fail('INVALID_BATTLE', bad);
+  const built = ownedBattleSetup(s, rec.setup, bountyBase(s.seed, key, baseKeep, ev.goal, data), (n) => bountyBattleSeed(s.seed, n), data);
+  if ('bad' in built) return fail('INVALID_BATTLE', built.bad);
+  const setup = built.setup;
   const { result } = runBattle(setup, rec.deployments, data, rec.endTick);
   spendTroops(s, result.used, setup);
   const steps = recordBountyResult(s, key, ev.goal, result.stars, result.destruction);
@@ -1986,13 +2103,13 @@ function bountyEnd(s: VillageState, key: string, rec: Omit<BattleRecord, 'result
  * loot from buildings; a win pays the small fixed rematch reward.
  */
 function rematchEnd(s: VillageState, defenseId: string, rec: Omit<BattleRecord, 'result' | 'id' | 'kind'>, now: number, data: GameData): CommandResult {
-  const at = Math.min(now, rec.at ?? now);
+  const at = rec.at ?? now;
   const status = rematchStatus(s, defenseId, at, data);
   if (!status.ok) return fail('NOT_AVAILABLE', status.message);
   const base = rematchBase(status.record, data)!;
-  const setup: BattleSetup = { ...rec.setup, base };
-  const bad = checkBattleSetup(s, setup, data);
-  if (bad) return fail('INVALID_BATTLE', bad);
+  const built = ownedBattleSetup(s, rec.setup, base, (n) => rematchBattleSeed(s.seed, n), data);
+  if ('bad' in built) return fail('INVALID_BATTLE', built.bad);
+  const setup = built.setup;
   const { result } = runBattle(setup, rec.deployments, data, rec.endTick);
   spendTroops(s, result.used, setup);
   status.record.rematch = `r${s.nextSeed}`;
@@ -2071,8 +2188,8 @@ export function battleLoadout(state: VillageState, data: GameData): Pick<BattleS
 /** A Grove Raid attack: no loot or trophies, best stars per enemy base count. */
 function groveBattleEnd(s: VillageState, target: number, rec: Omit<BattleRecord, 'result' | 'id' | 'kind'>, now: number, data: GameData): CommandResult {
   // The war must have been live when the attack began (an interrupted attack
-  // settled after the war ended still counts, exactly once).
-  const at = Math.min(now, rec.at ?? now);
+  // settled after the war ended still counts, exactly once), within the settle slack (exploit audit 2026-11-20 #4).
+  const at = rec.at ?? now;
   const phase = raidPhase(at, data);
   if (!s.grove.joined || phase.phase !== 'live') return fail('NOT_AVAILABLE', 'The Alliance War is not running.');
   const raid = ensureRaid(s, at, data)!;

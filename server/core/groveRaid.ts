@@ -9,7 +9,7 @@ import type { RaidAttackResponse, RaidClaimResponse, RaidTicketResponse, RaidVie
 import type { GroveSummaryRow, Player, RaidPairing, RosterEntry } from '../repo';
 import { HOUR, type ServerContext } from './context';
 import { requireGrove } from './groves';
-import { battleSeed, checkArmy, engineForClient, engineForTicket, resimulate, takeTicket, TICKET_TTL_MS, burnAfterFailures, requireArmyOnServer, type BattleReport } from './pvp';
+import { battleSeed, checkArmy, engineForClient, engineForTicket, lockPlayers, resimulate, takeTicket, TICKET_TTL_MS, burnAfterFailures, requireArmyOnServer, type BattleReport } from './pvp';
 import type { ClientInfo } from '../rules/registry';
 import { applyServerResult } from './village';
 import { fail } from './errors';
@@ -199,6 +199,11 @@ export async function raid(ctx: ServerContext, me: Player): Promise<RaidView> {
   };
 }
 
+/** The lock one Alliance's side of one week's war takes (an advisory-lock key, never a player id). */
+function warSideLock(groveId: string, week: number): string {
+  return `war-side:${groveId}:${week}`;
+}
+
 export async function raidTicket(ctx: ServerContext, me: Player, target: unknown, client?: ClientInfo): Promise<RaidTicketResponse> {
   const engine = engineForClient(ctx, client);
   const { grove, joinedAt } = await requireGrove(ctx, me);
@@ -207,18 +212,23 @@ export async function raidTicket(ctx: ServerContext, me: Player, target: unknown
   if (ph.phase !== 'live') throw fail(409, 'raid_not_live', 'raid.not_live');
   if (!eligible(joinedAt, ph.week, ctx)) throw fail(409, 'no_attacks_left', 'raid.joined_during');
   const pairing = await ensurePairing(ctx, grove.id, ph.week);
-  const sideAttacks = await ctx.repo.raidAttacks(ph.week, grove.id);
-  // Re-audit: a ticket is the attack; unreported ones count (hiding a loss by not reporting it uses the attack anyway).
-  const unreported = (await ctx.repo.openTickets(me.id, 'raid')).filter((x) => x.week === ph.week && x.groveId === grove.id).length;
-  const used = sideAttacks.filter((a) => a.attackerId === me.id).length + unreported;
-  if (used >= ctx.data.social.groveRaid.attacksPerMember) throw fail(409, 'no_attacks_left', 'raid.attacks_used_long');
-  if (sideAttacks.length >= sideAttackCap(pairing, ctx)) throw fail(409, 'no_attacks_left', 'raid.side_used');
   const idx = Math.floor(Number(target));
   const entry = pairing.roster[idx];
   if (!entry) throw fail(404, 'not_found', 'war.no_base');
   const expiresAt = Math.min(t + TICKET_TTL_MS, ph.end + 10 * 60_000);
   const ticket = { id: ctx.uuid(), kind: 'raid' as const, attackerId: me.id, defenderId: entry.playerId, defenderName: entry.name, base: entry.base, defenderTrophies: entry.trophies, createdAt: t, expiresAt, used: false, week: ph.week, groveId: grove.id, target: idx, seed: ctx.newSeed(), rules: ctx.rules.ticketRules(engine, client), dataVersion: engine.dataVersion };
-  await ctx.repo.createTicket(ticket);
+  // Exploit audit 2026-11-20 #11: the count and the new ticket happen under the player's and the side's locks, so
+  // parallel requests wait for each other (six at once used to get six tickets where the limit is two).
+  await ctx.repo.transaction(async (tx) => {
+    await lockPlayers(tx, [me.id, warSideLock(grove.id, ph.week)]);
+    const sideAttacks = await tx.raidAttacks(ph.week, grove.id);
+    // Re-audit: a ticket is the attack; unreported ones count (hiding a loss by not reporting it uses the attack anyway).
+    const unreported = (await tx.openTickets(me.id, 'raid')).filter((x) => x.week === ph.week && x.groveId === grove.id).length;
+    const used = sideAttacks.filter((a) => a.attackerId === me.id).length + unreported;
+    if (used >= ctx.data.social.groveRaid.attacksPerMember) throw fail(409, 'no_attacks_left', 'raid.attacks_used_long');
+    if (sideAttacks.length >= sideAttackCap(pairing, ctx)) throw fail(409, 'no_attacks_left', 'raid.side_used');
+    await tx.createTicket(ticket);
+  });
   return { ticket: ticket.id, seed: ticket.seed, base: entry.base, expiresAt };
 }
 
@@ -247,6 +257,10 @@ export async function raidAttack(ctx: ServerContext, me: Player, sub: BattleRepo
   });
   const t = Math.min(ctx.now(), raidWindow(week, ctx.data).end - 1);
   await ctx.repo.transaction(async (tx) => {
+    // Exploit audit 2026-11-20 #11: counted again under the locks, so parallel reports cannot pass the limits together.
+    await lockPlayers(tx, [me.id, warSideLock(ticket.groveId!, week)]);
+    const now = await tx.raidAttacks(week, ticket.groveId!);
+    if (now.filter((a) => a.attackerId === me.id).length >= ctx.data.social.groveRaid.attacksPerMember || now.length >= sideAttackCap(pairing, ctx)) throw fail(409, 'no_attacks_left', 'raid.attacks_used');
     if (!(await tx.useTicket(ticket.id, { result }))) throw fail(409, 'conflict', 'battle.already_reported');
     // A village the server keeps spends the warriors who fought (roadmap step 22).
     const spent = await applyServerResult(tx, ctx, me, [{ cmd: { type: 'remoteGroveBattleEnd', target: ticket.target!, record: { at: ctx.now(), opponentName: ticket.defenderName, setup, deployments, endTick: sub.endTick }, known: result }, reason: 'war:troops' }], ticket.id);

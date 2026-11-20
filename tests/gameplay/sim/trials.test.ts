@@ -4,9 +4,9 @@ import { createBattle, deploy, runBattle } from '../../../src/gameplay/sim/battl
 import { LAYOUTS } from '../../../src/gameplay/sim/battle/basegen';
 import type { BaseLayout, Deployment } from '../../../src/gameplay/sim/battle/types';
 import { trialBase, trialInfo, trialReward } from '../../../src/gameplay/sim/trials';
-import { applyCommand } from '../../../src/gameplay/sim/village';
+import { applyCommand, trialBattleSeed } from '../../../src/gameplay/sim/village';
 import { migrate, SAVE_VERSION, serialize } from '../../../src/gameplay/sim/save';
-import { data, newGame } from './helpers';
+import { data, entryDeployments, newGame } from './helpers';
 
 /** Rough defensive strength: sum over defenses of HP x damage per tick. */
 function strength(base: BaseLayout): number {
@@ -81,14 +81,11 @@ describe('Shadow Trial rewards', () => {
     state.resources = { ...state.resources, acorns: 0, dew: 0 };
     return { clock, state };
   }
-  const flatten = (n = 40): Deployment[] => [
-    ...Array.from({ length: 6 }, (_, i) => ({ tick: i, troop: 'beetle_brute', x: 1, y: 14 + i })),
-    ...Array.from({ length: n }, (_, i) => ({ tick: 10 + i, troop: 'hedgehog_roller', x: 1 + (i % 2) * 38, y: 10 + (i % 20) })),
-  ];
-
   it('pays once, on the first clear, and only for the next tier', () => {
     const { clock, state } = ready();
-    const setup = { seed: 3, base: trialBase(1, data), army: { ...state.army } };
+    const setup = { seed: trialBattleSeed(state.seed, state.nextSeed, 1), base: trialBase(1, data), army: { ...state.army }, infiltration: true };
+    const deps = entryDeployments(setup, [['beetle_brute', 6], ['hedgehog_roller', 40]]);
+    const flatten = () => deps;
     const sim = runBattle(setup, flatten(), data);
     expect(sim.result.stars).toBeGreaterThanOrEqual(data.trials.starsToClear);
 
@@ -132,7 +129,10 @@ describe('Shadow Trial rewards', () => {
     const { clock, state } = ready();
     const fake: BaseLayout = { name: 'Paper fort', hallLevel: 1, buildings: [{ id: 'h', type: 'elder_toadstool', level: 1, x: 2, y: 2 }] };
     const deps: Deployment[] = [{ tick: 0, troop: 'hedgehog_roller', x: 10, y: 3 }];
-    const r = applyCommand(state, { type: 'trialEnd', tier: 1, record: { at: clock.now(), opponentName: 'x', setup: { seed: 1, base: fake, army: { hedgehog_roller: 1 } }, deployments: deps } }, clock.now(), data);
+    const seed = trialBattleSeed(state.seed, state.nextSeed, 1);
+    const real = entryDeployments({ seed, base: trialBase(1, data), army: { hedgehog_roller: 1 } }, [['hedgehog_roller', 1]]);
+    void deps;
+    const r = applyCommand(state, { type: 'trialEnd', tier: 1, record: { at: clock.now(), opponentName: 'x', setup: { seed, base: fake, army: { hedgehog_roller: 1 } }, deployments: real } }, clock.now(), data);
     expect(r.ok).toBe(true);
     if (!r.ok) return;
     expect(r.state.trials.best).toBe(0); // one Shinobi can't clear the real tier 1
@@ -141,8 +141,9 @@ describe('Shadow Trial rewards', () => {
 
   it('a failed attempt pays nothing and does not advance', () => {
     const { clock, state } = ready();
-    const deps: Deployment[] = [{ tick: 0, troop: 'hedgehog_roller', x: 1, y: 10 }];
-    const r = applyCommand(state, { type: 'trialEnd', tier: 1, record: { at: clock.now(), opponentName: 'x', setup: { seed: 1, base: trialBase(1, data), army: { hedgehog_roller: 1 } }, deployments: deps } }, clock.now(), data);
+    const setup = { seed: trialBattleSeed(state.seed, state.nextSeed, 1), base: trialBase(1, data), army: { hedgehog_roller: 1 } };
+    const deps: Deployment[] = entryDeployments(setup, [['hedgehog_roller', 1]]);
+    const r = applyCommand(state, { type: 'trialEnd', tier: 1, record: { at: clock.now(), opponentName: 'x', setup, deployments: deps } }, clock.now(), data);
     expect(r.ok && r.state.trials.best).toBe(0);
     expect(r.ok && r.state.resources.acorns).toBe(0);
   });
@@ -180,7 +181,10 @@ describe('Shadow Trials: a dependable climb (F33)', () => {
     const { clock, state } = newGame();
     state.army = { hedgehog_roller: 1 };
     state.trials = { best: 3 };
-    const fight = (s: typeof state) => applyCommand(s, { type: 'trialEnd', tier: 4, record: { at: clock.now(), opponentName: 'x', setup: { seed: 1, base: trialBase(4, data), army: { hedgehog_roller: 1 } }, deployments: [{ tick: 0, troop: 'hedgehog_roller', x: 0, y: 0 }] } }, clock.now(), data);
+    const fight = (s: typeof state) => {
+      const setup = { seed: trialBattleSeed(s.seed, s.nextSeed, 4), base: trialBase(4, data, s.trials.alternate ?? 0), army: { hedgehog_roller: 1 } };
+      return applyCommand(s, { type: 'trialEnd', tier: 4, record: { at: clock.now(), opponentName: 'x', setup, deployments: entryDeployments(setup, [['hedgehog_roller', 1]]) } }, clock.now(), data);
+    };
     expect(applyCommand(state, { type: 'trialAlternate' }, clock.now(), data).ok).toBe(false);
     const failed = fight(state);
     expect(failed.ok).toBe(true);

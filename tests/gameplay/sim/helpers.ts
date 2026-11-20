@@ -2,6 +2,8 @@ import { FakeClock } from '../../../src/gameplay/sim/clock';
 import { defaultData } from '../../../src/gameplay/sim/data';
 import { applyCommand, createNewVillage, type Command } from '../../../src/gameplay/sim/village';
 import type { VillageState } from '../../../src/gameplay/sim/types';
+import { canDeploy, createBattle, deploy } from '../../../src/gameplay/sim/battle/battle';
+import type { BattleSetup, Deployment } from '../../../src/gameplay/sim/battle/types';
 
 export const data = defaultData;
 
@@ -23,4 +25,28 @@ export function must(state: VillageState, cmd: Command, now: number): VillageSta
 
 export function find(state: VillageState, type: string) {
   return state.buildings.filter((b) => b.type === type);
+}
+
+/**
+ * Deployments that land on the base's Infiltration Points (every battle the village sets up uses them,
+ * exploit audit 2026-11-20 #5): each warrior goes on the first tile `canDeploy` accepts, one per tick.
+ */
+export function entryDeployments(setup: BattleSetup, wanted: [troop: string, count: number][]): Deployment[] {
+  const sim = createBattle({ ...setup, infiltration: true }, data);
+  const n = sim.grid.size;
+  const out: Deployment[] = [];
+  for (const [troop, count] of wanted) {
+    for (let i = 0; i < count; i++) {
+      let placed = false;
+      for (let y = 0; y < n && !placed; y++) {
+        for (let x = 0; x < n && !placed; x++) {
+          if (!canDeploy(sim, troop, x, y)) continue;
+          const d = { tick: out.length, troop, x, y };
+          placed = deploy(sim, d);
+          if (placed) out.push(d);
+        }
+      }
+    }
+  }
+  return out;
 }

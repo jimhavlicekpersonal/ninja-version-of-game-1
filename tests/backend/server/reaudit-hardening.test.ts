@@ -92,10 +92,10 @@ for (const [label, makeRepo] of repoFactories) {
       const again = await ann.sendCommands({ device: 'device-junk-01', stateHash: '', commands: [1, 2, 3].map(junk) });
       expect(again).toMatchObject({ ackSeq: 3, results: [], revision: before.revision + 1 });
       // A real command afterwards is applied and saved as usual (the revision check still holds).
-      const ok = await ann.sendCommands({ device: 'device-junk-01', stateHash: '', commands: [{ seq: 4, t: w.now(), command: { type: 'setProfile', under18: null } as never }] });
+      const ok = await ann.sendCommands({ device: 'device-junk-01', stateHash: '', commands: [{ seq: 4, t: w.now(), command: { type: 'setProfile', under18: false } }] });
       expect(ok.results[0].ok).toBe(true);
       expect(saves).toBe(1);
-      expect((await w.repo.commandsOf(ann.id, 3, 10))[0].command).toEqual({ type: 'setProfile', under18: null });
+      expect((await w.repo.commandsOf(ann.id, 3, 10))[0].command).toEqual({ type: 'setProfile', under18: false });
     });
 
     it('refuses a command larger than MAX_COMMAND_BYTES as TOO_LARGE', async () => {
@@ -108,7 +108,7 @@ for (const [label, makeRepo] of repoFactories) {
 
     it('refuses a batch without a device id once device-numbered queues write to the village (426, update the game)', async () => {
       const { w, ann } = await scene();
-      const cmd = (seq: number): VillageCommand => ({ seq, t: w.now(), command: { type: 'setProfile', under18: null } as never });
+      const cmd = (seq: number): VillageCommand => ({ seq, t: w.now(), command: { type: 'setProfile', under18: false } });
       // Before any device batch an old game still works as it did.
       expect((await ann.sendCommands({ stateHash: '', commands: [cmd(1)] })).ackSeq).toBe(1);
       await ann.sendCommands({ device: 'phone-new-0001', stateHash: '', commands: [cmd(1), cmd(2)] });

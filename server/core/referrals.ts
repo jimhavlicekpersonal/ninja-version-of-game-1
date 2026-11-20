@@ -17,7 +17,7 @@
  * (`ReferralRequest.install`, `player_installs`), not only the per-village command-queue ids.
  */
 import { normalizeFriendCode } from '../../src/backend/net/names';
-import { REFERRAL_INVITER_MIN_DAYS, REFERRAL_JADE, REFERRAL_KEEP, REFERRAL_MONTHLY_CAP, REFERRAL_WINDOW_DAYS, type ReferralRequest, type ReferralView } from '../../src/backend/net/growth';
+import { REFERRAL_IMPORT_MIN_DAYS, REFERRAL_INVITER_MIN_DAYS, REFERRAL_JADE, REFERRAL_KEEP, REFERRAL_MONTHLY_CAP, REFERRAL_WINDOW_DAYS, type ReferralRequest, type ReferralView } from '../../src/backend/net/growth';
 import { deserialize } from '../../src/gameplay/sim/save';
 import { hallLevel } from '../../src/gameplay/sim/village';
 import type { Player, ReferralRow, Repo } from '../repo';
@@ -52,6 +52,12 @@ async function knownDevices(repo: Repo, ctx: ServerContext, playerId: string): P
   return [...(v?.devices ?? []), ...(await repo.installsOf(playerId))];
 }
 
+/** Did this player's server village arrive by import (any opening `import` ledger line)? */
+async function importedVillage(repo: Repo, ctx: ServerContext, playerId: string): Promise<boolean> {
+  for (const k of ['acorns', 'dew', 'nightsap', 'moonstones']) if ((await repo.ledgerSumAt(playerId, k, 'import', ctx.now())) !== 0) return true;
+  return false;
+}
+
 /** Whether the pair qualifies now (both adults, the recruit's held village at the Keep, nothing held back, no shared device). */
 async function qualifies(repo: Repo, ctx: ServerContext, r: ReferralRow): Promise<boolean> {
   const recruit = await repo.getPlayer(r.recruitId);
@@ -60,6 +66,9 @@ async function qualifies(repo: Repo, ctx: ServerContext, r: ReferralRow): Promis
   const v = await heldKeep(repo, ctx, r.recruitId);
   if (!v || v.keep < REFERRAL_KEEP) return false;
   if ((await repo.importHoldsOf(r.recruitId)).some((h) => h.status === 'held')) return false;
+  // Exploit audit 2026-11-20 (low): an imported village's Keep was not earned on the server (an import opens the
+  // ledger with `import` lines); such a recruit qualifies only once the account is REFERRAL_IMPORT_MIN_DAYS old.
+  if (ctx.now() - recruit.createdAt < REFERRAL_IMPORT_MIN_DAYS * DAY && (await importedVillage(repo, ctx, r.recruitId))) return false;
   const mine = [...v.devices, ...(await repo.installsOf(r.recruitId))];
   if ((await knownDevices(repo, ctx, r.inviterId)).some((d) => mine.includes(d))) return false;
   return true;

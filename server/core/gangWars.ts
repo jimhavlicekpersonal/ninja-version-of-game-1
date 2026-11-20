@@ -27,7 +27,7 @@ import type { GangWarAttackResponse, GangWarBaseView, GangWarClaimResponse, Gang
 import type { GangQueueEntry, GangRelay, GangWar, GangWarAttack, GangWarEntry, GangWarSide, Player, Squad, Ticket } from '../repo';
 import type { ClientInfo } from '../rules/registry';
 import { MIN, type ServerContext } from './context';
-import { battleSeed, checkArmy, engineForClient, engineForTicket, resimulate, takeTicket, TICKET_TTL_MS, burnAfterFailures, requireArmyOnServer, type BattleReport } from './pvp';
+import { battleSeed, checkArmy, engineForClient, engineForTicket, lockPlayers, resimulate, takeTicket, TICKET_TTL_MS, burnAfterFailures, requireArmyOnServer, type BattleReport } from './pvp';
 import { requireSquad, setRosterLock } from './squads';
 import { applyServerResult } from './village';
 import { fail } from './errors';
@@ -290,26 +290,32 @@ export async function warTicket(ctx: ServerContext, me: Player, req: Partial<Gan
   const t = ctx.now();
   if (gangWarPhase(t, w) !== 'battle') throw fail(409, 'raid_not_live', 'war.not_battle_day');
   if (!entry) throw fail(404, 'not_found', 'war.joined_gang_after');
-  // Re-audit: a ticket is the attack. One that is never reported (a loss hidden by not sending it)
-  // still uses the attack, so unreported tickets count until the war ends.
-  const reported = (await ctx.repo.warAttacks(w.id)).filter((a) => a.attackerId === me.id).length;
-  const unreported = (await ctx.repo.openTickets(me.id, 'war')).filter((x) => x.warId === w.id).length;
-  if (reported + unreported >= ctx.data.social.gangWar.attacksPerMember) throw fail(409, 'no_attacks_left', 'war.attacks_used_long');
   const target = Math.floor(Number(req?.target));
   const enemy = w[other(side)].roster.find((e) => e.index === target);
   if (!enemy) throw fail(404, 'not_found', 'war.no_base');
   const relay = req?.relay === true;
   const rules = ctx.rules.ticketRules(engine, client);
-  let startDamage: Record<string, number> | undefined;
-  if (relay) {
-    if (rules < 3) throw fail(426, 'version_mismatch', 'war.relay_update');
-    // One relay striker at a time on a base; the hold lasts as long as the ticket.
-    if (!(await ctx.repo.holdRelay(w.id, side, target, me.id, t + TICKET_TTL_MS, t))) throw fail(409, 'conflict', 'war.relay_busy');
-    const r = await ctx.repo.getRelay(w.id, side, target);
-    startDamage = r?.damage ?? {};
-  }
-  const ticket: Ticket = { id: ctx.uuid(), kind: 'war', attackerId: me.id, defenderId: enemy.playerId, defenderName: enemy.name, base: enemy.base, defenderTrophies: 0, createdAt: t, expiresAt: Math.min(t + TICKET_TTL_MS, w.endsAt + 10 * MIN), used: false, seed: ctx.newSeed(), rules, dataVersion: engine.dataVersion, warId: w.id, target, relay, ...(startDamage ? { startDamage } : {}) };
-  await ctx.repo.createTicket(ticket);
+  if (relay && rules < 3) throw fail(426, 'version_mismatch', 'war.relay_update');
+  // Exploit audit 2026-11-20 #11: counted and issued under the player's lock, so parallel requests wait for each other.
+  const ticket = await ctx.repo.transaction(async (tx) => {
+    await lockPlayers(tx, [me.id]);
+    // Re-audit: a ticket is the attack. One that is never reported (a loss hidden by not sending it)
+    // still uses the attack, so unreported tickets count until the war ends.
+    const reported = (await tx.warAttacks(w.id)).filter((a) => a.attackerId === me.id).length;
+    const unreported = (await tx.openTickets(me.id, 'war')).filter((x) => x.warId === w.id).length;
+    if (reported + unreported >= ctx.data.social.gangWar.attacksPerMember) throw fail(409, 'no_attacks_left', 'war.attacks_used_long');
+    let startDamage: Record<string, number> | undefined;
+    if (relay) {
+      // One relay striker at a time on a base; the hold lasts as long as the ticket.
+      if (!(await tx.holdRelay(w.id, side, target, me.id, t + TICKET_TTL_MS, t))) throw fail(409, 'conflict', 'war.relay_busy');
+      const r = await tx.getRelay(w.id, side, target);
+      startDamage = r?.damage ?? {};
+    }
+    const issued: Ticket = { id: ctx.uuid(), kind: 'war', attackerId: me.id, defenderId: enemy.playerId, defenderName: enemy.name, base: enemy.base, defenderTrophies: 0, createdAt: t, expiresAt: Math.min(t + TICKET_TTL_MS, w.endsAt + 10 * MIN), used: false, seed: ctx.newSeed(), rules, dataVersion: engine.dataVersion, warId: w.id, target, relay, ...(startDamage ? { startDamage } : {}) };
+    await tx.createTicket(issued);
+    return issued;
+  });
+  const startDamage = ticket.startDamage;
   return { ticket: ticket.id, seed: ticket.seed!, base: enemy.base, ...(startDamage ? { startDamage } : {}), expiresAt: ticket.expiresAt };
 }
 
@@ -336,6 +342,7 @@ export async function warAttack(ctx: ServerContext, me: Player, sub: BattleRepor
   const t = Math.min(ctx.now(), w.endsAt - 1);
   const target = ticket.target!;
   const response = await ctx.repo.transaction(async (tx) => {
+    await lockPlayers(tx, [me.id]);
     const used = (await tx.warAttacks(w.id)).filter((a) => a.attackerId === me.id).length;
     if (used >= ctx.data.social.gangWar.attacksPerMember) throw fail(409, 'no_attacks_left', 'war.attacks_used');
     await tx.addWarAttack({ id: ctx.uuid(), warId: w.id, side, attackerId: me.id, target, relay: Boolean(ticket.relay), stars: result.stars, destruction: result.destruction, at: t });
@@ -407,6 +414,10 @@ export async function claim(ctx: ServerContext, me: Player, warId: unknown): Pro
   if (!side) throw fail(404, 'not_found', 'war.not_part');
   if (ctx.now() < w.endsAt) throw fail(409, 'raid_not_ended', 'war.not_ended');
   await rateIfEnded(ctx, w);
+  // Exploit audit 2026-11-20 #10: the chest is for members who fought (`chestMinAttacks`, as Alliance Wars do);
+  // a squad with an alt used to collect a chest a day without attacking.
+  const minAttacks = ctx.data.social.gangWar.chestMinAttacks ?? 1;
+  if ((await ctx.repo.warAttacks(w.id)).filter((a) => a.attackerId === me.id).length < minAttacks) throw fail(404, 'not_found', 'war.not_part');
   const { ours, theirs } = await totals(ctx, w, side, w.endsAt);
   const outcome = gangWarOutcome(sideTotal(ours), sideTotal(theirs));
   const generated = w[other(side)].bot;
