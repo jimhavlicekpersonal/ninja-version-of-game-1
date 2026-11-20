@@ -1306,4 +1306,6 @@ Three branches had fixed overlapping findings without seeing each other: `main` 
 | Branch-only fixes | kept: entry room (`sim/entryRoom.ts`), R3-02 premium column only for `'premium'`, R3-04 `rematchKeep`, R3-05 undeclared Lodge use, R3-10, validateVillage tile marking | no counterpart elsewhere | `entry-room`, `exploit-review` (seeds restated) |
 | Uploaded-base loot cap (main #7) and contract time (pass P5-03) in `pvp.ts` | both | independent | server tests |
 
-Checks run on the merged tree are listed in the merge commits' messages. Not run here: `npm run test:slow`, Postgres/Redis adapter tests, device or store checks.
+Campaign after the 0.10 share (`npm run balance:campaign`, all gates pass): regular Keep 12 on day 50.4 and Keep 15 on day 103.6 (102.6 at 0.15); paid for held raids 36.4 M (55.3 M at 0.15), regular_fortress 86.6 M (128.6 M).
+
+Checks run on the final tree: `npm test` (244 files, 2,242 tests), `npm run lint`, `npm run build`, `npm run typecheck:server`, `npm run server:build`; `npm run test:slow` all six files on the merged tree before the 0.10 change (golive-gate 34 min), and its five balance and timing files after it. Not run here: Postgres/Redis adapter tests, device or store checks.
