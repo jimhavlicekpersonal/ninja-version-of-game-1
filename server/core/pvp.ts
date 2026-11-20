@@ -741,8 +741,6 @@ export async function attack(ctx: ServerContext, me: Player, sub: BattleReport):
     // MAX_HONOR_FROM_ONE_ATTACKER a day (an alternate account feeding a main with 0-star raids had no limit).
     const todayFromMe = defender ? (await tx.defensesFor(defender.id, day * 86_400_000, 200)).filter((a) => a.attackerId === me.id) : [];
     const fromThisAttacker = delta < 0 ? todayFromMe.reduce((n, a) => n + Math.max(0, a.defenderTrophies ?? 0), 0) : 0;
-    // Independent review 2026-11-18 (P2-01): the per-star hold reward is paid for one raid per attacker per defender a day.
-    const holdReward = todayFromMe.length === 0;
     const defLoss = delta > 0 ? Math.max(0, Math.min(defenseHonorLoss(delta, data), rdef.defenderDailyHonorLossCap - lostToday)) : -Math.min(-delta, Math.max(0, MAX_HONOR_FROM_ONE_ATTACKER - fromThisAttacker));
     const defPatch: { trophies: number; shieldUntil?: number; honorLoss?: { day: number; lost: number }; ratings?: { attack: Rating; base: Rating } } = { trophies: Math.max(0, (defender?.trophies ?? 0) - defLoss) };
     // P3-12: one rule with the game (sim/shield.ts): the player's first attack keeps its shield.
@@ -782,7 +780,7 @@ export async function attack(ctx: ServerContext, me: Player, sub: BattleReport):
       // A missed stake: the defender keeps everything, so its record (and a game that holds its own village) shows no loss.
       const defResult = kept ? { ...paid, loot: {} } : paid;
       const record = { id: attackId, at: t, kind: 'defense' as const, opponentName: attacker.name, setup: { seed, base: ticket.base, army, levels, infiltration: true }, deployments, endTick: sub.endTick, result: defResult, trophies: -defLoss };
-      await applyServerResult(tx, ctx, defender, [{ cmd: { type: 'applyDefense', record, lost: defResult.loot, trophies: defPatch.trophies, shieldUntil: defPatch.shieldUntil ?? defender.shieldUntil, fallen, holdReward }, reason: 'defense:loss' }], attackId);
+      await applyServerResult(tx, ctx, defender, [{ cmd: { type: 'applyDefense', record, lost: defResult.loot, trophies: defPatch.trophies, shieldUntil: defPatch.shieldUntil ?? defender.shieldUntil, fallen }, reason: 'defense:loss' }], attackId);
       await tx.addAttack({ id: attackId, at: t, attackerId: attacker.id, attackerName: attacker.name, defenderId: defender.id, seed, army, levels, ...(setup.reinforcements ? { reinforcements } : {}), ...(hero ? { hero } : {}), base: ticket.base, deployments, endTick: sub.endTick, result: defResult, infiltration: true, rules: ticket.rules ?? engine.rules, attackerTrophies: delta, defenderTrophies: -defLoss });
     }
     return { response, attacker, defender, defTrophies: defPatch.trophies };

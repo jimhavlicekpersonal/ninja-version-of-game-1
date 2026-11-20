@@ -1,5 +1,4 @@
 import { choosableHeroes, heroFor } from './heroes';
-import { defenseWinReward } from './defenseReward';
 import { sealProgress } from './seals';
 import { hasAttacked, shieldAfterAttack } from './shield';
 import { awardMastery, masteryBonuses, masteryMatches, masteryOn } from './mastery';
@@ -134,7 +133,7 @@ export type Command =
   | { type: 'drillEnd'; record: Omit<BattleRecord, 'result' | 'id' | 'kind'> }
   /** P5-08: claim the current Keep's seal (sim/seals.ts). */
   | { type: 'claimKeepSeal' }
-  | { type: 'applyDefense'; record: BattleRecord; lost: Cost; trophies: number; shieldUntil: number; fallen?: { id: string; loot: Cost }[]; /** The server's verdict on the per-star hold reward (false: this attacker already raided this defender today). Absent: paid. */ holdReward?: boolean }
+  | { type: 'applyDefense'; record: BattleRecord; lost: Cost; trophies: number; shieldUntil: number; fallen?: { id: string; loot: Cost }[] }
   | { type: 'syncRank'; trophies: number; shieldUntil?: number }
   // Multiplayer server results (see sim/net.ts); each is safe to apply twice.
   | { type: 'netBind'; playerId: string }
@@ -858,18 +857,11 @@ function runCommand(s: VillageState, cmd0: Command, now: number, data: GameData)
       const untraced = applyDefenseLosses(s, cmd.record, cmd.lost, now, data, cmd.fallen);
       s.trophies = Math.max(0, cmd.trophies);
       s.shieldUntil = Math.max(s.shieldUntil, cmd.shieldUntil);
-      // P2-01 (DEF-01): a real player's raid keeps conservation (the defender loses what the raider carried), and
-      // every star denied pays the defender the same per-star reward a bot raid does (storage-capped, reported).
-      const pvpRecord = { ...cmd.record };
-      const stars = pvpRecord.result?.stars ?? 3;
-      // Independent review 2026-11-18: the server pays it once per attacker per defender per UTC day (`holdReward`), so
-      // an alternate account's 0-star raids cannot mint it.
-      if (!pvpRecord.simulated && cmd.holdReward !== false && data.raids.defenseWin?.perStar && stars < 3) {
-        const { added, overflow } = defenseWinReward(s, data, (3 - stars) / 3);
-        if (Object.keys(added).length) pvpRecord.banked = added;
-        if (Object.keys(overflow).length) pvpRecord.overflow = overflow;
-      }
-      s.defenseLog.push(pvpRecord);
+      // A real player's raid keeps conservation (the defender loses what the raider carried) and pays the defender
+      // honor only, never the hold reward: resources created by a failed raid could be traded between two accounts
+      // (2026-11-20 merge decision, with `defenseWin.shareOfRaidLoot` 0.10 for simulated raids; it used to pay once per
+      // attacker per defender a day, which a set of alternate accounts could still farm).
+      s.defenseLog.push({ ...cmd.record });
       while (s.defenseLog.length > data.raids.maxDefenseLog) s.defenseLog.shift();
       s.net.defensesSince = Math.max(s.net.defensesSince, cmd.record.at);
       return { ok: true, state: s, events: untraced ? [{ kind: 'defense_untraced', id: cmd.record.id, lost: cmd.lost, reason: untraced.untraced }] : [] };

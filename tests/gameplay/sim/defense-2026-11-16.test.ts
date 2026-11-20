@@ -49,16 +49,15 @@ describe('P2-01 (DEF-01, DEF-02): stars decide what a raider carries, and every 
     }
   });
 
-  it('a real player\'s raid keeps conservation and pays the defender the per-star reward', () => {
+  it('a real player\'s raid keeps conservation and pays no hold reward (2026-11-20 merge: honor only)', () => {
     const st = built(9, 0.5, 777);
     const before = st.resources.acorns;
     const record = { id: 'pvp1', at: NOW, kind: 'defense' as const, opponentName: 'Raider', setup: { seed: 1, base: { name: 'x', hallLevel: 9, buildings: [] }, army: {}, infiltration: true }, deployments: [], result: { stars: 1, destruction: 40, loot: {}, used: {}, hash: 'h' } as never, trophies: 0 };
     const r = applyCommand(st, { type: 'applyDefense', record, lost: {}, trophies: st.trophies, shieldUntil: 0, fallen: [] }, NOW, data);
     expect(r.ok).toBe(true);
     if (!r.ok) return;
-    const min = data.battle.generatedLootByHall[8].min;
-    expect(r.state.resources.acorns - before).toBe(Math.floor(min * data.raids.defenseWin!.shareOfRaidLoot * 2 / 3));
-    expect(r.state.defenseLog.at(-1)!.banked?.acorns).toBe(r.state.resources.acorns - before);
+    expect(r.state.resources.acorns).toBe(before);
+    expect(r.state.defenseLog.at(-1)!.banked).toBeUndefined();
   });
 });
 
@@ -230,15 +229,14 @@ describe('independent review 2026-11-18: Phase 2 holes', () => {
     expect(rematchStatus(s, 'd1', 10 * 86_400_000 + 1000, data).ok).toBe(true);
   });
 
-  it('a real raid pays the hold reward only when the server says so', () => {
+  it('a real raid never pays the hold reward (two accounts could trade it): honor only', () => {
     const v = createNewVillage(0, data);
     const record = { id: 'pv1', kind: 'defense', at: 1, opponentName: 'alt', setup: { seed: 1, base: { name: 'x', hallLevel: 1, buildings: [] }, army: {} }, deployments: [], result: { stars: 0, destruction: 5, loot: {}, used: {} }, trophies: 0 } as unknown as VillageState['defenseLog'][number];
-    const paid = applyCommand(v, { type: 'applyDefense', record, lost: {}, trophies: 0, shieldUntil: 0 }, 1000, data);
-    const unpaid = applyCommand(v, { type: 'applyDefense', record, lost: {}, trophies: 0, shieldUntil: 0, holdReward: false }, 1000, data);
-    expect(paid.ok && unpaid.ok).toBe(true);
-    if (!paid.ok || !unpaid.ok) return;
-    expect(paid.state.defenseLog.at(-1)!.banked).toBeDefined();
-    expect(unpaid.state.defenseLog.at(-1)!.banked).toBeUndefined();
+    const r = applyCommand(v, { type: 'applyDefense', record, lost: {}, trophies: 0, shieldUntil: 0 }, 1000, data);
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.state.defenseLog.at(-1)!.banked).toBeUndefined();
+    expect(r.state.resources).toEqual(v.resources);
   });
 });
 

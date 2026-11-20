@@ -2,6 +2,8 @@ import { termsGate, provideJadeValueSwitch } from './presentation/ui/complianceU
 import { checkSignificantUpdate, significantUpdateBuild } from './backend/platform/ageRegulatory';
 import { t as i18nText } from './presentation/ui/i18n';
 import { listText as i18nList, fmtNumber, initLanguage, labelText as i18nLabel, t } from './presentation/ui/i18n';
+import { RES_LABEL } from './presentation/ui/chips';
+import { RESOURCE_KINDS, type Cost } from './gameplay/sim/types';
 import Phaser from 'phaser';
 import './presentation/ui/styles.css';
 import { Analytics, IdbEventStore, MemoryEventStore, type EventStore } from './backend/analytics/events';
@@ -819,6 +821,14 @@ function wireSound(controller: GameController, hud: Hud): void {
         if (e.outcome === 'confirmed') hud.toast(i18nText("ui.raid_on_confirmed_by_the_server_62aee4a29d", { arg1: r.opponentName, arg2: Object.values(r.banked ?? {}).some((v) => (v ?? 0) > 0) ? i18nText("ui.loot_banked_c1d50f49bf") : '' }), 'success');
         else hud.toast(i18nText("ui.the_server_did_not_accept_your_raid_on_844fc2eef5", { arg1: r.opponentName, arg2: rejectedWhy(r.rejected) }), 'error');
       } else if (e.kind === 'reward' && e.source.startsWith('season:')) hud.toast(i18nText("ui.the_league_season_ended_your_chest_was_ed31b9f094"), 'success');
+      else if (e.kind === 'reward' && e.source.startsWith('pass_end:')) {
+        // Review SCR-04: a Season Scroll season ended while the game was open; say what its unclaimed tiers added
+        // and what did not fit (existing strings, so every language already has them).
+        const list = (c: Cost) => i18nList(RESOURCE_KINDS.filter((k) => (c[k] ?? 0) > 0).map((k) => i18nText("ui.message_14677cb26f", { arg1: fmtNumber(c[k]!), arg2: RES_LABEL[k] })), 'conjunction');
+        const got = list(e.grants);
+        const missed = list(e.overflow ?? {});
+        hud.toast(`${t('welcome.scrollEnded')} ${got}${missed ? `${i18nText("ui.did_not_fit_in_storage_2fd00242ff")}${missed})` : ''}`, got ? 'success' : 'info');
+      }
       if (e.kind === 'purchase_granted') sound.play('coin');
       else if (e.kind === 'skip_used') sound.play('magic');
       else if (e.kind === 'reward') sound.play('star');

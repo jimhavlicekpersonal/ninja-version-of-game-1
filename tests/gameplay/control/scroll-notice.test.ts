@@ -1,6 +1,6 @@
 /**
- * Review of the Season Scroll settlement, 2026-11-17 (SCR-01, SCR-07; SCR-04's in-session toast belonged to the
- * event-based payout, replaced at the merge by `claimSeasonLeftovers`): the payout at a season's end must
+ * Review of the Season Scroll settlement, 2026-11-17 (SCR-01, SCR-04, SCR-07; since the 2026-11-20 merge the payout is
+ * `claimSeasonLeftovers`, and the controller tells it from `pass.lastSeason`): the payout at a season's end must
  * reach the player's eyes on every path the controller has, and must survive the device taking the server's
  * economy. Each case is the reviewer's reproduction.
  */
@@ -52,6 +52,26 @@ describe('the Season Scroll payout is always told', () => {
     const p = raidPhase(B, data);
     expect(p.phase).not.toBe('live');
     expect(p.nextStart - B).toBeLessThanOrEqual(data.social.groveRaid.prepOfferHours * 3_600_000);
+  });
+
+  it('SCR-04: game open across the season end: the payout is heard once, from the tick', async () => {
+    const g = await boot(village(4, false, B - 60_000), B - 60_000, B - 30_000);
+    expect(g.offline).toBeNull();
+    g.set(B + 30_000);
+    g.controller.tick();
+    const told = g.heard.flat().filter((e) => e.kind === 'reward' && e.source.startsWith('pass_end:'));
+    expect(told).toHaveLength(1);
+    expect(Object.values(told[0].kind === 'reward' ? told[0].grants : {}).some((v) => Number(v) > 0)).toBe(true);
+    g.controller.tick();
+    expect(g.heard.flat().filter((e) => e.kind === 'reward' && e.source.startsWith('pass_end:'))).toHaveLength(1);
+  });
+
+  it('SCR-04: a command that crosses the season end first is heard too (in an Alliance, the war-prep offer)', async () => {
+    const g = await boot(village(4, true, B - 60_000), B - 60_000, B - 30_000);
+    g.set(B + 30_000);
+    expect(g.controller.scout(false).ok).toBe(true);
+    g.controller.tick();
+    expect(g.heard.flat().filter((e) => e.kind === 'reward' && e.source.startsWith('pass_end:'))).toHaveLength(1);
   });
 
   it('SCR-07: a restart within a minute across the season end still returns the summary', async () => {

@@ -9,8 +9,8 @@
     "levelsBelowCap": 2
   },
   "defenseWin": {
-    "$comment": "Every star a raid fails to win pays the defender a third of this share of its Keep's lowest generated raid loot, in Coins and Provisions (storage-capped; what did not fit is reported). P2-01 (DEF-01, 2026-11-18): was 0.05 for a full hold only.",
-    "shareOfRaidLoot": 0.15,
+    "$comment": "Every star a raid fails to win pays the defender a third of this share of its Keep's lowest generated raid loot, in Coins and Provisions (storage-capped; what did not fit is reported). P2-01 (DEF-01, 2026-11-18): was 0.05 for a full hold only; 0.10 since the 2026-11-20 merge (0.12 paid a maxed Keep 15 base 20% of a regular player's daily raid loot, 0.10 about 17%: daily_live.ts in docs/audit/understand-2026-11-16/scripts/defense-raids). Simulated raids only: a real player's raid pays honor, never this.",
+    "shareOfRaidLoot": 0.10,
     "perStar": true
   },
   "$commentCarry": "P2-01 (DEF-01): a bot raider carries home this share of what it broke open, by stars won (0-3), so every star a defence denies keeps loot in the village. Raids by real players keep conservation (the defender loses what the attacker carries).",

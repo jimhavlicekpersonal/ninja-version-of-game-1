@@ -157,7 +157,9 @@ export class GameController {
     if (cmd.type === 'openDailyChest' && cmd.entropy === undefined) cmd = { ...cmd, entropy: randomUint32() };
     const result = applyCommand(this.state, cmd, now, this.deps.data);
     if (!result.ok) return result;
+    const scrollBefore = this.state.pass.lastSeason;
     this.state = result.state;
+    this.tellScrollEnd(scrollBefore);
     for (const e of result.events) {
       if (e.kind === 'upgrade_start') {
         this.deps.analytics.log('upgrade_start', { building: e.buildingType, toLevel: e.toLevel, seconds: e.seconds, cost: e.cost });
@@ -246,7 +248,11 @@ export class GameController {
     const week = p.phase === 'upcoming' ? p.week : p.week + 1;
     if (g.prepOfferWeek === week || p.nextStart - now > this.deps.data.social.groveRaid.prepOfferHours * 3_600_000) return;
     const r = applyCommand(this.state, { type: 'markPrepOffer', week }, now, this.deps.data);
-    if (r.ok) this.state = r.state;
+    if (r.ok) {
+      const scrollBefore = this.state.pass.lastSeason;
+      this.state = r.state;
+      this.tellScrollEnd(scrollBefore);
+    }
     this.triggerOffer('grove_raid_soon');
   }
 
@@ -276,12 +282,29 @@ export class GameController {
   }
 
 
+  /**
+   * Review SCR-04: a Season Scroll season that ended while the game was open paid its unclaimed tiers
+   * (`claimSeasonLeftovers`, `pass.lastSeason`); whichever path settled it first (the tick, a command, an offer
+   * check), the listeners hear it once as a `pass_end:` reward, like the league chest. A payout the welcome-back
+   * summary already showed at start-up is not told again (it was there before).
+   */
+  private tellScrollEnd(before: VillageState['pass']['lastSeason']): void {
+    const now = this.state.pass.lastSeason;
+    if (!now || now.season === before?.season) return;
+    const has = (c: Cost) => Object.values(c).some((v) => Number(v) > 0);
+    if (!has(now.granted) && !has(now.overflow)) return;
+    const event: SimEvent = { kind: 'reward', source: `pass_end:${now.season}`, grants: now.granted, ...(has(now.overflow) ? { overflow: now.overflow } : {}) };
+    for (const fn of this.eventListeners) fn([event]);
+  }
+
   /** Show an offer for this trigger, at most once per session. */
   triggerOffer(trigger: OfferTrigger): OfferRule | null {
     if (this.offersThisSession >= this.deps.data.offers.maxPerSession) return null;
     const r = applyCommand(this.state, { type: 'triggerOffer', trigger }, this.now(), this.deps.data);
     if (!r.ok) return null;
+    const scrollBefore = this.state.pass.lastSeason;
     this.state = r.state;
+    this.tellScrollEnd(scrollBefore);
     const e = r.events.find((x) => x.kind === 'offer_shown');
     if (!e || e.kind !== 'offer_shown') return null;
     this.offersThisSession++;
@@ -480,8 +503,10 @@ export class GameController {
       return [];
     }
     const logged = this.state.seasonLog.length ? this.state.seasonLog[this.state.seasonLog.length - 1].season : -1;
+    const scrollBefore = this.state.pass.lastSeason;
     const { state, finished } = advance(this.state, now, data);
     this.state = state;
+    this.tellScrollEnd(scrollBefore);
     this.emit(finished);
     void this.save();
     // Report section 5 step 6: a Keep level reached may bring the Keep Celebration offer (rules in offers.json).
