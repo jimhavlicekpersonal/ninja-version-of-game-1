@@ -66,6 +66,50 @@ export interface AppleVerifierOptions {
 
 const fp = (s: string) => s.replace(/[^0-9a-f]/gi, '').toLowerCase();
 
+/** One DER element at `at`: its tag, where its content starts and ends. Null when the bytes are not DER. */
+function derAt(b: Buffer, at: number, end: number): { tag: number; start: number; end: number } | null {
+  if (at + 2 > end) return null;
+  const tag = b[at];
+  let len = b[at + 1];
+  let start = at + 2;
+  if (len & 0x80) {
+    const n = len & 0x7f;
+    if (n < 1 || n > 4 || start + n > end) return null;
+    len = 0;
+    for (let i = 0; i < n; i++) len = len * 256 + b[start + i];
+    start += n;
+  }
+  return start + len > end ? null : { tag, start, end: start + len };
+}
+
+/** The children of a constructed DER element. */
+function derChildren(b: Buffer, el: { start: number; end: number }): { tag: number; start: number; end: number }[] {
+  const out: { tag: number; start: number; end: number }[] = [];
+  for (let at = el.start; at < el.end; ) {
+    const c = derAt(b, at, el.end);
+    if (!c) return [];
+    out.push(c);
+    at = c.end;
+  }
+  return out;
+}
+
+/**
+ * Whether a certificate's extensions list this OID as an extension id (P3). Certificate → tbsCertificate → [3] →
+ * Extensions → each Extension's first element. `oid` is the encoded OID (short form: tag, length, content).
+ */
+function hasExtension(der: Buffer, oid: Buffer): boolean {
+  const cert = derAt(der, 0, der.length);
+  const tbs = cert && derChildren(der, cert)[0];
+  const exts = tbs && derChildren(der, tbs).find((c) => c.tag === 0xa3);
+  const list = exts && derChildren(der, exts)[0];
+  if (!list) return false;
+  return derChildren(der, list).some((ext) => {
+    const id = derChildren(der, ext)[0];
+    return !!id && id.tag === 0x06 && der.subarray(id.start, id.end).equals(oid.subarray(2));
+  });
+}
+
 export class AppleVerifier {
   private readonly roots: Set<string>;
   private readonly environments: string[];
@@ -101,7 +145,12 @@ export class AppleVerifier {
       if (Date.parse(c.validFrom) > now || Date.parse(c.validTo) < now) throw new PurchaseError('The App Store receipt certificate has expired.');
     }
     if (!root.verify(root.publicKey) || !inter.verify(root.publicKey) || !leaf.verify(inter.publicKey)) throw new PurchaseError('The App Store receipt is not signed by Apple.');
-    if (!inter.ca || !inter.raw.includes(OID_INTERMEDIATE) || !leaf.raw.includes(OID_LEAF)) throw new PurchaseError('The App Store receipt is not signed by Apple.');
+    // Security audit 2026-11-20 (P3): Apple's marker OIDs as extension ids (not anywhere in the bytes: an RSA modulus or
+    // another extension's value could carry them), each certificate issued by the next, a leaf that is no CA, and a leaf
+    // key that is the P-256 key ES256 needs (an RSA leaf verified an RS256 signature under an ES256 header).
+    if (!inter.ca || leaf.ca || !hasExtension(inter.raw, OID_INTERMEDIATE) || !hasExtension(leaf.raw, OID_LEAF)) throw new PurchaseError('The App Store receipt is not signed by Apple.');
+    if (!leaf.checkIssued(inter) || !inter.checkIssued(root)) throw new PurchaseError('The App Store receipt is not signed by Apple.');
+    if (leaf.publicKey.asymmetricKeyType !== 'ec' || leaf.publicKey.asymmetricKeyDetails?.namedCurve !== 'prime256v1') throw new PurchaseError('Unsupported App Store receipt.');
     if (!cryptoVerify('sha256', Buffer.from(`${h}.${p}`), { key: leaf.publicKey, dsaEncoding: 'ieee-p1363' }, b64url(sig))) throw new PurchaseError('The App Store receipt is not genuine.');
     return payload;
   }

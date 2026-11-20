@@ -172,8 +172,10 @@ async function openStorage(sandbox: boolean): Promise<{ store: SaveStore; events
   try {
     // Gives up after 5 s (some iOS versions never answer): the game then runs on memory with a banner.
     const db = await openGameDb();
-    const events = new IdbEventStore(db);
-    void events.prune().catch(() => undefined);
+    // Security audit 2026-11-20 (F1): the sandbox's events (test purchases, skipped clocks) stay in memory, so the
+    // real game's shared statistics never upload them.
+    const events = sandbox ? new MemoryEventStore() : new IdbEventStore(db);
+    if (!sandbox) void (events as IdbEventStore).prune().catch(() => undefined);
     // The testing sandbox has its own village: time skips and test purchases never touch the real one.
     return { store: new IdbSaveStore(db, sandbox ? SANDBOX_SAVE_KEY : undefined), events, db };
   } catch (e) {

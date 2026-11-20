@@ -15,6 +15,7 @@
  */
 
 import { NAME_MIN_WIDTH, NAME_MAX_WIDTH, NAME_ERROR_TEXT, checkName, nameWidth, sanitizeName } from '../../gameplay/sim/social/names';
+import { foldLookalikes } from '../../gameplay/sim/social/contactFilter';
 
 export const NAME_MIN = NAME_MIN_WIDTH;
 export const NAME_MAX = NAME_MAX_WIDTH;
@@ -47,8 +48,7 @@ export function nameKey(name: string): string {
 
 /** Digits read as the letters they imitate, separators removed (for the reserved-word check only). */
 function lookalike(name: string): string {
-  return name
-    .toLowerCase()
+  return foldLookalikes(name)
     .replace(/[ _-]/g, '')
     .replace(/0/g, 'o')
     .replace(/[1|]/g, 'i')
@@ -62,7 +62,12 @@ function lookalike(name: string): string {
 }
 
 /** Words only staff and the game itself may use, matched anywhere in a name. */
-const RESERVED_ANYWHERE = ['admin', 'kagemura', 'moderator', 'support', 'official', 'staff', 'toadstool'];
+const RESERVED_ANYWHERE = [
+  'admin', 'kagemura', 'moderator', 'support', 'official', 'staff', 'toadstool',
+  // Security audit 2026-11-20 (S5): the same words in the main launch languages, and the name in kana (影村 alone is also a family name).
+  'moderador', 'soporte', 'suporte', 'oficial', 'administrador', 'админ', 'модератор', 'поддержк', 'администрац',
+  '管理员', '管理員', '运营', '運営', '客服', '官方', '관리자', '운영자', '운영팀', 'カゲムラ', 'かげむら', '運営チーム',
+];
 /** Short words blocked only as a whole word of the name ("Mod Bob", not "Modest"). */
 const RESERVED_WORDS = ['mod', 'gm', 'dev', 'system', 'server', 'ruler'];
 

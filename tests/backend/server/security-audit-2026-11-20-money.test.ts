@@ -5,10 +5,12 @@
  * C1 (critical): commands sharing one seq in a batch inherited the first one's pre-replay verdict, so a
  * server-only command (staffAdjust, a forged grantPurchase) or battles past the budget went through.
  * P1 (high): an open intent for a cheap product covered a receipt for a dear one, past the under-18 cap.
+ * P3 (medium, hardening): the App Store chain check searched the raw bytes for Apple's marker OIDs and never checked the
+ * leaf's key type, so an RSA leaf with the OID inside another extension verified an RS256 signature.
  * P2 (medium): a verified purchase skipped the game's own check, so a one-time offer that was never shown could be
  * bought over and over into a server-held village.
  */
-import { createHash, sign as cryptoSign, X509Certificate } from 'node:crypto';
+import { createHash, createSign, sign as cryptoSign, X509Certificate } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
@@ -119,5 +121,24 @@ describe('security audit 2026-11-20: offers only while offered (P2)', () => {
     const { p } = await adult();
     const pinch = await p.purchaseIntent({ store: 'apple', productId: 'moonstones_0', under18: false });
     expect((await p.redeem({ store: 'apple', storeProductId: 'jade_pinch', receipt: appleTxn('jade_pinch', pinch.accountToken) })).already).toBe(false);
+  });
+});
+
+describe('security audit 2026-11-20: App Store certificate checks (P3)', () => {
+  const forged = resolve(__dirname, '../fixtures/appstore-forged');
+  const read = (f: string) => readFileSync(resolve(forged, f));
+  const b = (o: unknown) => Buffer.from(JSON.stringify(o)).toString('base64url');
+
+  it('an RSA leaf with the marker OID only inside another extension is refused', () => {
+    const root = new X509Certificate(read('root.pem'));
+    const v = new AppleVerifier({ bundleIds: ['b'], rootFingerprints: [createHash('sha256').update(root.raw).digest('hex')], environments: ['Production'], now: () => Date.parse(root.validFrom) + 86_400_000 });
+    const x5c = ['leaf.pem', 'inter.pem', 'root.pem'].map((f) => new X509Certificate(read(f)).raw.toString('base64'));
+    const head = `${b({ alg: 'ES256', x5c })}.${b({ transactionId: '1', productId: 'jade_hoard', bundleId: 'b', environment: 'Production' })}`;
+    const sig = createSign('RSA-SHA256').update(head).sign(read('leaf.key')).toString('base64url');
+    expect(() => v.transaction(`${head}.${sig}`)).toThrow(/not signed by Apple|Unsupported/);
+  });
+
+  it('the genuine-shaped test chain still verifies', () => {
+    expect(apple().transaction(appleTxn('jade_pinch', null)).productId).toBe('jade_pinch');
   });
 });

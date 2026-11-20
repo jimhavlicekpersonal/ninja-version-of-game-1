@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { checkName, isolateName, nameWidth, sanitizeName, scriptsMayMix } from '../../../src/gameplay/sim/social/names';
 import { filterText } from '../../../src/gameplay/sim/social/grove';
 import { defaultData as data } from '../../../src/gameplay/sim/data';
+import { isReservedName } from '../../../src/backend/net/names';
 
 const ok = (s: string) => {
   const c = checkName(s);
@@ -175,5 +176,19 @@ describe('name validation regressions', () => {
   it('normalizes moderation words and input before Unicode matching', () => {
     const withAccents = { ...data, social: { ...data.social, profanity: ['café'] } };
     expect(filterText('un cafe\u0301!', withAccents)).toBe('un ✿✿✿✿!');
+  });
+});
+
+/** Security audit 2026-11-20 (S5): names that impersonate staff, the game or another player. */
+describe('security audit 2026-11-20: impersonation', () => {
+  it('refuses Latin mixed with Armenian or Georgian look-alikes', () => {
+    for (const n of ['Kagemսra Suppօrt', 'Mօd Team', 'Ⴝystem', 'Jօhn Smith']) expect(checkName(n).error, n).toBe('mixed_scripts');
+  });
+  it('keeps names written wholly in one script', () => {
+    for (const n of ['Գոռ Արամ', 'ნინო', 'Анна', '影村の風', 'John Smith']) expect(checkName(n).error, n).toBeUndefined();
+  });
+  it('reads look-alikes and launch-language staff words as reserved', () => {
+    for (const n of ['ЅҮЅТЕМ', 'Модератор', 'Администрация', '管理员', '運営チーム', '관리자', 'カゲムラ', 'Soporte Oficial']) expect(isReservedName(n), n).toBe(true);
+    for (const n of ['Moss Den', 'Анна', 'Systematic']) expect(isReservedName(n), n).toBe(false);
   });
 });

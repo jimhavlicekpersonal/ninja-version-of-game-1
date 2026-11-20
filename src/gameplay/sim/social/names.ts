@@ -179,7 +179,8 @@ const CJK_SETS = [
   new Set(['Latin', 'Han', 'Bopomofo']),
   new Set(['Latin', 'Han', 'Hangul']),
 ];
-const LATIN_LOOKALIKES = new Set(['Cyrillic', 'Greek', 'Cherokee', 'Osage']);
+// Security audit 2026-11-20 (S5): Armenian and Georgian have Latin look-alikes too ("Kagemսra Suppօrt", "Ⴝystem").
+const LATIN_LOOKALIKES = new Set(['Cyrillic', 'Greek', 'Cherokee', 'Osage', 'Armenian', 'Georgian']);
 
 /** UTS #39 moderately restrictive: may these scripts share one name? */
 export function scriptsMayMix(scripts: Set<string>): boolean {

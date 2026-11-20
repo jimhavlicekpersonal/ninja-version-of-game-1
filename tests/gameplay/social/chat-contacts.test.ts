@@ -95,3 +95,31 @@ describe('ordinary sentences in many scripts are not read as links', () => {
     for (const d of ['т.ме/kagemura', 'kage.сом', 'kage . сом', 'gооgle.com', 'kage . com', 'kage. net']) expect(filterText(d, defaultData), d).toMatch(/removed/);
   });
 });
+
+/** Security audit 2026-11-20 (S6): ways around the filter the audit found, and talk that must stay. */
+describe('security audit 2026-11-20: digits of any script, small capitals, spam endings', () => {
+  const dodges = [
+    'call me ٠٧٩١٢٣٤٥٦٧٨',
+    '०९८७६५४३२१',
+    'whatsapp me ۰۹۱۲۳۴۵۶۷۸۹',
+    '9/8/7/6/5/4/3/2/1',
+    'x.com/kagecheats',
+    'm.me/kagecheats',
+    'kagecheat.shop',
+    'kagecheat.club',
+    'kagegems.live',
+    'jade4u.cc',
+    'kage.fun',
+    'ᴅɪꜱᴄᴏʀᴅ kage#1234',
+    'disc+ord kage',
+    'd~i~s~c~o~r~d',
+  ];
+  it.each(dodges)('removes %s', (t) => {
+    // Replaced whole, or the contact cut out by the basic pass first ("[contact removed]").
+    expect(filterText(t, defaultData)).toMatch(/^\[(?:message|contact|link) removed/);
+    expect(serverHasContact(t)).toBe(true);
+  });
+  it('leaves ordinary talk alone, digits in other scripts included', () => {
+    for (const t of ['I have ٣ towers', 'राउंड ५ जीता', 'need 1500 coins and 300 rice', 'so fun', 'gg ez', 'see you at 10.30', 'Keep 7 now']) expect(filterText(t, defaultData)).toBe(t);
+  });
+});

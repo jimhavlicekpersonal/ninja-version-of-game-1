@@ -123,3 +123,9 @@ implementations were kept for the duplicates; what remains from this branch is l
 - **Retention (Phase 5):** 28-day event loop and festivals (`events.json` `dated`, goal events per occurrence), the Gauntlet, daily contracts (`sim/carry.ts` `contractFor`, `cappedCarry`, cap 2.2), 23 task templates, 21 achievements, earned looks (`grantLook`), mastery ranks (no stat bonus), Keep seals (`sim/seals.ts`, `claimKeepSeal`), local-day chest and stipend, season names and recap.
 - **Screens' rules (Phase 6):** `sim/objective.ts` kinds `claim`, `rematch`, `goalEvent`, `trial` (only with warriors standing), `drill`, `defendSide`; `sim/defenseReport.ts` (kept share, entry point under the same rules only, first to fall by replay); `sim/defenseTest.ts` (a pure test raid; outside `defense.ts`, which the campaign fingerprints); `control/whatIf.ts` (the after-raid review, re-exported by `battleSession.ts`). `data/codex.json`: counter pairs the Codex may state (confirmed in battle, `tools/balance/run-counter-check.mjs`).
 - **Word lists (Phase 7):** `social.json` `profanityByLanguage` (ten launch languages) join `profanity` in `censorText`; corpus test `tests/gameplay/sim/profanity-lists.test.ts`.
+
+## Security audit 2026-11-20 (no save, SIM_RULES or protocol change)
+
+- `canDeploy` takes only the army's own warriors and heroes (`Object.hasOwn`): an id such as `constructor` read the prototype and crashed the battle. Keep every lookup of a client-sent id on an own property.
+- `foldForContact` maps every decimal digit to ASCII and folds small capitals and Armenian look-alikes; `foldLookalikes` (same map, no punctuation rules) feeds the reserved-name check. Armenian and Georgian are Latin look-alike scripts in `scriptsMayMix`.
+- Closure record: `docs/store/WORLDWIDE_AUDIT.md` "2026-11-20 security audit".

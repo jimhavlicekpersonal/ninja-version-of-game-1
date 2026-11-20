@@ -15,7 +15,7 @@
  */
 const OFF_GAME_APPS = ['discord', 'telegram', 'whatsapp', 'snapchat', 'instagram', 'insta', 'wechat', 'kik'];
 const LOOKALIKE: Record<string, string> = { a: 'a@4', c: 'c(', e: 'e3', g: 'g9', i: 'i1!|l', l: 'l1|i', o: 'o0', s: 's5$', t: 't7+' };
-const HANDLE_SEP = '[\\s._*-]*';
+const HANDLE_SEP = '[\\s._*+~/-]*';
 const HANDLE_RE = new RegExp(
   `(?<![\\p{L}\\p{N}])(?:${OFF_GAME_APPS.map((w) => [...w].map((ch) => `[${(LOOKALIKE[ch] ?? ch).replace(/[\]\\^-]/g, '\\$&')}]`).join(HANDLE_SEP)).join('|')})(?![\\p{L}\\p{N}])(?:${HANDLE_SEP}[:@]?${HANDLE_SEP}[\\p{L}\\p{N}_#.]{2,})?`,
   'giu',
@@ -33,7 +33,7 @@ export function stripBasicContacts(text: string): string {
     // A dot with a space beside it is how sentences end ("Ok. Me too", "Ok. Info here", "Bye. Co-op"): only
     // endings that are not everyday words count there (second verification 2026-11-14).
     .replace(/\b[\p{L}\p{N}-]{2,}(?:\s\.\s?|\.\s)(?:com|net|org|xyz|biz)\b(?:\/\S*)?/giu, '[link removed]')
-    .replace(/(?:\+?\d[\s().-]?){7,}/gu, '[contact removed]')
+    .replace(/(?:\+?\d[\s()./-]?){7,}/gu, '[contact removed]')
     .replace(HANDLE_RE, '[contact removed]');
 }
 
@@ -47,7 +47,33 @@ export const CONTACT_REMOVED = '[message removed: links and contact details are 
 const CONFUSABLE: Record<string, string> = {
   а: 'a', в: 'b', е: 'e', ё: 'e', к: 'k', м: 'm', н: 'h', о: 'o', р: 'p', с: 'c', т: 't', у: 'y', х: 'x', і: 'i', ї: 'i', ј: 'j', ѕ: 's', ԁ: 'd', ɡ: 'g', ո: 'n', ս: 'u',
   α: 'a', β: 'b', ε: 'e', η: 'n', ι: 'i', κ: 'k', ν: 'v', ο: 'o', ρ: 'p', τ: 't', υ: 'u', χ: 'x', ω: 'w',
+  // Security audit 2026-11-20 (S6): small capitals ("ᴅɪꜱᴄᴏʀᴅ") and Armenian look-alikes.
+  ᴀ: 'a', ʙ: 'b', ᴄ: 'c', ᴅ: 'd', ᴇ: 'e', ꜰ: 'f', ɢ: 'g', ʜ: 'h', ɪ: 'i', ᴊ: 'j', ᴋ: 'k', ʟ: 'l', ᴍ: 'm', ɴ: 'n', ᴏ: 'o', ᴘ: 'p', ǫ: 'q', ʀ: 'r', ꜱ: 's', ᴛ: 't', ᴜ: 'u', ᴠ: 'v', ᴡ: 'w', ʏ: 'y', ᴢ: 'z',
+  օ: 'o', ց: 'g', հ: 'h', ի: 'h', լ: 'l', ռ: 'n', ք: 'f', ա: 'w',
+  ү: 'y', һ: 'h', ԛ: 'q', ԝ: 'w', ӏ: 'l', ⴝ: 's',
 };
+
+/**
+ * Look-alike letters read as the Latin ones they imitate (compatibility forms, invisible characters and accents
+ * dropped, lower case): for checks only, never for what players read. Security audit 2026-11-20 (S5): the
+ * reserved-name check reads "ЅҮЅТЕМ" (all Cyrillic) as "system".
+ */
+export function foldLookalikes(text: string): string {
+  const s = text.normalize('NFKC').toLowerCase().replace(/[\p{Cf}]/gu, '').normalize('NFD').replace(/\p{M}/gu, '').normalize('NFC');
+  return Array.from(s, (ch) => CONFUSABLE[ch] ?? ch).join('');
+}
+
+/**
+ * S6: every decimal digit as its ASCII digit (Arabic-Indic "٠٧٩…", Devanagari "०९८…" and the rest), so a phone
+ * number in any script is read as one. Unicode lays each set of ten out in order, so the value is the distance
+ * from the start of its run, modulo ten (adjacent runs, as in the mathematical digits, are ten long each).
+ */
+function asciiDigit(ch: string): string {
+  let cp = ch.codePointAt(0)!;
+  const start = cp;
+  while (cp > 0 && /\p{Nd}/u.test(String.fromCodePoint(cp - 1))) cp--;
+  return String((start - cp) % 10);
+}
 
 const foldLetters = (w: string) => Array.from(w, (ch) => CONFUSABLE[ch] ?? ch).join('');
 const SHORT_HOST_RE = /^(?:t|wa|telegram|discord|dsc|bit|tinyurl|linktr|lnkd|goo|cutt)\.(?:me|gg|ly|ee|in|gl|co|io|com|link)$/;
@@ -76,6 +102,7 @@ export function foldForContact(text: string): string {
   let s = text.normalize('NFKC').toLowerCase();
   s = s.replace(/[\p{Cf}͏ᅟᅠㅤﾠ]/gu, ''); // zero-width and other invisible characters
   s = s.normalize('NFD').replace(/\p{M}/gu, '').normalize('NFC'); // accents written over Latin letters
+  s = s.replace(/[^\d\P{Nd}]/gu, asciiDigit); // digits of any script
   s = breakSentenceDots(s);
   s = Array.from(s, (ch) => CONFUSABLE[ch] ?? ch).join('');
   s = s.replace(/h\s*x\s*x\s*p\s*(s?)\s*:\s*\/\s*\//g, 'http$1://');
@@ -84,7 +111,7 @@ export function foldForContact(text: string): string {
   return s;
 }
 
-const SEP = '[\\s._*·,|/\\\\-]*';
+const SEP = '[\\s._*·,|/+~\\\\-]*';
 const spaced = (w: string) => [...w].map((c) => c.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join(SEP);
 
 /**
@@ -96,7 +123,9 @@ const APP_RE = new RegExp(`(?<![\\p{L}\\p{N}])(?:${MORE_APPS.map((w) => spaced(w
 /** Short links and invite hosts, also with the dot spelled or spaced. */
 const SHORT_LINK_RE = /(?<![\p{L}\p{N}'’])(?:t|wa|telegram|discord|dsc|bit|tinyurl|linktr|lnkd|goo|cutt)\s*\.\s*(?:me|gg|ly|ee|in|gl|co|io|com|link)(?:\s*\/\s*[\p{L}\p{N}_+-]+)?/u;
 /** A domain after folding ("example dot com" became "example.com"). */
-const DOMAIN_RE = /(?<![\p{L}\p{N}])[\p{L}\p{N}-]{2,}\.(?:com|net|org|io|gg|me|app|xyz|ru|cn|ly|link|site|online|top|info|biz|co|tk|ml|ga|cf|gq|ee|to|in|uk|de|br|vn|id|ph|pk|ng|xn--[a-z0-9-]+)(?![\p{L}\p{N}])/u;
+// S6: also the endings spam uses most (shop, club, live, cc, fun, …), and a one-letter host on the unambiguous ones
+// ("x.com", "m.me").
+const DOMAIN_RE = /(?<![\p{L}\p{N}])(?:[\p{L}\p{N}-]{2,}\.(?:com|net|org|io|gg|me|app|xyz|ru|cn|ly|link|site|online|top|info|biz|co|tk|ml|ga|cf|gq|ee|to|in|uk|de|br|vn|id|ph|pk|ng|shop|club|live|cc|fun|store|vip|tv|chat|pw|ws|su|games|xn--[a-z0-9-]+)|[\p{L}\p{N}]\.(?:com|net|org|io|gg|me|ly|cc|tv))(?![\p{L}\p{N}])/u;
 const EMAIL_RE = /[\p{L}\p{N}._%+-]+@[\p{L}\p{N}-]+\.[\p{L}]{2,}/u;
 const URL_RE = /\b(?:https?:\/\/|www\.)/u;
 /** Seven or more digits written as words or digits (a phone number read out: "nine eight seven …"). */

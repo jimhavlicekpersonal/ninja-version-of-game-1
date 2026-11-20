@@ -138,6 +138,15 @@ Server localization build inputs: Docker copies `locales/` and `tools/i18n/`; `v
 - `groves.ts` `donateIn`: a device-held donor cannot fill a server-held receiver's request (`404 no_village`).
 - `village.ts`: `setProfile` needs a boolean `under18` (without `ageBand`); only `true` passes once the server holds under 18.
 - `referrals.ts`: an imported recruit village qualifies after `REFERRAL_IMPORT_MIN_DAYS` (`net/growth.ts`).
+## Security audit 2026-11-20 (`docs/PROTOCOL.md` "Security audit 2026-11-20"; closure record in `docs/store/WORLDWIDE_AUDIT.md`)
+
+- **Paths:** any hook that looks at a path uses `routedPath(req)` (`routes/kit.ts`), the route the router matched: the router decodes percent-escapes first, so a raw `req.url` check missed `/%61dmin/…` and `/%761/…`.
+- **Command batches:** one command per `seq` (a repeated one is a `400`); `PLAYER_COMMANDS` is checked on every command before any cached verdict is reused.
+- **Purchases:** a receipt dearer than its intent counts the difference against the under-18 cap; for a server-held village an offer, Scroll or Stipend needs its own unused intent, and the intent runs `canPurchase` on the village. App Store chains: marker OIDs as extension ids, P-256 leaf, `checkIssued`.
+- **Battles:** a seeded raid ticket must be started before its report; `/attacks/void` keeps a scout ticket; `burnAfterFailures` forfeits a started raid and leaves war/raid tickets open; `takeTicket` refuses a ticket with `MAX_TICKET_FAILURES`; `resimulate` refuses malformed deployments.
+- **Shared replays:** `validateBase` + `checkArmy` at the top Keep, the `replayShare` rate rule (30 a day, attempts), and `privateLayoutRaided` (a private base by layout, whatever the seed).
+- **Privacy:** `GroveView` member `lastSeenAt` only when the member shows being online; `/readyz` says only ok/down.
+
 ## Replayability pass 2026-11-18 (`docs/backend/REQUESTS.md` top entry; `docs/SHIPPING.md` 3m)
 
 - Deploy order: server migrations, the server (rules 8 with rules 7 archived; `drillEnd`, `claimKeepSeal`; `attackedBefore`; `AttackResponse.contractAt`; the new events, raid, matchmaking and word-list data), then the game (save v24) in the same window; `MIN_CLIENT_BUILD` to the first build of this release.
