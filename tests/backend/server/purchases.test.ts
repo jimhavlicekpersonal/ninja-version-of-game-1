@@ -83,6 +83,14 @@ describe('App Store receipts (step 35)', () => {
     const t = apple().transaction(appleTxn('jade_pouch', 'aaaaaaaa-0000-4000-8000-000000000001'));
     expect(t).toMatchObject({ productId: 'jade_pouch', bundleId: BUNDLE, environment: 'Sandbox', appAccountToken: 'aaaaaaaa-0000-4000-8000-000000000001' });
   });
+  it('ECO-09: a JWS signed inside the leaf\'s validity verifies after the leaf expired; an unsigned or future date does not', () => {
+    const leafTo = Date.parse(new X509Certificate(pem('leaf.pem')).validTo);
+    const later = new AppleVerifier({ bundleIds: [BUNDLE], rootFingerprints: [rootFp], now: () => leafTo + 86_400_000 });
+    const signedBefore = appleTxn('jade_pouch', null, { signedDate: leafTo - 86_400_000 });
+    expect(later.transaction(signedBefore).productId).toBe('jade_pouch');
+    expect(() => later.transaction(appleTxn('jade_pouch', null))).toThrow(/expired/);
+    expect(() => later.transaction(appleTxn('jade_pouch', null, { signedDate: leafTo + 30 * 86_400_000 }))).toThrow(/expired/);
+  });
   it('refuses another root, a changed payload, another app, a refused environment and a wrong-shaped chain', () => {
     const v = apple();
     expect(() => new AppleVerifier({ bundleIds: [BUNDLE], now }).transaction(appleTxn('jade_pouch', null))).toThrow(PurchaseError); // Apple's real root is pinned by default

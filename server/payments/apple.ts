@@ -110,6 +110,9 @@ function hasExtension(der: Buffer, oid: Buffer): boolean {
   });
 }
 
+/** ECO-09: how far back a JWS's own signing time is believed for the certificate dates (3 years). */
+export const SIGNED_DATE_MAX_AGE_MS = 3 * 365 * 86_400_000;
+
 export class AppleVerifier {
   private readonly roots: Set<string>;
   private readonly environments: string[];
@@ -140,9 +143,15 @@ export class AppleVerifier {
     }
     const rootFp = createHash('sha256').update(root.raw).digest('hex');
     if (!this.roots.has(rootFp)) throw new PurchaseError('The App Store receipt is not signed by Apple.');
+    // Beast Mode ECO-09: the certificates are checked at the time Apple signed the payload (its `signedDate`), as
+    // Apple's own library does without an online check, so a cached JWS of an unfinished transaction still verifies
+    // after its leaf expired. Bounded: never later than now (+5 min clock skew), never more than
+    // SIGNED_DATE_MAX_AGE_MS back; otherwise (or without a signedDate) the server's own time.
     const now = this.o.now();
+    const signed = Number(payload.signedDate);
+    const at = Number.isFinite(signed) && signed > 0 && signed <= now + 300_000 && signed >= now - SIGNED_DATE_MAX_AGE_MS ? signed : now;
     for (const c of [leaf, inter, root]) {
-      if (Date.parse(c.validFrom) > now || Date.parse(c.validTo) < now) throw new PurchaseError('The App Store receipt certificate has expired.');
+      if (Date.parse(c.validFrom) > at || Date.parse(c.validTo) < at) throw new PurchaseError('The App Store receipt certificate has expired.');
     }
     if (!root.verify(root.publicKey) || !inter.verify(root.publicKey) || !leaf.verify(inter.publicKey)) throw new PurchaseError('The App Store receipt is not signed by Apple.');
     // Security audit 2026-11-20 (P3): Apple's marker OIDs as extension ids (not anywhere in the bytes: an RSA modulus or
