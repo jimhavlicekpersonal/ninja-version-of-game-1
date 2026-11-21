@@ -730,8 +730,14 @@ details summary { cursor: pointer; font-weight: 800; margin: 8px 0 4px; }
 
 /* ---------- touch targets, links, reduced motion (worldwide audit R10, GLOBAL-015) ---------- */
 /* Small pills keep their look but get a hit area of about 44px. */
-.res-moonstones, .net-pill, .event-chip { position: relative; }
-.res-moonstones::after, .event-chip::after { content: ''; position: absolute; inset: -6px -3px; }
+/* Beast Mode UX-07: every tappable top-bar pill (Jade, Artisans, Honor) reaches 44 px: 30 px + 7 px above and below. */
+.res-moonstones, .res-builders, .res-trophies, .net-pill, .event-chip { position: relative; }
+.res-moonstones::after, .res-builders::after, .res-trophies::after { content: ''; position: absolute; inset: -7px -3px; }
+.event-chip::after { content: ''; position: absolute; inset: -6px -3px; }
+/* The Keep-unlock chip (36 px) and the battle's point chips: 44 px too. */
+.unlock-chip .unlocks { position: relative; }
+.unlock-chip .unlocks::after { content: ''; position: absolute; inset: -4px 0; }
+.point-chip { min-width: 44px; }
 .net-pill::after { content: ''; position: absolute; inset: -7px -3px; }
 .event-chip { min-height: 34px; }
 .icon-btn { width: 44px; height: 44px; }

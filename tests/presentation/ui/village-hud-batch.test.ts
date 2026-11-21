@@ -168,3 +168,14 @@ describe('support page: complaints route (UK Online Safety Act)', () => {
     expect(Object.values(enPages as Record<string, string>).some((v) => v.includes('UK Online Safety Act'))).toBe(true);
   });
 });
+
+describe('Beast Mode UX-07: 44 px hit areas on the top bar', () => {
+  it('Jade, Artisans and Honor extend 7 px above and below (30 + 14), the unlock chip and point chips reach 44', () => {
+    expect(css).toMatch(/\.res-moonstones::after, \.res-builders::after, \.res-trophies::after \{ content: ''; position: absolute; inset: -7px -3px; \}/);
+    expect(css).toMatch(/\.res-moonstones, \.res-builders, \.res-trophies, \.net-pill, \.event-chip \{ position: relative; \}/);
+    expect(css).toMatch(/\.unlock-chip \.unlocks::after \{ content: ''; position: absolute; inset: -4px 0; \}/);
+    expect(css).toMatch(/\.point-chip \{ min-width: 44px; \}/);
+    // Under 400 px the pills are 30 px tall: the extension must make up the rest.
+    expect(css).toMatch(/@media \(max-width: 400px\) \{[\s\S]*?\.res \{ min-height: 30px;/);
+  });
+});
