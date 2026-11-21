@@ -367,5 +367,6 @@
   "season.share": { "en": "Share", "text": "分享" },
   "welcome.scrollEnded": { "en": "The Season Scroll ended, and the rewards you had not claimed were added:", "text": "赛季卷轴已结束，你未领取的奖励已自动发放：" },
   "pass.bonus.title": { "en": "Bonus", "text": "额外奖励" },
-  "pass.bonus.detail": { "en": "{left, plural, =0 {All {max} bonuses collected this season ({got} of {max})} one {Every task still pays: the next bonus in # point ({got} of {max} this season)} other {Every task still pays: the next bonus in # points ({got} of {max} this season)}}", "text": "{left, plural, =0 {本赛季的 {max} 份额外奖励已全部领取（{got}/{max}）} other {每个任务仍有回报：再获得 # 点即可领取下一份额外奖励（本赛季 {got}/{max}）}}" }
+  "pass.bonus.detail": { "en": "{left, plural, =0 {All {max} bonuses collected this season ({got} of {max})} one {Every task still pays: the next bonus in # point ({got} of {max} this season)} other {Every task still pays: the next bonus in # points ({got} of {max} this season)}}", "text": "{left, plural, =0 {本赛季的 {max} 份额外奖励已全部领取（{got}/{max}）} other {每个任务仍有回报：再获得 # 点即可领取下一份额外奖励（本赛季 {got}/{max}）}}" },
+  "settings.reduceEffects": { "en": "Reduce screen shake and flashes", "text": "减少屏幕震动和闪光" }
 }

@@ -19,6 +19,7 @@ import type { HudDeps } from './hudDeps';
 import { clear, h } from './dom';
 import { formatDuration } from './format';
 import { getQualityChoice, quality, setQualityChoice, type QualityChoice } from '../render/quality';
+import { reduceEffectsChoice, setReduceEffects } from '../render/motion';
 import { uiArt } from './feedback';
 import { statsExplainer } from './statsText';
 
@@ -82,6 +83,10 @@ export class SettingsUi {
       h('label', { class: 'toggle' }, musicToggle, i18nText("ui.music_93359f51a4")),
     );
     if (hapticToggle) body.append(h('label', { class: 'toggle' }, hapticToggle, i18nText("ui.vibration_on_phones_that_support_it_3461bfb1b5")));
+    // Beast Mode UX-04: shake, flashes and slow motion off, also where the device does not pass reduced motion.
+    const calmToggle = h('input', { type: 'checkbox', checked: reduceEffectsChoice(), 'data-id': 'reduce-effects' }) as HTMLInputElement;
+    calmToggle.addEventListener('change', () => setReduceEffects(calmToggle.checked));
+    body.append(h('label', { class: 'toggle' }, calmToggle, t('settings.reduceEffects')));
 
     // Notifications
     const prefs = this.deps.prefs;

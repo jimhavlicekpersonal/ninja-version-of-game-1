@@ -6,6 +6,7 @@
  * `celebrate`, in one place.
  */
 import { haptic, hapticsEnabled, setHapticsEnabled, sound, type HapticKind } from '../audio/sound';
+import { calmEffects } from '../render/motion';
 
 export type { HapticKind };
 export type SenseiMood = 'calm' | 'smile' | 'stern' | 'surprised';
@@ -30,12 +31,9 @@ export function provideUiArt(hooks: Partial<UiArtHooks>): void {
   Object.assign(uiArt, hooks);
 }
 
+/** Reduced motion for HUD animations: the OS setting or the player's "Reduce screen shake and flashes" (UX-04). */
 export function reducedMotion(): boolean {
-  try {
-    return typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
-  } catch {
-    return false;
-  }
+  return calmEffects();
 }
 
 /** Longest exit animation (`.modal-backdrop.out` in styles.css): the element goes even if no animationend arrives. */

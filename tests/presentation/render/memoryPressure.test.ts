@@ -23,7 +23,10 @@ describe('low-memory signals (device F19)', () => {
     const main = read('src/main.ts');
     expect(main).toContain(`addEventListener('${EVENT}', lowMemory)`);
     expect(main).toMatch(/const lowMemory = \(\) => \{\s*trimTextureCaches\(game\.textures\);/);
-    expect(main).toMatch(/CapApp\.addListener\('pause', goingAway\)/);
+    // Beast Mode STB-09: pause goes through wentToBackground, which starts with goingAway (and so lowMemory).
+    expect(main).toMatch(/CapApp\.addListener\('pause', wentToBackground\)/);
+    expect(main).toMatch(/const wentToBackground = \(\) => \{\s*goingAway\(\);/);
+    expect(main).toMatch(/const goingAway = \(\) => \{[\s\S]*?lowMemory\(\);\s*\};/);
     expect(main).toMatch(/addEventListener\('pagehide', goingAway\)/);
   });
 });

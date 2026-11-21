@@ -7,6 +7,7 @@ import { paintBird, paintRuins, paintStreamer, paintVillager, type RuinFamily } 
 import { paintFogBand, paintRidge, paintSun } from '../art/ground';
 import { ROLE_RING, roleOfTroop } from '../art/warriorIcons';
 import { ruinKey } from './battleKeys';
+import { calmEffects } from './motion';
 
 const CONFETTI = 'fx.confetti';
 const DOT = 'fx.dot';
@@ -308,8 +309,12 @@ export function ruinTextureOn(textures: Phaser.Textures.TextureManager, size: nu
 /** The Keep comes down: a ring of dust, a flash, heavy debris and a long shake. */
 export function keepCollapse(scene: Phaser.Scene, x: number, y: number, size: number, depth: number): void {
   ensureBattleFx(scene);
-  const flash = scene.add.image(x, y - 40, FLASH).setTint(0xffd27a).setScale(2).setDepth(depth + 2).setBlendMode(Phaser.BlendModes.ADD);
-  scene.tweens.add({ targets: flash, scale: 6, alpha: 0, duration: 700, ease: 'Cubic.easeOut', onComplete: () => flash.destroy() });
+  // Beast Mode UX-04: with calm effects a short soft fade instead of the ×6 additive flash, and no shake.
+  const calm = calmEffects();
+  const flash = scene.add.image(x, y - 40, FLASH).setTint(0xffd27a).setScale(2).setDepth(depth + 2);
+  if (calm) flash.setAlpha(0.5);
+  else flash.setBlendMode(Phaser.BlendModes.ADD);
+  scene.tweens.add({ targets: flash, scale: calm ? 2.4 : 6, alpha: 0, duration: calm ? 300 : 700, ease: 'Cubic.easeOut', onComplete: () => flash.destroy() });
   const n = Math.max(6, Math.round(12 * quality().particleScale));
   for (let i = 0; i < n; i++) {
     const a = (i / n) * Math.PI * 2;
@@ -317,7 +322,7 @@ export function keepCollapse(scene: Phaser.Scene, x: number, y: number, size: nu
     scene.tweens.add({ targets: p, x: x + Math.cos(a) * size * 34, y: y - 10 + Math.sin(a) * size * 17, scale: 1.6 / TEX_SCALE, alpha: 0, duration: 1100, ease: 'Cubic.easeOut', onComplete: () => p.destroy() });
   }
   debris(scene, x, y - 30, size + 2, depth + 1);
-  scene.cameras.main.shake(520, 0.009);
+  if (!calm) scene.cameras.main.shake(520, 0.009);
 }
 
 /** Text labels fixed to the camera (big stamps), sized for the screen and the render scale. */
@@ -364,8 +369,11 @@ export function starSlam(scene: Phaser.Scene, index: number, renderScale: number
   const star = scene.add.image(x, y, Keys.star).setScrollFactor(0).setDepth(2_000_000).setScale((5 * renderScale) / TEX_SCALE / z).setAlpha(0);
   scene.tweens.add({ targets: star, scale: (2.4 * renderScale) / TEX_SCALE / z, alpha: 1, angle: 360, duration: 280, ease: 'Back.easeIn' });
   ensureBattleFx(scene);
-  const ring = scene.add.image(x, y, FLASH).setScrollFactor(0).setDepth(1_999_999).setTint(0xffe08a).setScale(0).setBlendMode(Phaser.BlendModes.ADD);
-  scene.tweens.add({ targets: ring, scale: (4 * renderScale) / z, alpha: 0, delay: 260, duration: 420, onComplete: () => ring.destroy() });
+  // Beast Mode UX-04: no screen-filling additive ring with calm effects.
+  if (!calmEffects()) {
+    const ring = scene.add.image(x, y, FLASH).setScrollFactor(0).setDepth(1_999_999).setTint(0xffe08a).setScale(0).setBlendMode(Phaser.BlendModes.ADD);
+    scene.tweens.add({ targets: ring, scale: (4 * renderScale) / z, alpha: 0, delay: 260, duration: 420, onComplete: () => ring.destroy() });
+  }
   scene.tweens.add({ targets: star, x: cam.width - 60 * renderScale, y: 60 * renderScale, scale: (0.8 * renderScale) / TEX_SCALE / z, alpha: 0, delay: 900, duration: 420, ease: 'Cubic.easeIn', onComplete: () => star.destroy() });
 }
 

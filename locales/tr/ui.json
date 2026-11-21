@@ -367,5 +367,6 @@
   "season.share": { "en": "Share", "text": "Paylaş" },
   "welcome.scrollEnded": { "en": "The Season Scroll ended, and the rewards you had not claimed were added:", "text": "Sezon Parşömeni sona erdi ve almadığın ödüller eklendi:" },
   "pass.bonus.title": { "en": "Bonus", "text": "Bonus" },
-  "pass.bonus.detail": { "en": "{left, plural, =0 {All {max} bonuses collected this season ({got} of {max})} one {Every task still pays: the next bonus in # point ({got} of {max} this season)} other {Every task still pays: the next bonus in # points ({got} of {max} this season)}}", "text": "{left, plural, =0 {Bu sezonki {max} bonusun tümü toplandı ({got}/{max})} one {Her görev hâlâ kazandırır: sonraki bonusa # puan kaldı (bu sezon {got}/{max})} other {Her görev hâlâ kazandırır: sonraki bonusa # puan kaldı (bu sezon {got}/{max})}}" }
+  "pass.bonus.detail": { "en": "{left, plural, =0 {All {max} bonuses collected this season ({got} of {max})} one {Every task still pays: the next bonus in # point ({got} of {max} this season)} other {Every task still pays: the next bonus in # points ({got} of {max} this season)}}", "text": "{left, plural, =0 {Bu sezonki {max} bonusun tümü toplandı ({got}/{max})} one {Her görev hâlâ kazandırır: sonraki bonusa # puan kaldı (bu sezon {got}/{max})} other {Her görev hâlâ kazandırır: sonraki bonusa # puan kaldı (bu sezon {got}/{max})}}" },
+  "settings.reduceEffects": { "en": "Reduce screen shake and flashes", "text": "Ekran sarsıntısını ve parlamaları azalt" }
 }

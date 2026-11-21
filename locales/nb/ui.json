@@ -367,5 +367,6 @@
   "season.share": { "en": "Share", "text": "Del" },
   "welcome.scrollEnded": { "en": "The Season Scroll ended, and the rewards you had not claimed were added:", "text": "Sesongrullen er over, og belønningene du ikke hadde hentet, ble lagt til:" },
   "pass.bonus.title": { "en": "Bonus", "text": "Bonus" },
-  "pass.bonus.detail": { "en": "{left, plural, =0 {All {max} bonuses collected this season ({got} of {max})} one {Every task still pays: the next bonus in # point ({got} of {max} this season)} other {Every task still pays: the next bonus in # points ({got} of {max} this season)}}", "text": "{left, plural, =0 {Alle {max} bonuser er samlet inn denne sesongen ({got} av {max})} one {Hver oppgave lønner seg fortsatt: neste bonus om # poeng ({got} av {max} denne sesongen)} other {Hver oppgave lønner seg fortsatt: neste bonus om # poeng ({got} av {max} denne sesongen)}}" }
+  "pass.bonus.detail": { "en": "{left, plural, =0 {All {max} bonuses collected this season ({got} of {max})} one {Every task still pays: the next bonus in # point ({got} of {max} this season)} other {Every task still pays: the next bonus in # points ({got} of {max} this season)}}", "text": "{left, plural, =0 {Alle {max} bonuser er samlet inn denne sesongen ({got} av {max})} one {Hver oppgave lønner seg fortsatt: neste bonus om # poeng ({got} av {max} denne sesongen)} other {Hver oppgave lønner seg fortsatt: neste bonus om # poeng ({got} av {max} denne sesongen)}}" },
+  "settings.reduceEffects": { "en": "Reduce screen shake and flashes", "text": "Mindre skjermristing og blink" }
 }

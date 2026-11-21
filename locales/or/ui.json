@@ -367,5 +367,6 @@
   "season.share": { "en": "Share", "text": "ବାଣ୍ଟନ୍ତୁ" },
   "welcome.scrollEnded": { "en": "The Season Scroll ended, and the rewards you had not claimed were added:", "text": "ଋତୁ ପୋଥି ଶେଷ ହେଲା, ଓ ଆପଣ ଦାବି କରିନଥିବା ପୁରସ୍କାର ଯୋଡ଼ାଗଲା:" },
   "pass.bonus.title": { "en": "Bonus", "text": "ବୋନସ୍" },
-  "pass.bonus.detail": { "en": "{left, plural, =0 {All {max} bonuses collected this season ({got} of {max})} one {Every task still pays: the next bonus in # point ({got} of {max} this season)} other {Every task still pays: the next bonus in # points ({got} of {max} this season)}}", "text": "{left, plural, =0 {ଏହି ଋତୁର ସବୁ {max}ଟି ବୋନସ୍ ସଂଗ୍ରହ ହେଲା ({max} ରୁ {got})} one {ପ୍ରତ୍ୟେକ କାମ ଏବେ ବି ଲାଭ ଦିଏ: ପରବର୍ତ୍ତୀ ବୋନସ୍ ପାଇଁ #ଟି ପଏଣ୍ଟ ବାକି (ଏହି ଋତୁରେ {max} ରୁ {got})} other {ପ୍ରତ୍ୟେକ କାମ ଏବେ ବି ଲାଭ ଦିଏ: ପରବର୍ତ୍ତୀ ବୋନସ୍ ପାଇଁ #ଟି ପଏଣ୍ଟ ବାକି (ଏହି ଋତୁରେ {max} ରୁ {got})}}" }
+  "pass.bonus.detail": { "en": "{left, plural, =0 {All {max} bonuses collected this season ({got} of {max})} one {Every task still pays: the next bonus in # point ({got} of {max} this season)} other {Every task still pays: the next bonus in # points ({got} of {max} this season)}}", "text": "{left, plural, =0 {ଏହି ଋତୁର ସବୁ {max}ଟି ବୋନସ୍ ସଂଗ୍ରହ ହେଲା ({max} ରୁ {got})} one {ପ୍ରତ୍ୟେକ କାମ ଏବେ ବି ଲାଭ ଦିଏ: ପରବର୍ତ୍ତୀ ବୋନସ୍ ପାଇଁ #ଟି ପଏଣ୍ଟ ବାକି (ଏହି ଋତୁରେ {max} ରୁ {got})} other {ପ୍ରତ୍ୟେକ କାମ ଏବେ ବି ଲାଭ ଦିଏ: ପରବର୍ତ୍ତୀ ବୋନସ୍ ପାଇଁ #ଟି ପଏଣ୍ଟ ବାକି (ଏହି ଋତୁରେ {max} ରୁ {got})}}" },
+  "settings.reduceEffects": { "en": "Reduce screen shake and flashes", "text": "ସ୍କ୍ରିନ୍ ହଲିବା ଓ ଝଲକ କମାନ୍ତୁ" }
 }

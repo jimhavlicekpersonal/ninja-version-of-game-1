@@ -367,5 +367,6 @@
   "season.share": { "en": "Share", "text": "ያጋሩ" },
   "welcome.scrollEnded": { "en": "The Season Scroll ended, and the rewards you had not claimed were added:", "text": "የወቅት ጥቅልሉ አብቅቷል፤ ያልተቀበሏቸው ሽልማቶችም ተጨምረዋል፦" },
   "pass.bonus.title": { "en": "Bonus", "text": "ጉርሻ" },
-  "pass.bonus.detail": { "en": "{left, plural, =0 {All {max} bonuses collected this season ({got} of {max})} one {Every task still pays: the next bonus in # point ({got} of {max} this season)} other {Every task still pays: the next bonus in # points ({got} of {max} this season)}}", "text": "{left, plural, =0 {የዚህ ወቅት ሁሉም ጉርሻዎች ተሰብስበዋል፦ {max} ({got} ከ {max})} one {እያንዳንዱ ተግባር አሁንም ይከፍላል፦ ቀጣዩ ጉርሻ በ # ነጥብ ይገኛል (በዚህ ወቅት {got} ከ {max})} other {እያንዳንዱ ተግባር አሁንም ይከፍላል፦ ቀጣዩ ጉርሻ በ # ነጥቦች ይገኛል (በዚህ ወቅት {got} ከ {max})}}" }
+  "pass.bonus.detail": { "en": "{left, plural, =0 {All {max} bonuses collected this season ({got} of {max})} one {Every task still pays: the next bonus in # point ({got} of {max} this season)} other {Every task still pays: the next bonus in # points ({got} of {max} this season)}}", "text": "{left, plural, =0 {የዚህ ወቅት ሁሉም ጉርሻዎች ተሰብስበዋል፦ {max} ({got} ከ {max})} one {እያንዳንዱ ተግባር አሁንም ይከፍላል፦ ቀጣዩ ጉርሻ በ # ነጥብ ይገኛል (በዚህ ወቅት {got} ከ {max})} other {እያንዳንዱ ተግባር አሁንም ይከፍላል፦ ቀጣዩ ጉርሻ በ # ነጥቦች ይገኛል (በዚህ ወቅት {got} ከ {max})}}" },
+  "settings.reduceEffects": { "en": "Reduce screen shake and flashes", "text": "የማያ ገጽ መንቀጥቀጥን እና ብልጭታዎችን ቀንስ" }
 }

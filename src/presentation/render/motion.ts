@@ -13,6 +13,29 @@ export function reducedMotion(): boolean {
   }
 }
 
+/** Beast Mode 2026-11-21 UX-04: the player's own "Reduce screen shake and flashes" switch (per device). */
+const CALM_KEY = 'tk.reduceEffects';
+export function reduceEffectsChoice(): boolean {
+  try {
+    return typeof localStorage !== 'undefined' && localStorage.getItem(CALM_KEY) === '1';
+  } catch {
+    return false;
+  }
+}
+export function setReduceEffects(on: boolean): void {
+  try {
+    localStorage.setItem(CALM_KEY, on ? '1' : '0');
+  } catch {
+    /* storage blocked: applies for this session only through the class below */
+  }
+  if (typeof document !== 'undefined') document.documentElement.classList.toggle('calm', on);
+}
+
+/** No screen shake, no full-screen additive flash, no slow-motion: the OS's reduced motion or the player's switch. */
+export function calmEffects(): boolean {
+  return reducedMotion() || reduceEffectsChoice();
+}
+
 export interface Pose {
   /** Offset in world px (x toward where the warrior faces, y up is negative). */
   dx: number;

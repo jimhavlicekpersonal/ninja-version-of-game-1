@@ -756,6 +756,9 @@ a.btn.primary, a.btn.danger, a.btn.sky { color: #fff; }
   *, *::before, *::after { animation-duration: .01ms !important; animation-delay: 0s !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; transition-delay: 0s !important; scroll-behavior: auto !important; }
   .modal-backdrop { backdrop-filter: none; -webkit-backdrop-filter: none; }
 }
+/* Beast Mode UX-04: the in-game switch does the same for players whose device does not pass the OS setting. */
+html.calm *, html.calm *::before, html.calm *::after { animation-duration: .01ms !important; animation-delay: 0s !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; transition-delay: 0s !important; scroll-behavior: auto !important; }
+html.calm .modal-backdrop { backdrop-filter: none; -webkit-backdrop-filter: none; }
 
 /* Re-audit: the neutral age screen, under-13 ready-made chat, moderation notices. */
 .age-screen .age-field { display: grid; gap: 4px; margin: 10px 0; font-weight: 600; }

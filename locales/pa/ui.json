@@ -367,5 +367,6 @@
   "season.share": { "en": "Share", "text": "ਸਾਂਝਾ ਕਰੋ" },
   "welcome.scrollEnded": { "en": "The Season Scroll ended, and the rewards you had not claimed were added:", "text": "ਸੀਜ਼ਨ ਸਕ੍ਰੋਲ ਖ਼ਤਮ ਹੋ ਗਿਆ, ਅਤੇ ਜੋ ਇਨਾਮ ਤੁਸੀਂ ਨਹੀਂ ਲਏ ਸਨ ਉਹ ਜੋੜ ਦਿੱਤੇ ਗਏ:" },
   "pass.bonus.title": { "en": "Bonus", "text": "ਬੋਨਸ" },
-  "pass.bonus.detail": { "en": "{left, plural, =0 {All {max} bonuses collected this season ({got} of {max})} one {Every task still pays: the next bonus in # point ({got} of {max} this season)} other {Every task still pays: the next bonus in # points ({got} of {max} this season)}}", "text": "{left, plural, =0 {ਇਸ ਸੀਜ਼ਨ ਦੇ ਸਾਰੇ {max} ਬੋਨਸ ਇਕੱਠੇ ਹੋ ਗਏ ({max} ਵਿੱਚੋਂ {got})} one {ਹਰ ਕੰਮ ਦਾ ਅਜੇ ਵੀ ਫ਼ਾਇਦਾ ਹੈ: ਅਗਲਾ ਬੋਨਸ # ਅੰਕ ਬਾਅਦ (ਇਸ ਸੀਜ਼ਨ {max} ਵਿੱਚੋਂ {got})} other {ਹਰ ਕੰਮ ਦਾ ਅਜੇ ਵੀ ਫ਼ਾਇਦਾ ਹੈ: ਅਗਲਾ ਬੋਨਸ # ਅੰਕਾਂ ਬਾਅਦ (ਇਸ ਸੀਜ਼ਨ {max} ਵਿੱਚੋਂ {got})}}" }
+  "pass.bonus.detail": { "en": "{left, plural, =0 {All {max} bonuses collected this season ({got} of {max})} one {Every task still pays: the next bonus in # point ({got} of {max} this season)} other {Every task still pays: the next bonus in # points ({got} of {max} this season)}}", "text": "{left, plural, =0 {ਇਸ ਸੀਜ਼ਨ ਦੇ ਸਾਰੇ {max} ਬੋਨਸ ਇਕੱਠੇ ਹੋ ਗਏ ({max} ਵਿੱਚੋਂ {got})} one {ਹਰ ਕੰਮ ਦਾ ਅਜੇ ਵੀ ਫ਼ਾਇਦਾ ਹੈ: ਅਗਲਾ ਬੋਨਸ # ਅੰਕ ਬਾਅਦ (ਇਸ ਸੀਜ਼ਨ {max} ਵਿੱਚੋਂ {got})} other {ਹਰ ਕੰਮ ਦਾ ਅਜੇ ਵੀ ਫ਼ਾਇਦਾ ਹੈ: ਅਗਲਾ ਬੋਨਸ # ਅੰਕਾਂ ਬਾਅਦ (ਇਸ ਸੀਜ਼ਨ {max} ਵਿੱਚੋਂ {got})}}" },
+  "settings.reduceEffects": { "en": "Reduce screen shake and flashes", "text": "ਸਕ੍ਰੀਨ ਦਾ ਹਿੱਲਣਾ ਅਤੇ ਚਮਕ ਘਟਾਓ" }
 }

@@ -367,5 +367,6 @@
   "season.share": { "en": "Share", "text": "共有" },
   "welcome.scrollEnded": { "en": "The Season Scroll ended, and the rewards you had not claimed were added:", "text": "シーズン巻物が終了し、受け取っていなかった報酬が追加されました：" },
   "pass.bonus.title": { "en": "Bonus", "text": "ボーナス" },
-  "pass.bonus.detail": { "en": "{left, plural, =0 {All {max} bonuses collected this season ({got} of {max})} one {Every task still pays: the next bonus in # point ({got} of {max} this season)} other {Every task still pays: the next bonus in # points ({got} of {max} this season)}}", "text": "{left, plural, =0 {今シーズンのボーナスを{max}個すべて獲得済み（{got}/{max}）} other {タスクを達成すれば引き続き報酬あり：次のボーナスまであと#ポイント（今シーズン{got}/{max}）}}" }
+  "pass.bonus.detail": { "en": "{left, plural, =0 {All {max} bonuses collected this season ({got} of {max})} one {Every task still pays: the next bonus in # point ({got} of {max} this season)} other {Every task still pays: the next bonus in # points ({got} of {max} this season)}}", "text": "{left, plural, =0 {今シーズンのボーナスを{max}個すべて獲得済み（{got}/{max}）} other {タスクを達成すれば引き続き報酬あり：次のボーナスまであと#ポイント（今シーズン{got}/{max}）}}" },
+  "settings.reduceEffects": { "en": "Reduce screen shake and flashes", "text": "画面の揺れとフラッシュを減らす" }
 }

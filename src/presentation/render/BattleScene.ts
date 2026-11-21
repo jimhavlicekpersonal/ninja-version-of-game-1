@@ -19,7 +19,7 @@ import { addScenery, canvasRenderer, tintedTexture, debris, deathPuff, keepColla
 import { haptic, sound } from '../audio/sound';
 import { placeCallout, type CalloutBox } from './calloutLayout';
 import { OPENING_GLIDE_MS, OPENING_HOLD_MS, actionShot, battleOpening, type WorldBox } from './cameraFrame';
-import { DAMAGE_TINT, damageStage, reducedMotion, turnToward, warriorPose } from './motion';
+import { DAMAGE_TINT, calmEffects, damageStage, reducedMotion, turnToward, warriorPose } from './motion';
 import { BARREL_ORIGIN_X, BARREL_REACH, barrelTexture, crackTexture } from './battleMarks';
 
 export interface BattleHooks {
@@ -1118,7 +1118,7 @@ export class BattleScene extends Phaser.Scene {
         v.flashUntil = 0;
         if (b.kind === 'hall') {
           keepCollapse(this, c.x, c.y - 10, b.size, OVER - 18);
-          this.slowUntil = this.time.now + 900;
+          if (!calmEffects()) this.slowUntil = this.time.now + 900;
           sound.play('collapse');
           haptic('heavy');
         } else if (b.kind !== 'hedge') {
@@ -1126,7 +1126,7 @@ export class BattleScene extends Phaser.Scene {
           sound.play('boom');
           haptic('medium');
         } else sound.play('hit');
-        if (b.kind !== 'hedge' && b.kind !== 'hall') this.cameras.main.shake(140, 0.0035 * Math.min(2, b.size / 2));
+        if (b.kind !== 'hedge' && b.kind !== 'hall' && !calmEffects()) this.cameras.main.shake(140, 0.0035 * Math.min(2, b.size / 2));
       } else if (!b.destroyed && b.hp < b.maxHp && b.kind !== 'hedge') {
         const top = v.image.y - v.image.displayHeight * v.image.originY;
         this.drawBar(v.bar, v.image.x, top - 6 / this.cam.userZoom, b.hp / b.maxHp, 0x5aa85e);
@@ -1263,7 +1263,7 @@ export class BattleScene extends Phaser.Scene {
         if (e.splash > 0) {
           this.puff(w.x, w.y, 1 + e.splash);
           this.stars(w.x, w.y - 6, 4);
-          if (e.kind === 'pinecone') this.cameras.main.shake(100, 0.003);
+          if (e.kind === 'pinecone' && !calmEffects()) this.cameras.main.shake(100, 0.003);
         } else {
           this.stars(w.x, w.y - 16, 2);
         }

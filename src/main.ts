@@ -22,6 +22,7 @@ import { loadArtManifest, queueArt } from './presentation/render/artManifest';
 import { VillageScene, type VillageSceneInit } from './presentation/render/VillageScene';
 import { BattleScene } from './presentation/render/BattleScene';
 import { quality, renderScaleFor } from './presentation/render/quality';
+import { reduceEffectsChoice } from './presentation/render/motion';
 import { frames, limitFor, measureRefreshHz, pacing, setActiveLimit } from './presentation/render/frameRate';
 import { App } from './app';
 import { installWebBack } from './presentation/ui/webBack';
@@ -549,6 +550,8 @@ async function boot(): Promise<void> {
   const host = document.getElementById('game')!;
   // Draw at the screen's real density (iPhone 3x, Pixel 7 2.6x) so lines and text are smooth, not upscaled;
   // low quality (cheap phones, ?quality=low, Settings) stops at 2x and 30 FPS (render/quality.ts).
+  // Beast Mode UX-04: the player's "Reduce screen shake and flashes" also calms the HUD's CSS animations.
+  document.documentElement.classList.toggle('calm', reduceEffectsChoice());
   const q = quality();
   const renderScale = renderScaleFor(q);
   const size = () => ({ w: Math.max(1, host.clientWidth), h: Math.max(1, host.clientHeight) });
