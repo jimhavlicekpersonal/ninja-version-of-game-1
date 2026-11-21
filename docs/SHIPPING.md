@@ -123,7 +123,7 @@ Without a server, the game uses generated opponents, bot raiders and a bot Allia
 
 5. Turn online play on, in either or both of these ways:
    - **For everyone:** in GitHub, go to **Settings → Secrets and variables → Actions → Variables** and add `VITE_SERVER_URL` = `https://<your-server>`. Optionally add `VITE_SENTRY_DSN` too (a separate Sentry project for the game is clearer): the game then sends crash reports with the build and platform, never player data, and Settings shows a "Send crash reports" switch. Declare it as "Crash Data, not linked to the user" in the App Store privacy label and Play Data safety form. The next push to `main` rebuilds the web app and the Android APK with that server built in.
-   - **On one device, no rebuild:** in the game, open **Settings → Online play**, type the server address and tap **Use**. **Play offline** switches back. This is handy for testing a new server before building it in.
+   - **On one device, no rebuild (dev and test builds only):** in a development build (`npm run dev`, `npm run dev:lan`) or a build made with `VITE_ALLOW_SERVER_CHOICE=1`, open **Settings → Advanced**, type the server address and tap **Use**. **Play offline** switches back. Store and public web builds have no address field and talk only to `VITE_SERVER_URL` over https (Beast Mode SEC-03: a typed address was a phishing path and a sign-in token relay); never set `VITE_ALLOW_SERVER_CHOICE` in `deploy.yml`, `android.yml` or `ios-testflight.yml` (a test checks).
 
 The top bar shows the connection: **Online**, **Connecting…** or **No connection**. Battles you fight while the connection is down are sent when it comes back.
 

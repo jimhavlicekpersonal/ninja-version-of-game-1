@@ -119,10 +119,30 @@ export const ROTATE_EVERY_MS = 30 * 86_400_000;
  * The server address: the one chosen in Settings, else the one built into
  * this version (VITE_SERVER_URL). 'off' in Settings turns online play off.
  */
-export function resolveServerUrl(kv: KeyValue, builtIn: string | undefined): string {
+export function resolveServerUrl(kv: KeyValue, builtIn: string | undefined, allowChoice = true): string {
   const chosen = kv.get(SERVER_KEY);
   if (chosen === 'off') return '';
+  // Beast Mode SEC-03: a store or public web build talks only to the server built into it (a server address
+  // typed in Settings was a phishing path and a sign-in token relay), and only over https.
+  if (!allowChoice) {
+    const url = normalizeServerUrl(builtIn || '');
+    return /^https:\/\//i.test(url) ? url : '';
+  }
   return normalizeServerUrl(chosen || builtIn || '');
+}
+
+/**
+ * Beast Mode SEC-03: whether this build lets the player pick a server address (Settings → Advanced). Only dev
+ * builds and builds made with VITE_ALLOW_SERVER_CHOICE=1 (never a release workflow) do.
+ */
+export function serverChoiceAllowed(o: { dev: boolean; flag: string | undefined }): boolean {
+  return o.dev || o.flag === '1';
+}
+
+/** SEC-03: forget a custom server address a build that does not allow one finds stored ('off' stays). */
+export function forgetChosenServer(kv: KeyValue): void {
+  const chosen = kv.get(SERVER_KEY);
+  if (chosen && chosen !== 'off') kv.set(SERVER_KEY, null);
 }
 
 export interface ConnectionOptions {
@@ -133,6 +153,8 @@ export interface ConnectionOptions {
   makePort?: (url: string) => ServerPort;
   /** Force online play off (the testing sandbox: its clock and test purchases must never reach a server). */
   offline?: boolean;
+  /** SEC-03: whether a server address chosen in Settings is used (default true; main.ts passes the build's rule). */
+  allowServerChoice?: boolean;
   /** The game's version and platform, sent as X-Client-Build. */
   build?: string;
   /**
@@ -198,7 +220,7 @@ export class Connection {
 
   constructor(private readonly o: ConnectionOptions) {
     this.kv = o.kv ?? browserKeyValue;
-    this.url = o.offline ? '' : resolveServerUrl(this.kv, o.builtInUrl);
+    this.url = o.offline ? '' : resolveServerUrl(this.kv, o.builtInUrl, o.allowServerChoice ?? true);
     if (this.url) {
       this.port = (o.makePort ?? ((u) => new HttpServerAdapter(u, { build: o.build, dataVersion: o.dataVersion })))(this.url);
       this.status = 'connecting';

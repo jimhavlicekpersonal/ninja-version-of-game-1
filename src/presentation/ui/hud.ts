@@ -1043,7 +1043,8 @@ export class Hud {
       'div',
       {},
       h('h4', {}, i18nText("ui.server_address_8be89710b2")),
-      h('div', { class: 'chat-input-row' }, addr, h('button', { class: 'btn ghost', type: 'button', onclick: () => this.chooseServer(addr.value || '') }, i18nText("ui.use_c36d819e7b"))),
+      // Beast Mode SEC-03: the address field only in builds that allow one (never a store or public web build).
+      this.deps.allowServerChoice ? h('div', { class: 'chat-input-row' }, addr, h('button', { class: 'btn ghost', type: 'button', onclick: () => this.chooseServer(addr.value || '') }, i18nText("ui.use_c36d819e7b"))) : null,
       h(
         'div',
         { class: 'actions' },

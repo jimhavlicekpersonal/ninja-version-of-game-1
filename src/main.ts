@@ -24,7 +24,7 @@ import { BattleScene } from './presentation/render/BattleScene';
 import { quality, renderScaleFor } from './presentation/render/quality';
 import { frames, limitFor, measureRefreshHz, pacing, setActiveLimit } from './presentation/render/frameRate';
 import { App } from './app';
-import { browserKeyValue, Connection, resolveServerUrl } from './backend/net/connection';
+import { browserKeyValue, Connection, forgetChosenServer, resolveServerUrl, serverChoiceAllowed } from './backend/net/connection';
 import { BalanceLoader } from './backend/net/balance';
 import { EventScheduleLoader } from './backend/net/eventScheduleLoader';
 import { fetchSharedReplay, GrowthClient } from './backend/net/growthClient';
@@ -267,7 +267,10 @@ async function boot(): Promise<void> {
   // Online play: the server chosen in Settings, else the one built into this version (VITE_SERVER_URL).
   const builtInUrl = (import.meta.env.VITE_SERVER_URL as string | undefined) || '';
   // With a server, real players raid this village instead of bots (never in the sandbox).
-  const serverUrl = sandbox ? '' : resolveServerUrl(browserKeyValue, builtInUrl);
+  // Beast Mode SEC-03: only dev builds (and VITE_ALLOW_SERVER_CHOICE=1 test builds) may use a typed server address.
+  const allowServerChoice = serverChoiceAllowed({ dev: import.meta.env.DEV, flag: import.meta.env.VITE_ALLOW_SERVER_CHOICE as string | undefined });
+  if (!allowServerChoice) forgetChosenServer(browserKeyValue);
+  const serverUrl = sandbox ? '' : resolveServerUrl(browserKeyValue, builtInUrl, allowServerChoice);
   // Balance bundles (roadmap step 76): the operators' signed number changes from the last session, applied
   // before the village loads (never mid-session, never in the sandbox, never without the public key).
   // Experiment arms (report section 5 step 5) are picked by the statistics id: only players who share are in one.
@@ -285,7 +288,7 @@ async function boot(): Promise<void> {
   // "Update Kagemura" (roadmap step 75) opens the store listing in the apps; the web build reloads.
   const env = import.meta.env as Record<string, string | undefined>;
   const updateUrl = isNative() ? (platform() === 'ios' ? env.VITE_APP_STORE_URL : platform() === 'android' ? env.VITE_PLAY_STORE_URL : undefined) : undefined;
-  const connection = new Connection({ game: controller, builtInUrl, offline: sandbox, build: `${__APP_VERSION__}+${isNative() ? platform() : 'web'}`, keepVillageOnServer: true, updateUrl, rulesAccepted: acceptedRulesVersion, ...(balance ? { balance, dataVersion: () => balance.dataVersion() } : {}), ...(eventSchedule ? { events: eventSchedule } : {}) });
+  const connection = new Connection({ game: controller, builtInUrl, offline: sandbox, allowServerChoice, build: `${__APP_VERSION__}+${isNative() ? platform() : 'web'}`, keepVillageOnServer: true, updateUrl, rulesAccepted: acceptedRulesVersion, ...(balance ? { balance, dataVersion: () => balance.dataVersion() } : {}), ...(eventSchedule ? { events: eventSchedule } : {}) });
   onCommunityRulesAccepted(() => void connection.acceptRules());
   const growth = new GrowthClient(connection);
   const statsTz = (import.meta.env.VITE_STATS_TZ as string | undefined) === '1';
@@ -561,6 +564,7 @@ async function boot(): Promise<void> {
     onReplayTutorial: () => tutorial?.restart(),
     debugTime,
     sandbox,
+    allowServerChoice,
     build: { version: __APP_VERSION__, builtAt: __BUILD_TIME__ },
     crashReports: crashReporter.configured,
     ...(stats ? { stats } : {}),

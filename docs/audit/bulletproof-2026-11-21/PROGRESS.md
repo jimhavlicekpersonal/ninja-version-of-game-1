@@ -80,7 +80,7 @@ New player-visible strings are translated into all 49 other ready languages in t
 | SAV-16 | LOW | Owner/device | DEVICE | open | | | |
 | SEC-01 | BLOCKER | 2 | CODE | open | | | |
 | SEC-02 | HIGH | 2 | CODE | open | | | |
-| SEC-03 | HIGH | 1 | CODE | open | | | |
+| SEC-03 | HIGH | 1 | CODE | done |  | tests/backend/net/server-choice.test.ts, tests/presentation/dom/server-choice.dom.test.ts | resolveServerUrl(kv, builtIn, allowChoice): off ignores tk.net.server except 'off' and needs https; serverChoiceAllowed(dev or VITE_ALLOW_SERVER_CHOICE=1); a stored custom address is forgotten at start; the Settings field only with HudDeps.allowServerChoice; no workflow sets the flag (test). checkConfig warns in production while SIGNIN_NONCE_REQUIRED is not 1 (the switch itself is an owner step). Limits: not run on a device build. |
 | SEC-04 | MEDIUM | 2 | CODE | open | | | |
 | SEC-05 | MEDIUM | 2 | CODE | open | | | |
 | SEC-06 | MEDIUM | 2 | CODE | open | | | |

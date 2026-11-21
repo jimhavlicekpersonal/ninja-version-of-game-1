@@ -26,6 +26,8 @@ export interface HudDeps {
   debugTime: { offsetMs(): number; skip(ms: number): void };
   /** The testing sandbox (separate save, offline): only there are testing tools shown. */
   sandbox: boolean;
+  /** Beast Mode SEC-03: a server address may be typed in Settings (dev and VITE_ALLOW_SERVER_CHOICE builds only). */
+  allowServerChoice?: boolean;
   build: { version: string; builtAt: string };
   troopThumb(type: string): string | null;
   /** Data URL of a roster warrior's badge icon, for the Warrior Codex. */

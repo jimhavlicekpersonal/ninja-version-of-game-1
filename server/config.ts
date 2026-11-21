@@ -183,6 +183,8 @@ export function checkConfig(env: Record<string, string | undefined>): { deploy: 
     if (list(env.APPLE_ENVIRONMENTS).includes('Xcode')) errors.push('Xcode-signed purchases are for local testing, not production.');
     if (env.GOOGLE_PLAY_ALLOW_TEST === '1') warnings.push('GOOGLE_PLAY_ALLOW_TEST=1: license-tester purchases are credited in production.');
     if (env.MIGRATE_ON_BOOT === '1') warnings.push('MIGRATE_ON_BOOT=1 in production: run "npm run server:migrate" as a release step instead when there is more than one instance.');
+    // Beast Mode SEC-03 (defence in depth): a sign-in token relayed through another server is refused only with nonces required.
+    if (env.SIGNIN_NONCE_REQUIRED !== '1') warnings.push('SIGNIN_NONCE_REQUIRED is not 1: Apple and Google sign-ins without a nonce are still accepted. Set it once every supported build sends nonces (docs/SHIPPING.md 3h).');
     if (!env.SENTRY_DSN) warnings.push('SENTRY_DSN is not set: server errors are only in the log.');
     if (!env.METRICS_TOKEN) warnings.push('METRICS_TOKEN is not set: there is no /metrics for alerts.');
     else if (env.METRICS_TOKEN.length < 24) errors.push('METRICS_TOKEN must be at least 24 characters in production (it is guessed like a staff token).');
