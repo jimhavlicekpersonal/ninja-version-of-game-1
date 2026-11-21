@@ -55,7 +55,9 @@ export function matchStrength(rng: Rng, trophies: number, ownHall: number, data:
   s = Math.max(lo, Math.min(hi, s));
   const whole = Math.floor(s);
   const t = Math.round(s * mm.trophiesPerHall + (next(rng) * 2 - 1) * mm.trophyJitter);
-  return { hall: whole + 1, bias: s - whole, trophies: Math.max(0, t) };
+  // Beast Mode GT-08: at the top Keep honor cannot lift a base all the way to its caps.
+  const bias = whole + 1 >= top && mm.topKeepMaxBias !== undefined ? Math.min(s - whole, mm.topKeepMaxBias) : s - whole;
+  return { hall: whole + 1, bias, trophies: Math.max(0, t) };
 }
 
 /** Loot multiplier for an attacker at `attackerHall` hitting a base at `targetHall`. */

@@ -38,7 +38,7 @@ const total = (c: Record<string, number | undefined>) => Object.values(c).reduce
 for (const [label, makeRepo] of repoFactories) {
   describe(`attacks with server-held villages on ${label} storage`, () => {
     /** Ann trains 10 Shinobi on the server; Dot builds collectors and lets loot pile up. */
-    async function scene(shared?: Parameters<typeof world>[0]['shared']) {
+    async function scene(shared?: NonNullable<Parameters<typeof world>[0]>['shared']) {
       const w = world({ repo: await makeRepo(), shared });
       const ann = await w.player('Ann');
       const dot = await w.player('Dot');

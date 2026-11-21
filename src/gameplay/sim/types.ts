@@ -911,6 +911,11 @@ export interface RanksDef {
     trophiesPerHall: number;
     /** Random spread of an opponent's strength around yours (hall levels). */
     strengthJitter: number;
+    /**
+     * Beast Mode GT-08: at the top Keep, the most an honor-driven match lifts the base toward its caps (0..1). Attackers
+     * there are capped at Keep 15 strength, so honor kept pulling them to maxed bases (the Keep 15 cliff).
+     */
+    topKeepMaxBias?: number;
     /** Opponents are kept within these many hall levels below / above yours. */
     hallsBelow: number;
     hallsAbove: number;
@@ -1356,6 +1361,8 @@ export interface TrialModifierDef {
   description: string;
   power?: number;
   wallPower?: number;
+  /** Beast Mode GT-09: added to the tier's level bias (clamped 0..1), so a hard modifier is not also a maxed fortress. */
+  levelBiasShift?: number;
   /** P1-07: the fortress is tempered as this rival clan tempers its outposts (`battle.json` `temper.rivals`), from the temper unlock Keep. */
   rival?: string;
   /** P1-07: only on fortresses of these layouts (an alternate fortress of another layout does not carry it). */
@@ -1364,6 +1371,11 @@ export interface TrialModifierDef {
 
 export interface TrialsDef {
   tiersPerHall: number;
+  /**
+   * Beast Mode GT-09: the level bias a Keep's tiers span, first to last (default [0, 1]). [0, 1] made each Keep's
+   * last tier a maxed fortress and the next Keep's first a fresh one: a sawtooth.
+   */
+  levelBiasRange?: [number, number];
   /** P5-06: looks given once when the best cleared tier first reaches `tier`. */
   looks?: { tier: number; look: string }[];
   /** P3-06: a village may attempt the first tier of the Keep this many below its own (`trialCatchUpTier`). */

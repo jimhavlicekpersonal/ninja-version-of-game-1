@@ -78,8 +78,12 @@ export function defenseStrength(base: BaseLayout, data: GameData): number {
 export function trialBase(tier: number, data: GameData, variant = 0): BaseLayout {
   const info = trialInfo(tier, data, variant);
   const within = (info.tier - 1) % data.trials.tiersPerHall;
-  const levelBias = data.trials.tiersPerHall > 1 ? within / (data.trials.tiersPerHall - 1) : 1;
-  const opts = { levelBias: info.tier > data.hall.levels.length * data.trials.tiersPerHall ? 1 : levelBias, layout: info.layout };
+  // GT-09: the Keep's tiers span `levelBiasRange` (not 0 to 1), so the step from a Keep's last tier to the next Keep's
+  // first is small.
+  const [lo, hi] = data.trials.levelBiasRange ?? [0, 1];
+  const levelBias = data.trials.tiersPerHall > 1 ? lo + ((hi - lo) * within) / (data.trials.tiersPerHall - 1) : hi;
+  const shift = info.modifiers.reduce((a, m) => a + (m.levelBiasShift ?? 0), 0);
+  const opts = { levelBias: info.tier > data.hall.levels.length * data.trials.tiersPerHall ? 1 : Math.max(0, Math.min(1, levelBias + shift)), layout: info.layout };
   const n = Math.max(1, data.trials.candidates ?? 1);
   const candidates = Array.from({ length: n }, (_, k) => generateOpponent(mixSeed(0x5ad0_77a1 + variant * 0x9e37, info.tier * 16 + k), info.hall, data, opts))
     .map((b, k) => ({ b, k, s: defenseStrength(b, data) }))
