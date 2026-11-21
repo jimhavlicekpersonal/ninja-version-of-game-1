@@ -368,5 +368,7 @@
   "welcome.scrollEnded": { "en": "The Season Scroll ended, and the rewards you had not claimed were added:", "text": "Gulungan Musim telah berakhir, dan hadiah yang belum kamu klaim sudah ditambahkan:" },
   "pass.bonus.title": { "en": "Bonus", "text": "Bonus" },
   "pass.bonus.detail": { "en": "{left, plural, =0 {All {max} bonuses collected this season ({got} of {max})} one {Every task still pays: the next bonus in # point ({got} of {max} this season)} other {Every task still pays: the next bonus in # points ({got} of {max} this season)}}", "text": "{left, plural, =0 {Semua {max} bonus musim ini sudah terkumpul ({got} dari {max})} other {Setiap tugas tetap berharga: bonus berikutnya dalam # poin ({got} dari {max} musim ini)}}" },
-  "settings.reduceEffects": { "en": "Reduce screen shake and flashes", "text": "Kurangi guncangan layar dan kilatan" }
+  "settings.reduceEffects": { "en": "Reduce screen shake and flashes", "text": "Kurangi guncangan layar dan kilatan" },
+  "store.buyNamed": { "en": "Buy {name} for {price}", "text": "Beli {name} seharga {price}" },
+  "res.jadeOpenStore": { "en": "Jade: {n}. Open the Store", "text": "Giok: {n}. Buka Toko" }
 }

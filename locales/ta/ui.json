@@ -368,5 +368,7 @@
   "welcome.scrollEnded": { "en": "The Season Scroll ended, and the rewards you had not claimed were added:", "text": "பருவச் சுருள் முடிந்தது; நீங்கள் பெறாத வெகுமதிகள் சேர்க்கப்பட்டன:" },
   "pass.bonus.title": { "en": "Bonus", "text": "போனஸ்" },
   "pass.bonus.detail": { "en": "{left, plural, =0 {All {max} bonuses collected this season ({got} of {max})} one {Every task still pays: the next bonus in # point ({got} of {max} this season)} other {Every task still pays: the next bonus in # points ({got} of {max} this season)}}", "text": "{left, plural, =0 {இந்தப் பருவத்தின் {max} போனஸ்களும் பெறப்பட்டன ({got}/{max})} one {ஒவ்வொரு பணிக்கும் இன்னும் பலன் உண்டு: அடுத்த போனஸுக்கு இன்னும் # புள்ளி (இந்தப் பருவத்தில் {got}/{max})} other {ஒவ்வொரு பணிக்கும் இன்னும் பலன் உண்டு: அடுத்த போனஸுக்கு இன்னும் # புள்ளிகள் (இந்தப் பருவத்தில் {got}/{max})}}" },
-  "settings.reduceEffects": { "en": "Reduce screen shake and flashes", "text": "திரை அதிர்வையும் ஒளிர்வுகளையும் குறைக்கவும்" }
+  "settings.reduceEffects": { "en": "Reduce screen shake and flashes", "text": "திரை அதிர்வையும் ஒளிர்வுகளையும் குறைக்கவும்" },
+  "store.buyNamed": { "en": "Buy {name} for {price}", "text": "{name} ஐ {price}க்கு வாங்கவும்" },
+  "res.jadeOpenStore": { "en": "Jade: {n}. Open the Store", "text": "பச்சைக்கல்: {n}. கடையைத் திறக்கவும்" }
 }

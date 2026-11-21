@@ -368,5 +368,7 @@
   "welcome.scrollEnded": { "en": "The Season Scroll ended, and the rewards you had not claimed were added:", "text": "시즌 두루마리가 끝나서 받지 않은 보상이 자동으로 추가됐어요:" },
   "pass.bonus.title": { "en": "Bonus", "text": "보너스" },
   "pass.bonus.detail": { "en": "{left, plural, =0 {All {max} bonuses collected this season ({got} of {max})} one {Every task still pays: the next bonus in # point ({got} of {max} this season)} other {Every task still pays: the next bonus in # points ({got} of {max} this season)}}", "text": "{left, plural, =0 {이번 시즌 보너스 {max}개를 모두 받았어요({got}/{max})} other {과제는 계속 포인트를 줘요: 다음 보너스까지 #포인트(이번 시즌 {got}/{max})}}" },
-  "settings.reduceEffects": { "en": "Reduce screen shake and flashes", "text": "화면 흔들림과 번쩍임 줄이기" }
+  "settings.reduceEffects": { "en": "Reduce screen shake and flashes", "text": "화면 흔들림과 번쩍임 줄이기" },
+  "store.buyNamed": { "en": "Buy {name} for {price}", "text": "{name} {price}에 구매" },
+  "res.jadeOpenStore": { "en": "Jade: {n}. Open the Store", "text": "비취: {n}. 상점 열기" }
 }

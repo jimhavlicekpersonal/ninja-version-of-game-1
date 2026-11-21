@@ -368,5 +368,7 @@
   "welcome.scrollEnded": { "en": "The Season Scroll ended, and the rewards you had not claimed were added:", "text": "Kausikäärö päättyi, ja lunastamattomat palkintosi lisättiin:" },
   "pass.bonus.title": { "en": "Bonus", "text": "Bonus" },
   "pass.bonus.detail": { "en": "{left, plural, =0 {All {max} bonuses collected this season ({got} of {max})} one {Every task still pays: the next bonus in # point ({got} of {max} this season)} other {Every task still pays: the next bonus in # points ({got} of {max} this season)}}", "text": "{left, plural, =0 {Kaikki {max} bonusta kerätty tällä kaudella ({got}/{max})} one {Jokainen tehtävä palkitsee yhä: seuraava bonus # pisteen päästä ({got}/{max} tällä kaudella)} other {Jokainen tehtävä palkitsee yhä: seuraava bonus # pisteen päästä ({got}/{max} tällä kaudella)}}" },
-  "settings.reduceEffects": { "en": "Reduce screen shake and flashes", "text": "Vähennä näytön tärinää ja välähdyksiä" }
+  "settings.reduceEffects": { "en": "Reduce screen shake and flashes", "text": "Vähennä näytön tärinää ja välähdyksiä" },
+  "store.buyNamed": { "en": "Buy {name} for {price}", "text": "Osta {name} hintaan {price}" },
+  "res.jadeOpenStore": { "en": "Jade: {n}. Open the Store", "text": "Jade: {n}. Avaa kauppa" }
 }

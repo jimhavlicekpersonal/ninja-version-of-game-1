@@ -368,5 +368,7 @@
   "welcome.scrollEnded": { "en": "The Season Scroll ended, and the rewards you had not claimed were added:", "text": "సీజన్ తాళపత్రం ముగిసింది, మీరు క్లెయిమ్ చేయని బహుమతులు జోడించబడ్డాయి:" },
   "pass.bonus.title": { "en": "Bonus", "text": "బోనస్" },
   "pass.bonus.detail": { "en": "{left, plural, =0 {All {max} bonuses collected this season ({got} of {max})} one {Every task still pays: the next bonus in # point ({got} of {max} this season)} other {Every task still pays: the next bonus in # points ({got} of {max} this season)}}", "text": "{left, plural, =0 {ఈ సీజన్‌లో మొత్తం {max} బోనస్‌లూ సేకరించబడ్డాయి ({got}/{max})} one {ప్రతి పనికీ ఇంకా ఫలం ఉంది: తదుపరి బోనస్ ఇంకా # పాయింట్ దూరంలో (ఈ సీజన్‌లో {got}/{max})} other {ప్రతి పనికీ ఇంకా ఫలం ఉంది: తదుపరి బోనస్ ఇంకా # పాయింట్ల దూరంలో (ఈ సీజన్‌లో {got}/{max})}}" },
-  "settings.reduceEffects": { "en": "Reduce screen shake and flashes", "text": "స్క్రీన్ కదలికలు మరియు మెరుపులను తగ్గించండి" }
+  "settings.reduceEffects": { "en": "Reduce screen shake and flashes", "text": "స్క్రీన్ కదలికలు మరియు మెరుపులను తగ్గించండి" },
+  "store.buyNamed": { "en": "Buy {name} for {price}", "text": "{name}ను {price}కు కొనండి" },
+  "res.jadeOpenStore": { "en": "Jade: {n}. Open the Store", "text": "పచ్చలు: {n}. స్టోర్ తెరవండి" }
 }

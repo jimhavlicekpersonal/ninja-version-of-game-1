@@ -368,5 +368,7 @@
   "welcome.scrollEnded": { "en": "The Season Scroll ended, and the rewards you had not claimed were added:", "text": "Sezonski svitak je završio, a nepreuzete nagrade dodane su:" },
   "pass.bonus.title": { "en": "Bonus", "text": "Bonus" },
   "pass.bonus.detail": { "en": "{left, plural, =0 {All {max} bonuses collected this season ({got} of {max})} one {Every task still pays: the next bonus in # point ({got} of {max} this season)} other {Every task still pays: the next bonus in # points ({got} of {max} this season)}}", "text": "{left, plural, =0 {Prikupljeno je svih {max} bonusa ove sezone ({got} od {max})} one {Svaki se zadatak i dalje isplati: sljedeći bonus za još # bod ({got} od {max} ove sezone)} few {Svaki se zadatak i dalje isplati: sljedeći bonus za još # boda ({got} od {max} ove sezone)} other {Svaki se zadatak i dalje isplati: sljedeći bonus za još # bodova ({got} od {max} ove sezone)}}" },
-  "settings.reduceEffects": { "en": "Reduce screen shake and flashes", "text": "Smanji podrhtavanje zaslona i bljeskove" }
+  "settings.reduceEffects": { "en": "Reduce screen shake and flashes", "text": "Smanji podrhtavanje zaslona i bljeskove" },
+  "store.buyNamed": { "en": "Buy {name} for {price}", "text": "Kupi {name} za {price}" },
+  "res.jadeOpenStore": { "en": "Jade: {n}. Open the Store", "text": "Žad: {n}. Otvori trgovinu" }
 }

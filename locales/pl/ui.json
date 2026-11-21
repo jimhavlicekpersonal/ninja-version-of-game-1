@@ -368,5 +368,7 @@
   "welcome.scrollEnded": { "en": "The Season Scroll ended, and the rewards you had not claimed were added:", "text": "Zwój Sezonu dobiegł końca, a nieodebrane nagrody zostały dodane automatycznie:" },
   "pass.bonus.title": { "en": "Bonus", "text": "Premia" },
   "pass.bonus.detail": { "en": "{left, plural, =0 {All {max} bonuses collected this season ({got} of {max})} one {Every task still pays: the next bonus in # point ({got} of {max} this season)} other {Every task still pays: the next bonus in # points ({got} of {max} this season)}}", "text": "{left, plural, =0 {Wszystkie premie sezonu zebrane ({got} z {max})} one {Każde zadanie wciąż się opłaca: następna premia za # punkt ({got} z {max} w tym sezonie)} few {Każde zadanie wciąż się opłaca: następna premia za # punkty ({got} z {max} w tym sezonie)} many {Każde zadanie wciąż się opłaca: następna premia za # punktów ({got} z {max} w tym sezonie)} other {Każde zadanie wciąż się opłaca: następna premia za # punktu ({got} z {max} w tym sezonie)}}" },
-  "settings.reduceEffects": { "en": "Reduce screen shake and flashes", "text": "Ogranicz wstrząsy ekranu i błyski" }
+  "settings.reduceEffects": { "en": "Reduce screen shake and flashes", "text": "Ogranicz wstrząsy ekranu i błyski" },
+  "store.buyNamed": { "en": "Buy {name} for {price}", "text": "Kup {name} za {price}" },
+  "res.jadeOpenStore": { "en": "Jade: {n}. Open the Store", "text": "Jadeit: {n}. Otwórz sklep" }
 }

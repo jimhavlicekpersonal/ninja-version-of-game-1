@@ -159,12 +159,21 @@ export class EconomyUi {
       b.disabled = !pr.buyable || this.buying !== null;
       b.textContent = this.buying === id ? t('store.purchaseInProgress') : pr.label;
       b.setAttribute('aria-busy', this.buying === id ? 'true' : 'false');
+      this.nameBuyButton(b, id, pr.label);
     }
+  }
+
+  /** Beast Mode UX-06: screen readers hear the product with the price shown on the button (WCAG 2.5.3). */
+  private nameBuyButton(b: HTMLButtonElement, productId: string, priceLabel: string): void {
+    const name = productInfo(localizedData(this.c.data), productId)?.name;
+    if (name && this.buying !== productId) b.setAttribute('aria-label', t('store.buyNamed', { name, price: priceLabel }));
+    else b.removeAttribute('aria-label');
   }
 
   private buyButton(productId: string, cls: string, after?: () => void): HTMLElement {
     const pr = this.price(productId);
     const b = h('button', { class: `btn ${cls}`, type: 'button', 'data-product': productId }, this.buying === productId ? t('store.purchaseInProgress') : pr.label) as HTMLButtonElement;
+    this.nameBuyButton(b, productId, pr.label);
     b.disabled = !pr.buyable || this.buying !== null;
     this.liveBuyButtons.add(b);
     b.addEventListener('click', () => {

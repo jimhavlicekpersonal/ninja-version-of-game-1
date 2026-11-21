@@ -368,5 +368,7 @@
   "welcome.scrollEnded": { "en": "The Season Scroll ended, and the rewards you had not claimed were added:", "text": "Gombo la Msimu limeisha, na zawadi ambazo hukuwa umedai zimeongezwa:" },
   "pass.bonus.title": { "en": "Bonus", "text": "Ziada" },
   "pass.bonus.detail": { "en": "{left, plural, =0 {All {max} bonuses collected this season ({got} of {max})} one {Every task still pays: the next bonus in # point ({got} of {max} this season)} other {Every task still pays: the next bonus in # points ({got} of {max} this season)}}", "text": "{left, plural, =0 {Ziada zote {max} zimekusanywa msimu huu ({got} kati ya {max})} one {Kila kazi bado inalipa: ziada inayofuata baada ya pointi # ({got} kati ya {max} msimu huu)} other {Kila kazi bado inalipa: ziada inayofuata baada ya pointi # ({got} kati ya {max} msimu huu)}}" },
-  "settings.reduceEffects": { "en": "Reduce screen shake and flashes", "text": "Punguza mtikisiko wa skrini na mimweko" }
+  "settings.reduceEffects": { "en": "Reduce screen shake and flashes", "text": "Punguza mtikisiko wa skrini na mimweko" },
+  "store.buyNamed": { "en": "Buy {name} for {price}", "text": "Nunua {name} kwa {price}" },
+  "res.jadeOpenStore": { "en": "Jade: {n}. Open the Store", "text": "Jade: {n}. Fungua Duka" }
 }

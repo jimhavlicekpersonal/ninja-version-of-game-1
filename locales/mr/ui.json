@@ -368,5 +368,7 @@
   "welcome.scrollEnded": { "en": "The Season Scroll ended, and the rewards you had not claimed were added:", "text": "सीझन स्क्रोल संपला, आणि तुम्ही न घेतलेली बक्षिसे जोडली गेली:" },
   "pass.bonus.title": { "en": "Bonus", "text": "बोनस" },
   "pass.bonus.detail": { "en": "{left, plural, =0 {All {max} bonuses collected this season ({got} of {max})} one {Every task still pays: the next bonus in # point ({got} of {max} this season)} other {Every task still pays: the next bonus in # points ({got} of {max} this season)}}", "text": "{left, plural, =0 {या सीझनचे सर्व {max} बोनस गोळा झाले ({max} पैकी {got})} one {प्रत्येक कामाचे फळ मिळतेच: पुढचा बोनस # गुणावर (या सीझनमध्ये {max} पैकी {got})} other {प्रत्येक कामाचे फळ मिळतेच: पुढचा बोनस # गुणांवर (या सीझनमध्ये {max} पैकी {got})}}" },
-  "settings.reduceEffects": { "en": "Reduce screen shake and flashes", "text": "स्क्रीन हलणे आणि चमक कमी करा" }
+  "settings.reduceEffects": { "en": "Reduce screen shake and flashes", "text": "स्क्रीन हलणे आणि चमक कमी करा" },
+  "store.buyNamed": { "en": "Buy {name} for {price}", "text": "{name} {price} मध्ये खरेदी करा" },
+  "res.jadeOpenStore": { "en": "Jade: {n}. Open the Store", "text": "जेड: {n}. स्टोअर उघडा" }
 }

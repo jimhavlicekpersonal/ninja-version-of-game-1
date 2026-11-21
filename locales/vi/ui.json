@@ -368,5 +368,7 @@
   "welcome.scrollEnded": { "en": "The Season Scroll ended, and the rewards you had not claimed were added:", "text": "Cuộn Mùa Giải đã kết thúc, và các phần thưởng bạn chưa nhận đã được thêm vào:" },
   "pass.bonus.title": { "en": "Bonus", "text": "Thưởng thêm" },
   "pass.bonus.detail": { "en": "{left, plural, =0 {All {max} bonuses collected this season ({got} of {max})} one {Every task still pays: the next bonus in # point ({got} of {max} this season)} other {Every task still pays: the next bonus in # points ({got} of {max} this season)}}", "text": "{left, plural, =0 {Đã nhận đủ {max} phần thưởng thêm của mùa giải này ({got}/{max})} other {Mọi nhiệm vụ vẫn có thưởng: phần thưởng thêm tiếp theo sau # điểm (mùa giải này {got}/{max})}}" },
-  "settings.reduceEffects": { "en": "Reduce screen shake and flashes", "text": "Giảm rung màn hình và chớp sáng" }
+  "settings.reduceEffects": { "en": "Reduce screen shake and flashes", "text": "Giảm rung màn hình và chớp sáng" },
+  "store.buyNamed": { "en": "Buy {name} for {price}", "text": "Mua {name} với giá {price}" },
+  "res.jadeOpenStore": { "en": "Jade: {n}. Open the Store", "text": "Ngọc Bích: {n}. Mở Cửa hàng" }
 }

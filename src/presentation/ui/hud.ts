@@ -328,7 +328,8 @@ export class Hud {
       this.resEls.set(k, { amt, bar: fill, cap });
     }
     const moonAmt = h('span', { class: 'res-amt' });
-    const moonBtn = h('div', { class: 'res res-moonstones', title: i18nText("ui.jade_tap_for_the_store_92edb2dd88"), role: 'button' }, icon(icons.moonstones, 'res-icon'), h('div', { class: 'res-body' }, moonAmt), h('span', { class: 'res-plus' }, '+'));
+    // Beast Mode UX-06: a real button (keyboard and screen readers), named with the amount and what it opens.
+    const moonBtn = h('button', { class: 'res res-moonstones', type: 'button', 'data-id': 'jade', title: i18nText("ui.jade_tap_for_the_store_92edb2dd88") }, icon(icons.moonstones, 'res-icon'), h('div', { class: 'res-body', 'aria-hidden': 'true' }, moonAmt), h('span', { class: 'res-plus', 'aria-hidden': 'true' }, '+'));
     moonBtn.addEventListener('click', () => (this.c.state.resources.moonstones < 0 ? this.explainDebt('moonstones') : this.econ.openStore()));
     top.append(moonBtn);
     this.resEls.set('moonstones', { amt: moonAmt, bar: h('i'), cap: null });
@@ -553,6 +554,7 @@ export class Hud {
       const pill = el.amt.closest<HTMLElement>('.res');
       // A refunded purchase whose resources were already spent leaves a debt (a negative balance): say what it is.
       pill?.classList.toggle('debt', v < 0);
+      if (k === 'moonstones') pill?.setAttribute('aria-label', v < 0 ? t('res.debt', { amount: formatNumber(-v), resource: RES_LABEL[k] }) : t('res.jadeOpenStore', { n: formatNumber(v) }));
       if (v < 0) {
         el.amt.textContent = t('res.owed', { amount: formatNumber(-v) });
         pill?.setAttribute('title', t('res.debt', { amount: formatNumber(-v), resource: RES_LABEL[k] }));
@@ -2509,7 +2511,8 @@ export class Hud {
     const shown = i18nMessage(text);
     if (opts?.log !== false) this.recentToasts.unshift({ at: Date.now(), text: shown, kind });
     if (this.recentToasts.length > 20) this.recentToasts.length = 20;
-    const el = h('div', { class: `toast ${kind}` }, shown);
+    // Beast Mode UX-06: an error (a failed purchase among them) is announced at once.
+    const el = h('div', { class: `toast ${kind}`, ...(kind === 'error' ? { role: 'alert' } : {}) }, shown);
     let gone = false;
     const dismiss = () => {
       if (gone) return;

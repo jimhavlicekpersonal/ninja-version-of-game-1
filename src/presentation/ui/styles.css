@@ -730,8 +730,8 @@ details summary { cursor: pointer; font-weight: 800; margin: 8px 0 4px; }
 
 /* ---------- touch targets, links, reduced motion (worldwide audit R10, GLOBAL-015) ---------- */
 /* Small pills keep their look but get a hit area of about 44px. */
-.res[role='button'], .net-pill, .event-chip { position: relative; }
-.res[role='button']::after, .event-chip::after { content: ''; position: absolute; inset: -6px -3px; }
+.res-moonstones, .net-pill, .event-chip { position: relative; }
+.res-moonstones::after, .event-chip::after { content: ''; position: absolute; inset: -6px -3px; }
 .net-pill::after { content: ''; position: absolute; inset: -7px -3px; }
 .event-chip { min-height: 34px; }
 .icon-btn { width: 44px; height: 44px; }
@@ -1210,7 +1210,7 @@ html[dir="rtl"] .training .actions.army-filters select { padding: 6px 8px 6px 20
 .what-if-row .btn { min-width: 56px; }
 .what-if-btn { margin-top: 8px; }
 /* P6-12: the builders pill is a button; the garrison crew's free places sit beside the artisans' count. */
-button.res.res-builders { border: none; font: inherit; color: inherit; cursor: pointer; }
+button.res.res-builders, button.res.res-moonstones { border: none; font: inherit; color: inherit; cursor: pointer; }
 .res-builders .crew-badge { display: inline-flex; align-items: center; gap: 2px; margin-inline-start: 4px; font-weight: 800; font-size: 0.75rem; }
 .res-builders .crew-badge .icon { width: 14px; height: 14px; }
 /* P6-08: a resource gain pulses the pill once (no movement with reduced motion: the global rule ends it). */

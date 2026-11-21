@@ -368,5 +368,7 @@
   "welcome.scrollEnded": { "en": "The Season Scroll ended, and the rewards you had not claimed were added:", "text": "Mpịakọta Oge agwụla, a gbakwunyekwara ihe nrite ndị ị na-anaraghị:" },
   "pass.bonus.title": { "en": "Bonus", "text": "Ihe nrite mgbakwunye" },
   "pass.bonus.detail": { "en": "{left, plural, =0 {All {max} bonuses collected this season ({got} of {max})} one {Every task still pays: the next bonus in # point ({got} of {max} this season)} other {Every task still pays: the next bonus in # points ({got} of {max} this season)}}", "text": "{left, plural, =0 {Anakọtala ihe nrite mgbakwunye {max} niile n'oge a ({got} n'ime {max})} other {Ọrụ ọ bụla ka na-akwụ ụgwọ: ihe nrite mgbakwunye ọzọ fọdụrụ akara # ({got} n'ime {max} n'oge a)}}" },
-  "settings.reduceEffects": { "en": "Reduce screen shake and flashes", "text": "Belata ịma jijiji ihuenyo na ọkụ na-egbu maramara" }
+  "settings.reduceEffects": { "en": "Reduce screen shake and flashes", "text": "Belata ịma jijiji ihuenyo na ọkụ na-egbu maramara" },
+  "store.buyNamed": { "en": "Buy {name} for {price}", "text": "Zụta {name} maka {price}" },
+  "res.jadeOpenStore": { "en": "Jade: {n}. Open the Store", "text": "Jed: {n}. Mepee Ụlọ ahịa" }
 }
