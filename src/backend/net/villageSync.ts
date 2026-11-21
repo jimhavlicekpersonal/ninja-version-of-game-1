@@ -27,7 +27,7 @@
  * server hold it instead.
  */
 import { deserialize, serialize } from '../../gameplay/sim/save';
-import { economyHash, economyOf, PLAYER_COMMANDS, type Economy } from '../../gameplay/sim/serverEconomy';
+import { BATTLE_COMMANDS, economyHash, economyOf, PLAYER_COMMANDS, type Economy } from '../../gameplay/sim/serverEconomy';
 import type { GameData, VillageState } from '../../gameplay/sim/types';
 import { hallLevel, type Command } from '../../gameplay/sim/village';
 import { ServerError, type ServerPort } from './ports';
@@ -95,6 +95,17 @@ export const REFUSED_LOG_SIZE = 20;
 
 /** Most commands sent in one batch (the server's limit). */
 export const BATCH_SIZE = 200;
+
+/**
+ * Beast Mode SAV-06: the next batch to send. A battle command (a re-run battle, up to 192 KB) goes in a request of
+ * its own, so one large Trial never holds back the small actions around it on a slow link.
+ */
+export function nextBatch<T extends { command: { type: string } }>(queue: readonly T[]): T[] {
+  const head = queue.slice(0, BATCH_SIZE);
+  if (BATTLE_COMMANDS.has(head[0]?.command.type as never)) return head.slice(0, 1);
+  const battle = head.findIndex((q) => BATTLE_COMMANDS.has(q.command.type as never));
+  return battle < 0 ? head : head.slice(0, battle);
+}
 /** Send at once when this many are waiting (otherwise every 15 s). */
 export const FLUSH_AT = 20;
 
@@ -282,7 +293,7 @@ export class VillageSync {
     const port = this.port();
     if (!port) return;
     while (this.stored.queue.length) {
-      const batch = this.stored.queue.slice(0, BATCH_SIZE);
+      const batch = nextBatch(this.stored.queue);
       let r;
       try {
         r = await port.sendCommands({ stateHash: batch[batch.length - 1].hash, commands: batch.map(({ seq, t, command }) => ({ seq, t, command })), ...(this.stored.device ? { device: this.stored.device } : {}) });

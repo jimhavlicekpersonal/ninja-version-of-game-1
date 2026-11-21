@@ -160,6 +160,22 @@ export function normalizeServerUrl(raw: string): string {
   return s.replace(/\/+$/, '');
 }
 
+/** Beast Mode SAV-06: the slowest uplink a large request is given time for (EDGE / poor 3G), in bytes per second. */
+const MIN_UPLINK_BYTES_PER_S = 8_000;
+/** SAV-06: no request waits longer than this, however large. */
+const MAX_DEADLINE_MS = 120_000;
+
+/**
+ * Beast Mode SAV-06: the deadline for one exchange: the base timeout plus the time the body takes at
+ * MIN_UPLINK_BYTES_PER_S, capped at MAX_DEADLINE_MS. A 300 KB village import on a 10 KB/s link no longer times out
+ * every time; reads and small writes keep the base timeout.
+ */
+export function deadlineFor(timeoutMs: number, body: unknown): number {
+  if (body === undefined) return timeoutMs;
+  const bytes = JSON.stringify(body)?.length ?? 0;
+  return Math.min(MAX_DEADLINE_MS, Math.max(timeoutMs, timeoutMs + Math.ceil((bytes / MIN_UPLINK_BYTES_PER_S) * 1000)));
+}
+
 export class HttpServerAdapter implements ServerPort {
   readonly label: string;
   private readonly tokens: TokenStore;
@@ -214,12 +230,13 @@ export class HttpServerAdapter implements ServerPort {
   private async once<T>(method: string, path: string, body?: unknown, token = this.tokens.get()): Promise<T> {
     const ctrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
     let timer: ReturnType<typeof setTimeout> | undefined;
+    const ms = deadlineFor(this.timeoutMs, body);
     // Rejects at the deadline even if a fetch or body stream ignores the abort signal.
     const deadline = new Promise<never>((_, reject) => {
       timer = setTimeout(() => {
         ctrl?.abort();
         reject(new ServerError(0, 'network', TOO_SLOW));
-      }, this.timeoutMs);
+      }, ms);
     });
     try {
       return await Promise.race([this.exchange<T>(method, path, body, ctrl, token), deadline]);
