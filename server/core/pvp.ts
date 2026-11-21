@@ -13,7 +13,7 @@ import type { BaseLayout, BattleResult } from '../../src/gameplay/sim/battle/typ
 import { buildingDef } from '../../src/gameplay/sim/data';
 import { exhaustionFactor, scaleBaseLoot, shieldHoursFor } from '../../src/gameplay/sim/defense';
 import { shieldAfterAttack } from '../../src/gameplay/sim/shield';
-import { applyLootPenalty, hallWindow, powerSlackAt, recentRaidArmies } from '../../src/gameplay/sim/matchmaking';
+import { applyLootPenalty, attackerStrength, hallWindow, powerSlackAt, recentRaidArmies } from '../../src/gameplay/sim/matchmaking';
 import { defenseHonorLoss, lossTrophies, winTrophies } from '../../src/gameplay/sim/ranks';
 import { stakeMet, validStake } from '../../src/gameplay/sim/carry';
 import { deserialize } from '../../src/gameplay/sim/save';
@@ -279,6 +279,21 @@ export function pairCapped(result: BattleResult, taken: Cost, cap: number): Batt
   return { ...result, loot };
 }
 
+/**
+ * Beast Mode 2026-11-21 GT-12: the attacker's power in the rating's expected score. A village the server holds says
+ * what its army's research is worth (`attackerStrength`, Keep units, capped at its Keep), so a Keep rushed with Jade
+ * and level-1 research is not rated as a full-power attacker; a device village falls back to its Keep.
+ */
+export async function attackPower(repo: Pick<Repo, 'getVillage'>, p: Player, data: GameData): Promise<number> {
+  const row = await repo.getVillage(p.id);
+  if (!row) return p.hallLevel;
+  try {
+    return Math.max(1, Math.min(p.hallLevel, attackerStrength(deserialize(row.file, data), data)));
+  } catch {
+    return p.hallLevel;
+  }
+}
+
 export async function uploadBase(ctx: ServerContext, me: Player, req: UploadBaseRequest, client?: ClientInfo): Promise<void> {
   await requireHeldVillage(ctx, me.id); // Beast Mode SEC-01
   // A village the server holds is the base (its real layout and loot); the upload is ignored.
@@ -395,7 +410,7 @@ export async function match(ctx: ServerContext, me: Player, client?: ClientInfo)
     // (ties from a random start); the first one whose lock we get is ours (two attackers can't both get one).
     const start = free.length ? Math.floor(ctx.random() * free.length) : 0;
     const rotated = [...free.slice(start), ...free.slice(0, start)];
-    const rated = orderByRating(ratingsOf(me, t, ctx).attack, me.hallLevel, rotated.map((p) => ({ item: p, base: ratingsOf(p, t, ctx).base, power: p.hallLevel })), t, data.ranks.rating);
+    const rated = orderByRating(ratingsOf(me, t, ctx).attack, kept ? Math.max(1, Math.min(me.hallLevel, attackerStrength(deserialize(kept.file, data), data))) : me.hallLevel, rotated.map((p) => ({ item: p, base: ratingsOf(p, t, ctx).base, power: p.hallLevel })), t, data.ranks.rating);
     const order = await byExposure(ctx, rated, t);
     for (const p of order) {
       if (await locks.acquire(p.id, me.id, TICKET_LOCK_MS)) {
@@ -644,7 +659,7 @@ export async function forfeitTicket(ctx: ServerContext, ticket: Ticket): Promise
     const patch: { trophies: number; ratings?: { attack: Rating; base: Rating } } = { trophies };
     const defender = ticket.defenderId ? await tx.getPlayer(ticket.defenderId) : null;
     if (defender) {
-      const rated = rateBattle(ratingsOf(me, t, ctx).attack, ratingsOf(defender, t, ctx).base, me.hallLevel, ticket.base.hallLevel ?? defender.hallLevel, 0, 0, t, ctx.data.ranks.rating);
+      const rated = rateBattle(ratingsOf(me, t, ctx).attack, ratingsOf(defender, t, ctx).base, await attackPower(tx, me, ctx.data), ticket.base.hallLevel ?? defender.hallLevel, 0, 0, t, ctx.data.ranks.rating);
       patch.ratings = { attack: rated.attack, base: ratingsOf(me, t, ctx).base };
     }
     await tx.updatePlayer(me.id, patch);
@@ -845,7 +860,7 @@ export async function attack(ctx: ServerContext, me: Player, sub: BattleReport):
     if (defender) {
       defPatch.honorLoss = { day, lost: lostToday + Math.max(0, defLoss) };
       // Step 28: the attacker's Attack Rating and the defender's Base Rating move; bots never move a rating.
-      const rated = rateBattle(ratingsOf(attacker, t, ctx).attack, ratingsOf(defender, t, ctx).base, attacker.hallLevel, ticket.base.hallLevel ?? defender.hallLevel, result.stars, result.destruction, t, rdef);
+      const rated = rateBattle(ratingsOf(attacker, t, ctx).attack, ratingsOf(defender, t, ctx).base, await attackPower(tx, attacker, data), ticket.base.hallLevel ?? defender.hallLevel, result.stars, result.destruction, t, rdef);
       mePatch.ratings = { attack: rated.attack, base: ratingsOf(attacker, t, ctx).base };
       defPatch.ratings = { attack: ratingsOf(defender, t, ctx).attack, base: rated.base };
     }
