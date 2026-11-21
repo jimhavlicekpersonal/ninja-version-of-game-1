@@ -134,6 +134,9 @@ jobs:
           java-version: 21
       - if: steps.key.outputs.ready == 'true'
         run: npm ci
+      # Beast Mode OPS-01: a save, rules, protocol or migration change needs a greater version.
+      - if: steps.key.outputs.ready == 'true'
+        run: node tools/release/check-version.mjs
       - name: Server first (roadmap step 74)
         if: steps.key.outputs.ready == 'true'
         run: node tools/release/check-server-rules.mjs

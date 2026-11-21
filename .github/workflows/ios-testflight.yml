@@ -25,6 +25,8 @@ jobs:
           node-version-file: .node-version
           cache: npm
       - run: npm ci
+      # Beast Mode OPS-01: a save, rules, protocol or migration change needs a greater version.
+      - run: node tools/release/check-version.mjs
       # PUB-05 (P7-02): the bundle id is the owner's choice; refuse the legacy one unless allowed on purpose.
       # PUB-04 (P7-01): a store build needs the publisher facts, dated terms and the app id; the preflight lists
       # everything still open and stops here on the blocking ones (docs/store/OWNER_CHECKLIST.md).

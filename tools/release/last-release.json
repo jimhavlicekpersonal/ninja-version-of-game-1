@@ -1,0 +1,9 @@
+{
+  "$comment": "Beast Mode OPS-01: what the last store release shipped. Updated by hand when the stores accept a build (docs/store/RELEASE.md). Until the first store release this is the baseline recorded on 2026-11-21: tools/release/check-version.mjs fails when a save, battle-rules, protocol or migration change lands without a greater package.json version.",
+  "version": "0.1.0",
+  "save": 24,
+  "rules": 8,
+  "protocol": 11,
+  "migrations": 44,
+  "released": false
+}

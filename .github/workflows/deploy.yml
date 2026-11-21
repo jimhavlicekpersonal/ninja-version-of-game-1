@@ -25,6 +25,8 @@ jobs:
           node-version-file: .node-version
           cache: npm
       - run: npm ci
+      # Beast Mode OPS-01: a save, rules, protocol or migration change needs a greater version.
+      - run: node tools/release/check-version.mjs
       - run: npm run lint
       # Backend A27: known high/critical advisories in what ships (the game and the server image). A warning
       # for now, so an advisory without a fix yet does not block a release; the job log shows it.
