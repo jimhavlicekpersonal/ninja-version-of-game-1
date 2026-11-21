@@ -150,9 +150,9 @@ export class AppleVerifier {
     const now = this.o.now();
     const signed = Number(payload.signedDate);
     const at = Number.isFinite(signed) && signed > 0 && signed <= now + 300_000 && signed >= now - SIGNED_DATE_MAX_AGE_MS ? signed : now;
-    for (const c of [leaf, inter, root]) {
-      if (Date.parse(c.validFrom) > at || Date.parse(c.validTo) < at) throw new PurchaseError('The App Store receipt certificate has expired.');
-    }
+    const validAt = (t: number) => [leaf, inter, root].every((c) => Date.parse(c.validFrom) <= t && Date.parse(c.validTo) >= t);
+    // Valid now is still enough (as before); valid when signed covers a leaf that has expired since.
+    if (!validAt(now) && !validAt(at)) throw new PurchaseError('The App Store receipt certificate has expired.');
     if (!root.verify(root.publicKey) || !inter.verify(root.publicKey) || !leaf.verify(inter.publicKey)) throw new PurchaseError('The App Store receipt is not signed by Apple.');
     // Security audit 2026-11-20 (P3): Apple's marker OIDs as extension ids (not anywhere in the bytes: an RSA modulus or
     // another extension's value could carry them), each certificate issued by the next, a leaf that is no CA, and a leaf
