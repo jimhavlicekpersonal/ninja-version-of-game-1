@@ -260,6 +260,7 @@ export function policyFromEnv(env: Record<string, string | undefined>): Partial<
     if (!m) throw new Error('UNDER13_MODE must be offline, limited or families.');
     out.under13Mode = m;
   }
+  if (env.LATE_REPORT_RULE !== undefined) out.lateReportRule = env.LATE_REPORT_RULE === '1';
   if (env.UPLOAD_ACCOUNT_AGE !== undefined && env.UPLOAD_ACCOUNT_AGE !== '') out.uploadAccountAge = env.UPLOAD_ACCOUNT_AGE !== '0';
   if (env.REQUIRE_SERVER_VILLAGE !== undefined) out.requireServerVillage = env.REQUIRE_SERVER_VILLAGE === '1';
   if (env.EU_JADE_VALUE !== undefined) out.euJadeValue = env.EU_JADE_VALUE === '1';

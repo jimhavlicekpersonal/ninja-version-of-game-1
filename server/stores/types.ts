@@ -62,11 +62,16 @@ export interface Player {
   /** The community rules version this account accepted, and when (migration 0028; 0: never). */
   rulesVersion?: number;
   rulesAcceptedAt?: number;
+  /** Beast Mode SEC-04: battle reports sent after REPORT_GRACE_MS, and the last one's time (migration 0043; staff see them). */
+  lateReports?: number;
+  lateReportAt?: number;
+  /** SEC-04: start of the current online session (requests no more than ONLINE_GAP_MS apart; migration 0043). */
+  onlineSince?: number;
   /** Runtime only, never stored: the token hash this request came with (set by `authenticate`). */
   session?: string;
 }
 
-export type PlayerPatch = Partial<Pick<Player, 'name' | 'trophies' | 'hallLevel' | 'shieldUntil' | 'base' | 'groveId' | 'updatedAt' | 'lastSeenAt' | 'mutedUntil' | 'muteReason' | 'ratings' | 'honorLoss' | 'bannedUntil' | 'banReason' | 'nameKey' | 'previousName' | 'nameChangedAt' | 'freeRenames' | 'findable' | 'showOnline' | 'friendCode' | 'staff' | 'duelBase' | 'squadLeftAt' | 'rulesVersion' | 'rulesAcceptedAt'>>;
+export type PlayerPatch = Partial<Pick<Player, 'name' | 'trophies' | 'hallLevel' | 'shieldUntil' | 'base' | 'groveId' | 'updatedAt' | 'lastSeenAt' | 'mutedUntil' | 'muteReason' | 'ratings' | 'honorLoss' | 'bannedUntil' | 'banReason' | 'nameKey' | 'previousName' | 'nameChangedAt' | 'freeRenames' | 'findable' | 'showOnline' | 'friendCode' | 'staff' | 'duelBase' | 'squadLeftAt' | 'rulesVersion' | 'rulesAcceptedAt' | 'lateReports' | 'lateReportAt' | 'onlineSince'>>;
 
 /** Two players asked to change to the same name at once: the second one gets this (the store's unique key said no). */
 export class NameTakenError extends Error {

@@ -53,6 +53,9 @@ export const toPlayer = (r: Row): Player => ({
   squadLeftAt: num(r.squad_left_at),
   rulesVersion: num(r.rules_version),
   rulesAcceptedAt: num(r.rules_accepted_at),
+  lateReports: num(r.late_reports),
+  lateReportAt: num(r.late_report_at),
+  onlineSince: num(r.online_since),
 });
 
 /** Postgres said a unique key (name or friend code) is already used. */

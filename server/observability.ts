@@ -62,6 +62,9 @@ export const METRIC_HELP: Record<string, string> = {
   tk_redis_errors_total: 'Redis calls that failed and degraded (rate limits let the request through, leaderboard read the database, locks fell back to tickets), by use.',
   tk_redis_up: 'Whether this instance can reach Redis right now (1) or is failing fast after an outage (0).',
   tk_http_compressed_total: 'Responses sent compressed, by encoding (gzip, br).',
+  tk_report_latency_seconds: 'Seconds from Attack (or the ticket, for kinds whose seed comes with it) to its battle report, by kind (Beast Mode SEC-04).',
+  tk_reports_total: 'Battle reports taken for settlement, by kind (Beast Mode SEC-04; the denominator of LateReportsRising).',
+  tk_late_reports_total: 'Battle reports sent later than REPORT_GRACE_MS (8 min), by kind (Beast Mode SEC-04).',
   tk_metrics_series_dropped_total: 'Observations counted into a metric\'s overflow="1" series because it already had MAX_SERIES_PER_METRIC label sets (Beast Mode SEC-02; alert MetricsSeriesOverflow).',
 };
 

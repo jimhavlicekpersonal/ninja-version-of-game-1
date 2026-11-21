@@ -12,6 +12,7 @@ import m0039 from './0039_village_parts.sql?raw';
 import m0040 from './0040_compliance.sql?raw';
 import m0041 from './0041_verification_fixes.sql?raw';
 import m0042 from './0042_stats_commit_order.sql?raw';
+import m0043 from './0043_late_reports.sql?raw';
 /**
  * Every migration, bundled into the server build (no files are read at run
  * time). Add each new file here: an explicit list, because a glob import would
@@ -91,4 +92,5 @@ export const migrations = loadMigrations({
   '0040_compliance.sql': m0040,
   '0041_verification_fixes.sql': m0041,
   '0042_stats_commit_order.sql': m0042,
+  '0043_late_reports.sql': m0043,
 });

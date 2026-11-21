@@ -1140,15 +1140,19 @@ export class Connection {
         this.setStatus('online');
         void this.refreshNotices();
       } else {
+        // Beast Mode SEC-04: battle reports first, before any other call of this sync (the server may treat a
+        // report held while online as a forfeit).
+        await this.flush();
         this.player = await port.me(); // Grove membership may have changed
         // A move refused with "not yet" (ledger audit A2) is due again after a day, even in a long session.
         await this.autoMoveVillage();
       }
+      // SEC-04: after reconnecting, the outbox goes before defenses, donations and chests.
+      await this.flush();
       await this.pullDefenses(port);
       await this.pullDonations(port);
       await this.claimChests(port);
       await this.claimGangChests(port);
-      await this.flush();
       this.player = await port.me();
       g.dispatch({ type: 'syncRank', trophies: this.player.trophies, shieldUntil: this.player.shieldUntil });
       await this.maybeRotate(port);

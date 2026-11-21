@@ -90,6 +90,9 @@ export class PgPlayers extends PgBase implements PlayerStore {
       squadLeftAt: 'squad_left_at',
       rulesVersion: 'rules_version',
       rulesAcceptedAt: 'rules_accepted_at',
+      lateReports: 'late_reports',
+      lateReportAt: 'late_report_at',
+      onlineSince: 'online_since',
     };
     const sets: string[] = [];
     const vals: unknown[] = [];

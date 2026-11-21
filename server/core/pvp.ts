@@ -490,7 +490,35 @@ async function takeTicket(ctx: ServerContext, me: Player, id: string | undefined
   if ((ticket.failures ?? 0) >= MAX_TICKET_FAILURES) throw fail(409, 'conflict', 'battle.already_reported');
   const deadline = ticket.kind === 'pvp' ? ticket.expiresAt + LATE_REPORT_MS : ticket.expiresAt;
   if (ctx.now() > deadline) throw fail(410, 'expired', 'pvp.too_late');
+  await noteReportLatency(ctx, me, ticket);
   return { ticket };
+}
+
+/**
+ * Beast Mode SEC-04: every report's latency (from Attack, or from the ticket for kinds whose seed comes with it), a
+ * per-player count of late ones for staff, and, behind LATE_REPORT_RULE, the rule: a raid reported after the grace
+ * by a player who made another request after the grace (online, holding the report: time to search deployment
+ * plans with the shipped simulator) is a forfeit. A phone offline for days (R02) makes no request meanwhile, so
+ * its report still settles.
+ */
+async function noteReportLatency(ctx: ServerContext, me: Player, ticket: Ticket): Promise<void> {
+  const t = ctx.now();
+  const from = ticket.startedAt ?? ticket.createdAt;
+  const latency = Math.max(0, t - from);
+  ctx.metrics.observe('tk_report_latency_seconds', latency / 1000, { kind: ticket.kind });
+  ctx.metrics.count('tk_reports_total', { kind: ticket.kind });
+  if (latency <= REPORT_GRACE_MS) return;
+  ctx.metrics.count('tk_late_reports_total', { kind: ticket.kind });
+  await ctx.repo.updatePlayer(me.id, { lateReports: (me.lateReports ?? 0) + 1, lateReportAt: t });
+  // Online the whole time since before the grace ended (requests no more than ONLINE_GAP_MS apart): an honest game
+  // sends its report within seconds of Attack, or at once after coming back, which starts a new session.
+  const heldWhileOnline = ticket.kind === 'pvp' && ticket.startedAt !== undefined && (me.onlineSince ?? Infinity) <= ticket.startedAt + REPORT_GRACE_MS;
+  if (ctx.policy.lateReportRule && heldWhileOnline) {
+    ctx.metrics.count('tk_refused_total', { reason: 'late_report_held' });
+    await forfeitTicket(ctx, ticket);
+    if (ticket.defenderId) await ctx.locks.release(ticket.defenderId, me.id);
+    throw fail(410, 'expired', 'pvp.forfeit');
+  }
 }
 
 export { takeTicket };

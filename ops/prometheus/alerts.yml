@@ -111,3 +111,11 @@ groups:
         labels: { severity: warn }
         annotations:
           summary: 'A metric is counting into its overflow="1" series: some label takes values it should not (see the metric label of tk_metrics_series_dropped_total).'
+
+      # Beast Mode SEC-04: battle reports held back (more than 2% sent later than 8 minutes after Attack, for an hour).
+      - alert: LateReportsRising
+        expr: sum(increase(tk_late_reports_total{kind="pvp"}[1h])) / clamp_min(sum(increase(tk_reports_total{kind="pvp"}[1h])), 1) > 0.02
+        for: 1h
+        labels: { severity: warn }
+        annotations:
+          summary: 'More than 2% of raid reports arrive later than 8 minutes after Attack: players may be holding reports to search deployment plans (see players.late_reports in the staff tool; LATE_REPORT_RULE).'

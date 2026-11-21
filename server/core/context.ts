@@ -57,6 +57,12 @@ export interface ServerPolicy {
    * Keep 15 attacker); production warns while it is off.
    */
   uploadAccountAge: boolean;
+  /**
+   * Beast Mode SEC-04: LATE_REPORT_RULE=1. A raid report sent later than REPORT_GRACE_MS after Attack by a player who
+   * was online meanwhile (another request after the grace) settles as a forfeit: an honest game sends its outbox
+   * first on every reconnection. Off by default until a game build with that order is out.
+   */
+  lateReportRule: boolean;
 }
 
 export const DEFAULT_POLICY: ServerPolicy = {
@@ -72,6 +78,7 @@ export const DEFAULT_POLICY: ServerPolicy = {
   significantUpdateBuild: null,
   requireServerVillage: false,
   uploadAccountAge: true,
+  lateReportRule: false,
 };
 
 export interface ServerContext {

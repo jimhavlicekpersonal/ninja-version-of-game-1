@@ -72,6 +72,9 @@ export async function register(ctx: ServerContext, name: unknown): Promise<Regis
   return { playerId: player.id, token };
 }
 
+/** Beast Mode SEC-04: requests further apart than this start a new online session (`Player.onlineSince`). */
+export const ONLINE_GAP_MS = 5 * MIN;
+
 /** Find the player behind a bearer token, and note that they were seen. */
 export async function authenticate(ctx: ServerContext, token: string | undefined): Promise<Player> {
   const hash = token ? await ctx.hash(token) : '';
@@ -89,7 +92,10 @@ export async function authenticate(ctx: ServerContext, token: string | undefined
     p.bannedUntil = 0;
   }
   if (t - p.lastSeenAt > MIN) {
-    await ctx.repo.updatePlayer(p.id, { lastSeenAt: t });
+    // Beast Mode SEC-04: a gap longer than ONLINE_GAP_MS starts a new online session.
+    const onlineSince = t - p.lastSeenAt > ONLINE_GAP_MS || !p.onlineSince ? t : p.onlineSince;
+    await ctx.repo.updatePlayer(p.id, { lastSeenAt: t, onlineSince });
+    p.onlineSince = onlineSince;
     // Device tokens unused for a long time are pruned (links.ts): note this one's use.
     if (hash !== p.tokenHash) await ctx.repo.touchToken(hash, t);
     p.lastSeenAt = t;
