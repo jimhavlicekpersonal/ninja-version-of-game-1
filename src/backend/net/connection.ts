@@ -111,6 +111,8 @@ export interface OutboxItem {
 }
 
 const SERVER_KEY = 'tk.net.server';
+/** Beast Mode SAV-07: network failures in a row after which the 15 s action flush pauses until a sync gets through. */
+const BREAKER_FAILURES = 3;
 const NAME_KEY = 'tk.net.name';
 /** Backend A16: how often this device swaps its token for a new one (feature `session-control`). */
 export const ROTATE_EVERY_MS = 30 * 86_400_000;
@@ -1029,10 +1031,13 @@ export class Connection {
   start(): void {
     if (!this.port) return;
     void this.sync();
-    this.timers.push(setInterval(() => void this.sync(), 60_000));
-    this.timers.push(setInterval(() => void this.uploadBase(), 120_000));
+    // Beast Mode SAV-07 / STB-09: nothing on a timer while the page is hidden (the going-away flush still runs, and
+    // coming back syncs at once); the minute sync waits out a retry backoff instead of overriding it; the action
+    // flush stops after repeated network failures until a sync gets through again.
+    this.timers.push(setInterval(() => !this.hidden() && !this.retryTimer && void this.sync(), 60_000));
+    this.timers.push(setInterval(() => !this.hidden() && this.online && void this.uploadBase(), 120_000));
     // A server-held village: send waiting actions every 15 s.
-    this.timers.push(setInterval(() => void this.village?.flush().catch((e) => this.handleError(e)), 15_000));
+    this.timers.push(setInterval(() => !this.hidden() && this.failures < BREAKER_FAILURES && void this.village?.flush().catch((e) => this.handleError(e)), 15_000));
     // Client re-audit item 13: follow the device's network and the app coming back, instead of
     // saying "Online" for a minute after the network went away or "Connecting…" after it returned.
     if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') {
@@ -1056,6 +1061,14 @@ export class Connection {
 
   private unlisten: (() => void) | null = null;
   private lastNudge = 0;
+  /** SAV-07: network failures in a row (the breaker opens at BREAKER_FAILURES; a sync that gets through closes it). */
+  private failures = 0;
+  /** SAV-07: the last base uploaded, so an unchanged one is not sent again every 2 minutes. */
+  private lastBaseJson = '';
+
+  private hidden(): boolean {
+    return typeof document !== 'undefined' && document.visibilityState === 'hidden';
+  }
 
   /** Sync now (the network came back, the app came to the front), at most every 5 s, skipping any retry wait. */
   private syncSoon(): void {
@@ -1137,6 +1150,7 @@ export class Connection {
         g.dispatch({ type: 'netBind', playerId: this.player!.id });
         // The real Grove replaces the bot Grove while playing online.
         if (g.state.grove.joined) g.dispatch({ type: 'leaveLocalGrove' });
+        this.lastBaseJson = ''; // a (re)connection always sends the base once
         await this.uploadBase();
         // Learn whether the server keeps this village, and reconcile with it.
         if (this.server.features.includes('server-economy')) await this.village?.connect();
@@ -1161,6 +1175,7 @@ export class Connection {
       this.player = await port.me();
       g.dispatch({ type: 'syncRank', trophies: this.player.trophies, shieldUntil: this.player.shieldUntil });
       await this.maybeRotate(port);
+      this.failures = 0;
       this.emit();
     } catch (e) {
       this.handleError(e);
@@ -1194,11 +1209,14 @@ export class Connection {
       return;
     }
     this.setStatus('offline', msg);
+    this.failures++;
     if (!this.retryTimer && this.timers.length) {
+      // SAV-07: full jitter (half to one and a half times the delay), so retries after an outage spread out.
       this.retryTimer = setTimeout(() => {
         this.retryTimer = null;
+        if (this.hidden()) return; // coming back to the page syncs at once
         void this.sync();
-      }, this.retryDelay);
+      }, Math.round(this.retryDelay * (0.5 + Math.random())));
       this.retryDelay = Math.min(this.retryDelay * 2, 5 * 60_000);
     }
   }
@@ -1238,7 +1256,11 @@ export class Connection {
     if (!this.port || !this.player || this.serverVillage) return;
     const g = this.o.game;
     try {
-      await this.port.uploadBase({ base: villageToBase(g.state, g.now(), g.data, this.player.name), name: this.player.name });
+      const base = villageToBase(g.state, g.now(), g.data, this.player.name);
+      const json = JSON.stringify(base);
+      if (json === this.lastBaseJson) return;
+      await this.port.uploadBase({ base, name: this.player.name });
+      this.lastBaseJson = json;
     } catch (e) {
       this.log('Online play: base upload failed', e);
     }

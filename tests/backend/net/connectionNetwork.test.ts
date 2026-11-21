@@ -79,3 +79,71 @@ describe('connection and the device network', () => {
     expect(spy).toHaveBeenCalledTimes(1); // stopped: no more listeners
   });
 });
+
+describe('Beast Mode SAV-07: backoff, breaker and background pause', () => {
+  it('with the server down, hello is asked far less than once a minute over 10 minutes', async () => {
+    vi.useFakeTimers();
+    try {
+      browserEvents();
+      const w = world();
+      const port = new InProcessServerAdapter(w.core);
+      let hellos = 0;
+      port.hello = async () => {
+        hellos++;
+        throw new Error('network down');
+      };
+      const conn = new Connection({ game: game(w), builtInUrl: 'test.server', kv: memoryKv(), makePort: () => port, log: () => undefined });
+      conn.start();
+      for (let s = 0; s < 600; s++) await vi.advanceTimersByTimeAsync(1000);
+      expect(hellos).toBeLessThan(8);
+      conn.stop();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('a hidden page makes no request on the timers', async () => {
+    vi.useFakeTimers();
+    try {
+      const { doc } = browserEvents();
+      const w = world();
+      const port = new InProcessServerAdapter(w.core);
+      const conn = new Connection({ game: game(w), builtInUrl: 'test.server', kv: memoryKv(), makePort: () => port, log: () => undefined });
+      conn.start();
+      await vi.advanceTimersByTimeAsync(2000);
+      expect(conn.status).toBe('online');
+      doc.visibilityState = 'hidden';
+      let calls = 0;
+      for (const name of ['hello', 'me', 'uploadBase', 'defenses', 'sendCommands'] as const) {
+        const real = (port as unknown as Record<string, (...a: unknown[]) => unknown>)[name].bind(port);
+        (port as unknown as Record<string, (...a: unknown[]) => unknown>)[name] = (...a: unknown[]) => {
+          calls++;
+          return real(...a);
+        };
+      }
+      for (let s = 0; s < 300; s++) await vi.advanceTimersByTimeAsync(1000);
+      expect(calls).toBe(0);
+      conn.stop();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('an unchanged base is uploaded once', async () => {
+    browserEvents();
+    const w = world();
+    const port = new InProcessServerAdapter(w.core);
+    let uploads = 0;
+    const real = port.uploadBase.bind(port);
+    port.uploadBase = async (req) => {
+      uploads++;
+      return real(req);
+    };
+    const conn = new Connection({ game: game(w), builtInUrl: 'test.server', kv: memoryKv(), makePort: () => port, log: () => undefined });
+    await conn.sync();
+    const after = uploads;
+    await conn.uploadBase();
+    await conn.uploadBase();
+    expect(uploads).toBe(after);
+  });
+});
