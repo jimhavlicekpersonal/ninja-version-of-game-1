@@ -281,6 +281,17 @@ for (const [label, makeRepo] of repoFactories) {
       await w.core.appleNotification({ signedPayload: jws({ notificationType: 'RESCIND_CONSENT', notificationUUID: 'c2', data: { bundleId: BUNDLE, environment: 'Sandbox' } }) });
     });
 
+    it('ECO-06: a Google promo purchase counts 0 against the under-18 cap', async () => {
+      const { w, g } = await setup();
+      const kid = await w.player('Kid');
+      const intent = await kid.purchaseIntent({ store: 'google', productId: 'moonstones_5', under18: true });
+      g.tokens.set('token-promo-eco06', { purchaseState: 0, consumptionState: 0, acknowledgementState: 0, orderId: 'GPA.PROMO', purchaseTimeMillis: String(w.now()), obfuscatedExternalAccountId: intent.accountToken, purchaseType: 1 });
+      await kid.redeem({ store: 'google', storeProductId: storeProductId(data, 'moonstones_5'), receipt: 'token-promo-eco06' });
+      expect((await kid.purchaseHistory()).purchases).toHaveLength(1);
+      // The $49.99 promo used none of the $50 cap: another $49.99 still fits.
+      await expect(kid.purchaseIntent({ store: 'google', productId: 'moonstones_5', under18: true })).resolves.toBeTruthy();
+    });
+
     it('checks and consumes Google Play purchases, and revokes voided ones (step 36)', async () => {
       const { w, g } = await setup();
       const ann = await adult(w);

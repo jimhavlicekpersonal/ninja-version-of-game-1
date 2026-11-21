@@ -265,6 +265,8 @@ interface Checked {
    * device still sees it until its own save has landed and it consumes it (remnant audit 2026-11-06).
    */
   finish: ((held: boolean) => Promise<void>) | null;
+  /** Units bought (Google multi-quantity; 1 elsewhere). */
+  quantity: number;
   /** Google: the token was consumed, which only the device does once its own save holds the purchase (ECO-02). */
   consumed: boolean;
 }
@@ -274,7 +276,7 @@ async function check(ctx: ServerContext, store: PurchaseStore, storeProductId: s
     if (store === 'apple') {
       const t = ctx.payments.apple!.transaction(receipt);
       if (t.revocationDate !== null) throw new PurchaseError('This purchase was refunded.');
-      return { store, transactionId: t.transactionId, storeProductId: t.productId, environment: t.environment, accountToken: t.appAccountToken, ref: t.originalTransactionId, storefront: t.storefront, currency: t.currency, priceMicros: t.priceMicros, finish: null, consumed: false };
+      return { store, transactionId: t.transactionId, storeProductId: t.productId, environment: t.environment, accountToken: t.appAccountToken, ref: t.originalTransactionId, storefront: t.storefront, currency: t.currency, priceMicros: t.priceMicros, finish: null, consumed: false, quantity: 1 };
     }
     const google = ctx.payments.google!;
     const p = await google.purchase(storeProductId, receipt);
@@ -289,6 +291,7 @@ async function check(ctx: ServerContext, store: PurchaseStore, storeProductId: s
       currency: null,
       priceMicros: null,
       consumed: Boolean(p.consumed),
+      quantity: p.quantity,
       finish: p.consumed ? null : (held) => (held ? google.consume(p.productId, p.purchaseToken) : p.acknowledged ? Promise.resolve() : google.acknowledge(p.productId, p.purchaseToken)),
     };
   } catch (e) {
@@ -380,7 +383,12 @@ export async function redeem(ctx: ServerContext, me: Player, body: { store?: unk
     return { ...out, heldOnServer: held };
   }
   const now = ctx.now();
-  const counted = countedCents(ctx, product.usd, c.currency, c.priceMicros);
+  // Beast Mode ECO-06: a promo code paid nothing, so it neither uses up an under-18 cap nor counts as revenue.
+  const counted = c.environment === 'Promo' ? 0 : countedCents(ctx, product.usd, c.currency, c.priceMicros);
+  if (c.quantity > 1) {
+    ctx.metrics.count('tk_refused_total', { reason: 'multi_quantity' });
+    ctx.log('warn', 'Google Play purchase with quantity > 1: one unit delivered (turn multi-quantity off in Play Console)', { store, transactionId: c.transactionId, quantity: c.quantity });
+  }
   // The intent this receipt names (its device: backend A5/A24).
   const named = c.accountToken ? await ctx.repo.getIntent(c.accountToken) : null;
   const device = named && named.playerId === me.id ? (named.device ?? null) : null;
@@ -388,7 +396,7 @@ export async function redeem(ctx: ServerContext, me: Player, body: { store?: unk
   // (App Review needs purchases to work; public TestFlight must not mint Jade for the live ladder).
   // Backend A24: per buyer (every free account on the same devices together), and per day for the whole server.
   const testCap = ctx.payments.testCreditCapUsd;
-  if (testCap !== undefined && c.environment !== 'Production') {
+  if (testCap !== undefined && c.environment !== 'Production' && c.environment !== 'Promo') {
     const testSpent = (await ctx.repo.linkedPurchases(me.id, await devicesOf(ctx, me, device), 0)).filter((p) => p.environment !== 'Production').reduce((sum, p) => sum + p.cents, 0);
     const daily = ctx.policy.sandboxDailyCapUsd;
     const today = daily !== null ? await ctx.repo.testCentsSince(now - (now % (24 * HOUR))) : 0;

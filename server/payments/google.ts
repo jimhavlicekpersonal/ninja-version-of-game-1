@@ -59,8 +59,10 @@ export interface GooglePurchase {
   purchaseToken: string;
   productId: string;
   purchaseTime: number;
-  /** 'Production', or 'Test' for license testers. */
+  /** 'Production', 'Test' for license testers, or 'Promo' for a promo code (Beast Mode ECO-06: nothing was paid). */
   environment: string;
+  /** Units bought (Play multi-quantity; the game delivers one, so it must stay off in Play Console). */
+  quantity: number;
   /** What the game passed as `obfuscatedAccountId`: our purchase intent. */
   accountToken: string | null;
   consumed: boolean;
@@ -136,7 +138,8 @@ export class GoogleVerifier {
       purchaseToken: token,
       productId,
       purchaseTime: Number(p.purchaseTimeMillis) || 0,
-      environment: test ? 'Test' : 'Production',
+      environment: test ? 'Test' : Number(p.purchaseType) === 1 ? 'Promo' : 'Production',
+      quantity: Math.max(1, Math.floor(Number(p.quantity) || 1)),
       accountToken: typeof p.obfuscatedExternalAccountId === 'string' && p.obfuscatedExternalAccountId ? p.obfuscatedExternalAccountId.toLowerCase() : null,
       consumed: Number(p.consumptionState ?? 0) === 1,
       acknowledged: Number(p.acknowledgementState ?? 0) === 1,

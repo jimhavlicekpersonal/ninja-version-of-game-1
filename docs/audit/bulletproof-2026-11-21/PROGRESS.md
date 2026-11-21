@@ -26,7 +26,7 @@ New player-visible strings are translated into all 49 other ready languages in t
 | ECO-03 | MEDIUM | 7 | DESIGN | open | | | |
 | ECO-04 | MEDIUM | 7 | DESIGN | open | | | |
 | ECO-05 | HIGH | Owner/device | DEVICE | open | | | |
-| ECO-06 | LOW | 1 | OWNER | open | | | |
+| ECO-06 | LOW | 1 | OWNER | partial |  | tests/backend/server/purchases.test.ts 'ECO-06: …' | Code: Google purchaseType 1 → environment 'Promo', 0 counted cents, outside the sandbox cap; quantity > 1 logged + tk_refused_total{multi_quantity} (one unit delivered); checkConfig warns in production when App Store is on and USD_RATES has only USD; SHIPPING 3b: never enable multi-quantity. Open (OWNER, D6): set USD_RATES monthly or decide on local-money counting. |
 | ECO-07 | LOW | 2 | OWNER | open | | | |
 | ECO-08 | LOW | 1 | DESIGN | done |  | tests/presentation/dom/keep-rush.dom.test.ts | The Keep's Jade 'Finish now' and resource top-up confirms carry keep.armyBehind (existing text) as a note under the spend when armyBehindKeep (no hard gate; no real-money figure). spendMoonstones(…, note?). |
 | ECO-09 | LOW | 1 | CODE | partial |  | tests/backend/server/purchases.test.ts 'ECO-09: …' | Code done: certificate dates checked at payload.signedDate (bounded: ≤ now+5 min, ≥ now−3 years), else now; chain/OID/P-256 checks unchanged. Open (DEVICE): whether StoreKit re-signs jwsRepresentation for Transaction.unfinished was not checked on a device. |

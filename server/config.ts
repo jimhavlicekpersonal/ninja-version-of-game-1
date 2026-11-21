@@ -183,6 +183,8 @@ export function checkConfig(env: Record<string, string | undefined>): { deploy: 
     if (list(env.APPLE_ENVIRONMENTS).includes('Xcode')) errors.push('Xcode-signed purchases are for local testing, not production.');
     if (env.GOOGLE_PLAY_ALLOW_TEST === '1') warnings.push('GOOGLE_PLAY_ALLOW_TEST=1: license-tester purchases are credited in production.');
     if (env.MIGRATE_ON_BOOT === '1') warnings.push('MIGRATE_ON_BOOT=1 in production: run "npm run server:migrate" as a release step instead when there is more than one instance.');
+    // Beast Mode ECO-06: without rates, App Store local prices count at the catalog USD (the under-18 cap and revenue).
+    if ((env.APPLE_BUNDLE_IDS || env.GAMECENTER_BUNDLE_IDS) && !/"[A-Z]{3}"/.test((env.USD_RATES ?? '').replace(/"USD"/g, ''))) warnings.push('USD_RATES has no currency besides USD: App Store purchases in other currencies count at the catalog USD price for the under-18 cap and revenue. Set it monthly (docs/SHIPPING.md).');
     // Beast Mode SEC-03 (defence in depth): a sign-in token relayed through another server is refused only with nonces required.
     if (env.SIGNIN_NONCE_REQUIRED !== '1') warnings.push('SIGNIN_NONCE_REQUIRED is not 1: Apple and Google sign-ins without a nonce are still accepted. Set it once every supported build sends nonces (docs/SHIPPING.md 3h).');
     if (!env.SENTRY_DSN) warnings.push('SENTRY_DSN is not set: server errors are only in the log.');

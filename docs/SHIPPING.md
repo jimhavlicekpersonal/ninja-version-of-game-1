@@ -161,6 +161,8 @@ The top bar shows the connection: **Online**, **Connecting…** or **No connecti
 
 ### 3b. In-app products to create (roadmap step 33, owner)
 
+**Never enable multi-quantity purchases in the Play Console** (Beast Mode ECO-06): the game delivers one unit per purchase, so a player who paid for several would receive one (the server logs and counts `tk_refused_total{reason="multi_quantity"}`). Promo-code purchases (`purchaseType` 1) are credited but count 0 against the under-18 cap and revenue. Set `USD_RATES` monthly when App Store purchases are on (production warns while it lists only USD).
+
 Create these in App Store Connect (In-App Purchases) and the Play Console (In-app products), with the **store id** in the first column. The game keeps its own ids (they are in saves) and maps them to these in `src/gameplay/data/store.json` (`storeProductIds`, roadmap step 38); to use other store ids, change only that map. Prices are the game's USD prices; pick the matching price tier in each store. Every product is a **consumable in both stores** (Google Play: the server consumes a purchase once its own village holds it, and only acknowledges one the device still has to deliver, which the game consumes after its save has landed; App Store: the game finishes the transaction after delivery).
 
 | Store id | Game id | Type | USD | What it gives |
