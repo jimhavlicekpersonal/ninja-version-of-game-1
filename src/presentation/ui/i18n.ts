@@ -71,6 +71,10 @@ export async function initLanguage(device: readonly string[] = typeof navigator 
   try {
     await useLanguage(code);
   } catch {
+    // Beast Mode STB-08: the boot strings come in a small file of their own; wait for it so the error is translated.
+    const boot = typeof window !== 'undefined' && window.__kgLocale?.code === code ? window.__kgLocale : null;
+    if (boot?.bootReady) await boot.bootReady.catch(() => undefined);
+    if (boot?.boot) installCatalog(code, boot.boot);
     setDeviceLocale(code);
     throw new Error(t('boot.languageError'));
   }
@@ -149,5 +153,5 @@ export function displayData<T extends object>(source: T, prefix = ''): T {
 }
 
 declare global {
-  interface Window { __kgLocale?: { code: string; boot?: Catalog; pack?: Promise<unknown> }; }
+  interface Window { __kgLocale?: { code: string; boot?: Catalog; pack?: Promise<unknown>; bootReady?: Promise<unknown> }; }
 }

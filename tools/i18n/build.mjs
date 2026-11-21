@@ -54,22 +54,24 @@ export function measureLanguageBuild() {
   writeSizeReport(report);
   return report;
 }
+/**
+ * Beast Mode 2026-11-21 STB-08: the only strings inlined in the page head, per ready language: what the splash and
+ * the boot guard (`src/backend/pwa/boot.js`) show if the game module never arrives, and the language-load error
+ * (`ui/i18n.ts`). An explicit list (it used to be every boot string plus main.ts strings chosen by source line
+ * number); everything else comes with the language pack through `t()`.
+ */
+export const BOOT_INLINE_KEYS = ['boot.loading', 'boot.failureTitle', 'boot.failureBody', 'boot.retry', 'boot.retrying', 'boot.unsupportedBody', 'boot.realUnsupported', 'boot.missing', 'boot.realSlow', 'boot.realSlowBody', 'boot.languageError', 'common.unknownError'];
 export function languageBootScript() {
   const available = JSON.parse(readFileSync(join(ROOT, 'locales/availability.json'), 'utf8'));
   const all = languages().languages;
   const aliases = { ...LANGUAGE_ALIASES };
   for (const l of all) for (const a of l.alsoFor ?? []) aliases[a.toLowerCase()] = l.code;
-  const sources = JSON.parse(readFileSync(join(ROOT, 'locales/messages.sources.json'), 'utf8'));
-  const mainKeys = Object.keys(sources).filter(k => sources[k].sources.some(s => s.file === 'src/main.ts' && s.line >= 780));
-  const bootAvailable = Object.fromEntries(Object.entries(available).filter(([, v]) => v.ready).map(([k, v]) => [k, { ready: true, path: v.path }]));
-  const tables = {};
-  for (const l of all.filter(l => available[l.code]?.ready)) {
-    const pack = JSON.parse(readFileSync(join(ROOT, 'locales/compiled', `${l.code}.json`), 'utf8'));
-    const keys = [...Object.keys(source('boot')), ...mainKeys];
-    tables[l.code] = Object.fromEntries(keys.filter(k => pack[k]).map(k => [k, pack[k]]));
-  }
+  const bootAvailable = Object.fromEntries(Object.entries(available).filter(([, v]) => v.ready).map(([k, v]) => [k, { ready: true, path: v.path, boot: v.boot }]));
+  // Beast Mode STB-08: only English is inline; another language's boot strings come from its small `boot` file.
+  const enPack = JSON.parse(readFileSync(join(ROOT, 'locales/compiled', 'en.json'), 'utf8'));
+  const tables = { en: Object.fromEntries(BOOT_INLINE_KEYS.filter(k => enPack[k]).map(k => [k, enPack[k]])) };
   const matcher = readFileSync(join(ROOT, 'locales/matcher.mjs'), 'utf8').replace(/^export /gm, '');
-  return `(function(w,d){${matcher}\nvar available=${JSON.stringify(bootAvailable)},tables=${JSON.stringify(tables)},en=tables.en,aliases=${JSON.stringify(aliases)},codes=[],pref=null,i;for(var c in available)if(available[c].ready)codes.push(c);try{pref=w.localStorage.getItem('tk.lang');}catch(e){}var code=pref&&available[pref]&&available[pref].ready?pref:matchLanguage(w.navigator.languages||[w.navigator.language],codes,aliases);var lang=${JSON.stringify(Object.fromEntries(all.filter(l => available[l.code]?.ready).map(l => [l.code, { dir: l.dir, script: l.script }])))}[code];d.documentElement.lang=code;d.documentElement.dir=lang.dir;d.documentElement.setAttribute('data-script',lang.script);var boot=tables[code]||tables.en||{};w.__kgLocale={code:code,boot:boot};w.__kgTranslateBoot=function(s){for(var k in en)if(en[k]===s&&boot[k])return boot[k];return s;};function paint(){var el=d.querySelector('.boot-status');if(el)el.textContent=boot['boot.loading']||en['boot.loading'];}if(d.readyState==='loading')d.addEventListener('DOMContentLoaded',paint);else paint();if(code!=='en'&&w.fetch&&w.Promise){var ac=w.AbortController?new w.AbortController():null,timer=ac?w.setTimeout(function(){ac.abort();},30000):null;w.__kgLocale.pack=w.fetch(available[code].path,{signal:ac?ac.signal:undefined}).then(function(r){if(!r.ok)throw new Error('language unavailable');return r.json();}).then(function(v){if(timer)w.clearTimeout(timer);return v;},function(){if(timer)w.clearTimeout(timer);return null;});}})(window,document);`;
+  return `(function(w,d){${matcher}\nvar available=${JSON.stringify(bootAvailable)},tables=${JSON.stringify(tables)},en=tables.en,aliases=${JSON.stringify(aliases)},codes=[],pref=null,i;for(var c in available)if(available[c].ready)codes.push(c);try{pref=w.localStorage.getItem('tk.lang');}catch(e){}var code=pref&&available[pref]&&available[pref].ready?pref:matchLanguage(w.navigator.languages||[w.navigator.language],codes,aliases);var lang=${JSON.stringify(Object.fromEntries(all.filter(l => available[l.code]?.ready).map(l => [l.code, { dir: l.dir, script: l.script }])))}[code];d.documentElement.lang=code;d.documentElement.dir=lang.dir;d.documentElement.setAttribute('data-script',lang.script);var boot=code==='en'?en:{};w.__kgLocale={code:code,boot:boot};w.__kgTranslateBoot=function(s){for(var k in en)if(en[k]===s&&boot[k])return boot[k];return s;};function paint(){var el=d.querySelector('.boot-status');if(el)el.textContent=boot['boot.loading']||en['boot.loading'];}if(d.readyState==='loading')d.addEventListener('DOMContentLoaded',paint);else paint();if(code!=='en'&&w.fetch&&w.Promise&&available[code].boot){w.__kgLocale.bootReady=w.fetch(available[code].boot).then(function(r){return r.ok?r.json():null;}).then(function(v){if(v)for(var k in v)boot[k]=v[k];w.__kgLocale.bootDone=true;paint();},function(){w.__kgLocale.bootDone=true;});}if(code!=='en'&&w.fetch&&w.Promise){var ac=w.AbortController?new w.AbortController():null,timer=ac?w.setTimeout(function(){ac.abort();},30000):null;w.__kgLocale.pack=w.fetch(available[code].path,{signal:ac?ac.signal:undefined}).then(function(r){if(!r.ok)throw new Error('language unavailable');return r.json();}).then(function(v){if(timer)w.clearTimeout(timer);return v;},function(){if(timer)w.clearTimeout(timer);return null;});}})(window,document);`;
 }
 export function buildLanguageAssets({ serverOnly = false } = {}) {
   const publicDir = join(ROOT, 'public/lang');
@@ -104,10 +106,16 @@ export function buildLanguageAssets({ serverOnly = false } = {}) {
     const hash = createHash('sha256').update(bytes).digest('hex').slice(0, 16);
     const filename = `${lang.code}-${hash}.json`;
     const path = `lang/${filename}`;
-    available[lang.code] = { coverage: total ? done / total : 0, ready, hash, keys: Object.keys(pack).length, ...(lang.code !== 'en' && done ? { path } : {}), namespaces: perNamespace };
+    // Beast Mode STB-08: the boot strings in a small file of their own, fetched by the page head (English is inline).
+    const bootBytes = Buffer.from(JSON.stringify(Object.fromEntries(BOOT_INLINE_KEYS.filter(k => pack[k]).map(k => [k, pack[k]]))));
+    const bootPath = `lang/boot-${lang.code}-${createHash('sha256').update(bootBytes).digest('hex').slice(0, 16)}.json`;
+    available[lang.code] = { coverage: total ? done / total : 0, ready, hash, keys: Object.keys(pack).length, ...(lang.code !== 'en' && done ? { path, boot: bootPath } : {}), namespaces: perNamespace };
     if (done) {
       writeFileSync(join(compiledDir, `${lang.code}.json`), JSON.stringify(pack));
-      if (lang.code !== 'en' && !serverOnly) writeFileSync(join(publicDir, filename), bytes);
+      if (lang.code !== 'en' && !serverOnly) {
+        writeFileSync(join(publicDir, filename), bytes);
+        writeFileSync(join(ROOT, 'public', bootPath), bootBytes);
+      }
       report.measured[lang.code] = { ready, strings: Object.keys(pack).length, installedUtf8: bytes.length, gzip: gzipSync(bytes, { level: 9 }).length, brotli: brotliCompressSync(bytes).length, zipDeflatePayload: deflateRawSync(bytes, { level: 9 }).length, namespaces: perNamespace };
       if (ready && lang.code !== 'en') {
         buildPages(lang.code, serverOnly ? { names: ['account', 'complaints'], writePublic: false } : undefined);

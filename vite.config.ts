@@ -53,13 +53,13 @@ function serviceWorker(): Plugin {
     generateBundle(_options, bundle) {
       const built = Object.keys(bundle).filter((f) => !f.endsWith('.map'));
       const allPublic = listFiles('public').map((p) => relative('public', p).split('\\').join('/'));
-      const languageMeta = JSON.parse(readFileSync('locales/availability.json', 'utf8')) as Record<string, { ready: boolean; path?: string }>;
+      const languageMeta = JSON.parse(readFileSync('locales/availability.json', 'utf8')) as Record<string, { ready: boolean; path?: string; boot?: string }>;
       const codes = new Set(Object.keys(languageMeta));
       // A browser caches its own text/pages; native packaging still includes all completed packs.
       const publicFiles = allPublic.filter(p => !p.startsWith('lang/') && !codes.has(p.split('/')[0]) && !NOT_PRECACHED.has(p));
       // Content hashes of the public files: an unchanged file is copied from the previous build's cache (device F5).
       const hashes = Object.fromEntries(allPublic.map((p) => [p, createHash('sha256').update(readFileSync(join('public', p))).digest('hex').slice(0, 16)]));
-      const languageFiles = Object.fromEntries(Object.entries(languageMeta).filter(([, m]) => m.ready).map(([code, m]) => [code, [...(m.path ? [`./${m.path}`] : []), ...allPublic.filter(p => p.startsWith(code + '/')).map(p => `./${p}`)]]));
+      const languageFiles = Object.fromEntries(Object.entries(languageMeta).filter(([, m]) => m.ready).map(([code, m]) => [code, [...(m.path ? [`./${m.path}`] : []), ...(m.boot ? [`./${m.boot}`] : []), ...allPublic.filter(p => p.startsWith(code + '/')).map(p => `./${p}`)]]));
       const files = ['./', ...[...built, ...publicFiles].map((f) => `./${f}`)];
       const source = readFileSync('src/backend/pwa/sw.template.js', 'utf8')
         .replace('__BUILD_ID__', Date.now().toString(36))

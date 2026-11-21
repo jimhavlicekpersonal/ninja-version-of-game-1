@@ -188,6 +188,24 @@
    */
   function show(kind, detail) {
     if (state.done || state.shown === 'unsupported' || state.shown === 'failed' || state.shown === kind) return;
+    // Beast Mode STB-08: another language's boot strings come in a small file of their own; wait for it (3 s at
+    // most) so the card is in the player's language.
+    var lc = w.__kgLocale;
+    if (lc && lc.bootReady && !lc.bootDone && !state.bootWaited) {
+      state.bootWaited = true;
+      var again = function () {
+        show(kind, detail);
+      };
+      var timer = w.setTimeout(again, 3000);
+      lc.bootReady.then(function () {
+        w.clearTimeout(timer);
+        again();
+      }, function () {
+        w.clearTimeout(timer);
+        again();
+      });
+      return;
+    }
     if (!d.body) {
       d.addEventListener('DOMContentLoaded', function () {
         show(kind, detail);
