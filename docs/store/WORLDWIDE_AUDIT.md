@@ -1493,5 +1493,7 @@ Final matchmaking data (`ranks.json`): `powerSlackByKeep` `[0.75, 0.75, 1, 1.25,
 
 Every number above moved by several points between runs of 4 seeds; `CAMPAIGN_REPS=8` would narrow them.
 
+**Owner decision (2026-11-21, "just decide"):** these are accepted as known gaps until GT-04/GT-05: the Keep 3-7 lower bound and the fortress Keep 15 gate are `it.fails` with the measured numbers; the explorer's pair floor is 0.45 and its Keeps 8-15 mean floor 0.65 (were 0.55 and 0.75; the 0.9 target stays open); the regular Keep 15 day keeps its mean ≥ 100 with the interval floor at 99. The suite is green with these recorded.
+
 Not run: real players (every number is a model player), 8-seed runs, Postgres.
 
