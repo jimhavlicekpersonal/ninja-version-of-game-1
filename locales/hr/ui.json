@@ -156,6 +156,7 @@
   "raid.reportPending": { "en": "Your last raid is still being sent to the server. Try again in a moment; Practice and Trials still work.", "text": "Tvoj posljednji napad još se šalje na poslužitelj. Pokušaj ponovno za trenutak; vježba i Kušnje i dalje su dostupne." },
   "save.restoredPrevious": { "en": "Your latest save could not be read, so an earlier copy ({when}) was loaded.", "text": "Tvoje posljednje spremanje nije se moglo pročitati, pa je učitana ranija kopija ({when})." },
   "frame.failed.title": { "en": "Something went wrong drawing the village", "text": "Nešto je pošlo po zlu pri crtanju sela" },
+  "frame.graphicsLost": { "en": "The graphics stopped", "text": "Grafika je stala" },
   "frame.failed.body": { "en": "Your village is saved. Reload to keep playing.", "text": "Tvoje selo je spremljeno. Ponovno učitaj za nastavak igre." },
   "save.openFailed.title": { "en": "Your village couldn't be opened", "text": "Tvoje selo nije se moglo otvoriti" },
   "save.openFailed.body": { "en": "This device didn't open its saved village in time. Try again, or play a temporary village for now: it is not saved and stays offline.", "text": "Ovaj uređaj nije na vrijeme otvorio spremljeno selo. Pokušaj ponovno ili zasad igraj privremeno selo: ne sprema se i ostaje izvan mreže." },

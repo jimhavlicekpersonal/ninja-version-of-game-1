@@ -156,6 +156,7 @@
   "raid.reportPending": { "en": "Your last raid is still being sent to the server. Try again in a moment; Practice and Trials still work.", "text": "Har yanzu ana aika harinku na ƙarshe zuwa sabar. Ku sake gwadawa nan ba da jimawa ba; Atisaye da Gwaje-gwaje suna nan." },
   "save.restoredPrevious": { "en": "Your latest save could not be read, so an earlier copy ({when}) was loaded.", "text": "Ba a iya karanta ajiyarku ta ƙarshe ba, don haka an loda kwafi na baya ({when})." },
   "frame.failed.title": { "en": "Something went wrong drawing the village", "text": "Wani abu ya faru yayin zana ƙauyen" },
+  "frame.graphicsLost": { "en": "The graphics stopped", "text": "Hotunan sun tsaya" },
   "frame.failed.body": { "en": "Your village is saved. Reload to keep playing.", "text": "An adana ƙauyenku. Ku sake lodawa don ci gaba da wasa." },
   "save.openFailed.title": { "en": "Your village couldn't be opened", "text": "Ba a iya buɗe ƙauyenku ba" },
   "save.openFailed.body": { "en": "This device didn't open its saved village in time. Try again, or play a temporary village for now: it is not saved and stays offline.", "text": "Wannan na'urar ba ta buɗe ƙauyenku da aka adana a kan lokaci ba. Ku sake gwadawa, ko ku yi wasa da ƙauye na wucin gadi a yanzu: ba a adana shi kuma yana nan ba tare da intanet ba." },

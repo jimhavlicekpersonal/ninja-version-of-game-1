@@ -156,6 +156,7 @@
   "raid.reportPending": { "en": "Your last raid is still being sent to the server. Try again in a moment; Practice and Trials still work.", "text": "Twój ostatni najazd wciąż jest wysyłany na serwer. Spróbuj za chwilę; trening i Próby nadal działają." },
   "save.restoredPrevious": { "en": "Your latest save could not be read, so an earlier copy ({when}) was loaded.", "text": "Nie udało się odczytać ostatniego zapisu, więc wczytano wcześniejszą kopię ({when})." },
   "frame.failed.title": { "en": "Something went wrong drawing the village", "text": "Coś poszło nie tak podczas rysowania wioski" },
+  "frame.graphicsLost": { "en": "The graphics stopped", "text": "Grafika przestała działać" },
   "frame.failed.body": { "en": "Your village is saved. Reload to keep playing.", "text": "Twoja wioska jest zapisana. Załaduj ponownie, aby grać dalej." },
   "save.openFailed.title": { "en": "Your village couldn't be opened", "text": "Nie udało się otworzyć wioski" },
   "save.openFailed.body": { "en": "This device didn't open its saved village in time. Try again, or play a temporary village for now: it is not saved and stays offline.", "text": "To urządzenie nie otworzyło zapisanej wioski na czas. Spróbuj ponownie albo zagraj na razie w tymczasowej wiosce: nie jest zapisywana i pozostaje offline." },

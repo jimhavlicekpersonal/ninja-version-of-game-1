@@ -156,6 +156,7 @@
   "raid.reportPending": { "en": "Your last raid is still being sent to the server. Try again in a moment; Practice and Trials still work.", "text": "Твой последний набег ещё отправляется на сервер. Попробуй через минуту; тренировка и Испытания по-прежнему доступны." },
   "save.restoredPrevious": { "en": "Your latest save could not be read, so an earlier copy ({when}) was loaded.", "text": "Последнее сохранение не удалось прочитать, поэтому загружена более ранняя копия ({when})." },
   "frame.failed.title": { "en": "Something went wrong drawing the village", "text": "При отрисовке деревни что-то пошло не так" },
+  "frame.graphicsLost": { "en": "The graphics stopped", "text": "Графика остановилась" },
   "frame.failed.body": { "en": "Your village is saved. Reload to keep playing.", "text": "Твоя деревня сохранена. Перезагрузи, чтобы продолжить игру." },
   "save.openFailed.title": { "en": "Your village couldn't be opened", "text": "Не удалось открыть твою деревню" },
   "save.openFailed.body": { "en": "This device didn't open its saved village in time. Try again, or play a temporary village for now: it is not saved and stays offline.", "text": "Устройство не успело открыть сохранённую деревню. Попробуй ещё раз или пока сыграй во временной деревне: она не сохраняется и остаётся офлайн." },

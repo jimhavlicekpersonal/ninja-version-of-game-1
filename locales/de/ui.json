@@ -156,6 +156,7 @@
   "raid.reportPending": { "en": "Your last raid is still being sent to the server. Try again in a moment; Practice and Trials still work.", "text": "Dein letzter Überfall wird noch an den Server gesendet. Versuch es gleich noch einmal; Training und Prüfungen funktionieren weiter." },
   "save.restoredPrevious": { "en": "Your latest save could not be read, so an earlier copy ({when}) was loaded.", "text": "Dein letzter Spielstand konnte nicht gelesen werden, deshalb wurde eine frühere Kopie ({when}) geladen." },
   "frame.failed.title": { "en": "Something went wrong drawing the village", "text": "Beim Zeichnen des Dorfs ist etwas schiefgelaufen" },
+  "frame.graphicsLost": { "en": "The graphics stopped", "text": "Die Grafik ist ausgefallen" },
   "frame.failed.body": { "en": "Your village is saved. Reload to keep playing.", "text": "Dein Dorf ist gespeichert. Lade neu, um weiterzuspielen." },
   "save.openFailed.title": { "en": "Your village couldn't be opened", "text": "Dein Dorf konnte nicht geöffnet werden" },
   "save.openFailed.body": { "en": "This device didn't open its saved village in time. Try again, or play a temporary village for now: it is not saved and stays offline.", "text": "Dieses Gerät hat dein gespeichertes Dorf nicht rechtzeitig geöffnet. Versuch es erneut oder spiel vorerst ein vorübergehendes Dorf: Es wird nicht gespeichert und bleibt offline." },

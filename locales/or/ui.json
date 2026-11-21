@@ -156,6 +156,7 @@
   "raid.reportPending": { "en": "Your last raid is still being sent to the server. Try again in a moment; Practice and Trials still work.", "text": "ଆପଣଙ୍କ ଶେଷ ଆକ୍ରମଣ ଏବେ ବି ସର୍ଭରକୁ ପଠାଯାଉଛି। କିଛି ସମୟ ପରେ ପୁଣି ଚେଷ୍ଟା କରନ୍ତୁ; ଅଭ୍ୟାସ ଓ ପରୀକ୍ଷା ଉପଲବ୍ଧ।" },
   "save.restoredPrevious": { "en": "Your latest save could not be read, so an earlier copy ({when}) was loaded.", "text": "ଆପଣଙ୍କ ସାମ୍ପ୍ରତିକ ସେଭ୍ ପଢ଼ିହେଲା ନାହିଁ, ତେଣୁ ପୂର୍ବର ଏକ କପି ({when}) ଲୋଡ୍ କରାଗଲା।" },
   "frame.failed.title": { "en": "Something went wrong drawing the village", "text": "ଗାଁ ଆଙ୍କିବା ସମୟରେ କିଛି ଭୁଲ ହେଲା" },
+  "frame.graphicsLost": { "en": "The graphics stopped", "text": "ଗ୍ରାଫିକ୍ସ ବନ୍ଦ ହୋଇଗଲା" },
   "frame.failed.body": { "en": "Your village is saved. Reload to keep playing.", "text": "ଆପଣଙ୍କ ଗାଁ ସଞ୍ଚିତ ହୋଇଛି। ଖେଳିବା ଜାରି ରଖିବାକୁ ପୁଣି ଲୋଡ୍ କରନ୍ତୁ।" },
   "save.openFailed.title": { "en": "Your village couldn't be opened", "text": "ଆପଣଙ୍କ ଗାଁ ଖୋଲିହେଲା ନାହିଁ" },
   "save.openFailed.body": { "en": "This device didn't open its saved village in time. Try again, or play a temporary village for now: it is not saved and stays offline.", "text": "ଏହି ଡିଭାଇସ୍ ଆପଣଙ୍କ ସଞ୍ଚିତ ଗାଁକୁ ସମୟରେ ଖୋଲିପାରିଲା ନାହିଁ। ପୁଣି ଚେଷ୍ଟା କରନ୍ତୁ, କିମ୍ବା ଏବେ ପାଇଁ ଏକ ଅସ୍ଥାୟୀ ଗାଁ ଖେଳନ୍ତୁ: ଏହା ସଞ୍ଚିତ ହୁଏ ନାହିଁ ଏବଂ ଅଫଲାଇନ୍ ରହେ।" },

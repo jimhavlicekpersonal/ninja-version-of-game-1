@@ -156,6 +156,7 @@
   "raid.reportPending": { "en": "Your last raid is still being sent to the server. Try again in a moment; Practice and Trials still work.", "text": "Uvamizi wako wa mwisho bado unatumwa kwenye seva. Jaribu tena baada ya muda mfupi; Mazoezi na Majaribio bado yanapatikana." },
   "save.restoredPrevious": { "en": "Your latest save could not be read, so an earlier copy ({when}) was loaded.", "text": "Hifadhi yako ya karibuni haikuweza kusomwa, kwa hiyo nakala ya awali ({when}) imepakiwa." },
   "frame.failed.title": { "en": "Something went wrong drawing the village", "text": "Hitilafu imetokea wakati wa kuchora kijiji" },
+  "frame.graphicsLost": { "en": "The graphics stopped", "text": "Michoro imesimama" },
   "frame.failed.body": { "en": "Your village is saved. Reload to keep playing.", "text": "Kijiji chako kimehifadhiwa. Pakia upya ili uendelee kucheza." },
   "save.openFailed.title": { "en": "Your village couldn't be opened", "text": "Kijiji chako hakikuweza kufunguliwa" },
   "save.openFailed.body": { "en": "This device didn't open its saved village in time. Try again, or play a temporary village for now: it is not saved and stays offline.", "text": "Kifaa hiki hakikufungua kijiji chako kilichohifadhiwa kwa wakati. Jaribu tena, au cheza kijiji cha muda kwa sasa: hakihifadhiwi na kinabaki nje ya mtandao." },

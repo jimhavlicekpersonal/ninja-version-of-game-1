@@ -156,6 +156,7 @@
   "raid.reportPending": { "en": "Your last raid is still being sent to the server. Try again in a moment; Practice and Trials still work.", "text": "আপনার শেষ হানা এখনও সার্ভারে পাঠানো হচ্ছে। একটু পরে আবার চেষ্টা করুন; অনুশীলন আর পরীক্ষা চলতেই থাকবে।" },
   "save.restoredPrevious": { "en": "Your latest save could not be read, so an earlier copy ({when}) was loaded.", "text": "আপনার সর্বশেষ সেভ পড়া যায়নি, তাই আগের একটি কপি ({when}) লোড করা হয়েছে।" },
   "frame.failed.title": { "en": "Something went wrong drawing the village", "text": "গ্রাম আঁকার সময় কিছু ভুল হয়েছে" },
+  "frame.graphicsLost": { "en": "The graphics stopped", "text": "গ্রাফিক্স থেমে গেছে" },
   "frame.failed.body": { "en": "Your village is saved. Reload to keep playing.", "text": "আপনার গ্রাম সংরক্ষিত আছে। খেলা চালিয়ে যেতে আবার লোড করুন।" },
   "save.openFailed.title": { "en": "Your village couldn't be opened", "text": "আপনার গ্রাম খোলা গেল না" },
   "save.openFailed.body": { "en": "This device didn't open its saved village in time. Try again, or play a temporary village for now: it is not saved and stays offline.", "text": "এই ডিভাইস আপনার সংরক্ষিত গ্রাম সময়মতো খুলতে পারেনি। আবার চেষ্টা করুন, অথবা আপাতত একটি অস্থায়ী গ্রামে খেলুন: সেটি সংরক্ষিত হয় না এবং অফলাইনে থাকে।" },

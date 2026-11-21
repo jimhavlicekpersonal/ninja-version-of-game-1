@@ -156,6 +156,7 @@
   "raid.reportPending": { "en": "Your last raid is still being sent to the server. Try again in a moment; Practice and Trials still work.", "text": "마지막 습격이 아직 서버로 전송 중이에요. 잠시 후 다시 시도하세요. 연습과 시련은 계속할 수 있어요." },
   "save.restoredPrevious": { "en": "Your latest save could not be read, so an earlier copy ({when}) was loaded.", "text": "최근 저장을 읽을 수 없어서 이전 사본({when})을 불러왔어요." },
   "frame.failed.title": { "en": "Something went wrong drawing the village", "text": "마을을 그리는 중에 문제가 생겼어요" },
+  "frame.graphicsLost": { "en": "The graphics stopped", "text": "그래픽이 멈췄어요" },
   "frame.failed.body": { "en": "Your village is saved. Reload to keep playing.", "text": "마을은 저장되어 있어요. 다시 불러와 계속 플레이하세요." },
   "save.openFailed.title": { "en": "Your village couldn't be opened", "text": "마을을 열 수 없었어요" },
   "save.openFailed.body": { "en": "This device didn't open its saved village in time. Try again, or play a temporary village for now: it is not saved and stays offline.", "text": "이 기기가 저장된 마을을 제때 열지 못했어요. 다시 시도하거나 우선 임시 마을로 플레이하세요. 임시 마을은 저장되지 않고 오프라인으로 유지돼요." },

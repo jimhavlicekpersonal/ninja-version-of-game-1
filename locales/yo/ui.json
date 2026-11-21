@@ -156,6 +156,7 @@
   "raid.reportPending": { "en": "Your last raid is still being sent to the server. Try again in a moment; Practice and Trials still work.", "text": "Ìkọlù rẹ tó kẹ́yìn ṣì ń lọ sí sáfà. Gbìyànjú lẹ́ẹ̀kan sí i láìpẹ́; Ìdánrawò àti Àdánwò ṣì wà." },
   "save.restoredPrevious": { "en": "Your latest save could not be read, so an earlier copy ({when}) was loaded.", "text": "A kò lè ka ìfipamọ́ rẹ tó kẹ́yìn, nítorí náà a gbé ẹ̀dà ti tẹ́lẹ̀ ({when}) wọlé." },
   "frame.failed.title": { "en": "Something went wrong drawing the village", "text": "Nǹkan kan ṣẹlẹ̀ nígbà tí a ń ya abúlé" },
+  "frame.graphicsLost": { "en": "The graphics stopped", "text": "Àwòrán ti dúró" },
   "frame.failed.body": { "en": "Your village is saved. Reload to keep playing.", "text": "A ti fi abúlé rẹ pamọ́. Tún gbé e wọlé láti máa ṣeré lọ." },
   "save.openFailed.title": { "en": "Your village couldn't be opened", "text": "A kò lè ṣí abúlé rẹ" },
   "save.openFailed.body": { "en": "This device didn't open its saved village in time. Try again, or play a temporary village for now: it is not saved and stays offline.", "text": "Ẹ̀rọ yìí kò ṣí abúlé rẹ tí a fi pamọ́ ní àkókò. Gbìyànjú lẹ́ẹ̀kan sí i, tàbí ṣeré pẹ̀lú abúlé ìgbà díẹ̀ fún báyìí: a kò fi pamọ́, ó sì wà láìsí ayélujára." },

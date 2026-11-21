@@ -26,6 +26,7 @@ import { frames, limitFor, measureRefreshHz, pacing, setActiveLimit } from './pr
 import { App } from './app';
 import { installWebBack } from './presentation/ui/webBack';
 import { guardLoop, type GuardableLoop } from './presentation/render/frameGuard';
+import { watchContext, type ContextEvents } from './presentation/render/contextLoss';
 import { browserKeyValue, Connection, forgetChosenServer, resolveServerUrl, serverChoiceAllowed } from './backend/net/connection';
 import { BalanceLoader } from './backend/net/balance';
 import { EventScheduleLoader } from './backend/net/eventScheduleLoader';
@@ -194,7 +195,7 @@ async function openStorage(sandbox: boolean, timeoutMs?: number): Promise<{ stor
 type StorageFailure = 'unavailable' | 'failed';
 
 /** Beast Mode STB-03: the map stopped drawing after repeated errors; the village is saved; reload. */
-function showFrameFailure(): void {
+function showFrameFailure(titleKey: 'frame.failed.title' | 'frame.graphicsLost' = 'frame.failed.title'): void {
   if (document.querySelector('.tk-frame-failed')) return;
   const card = document.createElement('div');
   card.className = 'tk-frame-failed';
@@ -205,7 +206,7 @@ function showFrameFailure(): void {
   box.style.cssText = 'max-width:420px;background:#fffaf0;color:#26303d;border-radius:16px;padding:18px 20px;font:16px/1.4 system-ui,sans-serif';
   const h = document.createElement('h2');
   h.style.cssText = 'margin:0 0 8px;font-size:1.15rem';
-  h.textContent = t('frame.failed.title');
+  h.textContent = t(titleKey);
   const p = document.createElement('p');
   p.style.cssText = 'margin:0 0 14px';
   p.textContent = t('frame.failed.body');
@@ -650,7 +651,20 @@ async function boot(): Promise<void> {
     online: connection.status,
   });
   // READY comes before TimeStep.start; the first step comes after it (from the next frame on, the guard runs).
-  game.events.once(Phaser.Core.Events.STEP, () => void installGuard());
+  game.events.once(Phaser.Core.Events.STEP, () => {
+    installGuard();
+    // Beast Mode STB-06: a WebGL context that stays lost for 8 s of visible time: save and offer a reload.
+    if (game.renderer.type === Phaser.WEBGL) {
+      watchContext(game.renderer as unknown as ContextEvents, {
+        onLost: () => {
+          crashReporter?.report(new Error('webgl_context_lost'), { kind: 'webgl' });
+          trimTextureCaches(game.textures);
+        },
+        onRestored: () => console.info('WebGL context restored'),
+        onStuck: () => void controller.save().finally(() => showFrameFailure('frame.graphicsLost')),
+      });
+    }
+  });
   const reminders: ReminderService = isNative() ? new NativeReminders() : new WebReminders();
   // Art the HUD may not import itself (only art contract files are open to GUI): the Sensei portrait and the chest.
   provideUiArt({ senseiPortrait, chestSvg, revealChest });

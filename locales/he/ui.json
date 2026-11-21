@@ -156,6 +156,7 @@
   "raid.reportPending": { "en": "Your last raid is still being sent to the server. Try again in a moment; Practice and Trials still work.", "text": "הפשיטה האחרונה שלכם עדיין נשלחת לשרת. נסו שוב בעוד רגע; האימון והמבחנים זמינים." },
   "save.restoredPrevious": { "en": "Your latest save could not be read, so an earlier copy ({when}) was loaded.", "text": "לא ניתן היה לקרוא את השמירה האחרונה שלכם, לכן נטען עותק קודם ({when})." },
   "frame.failed.title": { "en": "Something went wrong drawing the village", "text": "משהו השתבש בציור הכפר" },
+  "frame.graphicsLost": { "en": "The graphics stopped", "text": "הגרפיקה נעצרה" },
   "frame.failed.body": { "en": "Your village is saved. Reload to keep playing.", "text": "הכפר שלכם שמור. טענו מחדש כדי להמשיך לשחק." },
   "save.openFailed.title": { "en": "Your village couldn't be opened", "text": "לא ניתן היה לפתוח את הכפר שלכם" },
   "save.openFailed.body": { "en": "This device didn't open its saved village in time. Try again, or play a temporary village for now: it is not saved and stays offline.", "text": "המכשיר לא פתח בזמן את הכפר השמור שלכם. נסו שוב, או שחקו בינתיים בכפר זמני: הוא לא נשמר ונשאר במצב לא מקוון." },

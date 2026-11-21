@@ -156,6 +156,7 @@
   "raid.reportPending": { "en": "Your last raid is still being sent to the server. Try again in a moment; Practice and Trials still work.", "text": "നിങ്ങളുടെ അവസാന റെയ്ഡ് ഇപ്പോഴും സെർവറിലേക്ക് അയയ്ക്കുന്നു. കുറച്ചുകഴിഞ്ഞ് വീണ്ടും ശ്രമിക്കുക; പരിശീലനവും പരീക്ഷകളും ലഭ്യമാണ്." },
   "save.restoredPrevious": { "en": "Your latest save could not be read, so an earlier copy ({when}) was loaded.", "text": "നിങ്ങളുടെ ഏറ്റവും പുതിയ സേവ് വായിക്കാനായില്ല, അതിനാൽ മുമ്പത്തെ ഒരു പകർപ്പ് ({when}) ലോഡ് ചെയ്തു." },
   "frame.failed.title": { "en": "Something went wrong drawing the village", "text": "ഗ്രാമം വരയ്ക്കുമ്പോൾ എന്തോ പിശക് സംഭവിച്ചു" },
+  "frame.graphicsLost": { "en": "The graphics stopped", "text": "ഗ്രാഫിക്സ് നിലച്ചു" },
   "frame.failed.body": { "en": "Your village is saved. Reload to keep playing.", "text": "നിങ്ങളുടെ ഗ്രാമം സംരക്ഷിച്ചിട്ടുണ്ട്. കളി തുടരാൻ വീണ്ടും ലോഡ് ചെയ്യുക." },
   "save.openFailed.title": { "en": "Your village couldn't be opened", "text": "നിങ്ങളുടെ ഗ്രാമം തുറക്കാനായില്ല" },
   "save.openFailed.body": { "en": "This device didn't open its saved village in time. Try again, or play a temporary village for now: it is not saved and stays offline.", "text": "ഈ ഉപകരണത്തിന് സംരക്ഷിച്ച നിങ്ങളുടെ ഗ്രാമം സമയത്ത് തുറക്കാനായില്ല. വീണ്ടും ശ്രമിക്കുക, അല്ലെങ്കിൽ ഇപ്പോൾ ഒരു താൽക്കാലിക ഗ്രാമത്തിൽ കളിക്കുക: അത് സംരക്ഷിക്കപ്പെടില്ല, ഓഫ്‌ലൈനായി തുടരും." },

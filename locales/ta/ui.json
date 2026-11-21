@@ -156,6 +156,7 @@
   "raid.reportPending": { "en": "Your last raid is still being sent to the server. Try again in a moment; Practice and Trials still work.", "text": "உங்கள் கடைசித் தாக்குதல் இன்னும் சர்வருக்கு அனுப்பப்படுகிறது. சிறிது நேரம் கழித்து மீண்டும் முயலுங்கள்; பயிற்சியும் சோதனைகளும் தொடர்ந்து கிடைக்கும்." },
   "save.restoredPrevious": { "en": "Your latest save could not be read, so an earlier copy ({when}) was loaded.", "text": "உங்கள் சமீபத்திய சேமிப்பைப் படிக்க முடியவில்லை, எனவே முந்தைய நகல் ({when}) ஏற்றப்பட்டது." },
   "frame.failed.title": { "en": "Something went wrong drawing the village", "text": "கிராமத்தை வரையும்போது ஏதோ தவறு நடந்தது" },
+  "frame.graphicsLost": { "en": "The graphics stopped", "text": "கிராபிக்ஸ் நின்றுவிட்டது" },
   "frame.failed.body": { "en": "Your village is saved. Reload to keep playing.", "text": "உங்கள் கிராமம் சேமிக்கப்பட்டது. தொடர்ந்து விளையாட மீண்டும் ஏற்றுங்கள்." },
   "save.openFailed.title": { "en": "Your village couldn't be opened", "text": "உங்கள் கிராமத்தைத் திறக்க முடியவில்லை" },
   "save.openFailed.body": { "en": "This device didn't open its saved village in time. Try again, or play a temporary village for now: it is not saved and stays offline.", "text": "இந்தச் சாதனம் சேமித்த உங்கள் கிராமத்தை நேரத்தில் திறக்கவில்லை. மீண்டும் முயலுங்கள், அல்லது இப்போதைக்கு ஒரு தற்காலிக கிராமத்தில் விளையாடுங்கள்: அது சேமிக்கப்படாது, ஆஃப்லைனிலேயே இருக்கும்." },

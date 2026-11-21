@@ -156,6 +156,7 @@
   "raid.reportPending": { "en": "Your last raid is still being sent to the server. Try again in a moment; Practice and Trials still work.", "text": "你上一次突袭仍在发送到服务器。请稍后再试；练习和试炼仍可进行。" },
   "save.restoredPrevious": { "en": "Your latest save could not be read, so an earlier copy ({when}) was loaded.", "text": "无法读取你最新的存档，因此已加载较早的副本（{when}）。" },
   "frame.failed.title": { "en": "Something went wrong drawing the village", "text": "绘制村庄时出错了" },
+  "frame.graphicsLost": { "en": "The graphics stopped", "text": "画面已停止" },
   "frame.failed.body": { "en": "Your village is saved. Reload to keep playing.", "text": "你的村庄已保存。重新加载即可继续游戏。" },
   "save.openFailed.title": { "en": "Your village couldn't be opened", "text": "无法打开你的村庄" },
   "save.openFailed.body": { "en": "This device didn't open its saved village in time. Try again, or play a temporary village for now: it is not saved and stays offline.", "text": "此设备未能及时打开你保存的村庄。请重试，或先玩一个临时村庄：它不会保存，并保持离线。" },

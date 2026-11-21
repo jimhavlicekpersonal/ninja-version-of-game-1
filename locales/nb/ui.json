@@ -156,6 +156,7 @@
   "raid.reportPending": { "en": "Your last raid is still being sent to the server. Try again in a moment; Practice and Trials still work.", "text": "Det siste angrepet ditt sendes fortsatt til serveren. Prøv igjen om litt; trening og Prøvelser er fortsatt tilgjengelige." },
   "save.restoredPrevious": { "en": "Your latest save could not be read, so an earlier copy ({when}) was loaded.", "text": "Den siste lagringen din kunne ikke leses, så en tidligere kopi ({when}) ble lastet inn." },
   "frame.failed.title": { "en": "Something went wrong drawing the village", "text": "Noe gikk galt da landsbyen ble tegnet" },
+  "frame.graphicsLost": { "en": "The graphics stopped", "text": "Grafikken har stoppet" },
   "frame.failed.body": { "en": "Your village is saved. Reload to keep playing.", "text": "Landsbyen din er lagret. Last inn på nytt for å spille videre." },
   "save.openFailed.title": { "en": "Your village couldn't be opened", "text": "Landsbyen din kunne ikke åpnes" },
   "save.openFailed.body": { "en": "This device didn't open its saved village in time. Try again, or play a temporary village for now: it is not saved and stays offline.", "text": "Denne enheten åpnet ikke den lagrede landsbyen din i tide. Prøv igjen, eller spill en midlertidig landsby inntil videre: den lagres ikke og forblir frakoblet." },

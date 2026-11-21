@@ -156,6 +156,7 @@
   "raid.reportPending": { "en": "Your last raid is still being sent to the server. Try again in a moment; Practice and Trials still work.", "text": "Son baskının hâlâ sunucuya gönderiliyor. Birazdan yeniden dene; Antrenman ve Sınavlar kullanılabilir." },
   "save.restoredPrevious": { "en": "Your latest save could not be read, so an earlier copy ({when}) was loaded.", "text": "Son kaydın okunamadı, bu yüzden daha önceki bir kopya ({when}) yüklendi." },
   "frame.failed.title": { "en": "Something went wrong drawing the village", "text": "Köy çizilirken bir sorun oluştu" },
+  "frame.graphicsLost": { "en": "The graphics stopped", "text": "Grafikler durdu" },
   "frame.failed.body": { "en": "Your village is saved. Reload to keep playing.", "text": "Köyün kaydedildi. Oynamaya devam etmek için yeniden yükle." },
   "save.openFailed.title": { "en": "Your village couldn't be opened", "text": "Köyün açılamadı" },
   "save.openFailed.body": { "en": "This device didn't open its saved village in time. Try again, or play a temporary village for now: it is not saved and stays offline.", "text": "Bu cihaz kayıtlı köyünü zamanında açamadı. Yeniden dene ya da şimdilik geçici bir köyde oyna: kaydedilmez ve çevrim dışı kalır." },

@@ -156,6 +156,7 @@
   "raid.reportPending": { "en": "Your last raid is still being sent to the server. Try again in a moment; Practice and Trials still work.", "text": "మీ చివరి దాడి ఇంకా సర్వర్‌కు పంపబడుతోంది. కాసేపటి తర్వాత మళ్లీ ప్రయత్నించండి; సాధన, పరీక్షలు అందుబాటులోనే ఉంటాయి." },
   "save.restoredPrevious": { "en": "Your latest save could not be read, so an earlier copy ({when}) was loaded.", "text": "మీ తాజా సేవ్‌ను చదవడం సాధ్యం కాలేదు, కాబట్టి ఒక పాత కాపీ ({when}) లోడ్ చేయబడింది." },
   "frame.failed.title": { "en": "Something went wrong drawing the village", "text": "గ్రామాన్ని చూపించేటప్పుడు ఏదో తప్పు జరిగింది" },
+  "frame.graphicsLost": { "en": "The graphics stopped", "text": "గ్రాఫిక్స్ ఆగిపోయాయి" },
   "frame.failed.body": { "en": "Your village is saved. Reload to keep playing.", "text": "మీ గ్రామం సేవ్ అయింది. ఆడుతూ ఉండటానికి మళ్లీ లోడ్ చేయండి." },
   "save.openFailed.title": { "en": "Your village couldn't be opened", "text": "మీ గ్రామాన్ని తెరవడం సాధ్యం కాలేదు" },
   "save.openFailed.body": { "en": "This device didn't open its saved village in time. Try again, or play a temporary village for now: it is not saved and stays offline.", "text": "ఈ పరికరం మీ సేవ్ చేసిన గ్రామాన్ని సమయానికి తెరవలేకపోయింది. మళ్లీ ప్రయత్నించండి, లేదా ప్రస్తుతానికి తాత్కాలిక గ్రామంలో ఆడండి: అది సేవ్ కాదు, ఆఫ్‌లైన్‌లోనే ఉంటుంది." },

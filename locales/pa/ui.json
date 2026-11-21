@@ -156,6 +156,7 @@
   "raid.reportPending": { "en": "Your last raid is still being sent to the server. Try again in a moment; Practice and Trials still work.", "text": "ਤੁਹਾਡਾ ਆਖ਼ਰੀ ਛਾਪਾ ਅਜੇ ਸਰਵਰ ਨੂੰ ਭੇਜਿਆ ਜਾ ਰਿਹਾ ਹੈ। ਥੋੜ੍ਹੀ ਦੇਰ ਬਾਅਦ ਮੁੜ ਕੋਸ਼ਿਸ਼ ਕਰੋ; ਅਭਿਆਸ ਅਤੇ ਪਰਖਾਂ ਉਪਲਬਧ ਹਨ।" },
   "save.restoredPrevious": { "en": "Your latest save could not be read, so an earlier copy ({when}) was loaded.", "text": "ਤੁਹਾਡਾ ਨਵੀਨਤਮ ਸੇਵ ਪੜ੍ਹਿਆ ਨਹੀਂ ਜਾ ਸਕਿਆ, ਇਸ ਲਈ ਪਹਿਲਾਂ ਦੀ ਇੱਕ ਕਾਪੀ ({when}) ਲੋਡ ਕੀਤੀ ਗਈ।" },
   "frame.failed.title": { "en": "Something went wrong drawing the village", "text": "ਪਿੰਡ ਦਿਖਾਉਂਦਿਆਂ ਕੁਝ ਗੜਬੜ ਹੋ ਗਈ" },
+  "frame.graphicsLost": { "en": "The graphics stopped", "text": "ਗ੍ਰਾਫ਼ਿਕਸ ਰੁਕ ਗਏ" },
   "frame.failed.body": { "en": "Your village is saved. Reload to keep playing.", "text": "ਤੁਹਾਡਾ ਪਿੰਡ ਸੰਭਾਲਿਆ ਗਿਆ ਹੈ। ਖੇਡਣਾ ਜਾਰੀ ਰੱਖਣ ਲਈ ਮੁੜ ਲੋਡ ਕਰੋ।" },
   "save.openFailed.title": { "en": "Your village couldn't be opened", "text": "ਤੁਹਾਡਾ ਪਿੰਡ ਖੋਲ੍ਹਿਆ ਨਹੀਂ ਜਾ ਸਕਿਆ" },
   "save.openFailed.body": { "en": "This device didn't open its saved village in time. Try again, or play a temporary village for now: it is not saved and stays offline.", "text": "ਇਹ ਡਿਵਾਈਸ ਤੁਹਾਡਾ ਸੰਭਾਲਿਆ ਪਿੰਡ ਸਮੇਂ ਸਿਰ ਨਹੀਂ ਖੋਲ੍ਹ ਸਕੀ। ਮੁੜ ਕੋਸ਼ਿਸ਼ ਕਰੋ, ਜਾਂ ਹਾਲ ਦੀ ਘੜੀ ਇੱਕ ਅਸਥਾਈ ਪਿੰਡ ਖੇਡੋ: ਉਹ ਸੰਭਾਲਿਆ ਨਹੀਂ ਜਾਂਦਾ ਅਤੇ ਔਫਲਾਈਨ ਰਹਿੰਦਾ ਹੈ।" },

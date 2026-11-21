@@ -156,6 +156,7 @@
   "raid.reportPending": { "en": "Your last raid is still being sent to the server. Try again in a moment; Practice and Trials still work.", "text": "Serbuan terakhir anda masih dihantar ke pelayan. Cuba lagi sebentar nanti; Latihan dan Ujian masih boleh dimainkan." },
   "save.restoredPrevious": { "en": "Your latest save could not be read, so an earlier copy ({when}) was loaded.", "text": "Simpanan terkini anda tidak dapat dibaca, jadi salinan terdahulu ({when}) dimuatkan." },
   "frame.failed.title": { "en": "Something went wrong drawing the village", "text": "Ada masalah semasa melukis kampung" },
+  "frame.graphicsLost": { "en": "The graphics stopped", "text": "Grafik telah berhenti" },
   "frame.failed.body": { "en": "Your village is saved. Reload to keep playing.", "text": "Kampung anda telah disimpan. Muat semula untuk terus bermain." },
   "save.openFailed.title": { "en": "Your village couldn't be opened", "text": "Kampung anda tidak dapat dibuka" },
   "save.openFailed.body": { "en": "This device didn't open its saved village in time. Try again, or play a temporary village for now: it is not saved and stays offline.", "text": "Peranti ini tidak membuka kampung tersimpan anda tepat pada masanya. Cuba lagi, atau main kampung sementara buat masa ini: ia tidak disimpan dan kekal luar talian." },

@@ -156,6 +156,7 @@
   "raid.reportPending": { "en": "Your last raid is still being sent to the server. Try again in a moment; Practice and Trials still work.", "text": "ನಿಮ್ಮ ಕೊನೆಯ ದಾಳಿ ಇನ್ನೂ ಸರ್ವರ್‌ಗೆ ಕಳುಹಿಸಲಾಗುತ್ತಿದೆ. ಸ್ವಲ್ಪ ಸಮಯದ ನಂತರ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ; ಅಭ್ಯಾಸ ಮತ್ತು ಪರೀಕ್ಷೆಗಳು ಲಭ್ಯವಿವೆ." },
   "save.restoredPrevious": { "en": "Your latest save could not be read, so an earlier copy ({when}) was loaded.", "text": "ನಿಮ್ಮ ಇತ್ತೀಚಿನ ಉಳಿಕೆಯನ್ನು ಓದಲಾಗಲಿಲ್ಲ, ಆದ್ದರಿಂದ ಹಿಂದಿನ ಪ್ರತಿ ({when}) ಲೋಡ್ ಮಾಡಲಾಗಿದೆ." },
   "frame.failed.title": { "en": "Something went wrong drawing the village", "text": "ಗ್ರಾಮವನ್ನು ಚಿತ್ರಿಸುವಾಗ ಏನೋ ತಪ್ಪಾಗಿದೆ" },
+  "frame.graphicsLost": { "en": "The graphics stopped", "text": "ಗ್ರಾಫಿಕ್ಸ್ ನಿಂತುಹೋಗಿದೆ" },
   "frame.failed.body": { "en": "Your village is saved. Reload to keep playing.", "text": "ನಿಮ್ಮ ಗ್ರಾಮ ಉಳಿಸಲಾಗಿದೆ. ಆಟ ಮುಂದುವರಿಸಲು ಮರುಲೋಡ್ ಮಾಡಿ." },
   "save.openFailed.title": { "en": "Your village couldn't be opened", "text": "ನಿಮ್ಮ ಗ್ರಾಮವನ್ನು ತೆರೆಯಲಾಗಲಿಲ್ಲ" },
   "save.openFailed.body": { "en": "This device didn't open its saved village in time. Try again, or play a temporary village for now: it is not saved and stays offline.", "text": "ಈ ಸಾಧನ ನಿಮ್ಮ ಉಳಿಸಿದ ಗ್ರಾಮವನ್ನು ಸಮಯಕ್ಕೆ ತೆರೆಯಲಿಲ್ಲ. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ, ಅಥವಾ ಸದ್ಯಕ್ಕೆ ತಾತ್ಕಾಲಿಕ ಗ್ರಾಮದಲ್ಲಿ ಆಡಿ: ಅದು ಉಳಿಯುವುದಿಲ್ಲ ಮತ್ತು ಆಫ್‌ಲೈನ್‌ನಲ್ಲೇ ಇರುತ್ತದೆ." },
