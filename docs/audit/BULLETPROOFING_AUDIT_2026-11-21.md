@@ -2,6 +2,8 @@
 
 Audit of `jimhavlicekpersonal/ninja-version-of-game-1` at commit `560ce7acb2268fd0755adb799ed310db240ebe2e` (branch `claude/awesome-goodall-tglafs`), against the owner's **Game Release Bulletproofing Checklist** (17 sections, ~190 items: stability, saves, economy, onboarding, input, performance, networking, security, design, polish, UI, localization, store compliance, pipeline, analytics, real-world testing, launch day, and game theory 17a–17h).
 
+A typeset PDF of this report is [`bulletproofing/BULLETPROOFING_AUDIT_2026-11-21.pdf`](bulletproofing/BULLETPROOFING_AUDIT_2026-11-21.pdf), rebuilt from this file by `python3 docs/audit/bulletproofing/make_report.py`.
+
 This is a report, not a fix pass. Nothing in the game, server or data was changed. Every new finding below is **OPEN**. Prior audits' "fixed" claims were re-checked against current code where they touch a checklist item; where they hold, this report says so; where they don't, it says that too.
 
 **How each item was judged.** PASS = verified in current code or by running it. PARTIAL = there, with a gap. FAIL = missing or defective. N/A = the game has no such feature (reason given). DEVICE/OWNER = cannot be settled from the repository (a phone, a store console, a live server, real players or a legal decision is needed); the code's support for it is still described. "Inferred" marks a conclusion reasoned from code but not reproduced.
