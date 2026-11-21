@@ -1,5 +1,7 @@
 # Submission and staged rollout (step 53, checklist)
 
+Launch day, support templates and the hotfix path: `docs/ops/LAUNCH_DAY.md`. Ending online play: `docs/ops/SUNSET.md`. Alerts: `docs/ops/RUNBOOK.md`.
+
 ## Before submitting
 
 - [ ] Server: production deployed by hand from the release workflow (`docs/SHIPPING.md` 3g), `/readyz` green, alerts on (`ops/prometheus/alerts.yml`), a backup made and the last Sunday drill passed (`.github/workflows/backup.yml`).

@@ -71,3 +71,15 @@ describe('server rollback', () => {
     expect(wf.match(/rollback-check\.mjs server/g)).toHaveLength(2);
   });
 });
+
+describe('Beast Mode OPS-13: launch-day and sunset documents', () => {
+  it('exist, cover their parts and are linked from RELEASE.md', () => {
+    const launch = read('docs/ops/LAUNCH_DAY.md');
+    for (const part of ['Day 0 timeline', 'Known issues', 'Support reply templates', 'Hotfix path', 'MIN_CLIENT_BUILD', 'expedited review']) expect(launch, part).toContain(part);
+    const sunset = read('docs/ops/SUNSET.md');
+    for (const part of ['PRODUCTS_OFF', 'jp-unused-balance', '30 days', 'Offline mode', 'Delete player data']) expect(sunset, part).toContain(part);
+    const release = read('docs/store/RELEASE.md');
+    expect(release).toContain('docs/ops/LAUNCH_DAY.md');
+    expect(release).toContain('docs/ops/SUNSET.md');
+  });
+});
