@@ -292,6 +292,11 @@ export function policyFromEnv(env: Record<string, string | undefined>): Partial<
   if (env.PRODUCTS_OFF !== undefined) out.productsOff = env.PRODUCTS_OFF.split(',').map((x) => x.trim()).filter(Boolean);
   if (env.FEATURES_OFF !== undefined) out.featuresOff = env.FEATURES_OFF.split(',').map((x) => x.trim()).filter(Boolean);
   if (env.LATE_REPORT_RULE !== undefined) out.lateReportRule = env.LATE_REPORT_RULE === '1';
+  if (env.PAIR_DAILY_LOOT_SHARE !== undefined && env.PAIR_DAILY_LOOT_SHARE.trim() !== '') {
+    const v = Number(env.PAIR_DAILY_LOOT_SHARE);
+    if (!(v >= 0 && v <= 1)) throw new Error('PAIR_DAILY_LOOT_SHARE must be a number from 0 to 1.');
+    out.pairDailyLootShare = v;
+  }
   if (env.UPLOAD_ACCOUNT_AGE !== undefined && env.UPLOAD_ACCOUNT_AGE !== '') out.uploadAccountAge = env.UPLOAD_ACCOUNT_AGE !== '0';
   if (env.REQUIRE_SERVER_VILLAGE !== undefined) out.requireServerVillage = env.REQUIRE_SERVER_VILLAGE === '1';
   if (env.EU_JADE_VALUE !== undefined) out.euJadeValue = env.EU_JADE_VALUE === '1';

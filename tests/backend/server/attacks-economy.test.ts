@@ -38,8 +38,8 @@ const total = (c: Record<string, number | undefined>) => Object.values(c).reduce
 for (const [label, makeRepo] of repoFactories) {
   describe(`attacks with server-held villages on ${label} storage`, () => {
     /** Ann trains 10 Shinobi on the server; Dot builds collectors and lets loot pile up. */
-    async function scene() {
-      const w = world({ repo: await makeRepo() });
+    async function scene(shared?: Parameters<typeof world>[0]['shared']) {
+      const w = world({ repo: await makeRepo(), shared });
       const ann = await w.player('Ann');
       const dot = await w.player('Dot');
       const annGame = emulator((await ann.startVillage()).file, w.data);
@@ -58,6 +58,19 @@ for (const [label, makeRepo] of repoFactories) {
       expect((await ann.sendCommands(annGame.batch())).corrections).toBeUndefined();
       return { w, ann, dot, annGame, dotGame };
     }
+
+    it('Beast Mode GT-17: one attacker takes at most the pair\'s daily share of a server village\'s loot', async () => {
+      // Share 0: nothing at all may move from Dot to Ann today; the raid still scores and spends Ann's warriors.
+      const { w, ann } = await scene({ policy: { pairDailyLootShare: 0 } });
+      const m = (await ann.match())!;
+      expect(m.opponent).toMatchObject({ name: 'Dot', kind: 'player' });
+      const seed = await startSeed(ann, m.ticket);
+      const r = await ann.submitAttack({ ticket: m.ticket, seed, ...rush(10) });
+      expect(r.result.destruction).toBeGreaterThan(0);
+      expect(total(r.result.loot)).toBe(0);
+      expect((await ann.ledger(20)).entries.filter((l) => l.reason === 'attack:loot' && l.delta > 0)).toEqual([]);
+      void w;
+    });
 
     it('spends the attacker’s server-held troops and banks the loot in one transaction; the defender loses it; both games agree', async () => {
       const { w, ann, dot, annGame, dotGame } = await scene();

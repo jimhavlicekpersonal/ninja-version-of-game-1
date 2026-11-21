@@ -266,6 +266,19 @@ export function uploadedBaseResult(result: BattleResult, hallLevel: number, data
   return { ...result, loot };
 }
 
+/**
+ * Beast Mode 2026-11-21 GT-17: what one attacker may still take from one defender today. `taken` is what earlier raids
+ * of this pair took since the UTC day began; `cap` the most per resource.
+ */
+export function pairCapped(result: BattleResult, taken: Cost, cap: number): BattleResult {
+  const loot: Cost = {};
+  for (const [k, v] of Object.entries(result.loot) as [ResourceKind, number][]) {
+    const n = Math.min(v ?? 0, Math.max(0, cap - (taken[k] ?? 0)));
+    if (n > 0) loot[k] = n;
+  }
+  return { ...result, loot };
+}
+
 export async function uploadBase(ctx: ServerContext, me: Player, req: UploadBaseRequest, client?: ClientInfo): Promise<void> {
   await requireHeldVillage(ctx, me.id); // Beast Mode SEC-01
   // A village the server holds is the base (its real layout and loot); the upload is ignored.
@@ -844,7 +857,15 @@ export async function attack(ctx: ServerContext, me: Player, sub: BattleReport):
     // Exploit audit 2026-11-20 #7: a base the device uploaded holds whatever loot it claims (within the storage cap),
     // so an alt could plant a full undefended base, be raided for real server resources, drop its shield and upload
     // again. Loot from an uploaded base pays at most what the poorest generated base of its Keep would.
-    const paid = lootFrom === 'uploaded-base' ? uploadedBaseResult(result, ticket.base.hallLevel ?? defender?.hallLevel ?? 1, data) : result;
+    let paid = lootFrom === 'uploaded-base' ? uploadedBaseResult(result, ticket.base.hallLevel ?? defender?.hallLevel ?? 1, data) : result;
+    // Beast Mode GT-17: one attacker takes at most a share of the defender's storage cap from it per UTC day.
+    if (defender && lootFrom === 'server-village') {
+      const caps = data.raids.storageLootCapByHall;
+      const cap = Math.floor(ctx.policy.pairDailyLootShare * caps[Math.max(1, Math.min(caps.length, ticket.base.hallLevel ?? defender.hallLevel)) - 1]);
+      const taken: Cost = {};
+      for (const a of todayFromMe) for (const [k, v] of Object.entries(a.result.loot ?? {}) as [ResourceKind, number][]) taken[k] = (taken[k] ?? 0) + (v ?? 0);
+      paid = pairCapped(paid, taken, cap);
+    }
     response.result = paid;
     // Marking the ticket used and storing the answer comes first: only the first report applies anything.
     if (!(await tx.useTicket(ticket.id, response))) return 'used' as const;

@@ -67,6 +67,12 @@ export interface ServerPolicy {
   productsOff: string[];
   /** OPS-09: FEATURES_OFF, hello features switched off during an incident (chat, referrals, shared-replays, duels, gangs). */
   featuresOff: string[];
+  /**
+   * Beast Mode GT-17: PAIR_DAILY_LOOT_SHARE (default 0.5). One attacker takes at most this share of the defender's Keep's
+   * `storageLootCapByHall`, per resource, from one server-held village per UTC day (an alternate account fed a main
+   * by being raided again and again; exhaustion only halved each raid).
+   */
+  pairDailyLootShare: number;
 }
 
 export const DEFAULT_POLICY: ServerPolicy = {
@@ -85,6 +91,7 @@ export const DEFAULT_POLICY: ServerPolicy = {
   lateReportRule: false,
   productsOff: [],
   featuresOff: [],
+  pairDailyLootShare: 0.5,
 };
 
 /** Beast Mode OPS-09: the features the operators may switch off without an app update. */
