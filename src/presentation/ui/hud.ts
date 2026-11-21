@@ -1304,7 +1304,10 @@ export class Hud {
       this.closeAllModals();
     } catch (e) {
       const lastKey = (e as { status?: number }).status === 409;
-      this.toast(lastKey ? t('account.signOutDevice.lastKey') : i18nMessage((e as Error).message, true), 'error');
+      // Beast Mode SAV-04: refused while actions or battle reports are still waiting to be sent.
+      const pending = e as { code?: string; actions?: number; raids?: number };
+      if (pending.code === 'PENDING') this.toast(t('account.signOutDevice.pending', { actions: pending.actions ?? 0, raids: pending.raids ?? 0 }), 'error');
+      else this.toast(lastKey ? t('account.signOutDevice.lastKey') : i18nMessage((e as Error).message, true), 'error');
     }
   }
 

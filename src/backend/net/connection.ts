@@ -883,6 +883,11 @@ export class Connection {
     if (!this.server?.features.includes('session-control') || !port.signOutDevice) throw new Error('This server cannot sign out this device yet.');
     // Reports and actions waiting here belong to this account: send them while the token still works.
     await this.flush().catch(() => undefined);
+    // Beast Mode SAV-04: a flush that failed (busy, rate limited, a timeout) would leave them to be dropped by the
+    // sign-out below: refuse instead, and say how many are waiting.
+    const actions = this.village?.pending ?? 0;
+    const raids = this.outbox().length;
+    if (actions > 0 || raids > 0) throw Object.assign(new Error(`${actions} actions and ${raids} battle reports are still being sent. Try again when the connection is better.`), { code: 'PENDING', actions, raids });
     // Second verification 2026-11-14: the server may sign this device out and the answer still be lost. The mark
     // makes the next 401 finish the sign-out here instead of quietly registering a new player (`ensurePlayer`).
     this.kv.set(this.signOutPendingKey, '1');

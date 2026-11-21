@@ -81,6 +81,18 @@ export class App {
       else this.d.hud.toast(msg, 'error');
       return;
     }
+    // Beast Mode SAV-05: the server counts a started raid whose report has not arrived as a loss at the next match, so
+    // no match is asked for while an attack report is still waiting here (a won raid on a poor connection was forfeited).
+    const conn0 = this.d.connection;
+    if (conn0.online && conn0.port && conn0.outbox().some((i) => i.kind === 'attack')) {
+      await conn0.sendReportsBeforeMatch();
+      if (conn0.outbox().some((i) => i.kind === 'attack')) {
+        const msg = i18nText('raid.reportPending');
+        if (this.battleHud) this.battleHud.toast(msg);
+        else this.d.hud.toast(msg, 'info');
+        return;
+      }
+    }
     const r = c.scout(paid);
     if (!r.ok) {
       if (this.battleHud) this.battleHud.toast(r.message);

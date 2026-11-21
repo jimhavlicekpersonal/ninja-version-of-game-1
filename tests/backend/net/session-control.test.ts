@@ -191,6 +191,30 @@ describe('A16: Connection rotates every 30 days and signs this device out', () =
   });
 });
 
+describe('Beast Mode SAV-04: sign-out never drops unsent work', () => {
+  it('refuses while a battle report is still waiting (the send failed), keeps it, and never calls the server', async () => {
+    const identity = { providers: ['gamecenter' as const], verify: async (_p: string, c: unknown) => ({ provider: 'gamecenter' as const, subject: String((c as { id: string }).id) }) };
+    const w = world({ shared: { identity } as never });
+    const game = village(w);
+    const port = new InProcessServerAdapter(w.core);
+    const conn = new Connection({ game, builtInUrl: 'test.server', kv: memoryKv(), makePort: () => port, log: () => undefined });
+    await conn.sync();
+    await conn.link('gamecenter', { id: 'gc-2' });
+    // A report is queued and the server is busy for it.
+    vi.spyOn(port, 'submitAttack').mockImplementation(async () => {
+      throw new ServerError(429, 'rate_limited', 'slow down');
+    });
+    const signOut = vi.spyOn(port, 'signOutDevice');
+    await conn.report('attack', { ticket: 't-1', seed: 1, army: {}, deployments: [] } as never).catch(() => undefined);
+    expect(conn.outbox()).toHaveLength(1);
+    const err = await conn.signOutDevice().then(() => null, (e: unknown) => e as { code?: string; raids?: number });
+    expect(err).toMatchObject({ code: 'PENDING', raids: 1 });
+    expect(signOut).not.toHaveBeenCalled();
+    expect(conn.outbox()).toHaveLength(1);
+    expect(port.hasIdentity()).toBe(true);
+  });
+});
+
 /**
  * Second verification 2026-11-14: a sign-out the server carried out whose answer was lost left the dead token
  * here, and the next start's 401 quietly registered a new, empty player. Now a pending sign-out (or a key of an
