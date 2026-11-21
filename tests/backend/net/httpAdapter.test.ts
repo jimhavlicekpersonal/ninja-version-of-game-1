@@ -164,3 +164,29 @@ describe('HttpServerAdapter unreadable answers', () => {
     expect(await settle(port.me(), 0)).toEqual({ value: null });
   });
 });
+
+describe('Beast Mode SAV-10: a lost answer keeps its Idempotency-Key', () => {
+  it('two attempts of the same write after a network error carry the same key; after an answer, a new one', async () => {
+    const { port, calls } = adapter(async (_c, i) => {
+      if (i === 0) throw new TypeError('Failed to fetch');
+      return new Response(JSON.stringify({ accountToken: 'a', storeProductId: 'x' }), { status: 200, headers: { 'content-type': 'application/json' } });
+    });
+    const req = { store: 'apple' as const, productId: 'moonstones_0', under18: false };
+    await expect(port.purchaseIntent(req)).rejects.toBeInstanceOf(ServerError);
+    await port.purchaseIntent(req);
+    await port.purchaseIntent(req);
+    const keys = calls.map((c) => (c.init.headers as Record<string, string>)[ClientHeaders.idempotencyKey]);
+    expect(keys[0]).toBe(keys[1]);
+    expect(keys[2]).not.toBe(keys[1]);
+  });
+
+  it('a different body gets a different key', async () => {
+    const { port, calls } = adapter(async () => {
+      throw new TypeError('Failed to fetch');
+    });
+    await expect(port.purchaseIntent({ store: 'apple', productId: 'a', under18: false })).rejects.toBeInstanceOf(ServerError);
+    await expect(port.purchaseIntent({ store: 'apple', productId: 'b', under18: false })).rejects.toBeInstanceOf(ServerError);
+    const keys = calls.map((c) => (c.init.headers as Record<string, string>)[ClientHeaders.idempotencyKey]);
+    expect(keys[0]).not.toBe(keys[1]);
+  });
+});

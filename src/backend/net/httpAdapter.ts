@@ -160,6 +160,9 @@ export function normalizeServerUrl(raw: string): string {
   return s.replace(/\/+$/, '');
 }
 
+/** Beast Mode SAV-10: how long a lost answer's key is reused (the server keeps idempotent answers for a day). */
+const UNANSWERED_KEY_MS = 12 * 3_600_000;
+
 /** Beast Mode SAV-06: the slowest uplink a large request is given time for (EDGE / poor 3G), in bytes per second. */
 const MIN_UPLINK_BYTES_PER_S = 8_000;
 /** SAV-06: no request waits longer than this, however large. */
@@ -238,14 +241,33 @@ export class HttpServerAdapter implements ServerPort {
         reject(new ServerError(0, 'network', TOO_SLOW));
       }, ms);
     });
+    // Beast Mode SAV-10: a write whose answer was lost (a network error: the server may have done it) keeps its
+    // Idempotency-Key, so sending the very same request again gets the first answer back instead of doing it twice
+    // (a purchase intent reserving the under-18 cap twice, a chat line posted twice). Any real answer forgets it.
+    const fp = method === 'GET' ? '' : `${method} ${path} ${body === undefined ? '' : JSON.stringify(body)}`;
+    const kept = fp ? this.unanswered.get(fp) : undefined;
+    const key = fp ? (kept && Date.now() - kept.at < UNANSWERED_KEY_MS ? kept.key : newKey()) : undefined;
     try {
-      return await Promise.race([this.exchange<T>(method, path, body, ctrl, token), deadline]);
+      const out = await Promise.race([this.exchange<T>(method, path, body, ctrl, token, key), deadline]);
+      if (fp) this.unanswered.delete(fp);
+      return out;
+    } catch (e) {
+      if (fp && key) {
+        if (e instanceof ServerError && e.code === 'network') {
+          this.unanswered.set(fp, { key, at: kept?.at ?? Date.now() });
+          if (this.unanswered.size > 50) this.unanswered.delete(this.unanswered.keys().next().value!);
+        } else this.unanswered.delete(fp);
+      }
+      throw e;
     } finally {
       clearTimeout(timer);
     }
   }
 
-  private async exchange<T>(method: string, path: string, body: unknown, ctrl: AbortController | null, token: string | null): Promise<T> {
+  /** SAV-10: writes whose answer was lost, by method, path and body: the Idempotency-Key to send again. */
+  private readonly unanswered = new Map<string, { key: string; at: number }>();
+
+  private async exchange<T>(method: string, path: string, body: unknown, ctrl: AbortController | null, token: string | null, key?: string): Promise<T> {
     let res: Response;
     try {
       res = await this.fetchFn(`${this.baseUrl}${path}`, {
@@ -257,7 +279,7 @@ export class HttpServerAdapter implements ServerPort {
           [ClientHeaders.simRules]: String(SIM_RULES),
           [ClientHeaders.dataVersion]: this.dataVersion(),
           [ClientHeaders.clientBuild]: this.build,
-          ...(method !== 'GET' ? { [ClientHeaders.idempotencyKey]: newKey() } : {}),
+          ...(method !== 'GET' ? { [ClientHeaders.idempotencyKey]: key ?? newKey() } : {}),
         },
         body: body === undefined ? undefined : JSON.stringify(body),
         signal: ctrl?.signal,
