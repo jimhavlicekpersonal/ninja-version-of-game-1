@@ -7,6 +7,8 @@ import type { GameController } from './gameplay/control/controller';
 import type { GroveSource, RaidBattle } from './backend/social/groveSource';
 import type { Connection } from './backend/net/connection';
 import type { BattleSceneInit } from './presentation/render/BattleScene';
+import { PREP_OWNER, battlePaintJobs, runSliced } from './presentation/render/battlePrepaint';
+import { releaseBuildingTextures } from './presentation/render/assets';
 import type { BaseLayout, BattleRecord, BattleResult, BattleSetup } from './gameplay/sim/battle/types';
 import { opponentFor } from './gameplay/sim/matchmaking';
 import { SIM_RULES } from './gameplay/sim/battle/battle';
@@ -47,6 +49,8 @@ const TICKET_MARGIN_MS = 5 * 60_000;
 export class App {
   private battleHud: BattleHud | null = null;
   private session: BattleSession | null = null;
+  /** Beast Mode STB-07: the latest battle opening (a slow prepaint for an earlier one never starts it). */
+  private openSeq = 0;
   /** Saves the live battle's deployments right now (they are otherwise saved at most every 1.5 s). */
   private flushTrack: (() => void) | null = null;
 
@@ -354,6 +358,8 @@ export class App {
   }
 
   home(): void {
+    this.openSeq++;
+    releaseBuildingTextures(this.d.game.textures, PREP_OWNER);
     this.flushTrack = null;
     this.battleHud?.destroy();
     this.battleHud = null;
@@ -591,7 +597,17 @@ export class App {
       },
     };
     const init: BattleSceneInit = { session, hooks, renderScale: this.d.renderScale };
-    if (sm.isActive('battle') || sm.isPaused('battle')) sm.stop('battle');
-    sm.start('battle', init);
+    const start = () => {
+      if (sm.isActive('battle') || sm.isPaused('battle')) sm.stop('battle');
+      sm.start('battle', init);
+    };
+    // Beast Mode STB-07: paint this base's new looks and ruins in short slices first (a base at another Keep can
+    // need dozens), so the battle opens without a long task and the first destruction paints nothing.
+    const jobs = battlePaintJobs(this.d.game.textures, session.sim.buildings);
+    if (!jobs.length) return start();
+    const opened = ++this.openSeq;
+    void runSliced(jobs, 8, () => opened !== this.openSeq || this.session !== session).then(() => {
+      if (opened === this.openSeq && this.session === session) start();
+    });
   }
 }

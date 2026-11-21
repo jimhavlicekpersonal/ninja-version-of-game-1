@@ -6,6 +6,7 @@ import { TILE_H, TILE_W, depthFor, footprintCenter, mapBounds, worldToTile } fro
 import { paintBird, paintRuins, paintStreamer, paintVillager, type RuinFamily } from '../art/ninja';
 import { paintFogBand, paintRidge, paintSun } from '../art/ground';
 import { ROLE_RING, roleOfTroop } from '../art/warriorIcons';
+import { ruinKey } from './battleKeys';
 
 const CONFETTI = 'fx.confetti';
 const DOT = 'fx.dot';
@@ -289,20 +290,19 @@ export function deathPuff(scene: Phaser.Scene, x: number, y: number, depth: numb
   }
 }
 
-/** Ruin family by building type (`art/ninja.ts` `paintRuins`). */
-export function ruinFamily(kind: string, type: string): RuinFamily {
-  if (kind === 'hall') return 'keep';
-  if (kind === 'defense') return 'tower';
-  if (type === 'acorn_silo' || type === 'dew_cistern') return 'store';
-  return 'house';
-}
+export { ruinFamily } from './battleKeys';
 
 /** Texture key for a family's ruins at a footprint size, painted on first use. */
 export function ruinTexture(scene: Phaser.Scene, size: number, family: RuinFamily): string {
-  const key = `rubble.${size}.${family}`;
+  return ruinTextureOn(scene.textures, size, family);
+}
+
+/** Beast Mode STB-07: the same, from a texture manager (painted ahead of a battle by `battlePrepaint.ts`). */
+export function ruinTextureOn(textures: Phaser.Textures.TextureManager, size: number, family: RuinFamily): string {
+  const key = ruinKey(size, family);
   const w = size * TILE_W;
   const h = size * TILE_H + 40;
-  return artTexture(scene, key, w, h, h - (size * TILE_H) / 2, (ctx) => paintRuins(ctx, size, family), BUILDING_SCALE);
+  return paintArtTexture(textures, key, w, h, h - (size * TILE_H) / 2, (ctx) => paintRuins(ctx, size, family), BUILDING_SCALE, false);
 }
 
 /** The Keep comes down: a ring of dust, a flash, heavy debris and a long shake. */

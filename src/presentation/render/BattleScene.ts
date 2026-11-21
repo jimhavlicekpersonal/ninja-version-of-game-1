@@ -14,6 +14,7 @@ import { CameraControl } from './cameraControl';
 import { TILE_H, TILE_W, depthFor, footprintCenter, mapBounds, tileToWorld, worldToTile } from './iso';
 import { noteBattleFps, quality } from './quality';
 import { expectedFps, frames, refreshHz, slowDown } from './frameRate';
+import { PREP_OWNER } from './battlePrepaint';
 import { addScenery, canvasRenderer, tintedTexture, debris, deathPuff, keepCollapse, makeTracer, muzzleFlash, perfectBanner, ruinFamily, ruinTexture, starSlam, targetLine, troopRing, updateTracer } from './fx';
 import { haptic, sound } from '../audio/sound';
 import { placeCallout, type CalloutBox } from './calloutLayout';
@@ -240,6 +241,8 @@ export class BattleScene extends Phaser.Scene {
     // Report section 5 step 3 (device F1): this base's art stays while the battle shows it; the last
     // base's (scouting, Next, replays) can go once this scene shuts down.
     holdBuildingTextures(this.textures, 'battle', this.bviews.map((v) => v.image.texture.key));
+    // Beast Mode STB-07: the prepainted looks are held by this scene now.
+    releaseBuildingTextures(this.textures, PREP_OWNER);
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       releaseBuildingTextures(this.textures, 'battle');
       for (const k of this.tintKeys) if (this.textures.exists(k)) this.textures.remove(k);
