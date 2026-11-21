@@ -45,6 +45,7 @@
     "i18n:check": "node tools/i18n/i18n.mjs check",
     "i18n:next": "node tools/i18n/i18n.mjs next",
     "perf:lowend": "node tools/perf/lowend.mjs",
+    "perf:budget": "node tools/perf/bundle-budget.mjs",
     "perf:profile": "node tools/perf/profile.mjs",
     "ui:surfaces": "node tools/ui/surfaces.mjs",
     "balance:bundle": "node tools/balance/bundle.mjs",

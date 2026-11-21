@@ -60,6 +60,9 @@ jobs:
           VITE_APPLE_SERVICES_ID: ${{ vars.VITE_APPLE_SERVICES_ID }}
           # P7-11 (PUB-14): local-day statistics; the owner's switch (repository variable VITE_STATS_TZ=1), off by default.
           VITE_STATS_TZ: ${{ vars.VITE_STATS_TZ || '0' }}
+      # Beast Mode STB-10: what the first visit downloads stays within budget.
+      - name: Bundle size budget
+        run: node tools/perf/bundle-budget.mjs
       # Beast Mode OPS-02/STB-02: source maps go privately to Sentry (main only, when configured) and never ship.
       - name: Source maps (private upload, then removed)
         run: |
