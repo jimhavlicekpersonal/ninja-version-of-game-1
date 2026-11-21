@@ -23,4 +23,23 @@ describe('load test tool', () => {
       await app.close();
     }
   }, 30_000);
+
+  it('Beast Mode SEC-08: --mix adds held-village sessions (hello, commands, notices) with no errors', async () => {
+    const big = { limit: 100_000, windowMs: 60_000 };
+    const app = buildServer({ repo: new MemoryRepo(), data, rateLimits: { ip: big, player: big, register: big, match: big, battle: big, commands: big } });
+    await app.listen({ port: 0, host: '127.0.0.1' });
+    try {
+      const url = `http://127.0.0.1:${(app.server.address() as AddressInfo).port}`;
+      const r = await runLoad({ url, data, players: 3, battlesPerSecond: 1, seconds: 2, keeps: [2], commandsPerSecond: 4, holders: 3 });
+      for (const route of ['register', 'match', 'attack', 'hello', 'commands', 'notices']) {
+        expect(r.calls[route]?.count, route).toBeGreaterThan(0);
+        expect(r.calls[route]?.errors, route).toBe(0);
+      }
+      expect(r.sessions).toBeGreaterThan(0);
+      expect(r.calls.village?.count ?? 0).toBe(0); // the game's rules agree with the server's: no corrections
+      expect(Object.keys(r.errors).filter((k) => !k.startsWith('skipped_'))).toEqual([]);
+    } finally {
+      await app.close();
+    }
+  }, 30_000);
 });

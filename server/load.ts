@@ -15,16 +15,26 @@
  * 5x the expected peak (roadmap section 2: 10k daily players, 8 attacks each,
  * about 3x the average at peak) is ~14 battles a second. Point it at staging
  * with relaxed registration limits (RATE_LIMITS), never at production.
+ *
+ * Beast Mode SEC-08: `--mix` adds the traffic of server-held villages, which dominates once every village is held:
+ * players who keep a village on the server run sessions of hello → village commands (a collector placed, then
+ * collected, applied with the game's own rules so the economy hash matches) → notices, at `commandsPerSecond`.
+ * The 10x targets and pass criteria are in docs/SHIPPING.md 3h.
  */
 import { HttpServerAdapter, memoryTokenStore } from '../src/backend/net/httpAdapter';
 import { ServerError } from '../src/backend/net/ports';
 import { createBattle } from '../src/gameplay/sim/battle/battle';
 import { generateOpponent } from '../src/gameplay/sim/battle/basegen';
 import { botDeployments } from '../src/gameplay/sim/defense';
+import { canPlace } from '../src/gameplay/sim/grid';
 import { botArmy } from '../src/gameplay/sim/matchmaking';
+import { deserialize } from '../src/gameplay/sim/save';
+import { economyHash } from '../src/gameplay/sim/serverEconomy';
+import { applyCommand, type Command } from '../src/gameplay/sim/village';
+import type { VillageCommand } from '../src/backend/net/protocol';
 import { troopLevelCapAt } from '../src/gameplay/sim/research';
 import { createRng } from '../src/gameplay/sim/rng';
-import type { GameData } from '../src/gameplay/sim/types';
+import type { GameData, VillageState } from '../src/gameplay/sim/types';
 
 export interface LoadOptions {
   url: string;
@@ -36,6 +46,10 @@ export interface LoadOptions {
   seconds: number;
   /** Keeps the players are spread over. */
   keeps?: number[];
+  /** Beast Mode SEC-08: village-command sessions per second (hello → commands → notices) from held villages. */
+  commandsPerSecond?: number;
+  /** Players who keep a village on the server (default a third of `players`, at least 1, when commands run). */
+  holders?: number;
   log?: (line: string) => void;
 }
 
@@ -56,6 +70,9 @@ export interface LoadReport {
   calls: Record<string, CallStats>;
   /** Refusals and failures by protocol error code. */
   errors: Record<string, number>;
+  /** Beast Mode SEC-08: command sessions completed, and commands the server refused (game rules, not failures). */
+  sessions?: number;
+  refusedCommands?: number;
 }
 
 const pct = (sorted: number[], p: number) => (sorted.length ? sorted[Math.min(sorted.length - 1, Math.floor(p * sorted.length))] : 0);
@@ -92,7 +109,64 @@ export async function runLoad(o: LoadOptions): Promise<LoadReport> {
     });
     if (ok !== null) players.push({ port, keep, busy: false });
   }
-  o.log?.(`${players.length} players ready; ${o.battlesPerSecond} battles/s for ${o.seconds} s.`);
+  // Beast Mode SEC-08: holders keep their village on the server and send the game's own commands.
+  const cps = o.commandsPerSecond ?? 0;
+  type Holder = { port: HttpServerAdapter; state: VillageState; seq: number; collector: string | null; busy: boolean };
+  const holders: Holder[] = [];
+  const holderCount = cps > 0 ? (o.holders ?? Math.max(1, Math.ceil(o.players / 3))) : 0;
+  for (let i = 0; i < holderCount; i++) {
+    const port = new HttpServerAdapter(o.url, { tokens: memoryTokenStore(), retryDelayMs: 200, build: 'loadtest' });
+    const v = await timed('register', async () => {
+      await port.register(`Keeper ${i}`);
+      return port.startVillage();
+    });
+    if (v) holders.push({ port, state: deserialize(v.file, o.data), seq: v.seq, collector: null, busy: false });
+  }
+  let sessions = 0;
+  let refusedCommands = 0;
+  /** The next command a holder's game would send: place a collector once, then collect it. */
+  const nextCommand = (h: Holder): Command | null => {
+    if (h.collector) return { type: 'collect', id: h.collector };
+    const limits = o.data.hall.levels[0].limits;
+    const type = Object.keys(limits).find((k) => o.data.buildings[k]?.produces && limits[k].count > 0);
+    if (!type) return null;
+    for (let y = 0; y < o.data.economy.mapSize; y++) for (let x = 0; x < o.data.economy.mapSize; x++) if (canPlace(h.state, o.data, type, x, y).ok) return { type: 'place', buildingType: type, x, y };
+    return null;
+  };
+  const session = async (h: Holder) => {
+    h.busy = true;
+    try {
+      await timed('hello', () => h.port.hello());
+      const commands: VillageCommand[] = [];
+      for (let k = 0; k < 3; k++) {
+        const cmd = nextCommand(h);
+        if (!cmd) break;
+        const t = Date.now();
+        const r = applyCommand(h.state, cmd, t, o.data);
+        if (r.ok) {
+          const before = new Set(h.state.buildings.map((b) => b.id));
+          h.state = r.state;
+          if (cmd.type === 'place') h.collector = h.state.buildings.find((b) => !before.has(b.id))?.id ?? null;
+        }
+        commands.push({ seq: ++h.seq, t, command: cmd });
+      }
+      if (commands.length) {
+        const res = await timed('commands', () => h.port.sendCommands({ stateHash: economyHash(h.state), commands }));
+        if (res) refusedCommands += res.results.filter((x) => !x.ok).length;
+        if (res?.corrections) {
+          // The server's economy wins (as in the game); reload the whole village so the next hash matches.
+          const v = await timed('village', () => h.port.getVillage());
+          if (v) h.state = deserialize(v.file, o.data);
+        }
+      }
+      await timed('notices', () => h.port.notices());
+      sessions++;
+    } finally {
+      h.busy = false;
+    }
+  };
+
+  o.log?.(`${players.length} players ready; ${o.battlesPerSecond} battles/s for ${o.seconds} s.${holders.length ? ` ${holders.length} held villages, ${cps} command sessions/s.` : ''}`);
 
   let battles = 0;
   let seq = 0;
@@ -122,10 +196,30 @@ export async function runLoad(o: LoadOptions): Promise<LoadReport> {
   const interval = 1000 / o.battlesPerSecond;
   let next = start;
   let i = 0;
+  const cmdInterval = cps > 0 ? 1000 / cps : Infinity;
+  let nextCmd = start;
+  let hi = 0;
   while (performance.now() - start < o.seconds * 1000) {
     const now = performance.now();
+    if (holders.length && now >= nextCmd) {
+      nextCmd += cmdInterval;
+      let h: Holder | null = null;
+      for (let k = 0; k < holders.length && !h; k++) {
+        const c = holders[(hi + k) % holders.length];
+        if (!c.busy) {
+          h = c;
+          hi = (hi + k + 1) % holders.length;
+        }
+      }
+      if (h) {
+        const run = session(h);
+        running.add(run);
+        void run.finally(() => running.delete(run));
+      } else errors.skipped_holders_busy = (errors.skipped_holders_busy ?? 0) + 1;
+      continue;
+    }
     if (now < next) {
-      await new Promise((r) => setTimeout(r, Math.min(50, next - now)));
+      await new Promise((r) => setTimeout(r, Math.max(1, Math.min(50, next - now, nextCmd - now))));
       continue;
     }
     next += interval;
@@ -154,5 +248,5 @@ export async function runLoad(o: LoadOptions): Promise<LoadReport> {
     const s = [...list].sort((a, b) => a - b);
     calls[name] = { count: s.length, errors: failures.get(name) ?? 0, p50: Math.round(pct(s, 0.5)), p95: Math.round(pct(s, 0.95)), p99: Math.round(pct(s, 0.99)), max: Math.round(s[s.length - 1] ?? 0) };
   }
-  return { battles, achievedBps: Math.round((battles / elapsed) * 100) / 100, targetBps: o.battlesPerSecond, calls, errors };
+  return { battles, achievedBps: Math.round((battles / elapsed) * 100) / 100, targetBps: o.battlesPerSecond, calls, errors, ...(holders.length ? { sessions, refusedCommands } : {}) };
 }
