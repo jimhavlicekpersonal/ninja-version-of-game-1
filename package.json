@@ -1,7 +1,7 @@
 {
   "name": "kagemura",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Kagemura: Ninja Clans - an original ninja-clan base-building and raiding game.",
   "type": "module",
   "engines": {

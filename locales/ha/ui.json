@@ -372,5 +372,6 @@
   "store.buyNamed": { "en": "Buy {name} for {price}", "text": "Saya {name} kan {price}" },
   "res.jadeOpenStore": { "en": "Jade: {n}. Open the Store", "text": "Jed: {n}. Buɗe Shago" },
   "settings.textSize": { "en": "Text size", "text": "Girman rubutu" },
-  "stake.recentHits": { "en": "Your last {raids} raids: 2★ or more in {two}, 3★ in {three}.", "text": "Hare-harenka {raids} na ƙarshe: 2★ ko fiye a {two}, 3★ a {three}." }
+  "stake.recentHits": { "en": "Your last {raids} raids: 2★ or more in {two}, 3★ in {three}.", "text": "Hare-harenka {raids} na ƙarshe: 2★ ko fiye a {two}, 3★ a {three}." },
+  "whatsNew.0_2_0": { "en": "What's new: choose a larger text size, and turn screen shake and flashes down, in Settings. The stake picker shows how often your recent raids reached two and three stars. Shadow Trials climb more evenly, and raids at Keep 4 and Keep 15 meet fairer opponents.", "text": "Sabbin abubuwa: zaɓi babban girman rubutu, ka rage girgizar allo da walƙiya a Saiti. Mai zaɓen caca yana nuna sau nawa hare-harenka na kwanan nan suka kai taurari biyu da uku. Gwaje-gwajen Inuwa suna hawa daidai-wa-daida, kuma hare-hare a Kagara 4 da 15 suna samun abokan hamayya masu adalci." }
 }

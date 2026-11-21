@@ -372,5 +372,6 @@
   "store.buyNamed": { "en": "Buy {name} for {price}", "text": "{name}を{price}で購入" },
   "res.jadeOpenStore": { "en": "Jade: {n}. Open the Store", "text": "翡翠：{n}。ストアを開く" },
   "settings.textSize": { "en": "Text size", "text": "文字サイズ" },
-  "stake.recentHits": { "en": "Your last {raids} raids: 2★ or more in {two}, 3★ in {three}.", "text": "直近{raids}回の襲撃：2★以上が{two}回、3★が{three}回。" }
+  "stake.recentHits": { "en": "Your last {raids} raids: 2★ or more in {two}, 3★ in {three}.", "text": "直近{raids}回の襲撃：2★以上が{two}回、3★が{three}回。" },
+  "whatsNew.0_2_0": { "en": "What's new: choose a larger text size, and turn screen shake and flashes down, in Settings. The stake picker shows how often your recent raids reached two and three stars. Shadow Trials climb more evenly, and raids at Keep 4 and Keep 15 meet fairer opponents.", "text": "新機能：設定で文字を大きくしたり、画面の揺れとフラッシュを抑えたりできます。賭けの選択画面に、最近の襲撃で2★と3★に届いた回数が表示されます。影の試練の難しさがなめらかに上がり、天守4と天守15の襲撃ではより公平な相手と当たります。" }
 }

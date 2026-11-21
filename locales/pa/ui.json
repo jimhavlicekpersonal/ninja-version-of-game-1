@@ -372,5 +372,6 @@
   "store.buyNamed": { "en": "Buy {name} for {price}", "text": "{name} {price} ਵਿੱਚ ਖਰੀਦੋ" },
   "res.jadeOpenStore": { "en": "Jade: {n}. Open the Store", "text": "ਜੇਡ: {n}। ਸਟੋਰ ਖੋਲ੍ਹੋ" },
   "settings.textSize": { "en": "Text size", "text": "ਲਿਖਤ ਦਾ ਆਕਾਰ" },
-  "stake.recentHits": { "en": "Your last {raids} raids: 2★ or more in {two}, 3★ in {three}.", "text": "ਤੁਹਾਡੇ ਆਖਰੀ {raids} ਛਾਪੇ: {two} ਵਿੱਚ 2★ ਜਾਂ ਵੱਧ, {three} ਵਿੱਚ 3★।" }
+  "stake.recentHits": { "en": "Your last {raids} raids: 2★ or more in {two}, 3★ in {three}.", "text": "ਤੁਹਾਡੇ ਆਖਰੀ {raids} ਛਾਪੇ: {two} ਵਿੱਚ 2★ ਜਾਂ ਵੱਧ, {three} ਵਿੱਚ 3★।" },
+  "whatsNew.0_2_0": { "en": "What's new: choose a larger text size, and turn screen shake and flashes down, in Settings. The stake picker shows how often your recent raids reached two and three stars. Shadow Trials climb more evenly, and raids at Keep 4 and Keep 15 meet fairer opponents.", "text": "ਨਵਾਂ ਕੀ ਹੈ: ਸੈਟਿੰਗਾਂ ਵਿੱਚ ਵੱਡੀ ਲਿਖਤ ਚੁਣੋ, ਅਤੇ ਸਕ੍ਰੀਨ ਦਾ ਹਿੱਲਣਾ ਅਤੇ ਚਮਕ ਘਟਾਓ। ਦਾਅ ਚੁਣਨ ਵੇਲੇ ਦਿਖਦਾ ਹੈ ਕਿ ਤੁਹਾਡੇ ਹਾਲੀਆ ਛਾਪਿਆਂ ਨੇ ਕਿੰਨੀ ਵਾਰ ਦੋ ਅਤੇ ਤਿੰਨ ਤਾਰੇ ਲਏ। ਛਾਇਆ ਪਰਖਾਂ ਹੋਰ ਬਰਾਬਰ ਚੜ੍ਹਦੀਆਂ ਹਨ, ਅਤੇ ਕਿਲ੍ਹਾ 4 ਅਤੇ 15 ਦੇ ਛਾਪਿਆਂ ਨੂੰ ਹੋਰ ਨਿਆਂਪੂਰਨ ਵਿਰੋਧੀ ਮਿਲਦੇ ਹਨ।" }
 }

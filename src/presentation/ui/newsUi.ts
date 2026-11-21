@@ -87,7 +87,7 @@ const SEEN_KEY = 'tk.newsSeen';
  * P7-14: "What's new" for this version, shown first in News until it is seen once on the device. The same English text
  * is the stores' release notes (docs/store/RELEASE_NOTES.md; a test keeps them equal). One entry per version.
  */
-export const WHATS_NEW = { version: '0.1.0', key: 'whatsNew.0_1_0' } as const;
+export const WHATS_NEW = { version: '0.2.0', key: 'whatsNew.0_2_0' } as const;
 const WHATS_NEW_KEY = 'tk.whatsNewSeen';
 
 function whatsNewUnseen(): boolean {

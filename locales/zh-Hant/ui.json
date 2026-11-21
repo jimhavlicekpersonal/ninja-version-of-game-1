@@ -372,5 +372,6 @@
   "store.buyNamed": { "en": "Buy {name} for {price}", "text": "以 {price} 購買{name}" },
   "res.jadeOpenStore": { "en": "Jade: {n}. Open the Store", "text": "翡翠：{n}。開啟商店" },
   "settings.textSize": { "en": "Text size", "text": "文字大小" },
-  "stake.recentHits": { "en": "Your last {raids} raids: 2★ or more in {two}, 3★ in {three}.", "text": "最近 {raids} 次突襲：{two} 次達到 2★ 或以上，{three} 次 3★。" }
+  "stake.recentHits": { "en": "Your last {raids} raids: 2★ or more in {two}, 3★ in {three}.", "text": "最近 {raids} 次突襲：{two} 次達到 2★ 或以上，{three} 次 3★。" },
+  "whatsNew.0_2_0": { "en": "What's new: choose a larger text size, and turn screen shake and flashes down, in Settings. The stake picker shows how often your recent raids reached two and three stars. Shadow Trials climb more evenly, and raids at Keep 4 and Keep 15 meet fairer opponents.", "text": "新內容：可在設定中選擇更大的文字，並減少螢幕震動和閃光。押注選擇會顯示你最近的突襲達到兩星和三星的次數。暗影試煉的難度上升更平穩，天守 4 和天守 15 的突襲會遇到更公平的對手。" }
 }

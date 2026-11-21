@@ -372,5 +372,6 @@
   "store.buyNamed": { "en": "Buy {name} for {price}", "text": "Ra {name} ní {price}" },
   "res.jadeOpenStore": { "en": "Jade: {n}. Open the Store", "text": "Jéèdì: {n}. Ṣí Ilé ìtajà" },
   "settings.textSize": { "en": "Text size", "text": "Ìwọ̀n ọ̀rọ̀" },
-  "stake.recentHits": { "en": "Your last {raids} raids: 2★ or more in {two}, 3★ in {three}.", "text": "Ìkọlù {raids} rẹ tó kẹ́yìn: 2★ tàbí jù bẹ́ẹ̀ lọ nínú {two}, 3★ nínú {three}." }
+  "stake.recentHits": { "en": "Your last {raids} raids: 2★ or more in {two}, 3★ in {three}.", "text": "Ìkọlù {raids} rẹ tó kẹ́yìn: 2★ tàbí jù bẹ́ẹ̀ lọ nínú {two}, 3★ nínú {three}." },
+  "whatsNew.0_2_0": { "en": "What's new: choose a larger text size, and turn screen shake and flashes down, in Settings. The stake picker shows how often your recent raids reached two and three stars. Shadow Trials climb more evenly, and raids at Keep 4 and Keep 15 meet fairer opponents.", "text": "Ohun tuntun: yan ìwọ̀n ọ̀rọ̀ tó tóbi jù, kí o sì dín mímì ojú iboju àti ìmọ́lẹ̀ tó ń tàn kù nínú Ètò. Àṣàyàn ìpè ń fi hàn bí àwọn ìkọlù rẹ àìpẹ́ ṣe máa ń dé ìràwọ̀ méjì àti mẹ́ta tó. Àwọn Ìdánwò Òjìji ń gòkè lọ́nà tó dọ́gba jù, àwọn ìkọlù ní Odi 4 àti 15 sì ń pàdé àwọn alátakò tó tọ́ jù." }
 }

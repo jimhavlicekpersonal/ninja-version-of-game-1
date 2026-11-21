@@ -372,5 +372,6 @@
   "store.buyNamed": { "en": "Buy {name} for {price}", "text": "{name}ን በ{price} ግዛ" },
   "res.jadeOpenStore": { "en": "Jade: {n}. Open the Store", "text": "ጄድ፦ {n}። መደብሩን ክፈት" },
   "settings.textSize": { "en": "Text size", "text": "የጽሑፍ መጠን" },
-  "stake.recentHits": { "en": "Your last {raids} raids: 2★ or more in {two}, 3★ in {three}.", "text": "የመጨረሻዎቹ {raids} ወረራዎችህ፦ 2★ ወይም ከዚያ በላይ በ{two}፣ 3★ በ{three}።" }
+  "stake.recentHits": { "en": "Your last {raids} raids: 2★ or more in {two}, 3★ in {three}.", "text": "የመጨረሻዎቹ {raids} ወረራዎችህ፦ 2★ ወይም ከዚያ በላይ በ{two}፣ 3★ በ{three}።" },
+  "whatsNew.0_2_0": { "en": "What's new: choose a larger text size, and turn screen shake and flashes down, in Settings. The stake picker shows how often your recent raids reached two and three stars. Shadow Trials climb more evenly, and raids at Keep 4 and Keep 15 meet fairer opponents.", "text": "አዲስ ነገር፦ በቅንብሮች ውስጥ ትልቅ የጽሑፍ መጠን ምረጥ፣ የማያ ገጽ መንቀጥቀጥንና ብልጭታዎችን ቀንስ። የውርርድ መምረጫው የቅርብ ወረራዎችህ ስንት ጊዜ ሁለትና ሦስት ኮከብ እንዳገኙ ያሳያል። የጥላ ፈተናዎች በተስተካከለ ሁኔታ ይወጣሉ፣ በምሽግ 4 እና 15 ያሉ ወረራዎችም ፍትሐዊ ተቃዋሚዎችን ያገኛሉ።" }
 }

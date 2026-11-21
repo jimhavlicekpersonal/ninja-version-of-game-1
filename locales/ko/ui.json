@@ -372,5 +372,6 @@
   "store.buyNamed": { "en": "Buy {name} for {price}", "text": "{name} {price}에 구매" },
   "res.jadeOpenStore": { "en": "Jade: {n}. Open the Store", "text": "비취: {n}. 상점 열기" },
   "settings.textSize": { "en": "Text size", "text": "글자 크기" },
-  "stake.recentHits": { "en": "Your last {raids} raids: 2★ or more in {two}, 3★ in {three}.", "text": "최근 {raids}번의 습격: 2★ 이상 {two}번, 3★ {three}번." }
+  "stake.recentHits": { "en": "Your last {raids} raids: 2★ or more in {two}, 3★ in {three}.", "text": "최근 {raids}번의 습격: 2★ 이상 {two}번, 3★ {three}번." },
+  "whatsNew.0_2_0": { "en": "What's new: choose a larger text size, and turn screen shake and flashes down, in Settings. The stake picker shows how often your recent raids reached two and three stars. Shadow Trials climb more evenly, and raids at Keep 4 and Keep 15 meet fairer opponents.", "text": "새로운 기능: 설정에서 더 큰 글자 크기를 고르고 화면 흔들림과 번쩍임을 줄일 수 있습니다. 판돈 선택 화면에 최근 습격이 2★와 3★에 닿은 횟수가 표시됩니다. 그림자 시련의 난이도가 더 고르게 오르고, 성채 4와 15의 습격은 더 공정한 상대를 만납니다." }
 }

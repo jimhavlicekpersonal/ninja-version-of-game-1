@@ -372,5 +372,6 @@
   "store.buyNamed": { "en": "Buy {name} for {price}", "text": "{name} ಅನ್ನು {price}ಕ್ಕೆ ಖರೀದಿಸಿ" },
   "res.jadeOpenStore": { "en": "Jade: {n}. Open the Store", "text": "ಜೇಡ್: {n}. ಅಂಗಡಿ ತೆರೆಯಿರಿ" },
   "settings.textSize": { "en": "Text size", "text": "ಪಠ್ಯದ ಗಾತ್ರ" },
-  "stake.recentHits": { "en": "Your last {raids} raids: 2★ or more in {two}, 3★ in {three}.", "text": "ನಿಮ್ಮ ಕೊನೆಯ {raids} ದಾಳಿಗಳು: {two}ರಲ್ಲಿ 2★ ಅಥವಾ ಹೆಚ್ಚು, {three}ರಲ್ಲಿ 3★." }
+  "stake.recentHits": { "en": "Your last {raids} raids: 2★ or more in {two}, 3★ in {three}.", "text": "ನಿಮ್ಮ ಕೊನೆಯ {raids} ದಾಳಿಗಳು: {two}ರಲ್ಲಿ 2★ ಅಥವಾ ಹೆಚ್ಚು, {three}ರಲ್ಲಿ 3★." },
+  "whatsNew.0_2_0": { "en": "What's new: choose a larger text size, and turn screen shake and flashes down, in Settings. The stake picker shows how often your recent raids reached two and three stars. Shadow Trials climb more evenly, and raids at Keep 4 and Keep 15 meet fairer opponents.", "text": "ಹೊಸತೇನು: ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ ದೊಡ್ಡ ಪಠ್ಯ ಗಾತ್ರ ಆರಿಸಿ, ಪರದೆಯ ಅಲುಗಾಟ ಮತ್ತು ಮಿಂಚುಗಳನ್ನು ಕಡಿಮೆ ಮಾಡಿ. ಪಣದ ಆಯ್ಕೆ ನಿಮ್ಮ ಇತ್ತೀಚಿನ ದಾಳಿಗಳು ಎಷ್ಟು ಬಾರಿ ಎರಡು ಮತ್ತು ಮೂರು ನಕ್ಷತ್ರ ತಲುಪಿದವು ಎಂದು ತೋರಿಸುತ್ತದೆ. ನೆರಳಿನ ಪರೀಕ್ಷೆಗಳು ಹೆಚ್ಚು ಸಮವಾಗಿ ಏರುತ್ತವೆ, ಕೋಟೆ 4 ಮತ್ತು 15 ರ ದಾಳಿಗಳಿಗೆ ಹೆಚ್ಚು ನ್ಯಾಯಯುತ ಎದುರಾಳಿಗಳು ಸಿಗುತ್ತಾರೆ." }
 }

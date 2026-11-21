@@ -1465,3 +1465,24 @@ No save, `SIM_RULES`, protocol or migration change; `src/gameplay` untouched. Ne
 
 Not run: phones (Android, iPhone), screen readers, the 240 kbps first-paint profile. Passing tests here do not establish release readiness.
 
+### 2026-11-21 Beast Mode bulletproofing pass, Phase 7: balance (integration session acting for game theory; ledger `docs/audit/bulletproof-2026-11-21/PROGRESS.md`), commits from `1c5636e` (GT-13) to `5b8a995` on `claude/optimistic-faraday-qq0uoc`
+
+No `SIM_RULES` bump (the combat items below are not started), no save or protocol change; one migration (0045, GT-13). Matchmaking and Trials data changed, so the server must deploy with the game (`docs/backend/REQUESTS.md`). All balance numbers are model players, never real players.
+
+| # | Finding | Status | What changed | Proving test | Limits |
+|---|---|---|---|---|---|
+| GT-11 + ECO-03 | **MEDIUM** single-seed campaigns, no searched attacker, no Jade model | partly done | 4 seeds per campaign pooled with 95% intervals, gates on pooled rows and bounds; a Jade earned/spent table per campaign; a searched attacker in `test:slow`; a balance telemetry request | `campaign-gates.test.ts`, `searched-attacker.test.ts` | 8-seed release runs not made; the search covers one formation; paying players' Jade not modelled |
+| GT-02 | **HIGH** casual Keep 4 dip | partly done | `powerSlackByKeep` Keeps 4-9 | `campaign-gates.test.ts` GT-02 (pass) | Two neighbouring long-standing gates fail at their edges: explorer Keeps 8-9 (0.537 of 0.55 stars), rusher Keep 7 three-star (52% of 50%) |
+| GT-08 | **MEDIUM** Keep 15 cliff | done | `topKeepMaxBias` 0.25 in `matchStrength` | `campaign-gates.test.ts` GT-08 | 4 seeds, not 8 |
+| GT-09 | **MEDIUM** Trials sawtooth | partly done | `levelBiasRange` [0.25, 0.75], Ironclad `levelBiasShift` −0.5 | `trial-ladder.test.ts` (every tier 1-60 clearable) | 15-point step target `it.fails` (largest 50) |
+| GT-10 | **MEDIUM** stake as a lottery | partly done | the stake picker shows the player's own recent 2★/3★ hits | `stake-rate.dom.test.ts` | `deploySpread` unchanged (needs the rules bump); no partial pay at 2★ |
+| GT-12 | **MEDIUM** rating power from the Keep | partly done | server rates with a held village's research strength | `rating-power.test.ts` | defender power and the board's weight unchanged |
+| GT-13 | **LOW** token war attacks | partly done | an attack counts toward a war chest only with a star or 80% of the camps deployed | `war-chest-effort.test.ts`, gang tests | no chest split by own stars |
+| GT-14 | **LOW** placement at launch population | partly done | sparse-population and smurf simulation | `rating-convergence.test.ts` | a smurf still meets true expected ~0.95 after 10 battles (`it.fails`): NEEDS-PLAYERS |
+| GT-17 | **LOW** alt-account feeding | partly done | per-pair daily loot cap `PAIR_DAILY_LOOT_SHARE` | `pair-loot-cap.test.ts`, `attacks-economy.test.ts` | no staff pair report |
+| GT-03, GT-04, GT-07, GT-16 | air, regressing tiers, one army, smoke | **open** | — | — | Need the single `SIM_RULES` bump and the balance runs; not started |
+| GT-05, GT-15 | late defense value; runway | **open** | — | — | Not started |
+| GT-01, GT-06 + ECO-04 | honor model; casual loss | **OWNER (D2, D3)** | — | — | Decisions first |
+
+Not run: real players (every number is a model player), 8-seed runs, Postgres. `campaign-gates.test.ts` has two failing gates (above), left failing rather than loosened.
+

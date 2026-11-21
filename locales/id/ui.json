@@ -372,5 +372,6 @@
   "store.buyNamed": { "en": "Buy {name} for {price}", "text": "Beli {name} seharga {price}" },
   "res.jadeOpenStore": { "en": "Jade: {n}. Open the Store", "text": "Giok: {n}. Buka Toko" },
   "settings.textSize": { "en": "Text size", "text": "Ukuran teks" },
-  "stake.recentHits": { "en": "Your last {raids} raids: 2★ or more in {two}, 3★ in {three}.", "text": "{raids} serbuan terakhirmu: 2★ atau lebih di {two}, 3★ di {three}." }
+  "stake.recentHits": { "en": "Your last {raids} raids: 2★ or more in {two}, 3★ in {three}.", "text": "{raids} serbuan terakhirmu: 2★ atau lebih di {two}, 3★ di {three}." },
+  "whatsNew.0_2_0": { "en": "What's new: choose a larger text size, and turn screen shake and flashes down, in Settings. The stake picker shows how often your recent raids reached two and three stars. Shadow Trials climb more evenly, and raids at Keep 4 and Keep 15 meet fairer opponents.", "text": "Yang baru: pilih ukuran teks lebih besar, dan kurangi guncangan layar serta kilatan di Pengaturan. Pemilih taruhan menunjukkan seberapa sering serbuan terakhirmu mencapai dua dan tiga bintang. Ujian Bayangan naik lebih merata, dan serbuan di Benteng 4 dan 15 menghadapi lawan yang lebih adil." }
 }

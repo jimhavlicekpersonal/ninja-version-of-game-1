@@ -18,7 +18,8 @@ describe('OPS-01: the version-bump guard', () => {
   });
 
   it('a SAVE_VERSION change since the last release needs a greater package version', () => {
-    const now = currentVersions(root);
+    // The checkout's own version may already be bumped: test the rule with the last release's version.
+    const now = { ...currentVersions(root), version: last.version };
     expect(versionProblems(now, { ...last, save: now.save - 1 })[0]).toMatch(/save .* changed since the last release/);
     expect(versionProblems({ ...now, version: '0.2.0' }, { ...last, save: now.save - 1 })).toEqual([]);
     expect(versionProblems(now, { ...last, migrations: now.migrations - 1 })).toHaveLength(1);

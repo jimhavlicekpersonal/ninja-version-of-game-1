@@ -372,5 +372,6 @@
   "store.buyNamed": { "en": "Buy {name} for {price}", "text": "{price}ରେ {name} କିଣନ୍ତୁ" },
   "res.jadeOpenStore": { "en": "Jade: {n}. Open the Store", "text": "ଜେଡ୍: {n}। ଷ୍ଟୋର୍ ଖୋଲନ୍ତୁ" },
   "settings.textSize": { "en": "Text size", "text": "ଲେଖାର ଆକାର" },
-  "stake.recentHits": { "en": "Your last {raids} raids: 2★ or more in {two}, 3★ in {three}.", "text": "ତୁମର ଶେଷ {raids}ଟି ଆକ୍ରମଣ: {two}ଟିରେ 2★ ବା ଅଧିକ, {three}ଟିରେ 3★।" }
+  "stake.recentHits": { "en": "Your last {raids} raids: 2★ or more in {two}, 3★ in {three}.", "text": "ତୁମର ଶେଷ {raids}ଟି ଆକ୍ରମଣ: {two}ଟିରେ 2★ ବା ଅଧିକ, {three}ଟିରେ 3★।" },
+  "whatsNew.0_2_0": { "en": "What's new: choose a larger text size, and turn screen shake and flashes down, in Settings. The stake picker shows how often your recent raids reached two and three stars. Shadow Trials climb more evenly, and raids at Keep 4 and Keep 15 meet fairer opponents.", "text": "ନୂଆ କଣ: ସେଟିଂସରେ ବଡ଼ ଲେଖା ବାଛନ୍ତୁ, ଏବଂ ସ୍କ୍ରିନ୍ ହଲିବା ଓ ଝଲକ କମାନ୍ତୁ। ବାଜି ବାଛିବାରେ ଦେଖାଯାଏ ଆପଣଙ୍କ ସାମ୍ପ୍ରତିକ ଆକ୍ରମଣ କେତେ ଥର ଦୁଇ ଓ ତିନି ତାରା ପାଇଲା। ଛାୟା ପରୀକ୍ଷା ଅଧିକ ସମାନ ଭାବେ ଚଢ଼େ, ଏବଂ ଦୁର୍ଗ 4 ଓ 15ର ଆକ୍ରମଣ ଅଧିକ ନ୍ୟାୟପୂର୍ଣ୍ଣ ପ୍ରତିଦ୍ୱନ୍ଦ୍ୱୀ ପାଏ।" }
 }

@@ -372,5 +372,6 @@
   "store.buyNamed": { "en": "Buy {name} for {price}", "text": "Compra {name} per {price}" },
   "res.jadeOpenStore": { "en": "Jade: {n}. Open the Store", "text": "Jade: {n}. Obre la botiga" },
   "settings.textSize": { "en": "Text size", "text": "Mida del text" },
-  "stake.recentHits": { "en": "Your last {raids} raids: 2★ or more in {two}, 3★ in {three}.", "text": "Les teves últimes {raids} incursions: 2★ o més en {two}, 3★ en {three}." }
+  "stake.recentHits": { "en": "Your last {raids} raids: 2★ or more in {two}, 3★ in {three}.", "text": "Les teves últimes {raids} incursions: 2★ o més en {two}, 3★ en {three}." },
+  "whatsNew.0_2_0": { "en": "What's new: choose a larger text size, and turn screen shake and flashes down, in Settings. The stake picker shows how often your recent raids reached two and three stars. Shadow Trials climb more evenly, and raids at Keep 4 and Keep 15 meet fairer opponents.", "text": "Novetats: tria una mida de text més gran i redueix les sacsejades i els flaixos de la pantalla a la Configuració. El selector d'apostes mostra quantes vegades les teves últimes incursions han arribat a dues i tres estrelles. Les Proves de les Ombres pugen de manera més uniforme i les incursions a la Fortalesa 4 i 15 troben rivals més justos." }
 }
