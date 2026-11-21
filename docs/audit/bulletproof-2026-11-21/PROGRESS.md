@@ -62,7 +62,7 @@ New player-visible strings are translated into all 49 other ready languages in t
 | OPS-12 | LOW | 5 | CODE | open | | | |
 | OPS-13 | LOW | 5 | DOCS | open | | | |
 | OPS-14 | LOW | 6 | CODE | open | | | |
-| SAV-01 | HIGH | 3 | CODE | open | | | |
+| SAV-01 | HIGH | 3 | CODE | done |  | tests/backend/net/villageSync.test.ts 'Beast Mode SAV-01' (2; the backup case fails before the fix); Playwright 390×844 with indexedDB.open never answering and a returning-player key: the Retry / temporary card shows, the temporary village starts with the can't-save banner at once | openStorage reports 'unavailable' (no IndexedDB) vs 'failed'; a returning player (any tk.* key) on 'failed' gets a blocking card: Retry (20 s, 40 s, … up to 120 s) or a temporary village that is offline (no server URL) and unsaved; keepVillageOnServer follows store.persistent; the can't-save banner shows at once after a failure; VillageSync.connect adopts a lower-Keep server village whole (backup kept) instead of its economy. Limits: iOS IndexedDB hangs not reproduced on a device; a new player on a failing IndexedDB still gets a memory village. |
 | SAV-02 | MEDIUM | 3 | CODE | open | | | |
 | SAV-03 | MEDIUM | 3 | CODE | open | | | |
 | SAV-04 | MEDIUM | 3 | CODE | open | | | |

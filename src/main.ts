@@ -169,20 +169,78 @@ function rejectedWhy(code: string | undefined): string {
   const known = ['expired', 'defender_protected', 'no_warriors', 'account_deleted', 'conflict', 'version_mismatch', 'banned'];
   return code && known.includes(code) ? ` ${t(`raid.rejected.${code}`)}` : '';
 }
-async function openStorage(sandbox: boolean): Promise<{ store: SaveStore; events: EventStore; db: IDBDatabase | null }> {
+async function openStorage(sandbox: boolean, timeoutMs?: number): Promise<{ store: SaveStore; events: EventStore; db: IDBDatabase | null; failure: StorageFailure | null }> {
   try {
     // Gives up after 5 s (some iOS versions never answer): the game then runs on memory with a banner.
-    const db = await openGameDb();
+    const db = await openGameDb(timeoutMs);
     // Security audit 2026-11-20 (F1): the sandbox's events (test purchases, skipped clocks) stay in memory, so the
     // real game's shared statistics never upload them.
     const events = sandbox ? new MemoryEventStore() : new IdbEventStore(db);
     if (!sandbox) void (events as IdbEventStore).prune().catch(() => undefined);
     // The testing sandbox has its own village: time skips and test purchases never touch the real one.
-    return { store: new IdbSaveStore(db, sandbox ? SANDBOX_SAVE_KEY : undefined), events, db };
+    return { store: new IdbSaveStore(db, sandbox ? SANDBOX_SAVE_KEY : undefined), events, db, failure: null };
   } catch (e) {
     console.warn(i18nText("ui.falling_back_to_in_memory_storage_f1f5b7fd50"), e);
-    return { store: new MemorySaveStore(), events: new MemoryEventStore(), db: null };
+    // Beast Mode SAV-01: no IndexedDB at all (private mode, an old browser) is not the same as one that failed.
+    const failure: StorageFailure = typeof indexedDB === 'undefined' || /not available/i.test((e as Error)?.message ?? '') ? 'unavailable' : 'failed';
+    return { store: new MemorySaveStore(), events: new MemoryEventStore(), db: null, failure };
   }
+}
+
+type StorageFailure = 'unavailable' | 'failed';
+
+/** Beast Mode SAV-01: this device has played before (any of the game's own local keys), so a save is expected. */
+function returningPlayer(): boolean {
+  try {
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i) ?? '';
+      if (k.startsWith('tk.') && k !== 'tk.lang' && k !== 'tk.quality') return true;
+    }
+  } catch {
+    /* storage blocked: nothing to go on */
+  }
+  return false;
+}
+
+/**
+ * Beast Mode SAV-01: the save could not be opened on a device that has one. Never start a throwaway village on
+ * its own (it went online, could be moved to the server and later replace the real village): the player tries
+ * again (a longer wait each time) or knowingly plays a temporary village that stays offline and unsaved.
+ */
+function askAfterOpenFailure(): Promise<'retry' | 'temporary'> {
+  return new Promise((resolve) => {
+    const card = document.createElement('div');
+    card.className = 'tk-open-failed';
+    card.setAttribute('role', 'alertdialog');
+    card.setAttribute('aria-modal', 'true');
+    card.style.cssText = 'position:fixed;inset:0;z-index:100000;display:flex;align-items:center;justify-content:center;background:rgba(15,20,30,.72);padding:16px';
+    const box = document.createElement('div');
+    box.style.cssText = 'max-width:420px;background:#fffaf0;color:#26303d;border-radius:16px;padding:18px 20px;font:16px/1.4 system-ui,sans-serif;box-shadow:0 8px 30px rgba(0,0,0,.35)';
+    const h = document.createElement('h2');
+    h.style.cssText = 'margin:0 0 8px;font-size:1.15rem';
+    h.textContent = t('save.openFailed.title');
+    const p = document.createElement('p');
+    p.style.cssText = 'margin:0 0 14px';
+    p.textContent = t('save.openFailed.body');
+    const row = document.createElement('div');
+    row.style.cssText = 'display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end';
+    const button = (label: string, primary: boolean, then: 'retry' | 'temporary') => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.textContent = label;
+      b.style.cssText = `min-height:44px;padding:8px 14px;border-radius:12px;border:0;font:inherit;font-weight:700;${primary ? 'background:#2f6f4f;color:#fff' : 'background:#e7ddc8;color:#26303d'}`;
+      b.addEventListener('click', () => {
+        card.remove();
+        resolve(then);
+      });
+      return b;
+    };
+    row.append(button(t('save.openFailed.temporary'), false, 'temporary'), button(i18nText("ui.retry_942087cc2d"), true, 'retry'));
+    box.append(h, p, row);
+    card.append(box);
+    document.body.append(card);
+    (row.lastElementChild as HTMLButtonElement).focus();
+  });
 }
 
 /**
@@ -250,7 +308,14 @@ async function boot(): Promise<void> {
   // arrive keeps the fallback font, so the map still waits for them a little, see below).
   const fontsLoading = loadInterfaceFonts(3000);
   bootStatus(i18nText("ui.opening_your_village_985a7b5b5b"));
-  const [{ store, events, db }] = await Promise.all([openStorage(sandbox), loadArtManifest()]);
+  let [{ store, events, db, failure }] = await Promise.all([openStorage(sandbox), loadArtManifest()]);
+  // Beast Mode SAV-01: a returning player whose save failed to open chooses: try again (20 s, then 40 s, …) or a
+  // temporary village. A genuinely new player without IndexedDB plays on memory as before.
+  for (let wait = 20_000; failure === 'failed' && !sandbox && returningPlayer(); wait = Math.min(wait * 2, 120_000)) {
+    if ((await askAfterOpenFailure()) === 'temporary') break;
+    bootStatus(i18nText("ui.opening_your_village_985a7b5b5b"));
+    ({ store, events, db, failure } = await openStorage(sandbox, wait));
+  }
   bootStore = store;
   const analytics = new Analytics(events, clock);
   // Payments: StoreKit on iPhone; Google Play Billing on Android only in builds made with
@@ -271,7 +336,8 @@ async function boot(): Promise<void> {
   // Beast Mode SEC-03: only dev builds (and VITE_ALLOW_SERVER_CHOICE=1 test builds) may use a typed server address.
   const allowServerChoice = serverChoiceAllowed({ dev: import.meta.env.DEV, flag: import.meta.env.VITE_ALLOW_SERVER_CHOICE as string | undefined });
   if (!allowServerChoice) forgetChosenServer(browserKeyValue);
-  const serverUrl = sandbox ? '' : resolveServerUrl(browserKeyValue, builtInUrl, allowServerChoice);
+  // SAV-01: a temporary village (the save failed to open) stays offline, so it can never reach the server.
+  const serverUrl = sandbox || failure === 'failed' ? '' : resolveServerUrl(browserKeyValue, builtInUrl, allowServerChoice);
   // Balance bundles (roadmap step 76): the operators' signed number changes from the last session, applied
   // before the village loads (never mid-session, never in the sandbox, never without the public key).
   // Experiment arms (report section 5 step 5) are picked by the statistics id: only players who share are in one.
@@ -289,7 +355,7 @@ async function boot(): Promise<void> {
   // "Update Kagemura" (roadmap step 75) opens the store listing in the apps; the web build reloads.
   const env = import.meta.env as Record<string, string | undefined>;
   const updateUrl = isNative() ? (platform() === 'ios' ? env.VITE_APP_STORE_URL : platform() === 'android' ? env.VITE_PLAY_STORE_URL : undefined) : undefined;
-  const connection = new Connection({ game: controller, builtInUrl, offline: sandbox, allowServerChoice, build: `${__APP_VERSION__}+${isNative() ? platform() : 'web'}`, keepVillageOnServer: true, updateUrl, rulesAccepted: acceptedRulesVersion, ...(balance ? { balance, dataVersion: () => balance.dataVersion() } : {}), ...(eventSchedule ? { events: eventSchedule } : {}) });
+  const connection = new Connection({ game: controller, builtInUrl, offline: sandbox || failure === 'failed', allowServerChoice, build: `${__APP_VERSION__}+${isNative() ? platform() : 'web'}`, keepVillageOnServer: store.persistent, updateUrl, rulesAccepted: acceptedRulesVersion, ...(balance ? { balance, dataVersion: () => balance.dataVersion() } : {}), ...(eventSchedule ? { events: eventSchedule } : {}) });
   onCommunityRulesAccepted(() => void connection.acceptRules());
   const growth = new GrowthClient(connection);
   const statsTz = (import.meta.env.VITE_STATS_TZ as string | undefined) === '1';
@@ -780,7 +846,8 @@ async function boot(): Promise<void> {
     });
   };
   if (!store.persistent) {
-    afterTutorial(() => showBanner('tk-banner-save', i18nText("ui.this_browser_can_t_save_your_village_p_2206e03480"), [{ label: i18nText("ui.hide_ac20a57bfd"), onClick: (close) => close() }]));
+    // Beast Mode SAV-01: said at once, tutorial or not (a returning player on a temporary village sees the Sensei).
+    (failure === 'failed' ? (fn: () => void) => fn() : afterTutorial)(() => showBanner('tk-banner-save', i18nText("ui.this_browser_can_t_save_your_village_p_2206e03480"), [{ label: i18nText("ui.hide_ac20a57bfd"), onClick: (close) => close() }]));
   } else if (!sandbox && !isNative()) {
     void storageKept().then((kept) => {
       if (kept) return;

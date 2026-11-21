@@ -29,7 +29,7 @@
 import { deserialize, serialize } from '../../gameplay/sim/save';
 import { economyHash, economyOf, PLAYER_COMMANDS, type Economy } from '../../gameplay/sim/serverEconomy';
 import type { GameData, VillageState } from '../../gameplay/sim/types';
-import type { Command } from '../../gameplay/sim/village';
+import { hallLevel, type Command } from '../../gameplay/sim/village';
 import { ServerError, type ServerPort } from './ports';
 import type { CommandOutcome, VillageCommand } from './protocol';
 
@@ -255,6 +255,14 @@ export class VillageSync {
       // and league season come with its economy, so the device settles again on its next tick (review SCR-01:
       // with the economy alone the payout vanished here until the next action).
       const server = deserialize(v.file, this.game.data);
+      // Beast Mode SEC-01/SAV-01 (defence in depth): a server village behind this device's (a lower Keep: a
+      // throwaway village imported from a session that could not open its save) never silently replaces it: the
+      // whole server village is adopted and the one here becomes a backup.
+      if (hallLevel(server, this.game.data) < hallLevel(this.game.state, this.game.data)) {
+        console.warn('Online play: the village on the server is behind this device; this one is kept as a backup');
+        await this.game.adoptVillage(server);
+        return;
+      }
       this.adopt(economyOf(server), { pass: server.pass, season: server.season, seasonLog: server.seasonLog });
     }
   }

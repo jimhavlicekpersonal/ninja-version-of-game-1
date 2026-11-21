@@ -151,6 +151,29 @@ describe('server-owned village: the game side', () => {
     expect(economyHash(s.controller.state)).toBe(economyHash(server));
   });
 
+  it('Beast Mode SAV-01: a server village behind this device (a lower Keep) is adopted whole, and this village kept as a backup', async () => {
+    const s = await setup();
+    await s.conn.village!.enable();
+    // This device's village is far ahead of the server's (a throwaway Keep 1 village was moved there by a session
+    // that could not open its save); the real one loads on the next start.
+    const keep = s.controller.state.buildings.find((b) => s.controller.data.buildings[b.type].category === 'hall')!;
+    keep.level = 8;
+    const before = (await s.store.listBackups()).length;
+    const next = new Connection({ game: s.controller, builtInUrl: 'test.server', kv: s.kv, makePort: () => s.port, log: () => undefined });
+    await next.sync();
+    expect(await s.store.listBackups()).toHaveLength(before + 1);
+  });
+
+  it('Beast Mode SAV-01: a game on a memory store (keepVillageOnServer off) never moves its village', async () => {
+    const w = world();
+    const clock = { now: () => w.now() };
+    const { controller } = await GameController.start({ clock, store: new MemorySaveStore(), data: w.data, analytics: new Analytics(new MemoryEventStore(), clock, 'test'), botRaids: false });
+    const port = new InProcessServerAdapter(w.core);
+    const conn = new Connection({ game: controller, builtInUrl: 'test.server', kv: memoryKv(), makePort: () => port, log: () => undefined, keepVillageOnServer: false });
+    await conn.sync();
+    expect(await port.getVillage()).toBeNull();
+  });
+
   it('forgets the server village when the server has none (and when the account is deleted)', async () => {
     const s = await setup();
     await s.conn.village!.enable();
