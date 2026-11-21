@@ -14,7 +14,7 @@ import { blockedIds, checkNotMuted } from './moderation';
 import { checkChatAllowed, ageBandOf } from './age';
 import { withholdForReader } from './compliance';
 import { maxReinforcementAt } from './pvp';
-import { applyServerResult, hasServerVillage } from './village';
+import { applyServerResult, hasServerVillage, requireHeldVillage } from './village';
 import { fail } from './errors';
 
 
@@ -186,12 +186,14 @@ export async function requestsIn(ctx: ServerContext, me: Player, scopeId: string
 }
 
 export async function requestTroops(ctx: ServerContext, me: Player, capacity: unknown): Promise<RequestView> {
+  await requireHeldVillage(ctx, me.id); // Beast Mode SEC-01
   const { grove } = await requireGrove(ctx, me);
   return requestTroopsIn(ctx, me, grove.id, capacity);
 }
 
 /** A troop request in an Alliance or a Gang. A player has one open request at a time (their Lodge is one Lodge). */
 export async function requestTroopsIn(ctx: ServerContext, me: Player, scopeId: string, capacity: unknown): Promise<RequestView> {
+  await requireHeldVillage(ctx, me.id); // Beast Mode SEC-01
   const grove = { id: scopeId };
   const t = ctx.now();
   const last = await ctx.repo.lastRequestAt(me.id);
@@ -206,12 +208,14 @@ export async function requestTroopsIn(ctx: ServerContext, me: Player, scopeId: s
 }
 
 export async function donate(ctx: ServerContext, me: Player, requestId: string, req: DonateRequest): Promise<DonateResponse> {
+  await requireHeldVillage(ctx, me.id); // Beast Mode SEC-01
   const { grove } = await requireGrove(ctx, me);
   return donateIn(ctx, me, grove.id, requestId, req, true);
 }
 
 /** Fill a request in an Alliance (with Alliance XP) or a Gang (`xpToAlliance` false). */
 export async function donateIn(ctx: ServerContext, me: Player, scopeId: string, requestId: string, req: DonateRequest, xpToAlliance: boolean): Promise<DonateResponse> {
+  await requireHeldVillage(ctx, me.id); // Beast Mode SEC-01
   const grove = { id: scopeId };
   const r = await ctx.repo.getRequest(String(requestId));
   if (!r || r.groveId !== grove.id || !r.open || ctx.now() - r.at > ctx.data.social.requestLifetimeHours * HOUR) throw fail(404, 'not_found', 'alliance.request_gone');

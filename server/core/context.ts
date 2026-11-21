@@ -45,6 +45,18 @@ export interface ServerPolicy {
   appleConsumptionResponse: boolean;
   /** SIGNIFICANT_UPDATE_BUILD: the oldest build counted as a significant update (C02); null: none. */
   significantUpdateBuild: string | null;
+  /**
+   * Beast Mode SEC-01: REQUIRE_SERVER_VILLAGE=1. Ranked play (honor, ratings, war score, loot, donations, both
+   * leaderboards, being matched as a defender) only for players whose village the server holds. Off by default
+   * until a release where the game's automatic move has run (owner decision D8).
+   */
+  requireServerVillage: boolean;
+  /**
+   * Beast Mode SEC-01 (interim): UPLOAD_ACCOUNT_AGE (default on). A base upload above Keep 5 needs the same
+   * account age as a village import. `0` turns it off for a staging server that runs the contract tests (a fresh
+   * Keep 15 attacker); production warns while it is off.
+   */
+  uploadAccountAge: boolean;
 }
 
 export const DEFAULT_POLICY: ServerPolicy = {
@@ -58,6 +70,8 @@ export const DEFAULT_POLICY: ServerPolicy = {
   euJadeValue: false,
   appleConsumptionResponse: false,
   significantUpdateBuild: null,
+  requireServerVillage: false,
+  uploadAccountAge: true,
 };
 
 export interface ServerContext {

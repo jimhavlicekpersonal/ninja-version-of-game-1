@@ -19,6 +19,7 @@ import type { ClientInfo } from '../rules/registry';
 import { HOUR, type ServerContext } from './context';
 import { battleSeed, capBaseLoot, checkArmy, engineForClient, engineForTicket, normalizeBase, resimulate, takeTicket, TICKET_TTL_MS, type BattleReport } from './pvp';
 import { fail, detailError } from './errors';
+import { requireHeldVillage } from './village';
 
 const DAY = 24 * HOUR;
 export const CHALLENGE_HOURS = 24;
@@ -86,6 +87,7 @@ function challengeView(ctx: ServerContext, me: Player, c: DuelChallenge, names: 
 
 /** POST /v1/duels/ticket */
 export async function duelTicket(ctx: ServerContext, me: Player, req: Partial<DuelTicketRequest> | undefined, client?: ClientInfo): Promise<DuelTicketResponse> {
+  await requireHeldVillage(ctx, me.id); // Beast Mode SEC-01
   const engine = engineForClient(ctx, client);
   const friend = await requireFriend(ctx, me, req?.friendId);
   let challengeId: string | undefined;
@@ -106,6 +108,7 @@ export async function duelTicket(ctx: ServerContext, me: Player, req: Partial<Du
 
 /** POST /v1/duels: re-simulate, record, tally. Nothing else changes. */
 export async function reportDuel(ctx: ServerContext, me: Player, sub: BattleReport): Promise<DuelReportResponse> {
+  await requireHeldVillage(ctx, me.id); // Beast Mode SEC-01
   const { ticket, answered } = await takeTicket(ctx, me, sub?.ticket, 'duel');
   if (answered) return answered as DuelReportResponse;
   const engine = engineForTicket(ctx, ticket, sub);

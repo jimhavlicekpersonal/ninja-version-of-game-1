@@ -29,9 +29,10 @@ import type { BoardFilter, Player, Repo, Ticket } from '../repo';
 import type { ClientInfo, RulesEngine } from '../rules/registry';
 import { ResimBusyError, ResimTimeoutError, type ResimOutcome } from '../resim/resim';
 import { ApiError, HOUR, MIN, type ServerContext } from './context';
-import { applyServerResult, hasServerVillage, refreshBaseFromVillage } from './village';
+import { applyServerResult, hasServerVillage, limiterOf, refreshBaseFromVillage, requireHeldVillage } from './village';
 import { capBaseLoot, layoutReset } from './baseRules';
 import { fail, detailError, busyCode, english, msg } from './errors';
+import { importMinAccountDays } from './accountAge';
 
 export { capBaseLoot, layoutReset } from './baseRules';
 
@@ -265,6 +266,7 @@ export function uploadedBaseResult(result: BattleResult, hallLevel: number, data
 }
 
 export async function uploadBase(ctx: ServerContext, me: Player, req: UploadBaseRequest, client?: ClientInfo): Promise<void> {
+  await requireHeldVillage(ctx, me.id); // Beast Mode SEC-01
   // A village the server holds is the base (its real layout and loot); the upload is ignored.
   if (await hasServerVillage(ctx.repo, me.id)) {
     await refreshBaseFromVillage(ctx, me);
@@ -276,6 +278,19 @@ export async function uploadBase(ctx: ServerContext, me: Player, req: UploadBase
   const n = normalizeBase(structuredClone(req?.base), rulesData);
   if ('error' in n) throw detailError(400, 'bad_request', n.error);
   const base = n.base;
+  // Beast Mode SEC-01 (interim, with the policy off too): an uploaded base is the device's word, so it follows the
+  // import's account-age rule (a day-old account uploaded a maxed Keep 15 base and was ranked and matched there),
+  // and after the first upload its Keep rises by at most one level per upload.
+  const ageDays = (ctx.now() - me.createdAt) / (24 * HOUR);
+  const needDays = importMinAccountDays(base.hallLevel);
+  if (ctx.policy.uploadAccountAge && ageDays < needDays) {
+    ctx.metrics.count('tk_refused_total', { reason: 'upload_account_too_new' });
+    throw fail(403, 'cooldown', 'pvp.base_too_new', { keep: base.hallLevel, days: Math.ceil(needDays), wait: Math.max(1, Math.ceil(needDays - ageDays)) });
+  }
+  if (me.base && base.hallLevel > me.hallLevel + 1) {
+    ctx.metrics.count('tk_refused_total', { reason: 'upload_keep_jump' });
+    throw detailError(400, 'bad_request', 'the Keep can rise by one level per base upload');
+  }
   // A base others are sent to raid must let them in (sim/entryRoom.ts; an older game's rules have no such rule).
   if (!leavesEntryRoom(base.buildings, rulesData)) throw detailError(400, 'bad_request', 'the layout leaves attackers no way in');
   capBaseLoot(base, rulesData);
@@ -299,11 +314,14 @@ async function withoutUnder13(repo: Repo, list: Player[]): Promise<Player[]> {
  * to find or contact them; friends.ts refuses them by name in every mode).
  */
 export function boardFilter(ctx: ServerContext): BoardFilter {
-  return ctx.policy.under13Mode === 'offline' ? { hideUnder13: true } : {};
+  const f: BoardFilter = ctx.policy.under13Mode === 'offline' ? { hideUnder13: true } : {};
+  if (ctx.policy.requireServerVillage) f.heldOnly = true;
+  return f;
 }
 
 /** Find someone to attack: a real player if one fits the rules, otherwise a generated base of matched strength. */
 export async function match(ctx: ServerContext, me: Player, client?: ClientInfo): Promise<MatchResponse> {
+  await requireHeldVillage(ctx, me.id); // Beast Mode SEC-01
   const t = ctx.now();
   const { data, repo } = ctx;
   const engine = engineForClient(ctx, client);
@@ -327,6 +345,12 @@ export async function match(ctx: ServerContext, me: Player, client?: ClientInfo)
     const same = (await repo.openTickets(me.id, 'pvp')).find((o) => o.startedAt === undefined && o.scoutSeed === scoutSeed && t < o.expiresAt);
     if (same) return matchAnswer(same);
   }
+  // Beast Mode SEC-01 (interim, policy off): a village on the device has no scout to tie the ticket to, so its new
+  // opponents are budgeted instead (`deviceRerolls`).
+  if (!kept && !(await limiterOf(ctx).hit('deviceRerolls', me.id, t)).ok) {
+    ctx.metrics.count('tk_refused_total', { reason: 'device_rerolls' });
+    throw fail(429, 'rate_limited', 'pvp.rerolls');
+  }
   // Re-audit: one open raid at a time. An unstarted ticket is voided (Next, or a scout left behind);
   // a started one still waiting for its report keeps its defender out of this match, and once it is
   // past REPORT_GRACE_MS it counts as a loss now (ledger audit A1: hiding a lost raid gained 73 hours).
@@ -348,7 +372,7 @@ export async function match(ctx: ServerContext, me: Player, client?: ClientInfo)
     // With external locks (Redis) the query skips its ticket scan; the lock is taken atomically below.
     // Backend A19: the search walks out from a pivot near the player's honor, moved a little per search.
     const pivot = me.trophies + Math.round((pivotJitter(me.id, t, range) * 2 - 1) * Math.min(range, data.ranks.matchTrophyRange));
-    const list = await repo.findOpponents({ excludeIds: exclude, minHall: win.min, maxHall: win.max, minTrophies: me.trophies - range, maxTrophies: me.trophies + range, now: t, lockedSince: locks.external ? null : t - TICKET_LOCK_MS, limit: 20, pivot });
+    const list = await repo.findOpponents({ excludeIds: exclude, minHall: win.min, maxHall: win.max, minTrophies: me.trophies - range, maxTrophies: me.trophies + range, now: t, lockedSince: locks.external ? null : t - TICKET_LOCK_MS, limit: 20, pivot, ...(ctx.policy.requireServerVillage ? { heldOnly: true } : {}) });
     const busy = await locks.lockedAmong(list.map((p) => p.id));
     let free = list.filter((p) => !busy.has(p.id) && legalFor(p));
     // Third verification fixes 2026-11-14 (UNDER13_MODE=offline): an under-13 player is not online, so nobody raids them.
@@ -520,6 +544,7 @@ export async function burnAfterFailures(ctx: ServerContext, ticket: Ticket, e: u
  * seed (a retry after a lost answer).
  */
 export async function startAttack(ctx: ServerContext, me: Player, body: { ticket?: unknown; stake?: unknown } | undefined): Promise<AttackStartResponse> {
+  await requireHeldVillage(ctx, me.id); // Beast Mode SEC-01
   const ticket = typeof body?.ticket === 'string' ? await ctx.repo.getTicket(body.ticket) : null;
   if (!ticket || ticket.attackerId !== me.id || ticket.kind !== 'pvp') throw fail(404, 'not_found', 'pvp.unknown_ticket');
   if (ticket.used) throw fail(409, 'conflict', 'pvp.opponent_gone');
@@ -703,6 +728,7 @@ export function battleSeed(ticket: Ticket, sub: BattleReport): number {
 export const MAX_HONOR_FROM_ONE_ATTACKER = 40;
 
 export async function attack(ctx: ServerContext, me: Player, sub: BattleReport): Promise<AttackResponse> {
+  await requireHeldVillage(ctx, me.id); // Beast Mode SEC-01
   const { data, repo } = ctx;
   const { ticket, answered } = await takeTicket(ctx, me, sub?.ticket, 'pvp');
   if (answered) return answered as AttackResponse;
@@ -898,6 +924,12 @@ export async function leaderboard(ctx: ServerContext, me: Player, limit: number)
     const young = await ctx.repo.under13Among(ids);
     for (const id of young) await ctx.board.remove(id);
     ids = ids.filter((id) => !young.has(id));
+  }
+  if (filter.heldOnly) {
+    // Beast Mode SEC-01: a Redis set filled before the policy was on may hold device players: leave them out and drop them.
+    const held = await Promise.all(ids.map((id) => hasServerVillage(ctx.repo, id)));
+    for (const [i, id] of ids.entries()) if (!held[i]) await ctx.board.remove(id);
+    ids = ids.filter((_, i) => held[i]);
   }
   const top = await ctx.repo.playersByIds(ids);
   const groveNames = new Map<string, string>();

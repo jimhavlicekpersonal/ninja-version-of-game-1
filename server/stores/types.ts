@@ -714,6 +714,8 @@ export interface PruneResult {
  */
 export interface BoardFilter {
   hideUnder13?: boolean;
+  /** Beast Mode SEC-01: only players whose village the server holds. */
+  heldOnly?: boolean;
 }
 
 export interface OpponentQuery {
@@ -729,6 +731,8 @@ export interface OpponentQuery {
    */
   lockedSince: number | null;
   limit: number;
+  /** Beast Mode SEC-01: only defenders whose village the server holds. */
+  heldOnly?: boolean;
   /** Backend A19: the honor to search outward from (Postgres keeps the `limit` nearest); the middle of the window if absent. */
   pivot?: number;
 }

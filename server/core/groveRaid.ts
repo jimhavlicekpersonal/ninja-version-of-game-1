@@ -11,7 +11,7 @@ import { HOUR, type ServerContext } from './context';
 import { requireGrove } from './groves';
 import { battleSeed, checkArmy, engineForClient, engineForTicket, lockPlayers, resimulate, takeTicket, TICKET_TTL_MS, burnAfterFailures, requireArmyOnServer, type BattleReport } from './pvp';
 import type { ClientInfo } from '../rules/registry';
-import { applyServerResult } from './village';
+import { applyServerResult, requireHeldVillage } from './village';
 import { fail } from './errors';
 
 const ACTIVE_WINDOW_MS = 3 * 24 * HOUR;
@@ -205,6 +205,7 @@ function warSideLock(groveId: string, week: number): string {
 }
 
 export async function raidTicket(ctx: ServerContext, me: Player, target: unknown, client?: ClientInfo): Promise<RaidTicketResponse> {
+  await requireHeldVillage(ctx, me.id); // Beast Mode SEC-01
   const engine = engineForClient(ctx, client);
   const { grove, joinedAt } = await requireGrove(ctx, me);
   const t = ctx.now();
@@ -233,6 +234,7 @@ export async function raidTicket(ctx: ServerContext, me: Player, target: unknown
 }
 
 export async function raidAttack(ctx: ServerContext, me: Player, sub: BattleReport): Promise<RaidAttackResponse> {
+  await requireHeldVillage(ctx, me.id); // Beast Mode SEC-01
   const { ticket, answered } = await takeTicket(ctx, me, sub?.ticket, 'raid');
   const week = ticket.week!;
   if (answered) {
@@ -272,6 +274,7 @@ export async function raidAttack(ctx: ServerContext, me: Player, sub: BattleRepo
 }
 
 export async function claimRaid(ctx: ServerContext, me: Player, week: unknown): Promise<RaidClaimResponse> {
+  await requireHeldVillage(ctx, me.id); // Beast Mode SEC-01
   const w = Math.floor(Number(week));
   if (!Number.isFinite(w)) throw fail(400, 'bad_request', 'request.bad_week');
   const { end } = raidWindow(w, ctx.data);

@@ -29,7 +29,7 @@ import type { ClientInfo } from '../rules/registry';
 import { MIN, type ServerContext } from './context';
 import { battleSeed, checkArmy, engineForClient, engineForTicket, lockPlayers, resimulate, takeTicket, TICKET_TTL_MS, burnAfterFailures, requireArmyOnServer, type BattleReport } from './pvp';
 import { requireSquad, setRosterLock } from './squads';
-import { applyServerResult } from './village';
+import { applyServerResult, requireHeldVillage } from './village';
 import { fail } from './errors';
 
 /** The roster lock squads.ts asks about: a war that has not ended. */
@@ -142,6 +142,7 @@ function mainAlliance(alliances: (string | null)[]): string | null {
 
 /** POST /v1/squad/war/queue (leader). */
 export async function queue(ctx: ServerContext, me: Player): Promise<GangWarResponse> {
+  await requireHeldVillage(ctx, me.id); // Beast Mode SEC-01
   const { squad, member } = await requireSquad(ctx, me);
   if (member.role !== 'leader') throw fail(403, 'unauthorized', 'war.leader_starts');
   const g = ctx.data.social.gangWar;
@@ -285,6 +286,7 @@ export async function refreshBase(ctx: ServerContext, me: Player): Promise<GangW
 
 /** POST /v1/squad/war/ticket { target, relay } */
 export async function warTicket(ctx: ServerContext, me: Player, req: Partial<GangWarTicketRequest> | undefined, client?: ClientInfo): Promise<GangWarTicketResponse> {
+  await requireHeldVillage(ctx, me.id); // Beast Mode SEC-01
   const engine = engineForClient(ctx, client);
   const { w, side, entry } = await myWar(ctx, me);
   const t = ctx.now();
@@ -321,6 +323,7 @@ export async function warTicket(ctx: ServerContext, me: Player, req: Partial<Gan
 
 /** POST /v1/squad/war/attacks */
 export async function warAttack(ctx: ServerContext, me: Player, sub: BattleReport): Promise<GangWarAttackResponse> {
+  await requireHeldVillage(ctx, me.id); // Beast Mode SEC-01
   const { ticket, answered } = await takeTicket(ctx, me, sub?.ticket, 'war');
   if (answered) return answered as GangWarAttackResponse;
   const w = ticket.warId ? await ctx.repo.getWar(ticket.warId) : null;
@@ -408,6 +411,7 @@ export async function gangWarReminders(ctx: ServerContext, stillHeld?: StillHeld
 
 /** POST /v1/squad/war/claim { warId }: once the war has ended, each member's chest, once. */
 export async function claim(ctx: ServerContext, me: Player, warId: unknown): Promise<GangWarClaimResponse> {
+  await requireHeldVillage(ctx, me.id); // Beast Mode SEC-01
   const w = await ctx.repo.getWar(String(warId ?? ''));
   if (!w) throw fail(404, 'not_found', 'war.no_such');
   const side = w.a.roster.some((e) => e.playerId === me.id) ? 'a' : w.b.roster.some((e) => e.playerId === me.id) ? 'b' : null;

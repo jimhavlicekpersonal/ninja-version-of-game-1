@@ -38,7 +38,8 @@ const tag = Math.random().toString(36).slice(2, 7);
 
 beforeAll(async () => {
   if (url) return;
-  const app = buildServer({ repo: new MemoryRepo(), data });
+  // Beast Mode SEC-01: the fifty-warrior test needs a fresh Keep 15 attacker (a staging server sets UPLOAD_ACCOUNT_AGE=0).
+  const app = buildServer({ repo: new MemoryRepo(), data, shared: { policy: { uploadAccountAge: false } } as never });
   await app.listen({ port: 0, host: '127.0.0.1' });
   url = `http://127.0.0.1:${(app.server.address() as AddressInfo).port}`;
   close = () => app.close();

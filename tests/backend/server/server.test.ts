@@ -232,6 +232,7 @@ describe('server HTTP adapter', () => {
       expect(rename.status).toBe(413);
       expect(rename.body.error).toBe('bad_request');
       const base = baseAt(15, 1);
+      s.advance(400 * 86_400_000); // Beast Mode SEC-01: a Keep 15 upload needs an account old enough
       expect((await s.call('PUT', Routes.base, a.token, { base })).status).toBe(204); // a real Keep 15 base fits
       expect((await s.call('PUT', Routes.base, a.token, { base, pad: big(BODY_LIMITS.base) })).status).toBe(413);
       const deployments = Array.from({ length: 2000 }, (_, i) => ({ tick: i, troop: 'hedgehog_roller', x: 1, y: 1 }));

@@ -9,8 +9,10 @@ export type Row = Record<string, unknown>;
  * Last gaps 2026-11-14: the extra condition a leaderboard query adds for `filter` (`alias` names the players
  * table). Under 13 is `player_age.band = 'under13'` (core/ageBand.ts `keptBand`: that band always stands).
  */
-export const boardFilterSql = (filter: { hideUnder13?: boolean } | undefined, alias = 'players'): string =>
-  filter?.hideUnder13 ? ` and not exists (select 1 from player_age pa where pa.player_id = ${alias}.id and pa.band = 'under13')` : '';
+export const boardFilterSql = (filter: { hideUnder13?: boolean; heldOnly?: boolean } | undefined, alias = 'players'): string =>
+  (filter?.hideUnder13 ? ` and not exists (select 1 from player_age pa where pa.player_id = ${alias}.id and pa.band = 'under13')` : '') +
+  // Beast Mode SEC-01: only players whose village the server holds.
+  (filter?.heldOnly ? ` and exists (select 1 from villages hv where hv.player_id = ${alias}.id)` : '');
 export const num = (v: unknown) => Number(v ?? 0);
 export const strOrNull = (v: unknown) => (v === null || v === undefined ? null : String(v));
 

@@ -61,6 +61,12 @@ export interface RateLimits {
    * re-simulated before the stored-share limit (SHARED_REPLAYS_PER_DAY) can count it.
    */
   replayShare: RateRule;
+  /**
+   * Beast Mode SEC-01 (interim): new opponents for a village kept on the device, per player. A server-held village
+   * gets its open ticket back until it scouts again; a device village could match, void and match again freely
+   * (a guessed seed predicts a raid's outcome about 98% of the time).
+   */
+  deviceRerolls: RateRule;
 }
 
 const MIN = 60_000;
@@ -96,6 +102,8 @@ export const DEFAULT_RATE_LIMITS: RateLimits = {
   complaint: { limit: 20, windowMs: HOUR },
   // Ten shares a day are stored; a few retries after a busy answer fit.
   replayShare: { limit: 30, windowMs: 24 * HOUR },
+  // A player tapping Next to look over a few bases; a script picking only predicted wins needs far more.
+  deviceRerolls: { limit: 12, windowMs: 10 * MIN },
 };
 
 /**

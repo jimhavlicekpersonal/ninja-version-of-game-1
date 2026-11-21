@@ -200,7 +200,7 @@ async function main(): Promise<void> {
     metrics.gauge('tk_redis_up', () => [{ labels: {}, value: redis!.available ? 1 : 0 }]);
     const onError = redisErrorReporter(metrics, (msg, fields) => console.warn(msg, fields));
     // Last gaps 2026-11-14: in UNDER13_MODE=offline a rebuild from the database leaves under-13 players out.
-    const board = new RedisLeaderboard(redis, undefined, { repo, onError, rebuildFilter: { hideUnder13: policyFromEnv(process.env).under13Mode === 'offline' } });
+    const board = new RedisLeaderboard(redis, undefined, { repo, onError, rebuildFilter: { hideUnder13: policyFromEnv(process.env).under13Mode === 'offline', heldOnly: policyFromEnv(process.env).requireServerVillage === true } });
     try {
       const added = await board.rebuildIfMissing(repo);
       if (added) console.log(`Leaderboard rebuilt in Redis from the database (${added} players).`);

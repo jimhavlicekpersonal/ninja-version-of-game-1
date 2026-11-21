@@ -134,7 +134,7 @@ export class PgPlayers extends PgBase implements PlayerStore {
     const where = `p.base is not null and p.banned_until = 0 and p.shield_until <= $1
          and p.hall_level between $2 and $3 and p.trophies between $4 and $5
          and not (p.id = any($6::text[]))
-         and ($7::bigint is null or not exists (select 1 from tickets t where t.defender_id = p.id and not t.used and t.created_at > $7))`;
+         and ($7::bigint is null or not exists (select 1 from tickets t where t.defender_id = p.id and not t.used and t.created_at > $7))${q.heldOnly ? ' and exists (select 1 from villages hv where hv.player_id = p.id)' : ''}`;
     const r = await this.rows(
       `(select * from players p where ${where} and p.trophies >= $9 order by p.trophies asc limit $8)
        union all

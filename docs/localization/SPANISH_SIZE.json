@@ -4,11 +4,11 @@
   "measured": {
     "en": {
       "ready": true,
-      "strings": 3284,
-      "installedUtf8": 249276,
-      "gzip": 79532,
-      "brotli": 65209,
-      "zipDeflatePayload": 79514,
+      "strings": 3287,
+      "installedUtf8": 249783,
+      "gzip": 79670,
+      "brotli": 65377,
+      "zipDeflatePayload": 79652,
       "namespaces": {
         "boot": {
           "total": 17,
@@ -19,8 +19,8 @@
           "translated": 790
         },
         "messages": {
-          "total": 2119,
-          "translated": 2119
+          "total": 2122,
+          "translated": 2122
         },
         "pages": {
           "total": 335,
@@ -34,11 +34,11 @@
     },
     "es": {
       "ready": true,
-      "strings": 3284,
-      "installedUtf8": 275403,
-      "gzip": 87581,
-      "brotli": 72166,
-      "zipDeflatePayload": 87563,
+      "strings": 3287,
+      "installedUtf8": 275992,
+      "gzip": 87736,
+      "brotli": 72258,
+      "zipDeflatePayload": 87718,
       "namespaces": {
         "boot": {
           "total": 17,
@@ -49,8 +49,8 @@
           "translated": 790
         },
         "messages": {
-          "total": 2119,
-          "translated": 2119
+          "total": 2122,
+          "translated": 2122
         },
         "pages": {
           "total": 335,
@@ -64,11 +64,11 @@
       "packagedAssets": {
         "files": [
           {
-            "path": "public/lang/es-19b84a580663dde0.json",
-            "installedUtf8": 275403,
-            "gzip": 87581,
-            "brotli": 72166,
-            "deflate": 87563
+            "path": "public/lang/es-45b7de87bc7a373a.json",
+            "installedUtf8": 275992,
+            "gzip": 87736,
+            "brotli": 72258,
+            "deflate": 87718
           },
           {
             "path": "public/es/community.html",
@@ -141,10 +141,10 @@
             "deflate": 270
           }
         ],
-        "installedUtf8": 328646,
-        "gzipSum": 107194,
-        "brotliSum": 88598,
-        "zipArchive": 108528,
+        "installedUtf8": 329235,
+        "gzipSum": 107349,
+        "brotliSum": 88690,
+        "zipArchive": 108683,
         "extraFontBytes": 0,
         "excludes": [
           "Shared English fallback and localization code (measured in built JS separately)",
@@ -156,11 +156,11 @@
     },
     "pt": {
       "ready": true,
-      "strings": 3284,
-      "installedUtf8": 271966,
-      "gzip": 86796,
-      "brotli": 72031,
-      "zipDeflatePayload": 86778,
+      "strings": 3287,
+      "installedUtf8": 272502,
+      "gzip": 86940,
+      "brotli": 72126,
+      "zipDeflatePayload": 86922,
       "namespaces": {
         "boot": {
           "total": 17,
@@ -171,8 +171,8 @@
           "translated": 790
         },
         "messages": {
-          "total": 2119,
-          "translated": 2119
+          "total": 2122,
+          "translated": 2122
         },
         "pages": {
           "total": 335,
@@ -186,11 +186,11 @@
     },
     "fr": {
       "ready": true,
-      "strings": 3284,
-      "installedUtf8": 281143,
-      "gzip": 88879,
-      "brotli": 73303,
-      "zipDeflatePayload": 88861,
+      "strings": 3287,
+      "installedUtf8": 281733,
+      "gzip": 89034,
+      "brotli": 73494,
+      "zipDeflatePayload": 89016,
       "namespaces": {
         "boot": {
           "total": 17,
@@ -201,8 +201,8 @@
           "translated": 790
         },
         "messages": {
-          "total": 2119,
-          "translated": 2119
+          "total": 2122,
+          "translated": 2122
         },
         "pages": {
           "total": 335,
@@ -216,11 +216,11 @@
     },
     "de": {
       "ready": true,
-      "strings": 3284,
-      "installedUtf8": 274692,
-      "gzip": 88909,
-      "brotli": 73752,
-      "zipDeflatePayload": 88891,
+      "strings": 3287,
+      "installedUtf8": 275262,
+      "gzip": 89043,
+      "brotli": 73928,
+      "zipDeflatePayload": 89025,
       "namespaces": {
         "boot": {
           "total": 17,
@@ -231,8 +231,8 @@
           "translated": 790
         },
         "messages": {
-          "total": 2119,
-          "translated": 2119
+          "total": 2122,
+          "translated": 2122
         },
         "pages": {
           "total": 335,
@@ -246,11 +246,11 @@
     },
     "ar": {
       "ready": true,
-      "strings": 3284,
-      "installedUtf8": 335936,
-      "gzip": 94112,
-      "brotli": 74620,
-      "zipDeflatePayload": 94094,
+      "strings": 3287,
+      "installedUtf8": 336819,
+      "gzip": 94289,
+      "brotli": 74740,
+      "zipDeflatePayload": 94271,
       "namespaces": {
         "boot": {
           "total": 17,
@@ -261,8 +261,8 @@
           "translated": 790
         },
         "messages": {
-          "total": 2119,
-          "translated": 2119
+          "total": 2122,
+          "translated": 2122
         },
         "pages": {
           "total": 335,
@@ -276,11 +276,11 @@
     },
     "zh-Hans": {
       "ready": true,
-      "strings": 3284,
-      "installedUtf8": 248995,
-      "gzip": 89353,
-      "brotli": 70176,
-      "zipDeflatePayload": 89335,
+      "strings": 3287,
+      "installedUtf8": 249487,
+      "gzip": 89489,
+      "brotli": 70305,
+      "zipDeflatePayload": 89471,
       "namespaces": {
         "boot": {
           "total": 17,
@@ -291,8 +291,8 @@
           "translated": 790
         },
         "messages": {
-          "total": 2119,
-          "translated": 2119
+          "total": 2122,
+          "translated": 2122
         },
         "pages": {
           "total": 335,
@@ -306,11 +306,11 @@
     },
     "zh-Hant": {
       "ready": true,
-      "strings": 3284,
-      "installedUtf8": 247342,
-      "gzip": 88587,
-      "brotli": 70034,
-      "zipDeflatePayload": 88569,
+      "strings": 3287,
+      "installedUtf8": 247822,
+      "gzip": 88724,
+      "brotli": 70123,
+      "zipDeflatePayload": 88706,
       "namespaces": {
         "boot": {
           "total": 17,
@@ -321,8 +321,8 @@
           "translated": 790
         },
         "messages": {
-          "total": 2119,
-          "translated": 2119
+          "total": 2122,
+          "translated": 2122
         },
         "pages": {
           "total": 335,
@@ -336,11 +336,11 @@
     },
     "ja": {
       "ready": true,
-      "strings": 3284,
-      "installedUtf8": 297923,
-      "gzip": 91400,
-      "brotli": 71669,
-      "zipDeflatePayload": 91382,
+      "strings": 3287,
+      "installedUtf8": 298655,
+      "gzip": 91579,
+      "brotli": 71774,
+      "zipDeflatePayload": 91561,
       "namespaces": {
         "boot": {
           "total": 17,
@@ -351,8 +351,8 @@
           "translated": 790
         },
         "messages": {
-          "total": 2119,
-          "translated": 2119
+          "total": 2122,
+          "translated": 2122
         },
         "pages": {
           "total": 335,
@@ -366,11 +366,11 @@
     },
     "ko": {
       "ready": true,
-      "strings": 3284,
-      "installedUtf8": 279354,
-      "gzip": 88813,
-      "brotli": 70616,
-      "zipDeflatePayload": 88795,
+      "strings": 3287,
+      "installedUtf8": 279949,
+      "gzip": 88952,
+      "brotli": 70765,
+      "zipDeflatePayload": 88934,
       "namespaces": {
         "boot": {
           "total": 17,
@@ -381,8 +381,8 @@
           "translated": 790
         },
         "messages": {
-          "total": 2119,
-          "translated": 2119
+          "total": 2122,
+          "translated": 2122
         },
         "pages": {
           "total": 335,
@@ -396,11 +396,11 @@
     },
     "id": {
       "ready": true,
-      "strings": 3284,
-      "installedUtf8": 262659,
-      "gzip": 82079,
-      "brotli": 68330,
-      "zipDeflatePayload": 82061,
+      "strings": 3287,
+      "installedUtf8": 263163,
+      "gzip": 82223,
+      "brotli": 68486,
+      "zipDeflatePayload": 82205,
       "namespaces": {
         "boot": {
           "total": 17,
@@ -411,8 +411,8 @@
           "translated": 790
         },
         "messages": {
-          "total": 2119,
-          "translated": 2119
+          "total": 2122,
+          "translated": 2122
         },
         "pages": {
           "total": 335,
@@ -426,11 +426,11 @@
     },
     "ru": {
       "ready": true,
-      "strings": 3284,
-      "installedUtf8": 368115,
-      "gzip": 101271,
-      "brotli": 78215,
-      "zipDeflatePayload": 101253,
+      "strings": 3287,
+      "installedUtf8": 369050,
+      "gzip": 101464,
+      "brotli": 78363,
+      "zipDeflatePayload": 101446,
       "namespaces": {
         "boot": {
           "total": 17,
@@ -441,8 +441,8 @@
           "translated": 790
         },
         "messages": {
-          "total": 2119,
-          "translated": 2119
+          "total": 2122,
+          "translated": 2122
         },
         "pages": {
           "total": 335,
@@ -456,11 +456,11 @@
     },
     "hi": {
       "ready": true,
-      "strings": 3284,
-      "installedUtf8": 447566,
-      "gzip": 100208,
-      "brotli": 76128,
-      "zipDeflatePayload": 100190,
+      "strings": 3287,
+      "installedUtf8": 448672,
+      "gzip": 100486,
+      "brotli": 76311,
+      "zipDeflatePayload": 100468,
       "namespaces": {
         "boot": {
           "total": 17,
@@ -471,8 +471,8 @@
           "translated": 790
         },
         "messages": {
-          "total": 2119,
-          "translated": 2119
+          "total": 2122,
+          "translated": 2122
         },
         "pages": {
           "total": 335,
@@ -486,11 +486,11 @@
     },
     "tr": {
       "ready": true,
-      "strings": 3284,
-      "installedUtf8": 267910,
-      "gzip": 85943,
-      "brotli": 71288,
-      "zipDeflatePayload": 85925,
+      "strings": 3287,
+      "installedUtf8": 268502,
+      "gzip": 86083,
+      "brotli": 71399,
+      "zipDeflatePayload": 86065,
       "namespaces": {
         "boot": {
           "total": 17,
@@ -501,8 +501,8 @@
           "translated": 790
         },
         "messages": {
-          "total": 2119,
-          "translated": 2119
+          "total": 2122,
+          "translated": 2122
         },
         "pages": {
           "total": 335,
@@ -516,11 +516,11 @@
     },
     "vi": {
       "ready": true,
-      "strings": 3284,
-      "installedUtf8": 295750,
-      "gzip": 87310,
-      "brotli": 71139,
-      "zipDeflatePayload": 87292,
+      "strings": 3287,
+      "installedUtf8": 296404,
+      "gzip": 87462,
+      "brotli": 71264,
+      "zipDeflatePayload": 87444,
       "namespaces": {
         "boot": {
           "total": 17,
@@ -531,8 +531,8 @@
           "translated": 790
         },
         "messages": {
-          "total": 2119,
-          "translated": 2119
+          "total": 2122,
+          "translated": 2122
         },
         "pages": {
           "total": 335,
@@ -546,11 +546,11 @@
     },
     "th": {
       "ready": true,
-      "strings": 3284,
-      "installedUtf8": 426411,
-      "gzip": 94949,
-      "brotli": 72962,
-      "zipDeflatePayload": 94931,
+      "strings": 3287,
+      "installedUtf8": 427482,
+      "gzip": 95084,
+      "brotli": 73109,
+      "zipDeflatePayload": 95066,
       "namespaces": {
         "boot": {
           "total": 17,
@@ -561,8 +561,8 @@
           "translated": 790
         },
         "messages": {
-          "total": 2119,
-          "translated": 2119
+          "total": 2122,
+          "translated": 2122
         },
         "pages": {
           "total": 335,
@@ -576,11 +576,11 @@
     },
     "it": {
       "ready": true,
-      "strings": 3284,
-      "installedUtf8": 275400,
-      "gzip": 87284,
-      "brotli": 72373,
-      "zipDeflatePayload": 87266,
+      "strings": 3287,
+      "installedUtf8": 275979,
+      "gzip": 87440,
+      "brotli": 72530,
+      "zipDeflatePayload": 87422,
       "namespaces": {
         "boot": {
           "total": 17,
@@ -591,8 +591,8 @@
           "translated": 790
         },
         "messages": {
-          "total": 2119,
-          "translated": 2119
+          "total": 2122,
+          "translated": 2122
         },
         "pages": {
           "total": 335,
@@ -606,11 +606,11 @@
     },
     "pl": {
       "ready": true,
-      "strings": 3284,
-      "installedUtf8": 276036,
-      "gzip": 91122,
-      "brotli": 75351,
-      "zipDeflatePayload": 91104,
+      "strings": 3287,
+      "installedUtf8": 276599,
+      "gzip": 91298,
+      "brotli": 75536,
+      "zipDeflatePayload": 91280,
       "namespaces": {
         "boot": {
           "total": 17,
@@ -621,8 +621,8 @@
           "translated": 790
         },
         "messages": {
-          "total": 2119,
-          "translated": 2119
+          "total": 2122,
+          "translated": 2122
         },
         "pages": {
           "total": 335,
@@ -636,11 +636,11 @@
     },
     "uk": {
       "ready": true,
-      "strings": 3284,
-      "installedUtf8": 369139,
-      "gzip": 100910,
-      "brotli": 78410,
-      "zipDeflatePayload": 100892,
+      "strings": 3287,
+      "installedUtf8": 370039,
+      "gzip": 101108,
+      "brotli": 78579,
+      "zipDeflatePayload": 101090,
       "namespaces": {
         "boot": {
           "total": 17,
@@ -651,8 +651,8 @@
           "translated": 790
         },
         "messages": {
-          "total": 2119,
-          "translated": 2119
+          "total": 2122,
+          "translated": 2122
         },
         "pages": {
           "total": 335,
@@ -666,11 +666,11 @@
     },
     "nl": {
       "ready": true,
-      "strings": 3284,
-      "installedUtf8": 265518,
-      "gzip": 85608,
-      "brotli": 71557,
-      "zipDeflatePayload": 85590,
+      "strings": 3287,
+      "installedUtf8": 266065,
+      "gzip": 85753,
+      "brotli": 71722,
+      "zipDeflatePayload": 85735,
       "namespaces": {
         "boot": {
           "total": 17,
@@ -681,8 +681,8 @@
           "translated": 790
         },
         "messages": {
-          "total": 2119,
-          "translated": 2119
+          "total": 2122,
+          "translated": 2122
         },
         "pages": {
           "total": 335,
@@ -696,11 +696,11 @@
     },
     "ms": {
       "ready": true,
-      "strings": 3284,
-      "installedUtf8": 269587,
-      "gzip": 82971,
-      "brotli": 68854,
-      "zipDeflatePayload": 82953,
+      "strings": 3287,
+      "installedUtf8": 270143,
+      "gzip": 83114,
+      "brotli": 68912,
+      "zipDeflatePayload": 83096,
       "namespaces": {
         "boot": {
           "total": 17,
@@ -711,8 +711,8 @@
           "translated": 790
         },
         "messages": {
-          "total": 2119,
-          "translated": 2119
+          "total": 2122,
+          "translated": 2122
         },
         "pages": {
           "total": 335,
@@ -726,11 +726,11 @@
     },
     "bn": {
       "ready": true,
-      "strings": 3284,
-      "installedUtf8": 451372,
-      "gzip": 97883,
-      "brotli": 74846,
-      "zipDeflatePayload": 97865,
+      "strings": 3287,
+      "installedUtf8": 452485,
+      "gzip": 98147,
+      "brotli": 75000,
+      "zipDeflatePayload": 98129,
       "namespaces": {
         "boot": {
           "total": 17,
@@ -741,8 +741,8 @@
           "translated": 790
         },
         "messages": {
-          "total": 2119,
-          "translated": 2119
+          "total": 2122,
+          "translated": 2122
         },
         "pages": {
           "total": 335,
@@ -756,11 +756,11 @@
     },
     "ur": {
       "ready": true,
-      "strings": 3284,
-      "installedUtf8": 348150,
-      "gzip": 93376,
-      "brotli": 73733,
-      "zipDeflatePayload": 93358,
+      "strings": 3287,
+      "installedUtf8": 348960,
+      "gzip": 93532,
+      "brotli": 73903,
+      "zipDeflatePayload": 93514,
       "namespaces": {
         "boot": {
           "total": 17,
@@ -771,8 +771,8 @@
           "translated": 790
         },
         "messages": {
-          "total": 2119,
-          "translated": 2119
+          "total": 2122,
+          "translated": 2122
         },
         "pages": {
           "total": 335,
@@ -786,11 +786,11 @@
     },
     "sw": {
       "ready": true,
-      "strings": 3284,
-      "installedUtf8": 269126,
-      "gzip": 84816,
-      "brotli": 70793,
-      "zipDeflatePayload": 84798,
+      "strings": 3287,
+      "installedUtf8": 269696,
+      "gzip": 84958,
+      "brotli": 70871,
+      "zipDeflatePayload": 84940,
       "namespaces": {
         "boot": {
           "total": 17,
@@ -801,8 +801,8 @@
           "translated": 790
         },
         "messages": {
-          "total": 2119,
-          "translated": 2119
+          "total": 2122,
+          "translated": 2122
         },
         "pages": {
           "total": 335,
@@ -816,11 +816,11 @@
     },
     "ha": {
       "ready": true,
-      "strings": 3284,
-      "installedUtf8": 266851,
-      "gzip": 83135,
-      "brotli": 69262,
-      "zipDeflatePayload": 83117,
+      "strings": 3287,
+      "installedUtf8": 267433,
+      "gzip": 83262,
+      "brotli": 69410,
+      "zipDeflatePayload": 83244,
       "namespaces": {
         "boot": {
           "total": 17,
@@ -831,8 +831,8 @@
           "translated": 790
         },
         "messages": {
-          "total": 2119,
-          "translated": 2119
+          "total": 2122,
+          "translated": 2122
         },
         "pages": {
           "total": 335,
@@ -846,11 +846,11 @@
     },
     "yo": {
       "ready": true,
-      "strings": 3284,
-      "installedUtf8": 307354,
-      "gzip": 88276,
-      "brotli": 71455,
-      "zipDeflatePayload": 88258,
+      "strings": 3287,
+      "installedUtf8": 308075,
+      "gzip": 88424,
+      "brotli": 71710,
+      "zipDeflatePayload": 88406,
       "namespaces": {
         "boot": {
           "total": 17,
@@ -861,8 +861,8 @@
           "translated": 790
         },
         "messages": {
-          "total": 2119,
-          "translated": 2119
+          "total": 2122,
+          "translated": 2122
         },
         "pages": {
           "total": 335,
@@ -876,11 +876,11 @@
     },
     "am": {
       "ready": true,
-      "strings": 3284,
-      "installedUtf8": 354601,
-      "gzip": 96230,
-      "brotli": 75489,
-      "zipDeflatePayload": 96212,
+      "strings": 3287,
+      "installedUtf8": 355506,
+      "gzip": 96384,
+      "brotli": 75672,
+      "zipDeflatePayload": 96366,
       "namespaces": {
         "boot": {
           "total": 17,
@@ -891,8 +891,8 @@
           "translated": 790
         },
         "messages": {
-          "total": 2119,
-          "translated": 2119
+          "total": 2122,
+          "translated": 2122
         },
         "pages": {
           "total": 335,
@@ -906,11 +906,11 @@
     },
     "zu": {
       "ready": true,
-      "strings": 3284,
-      "installedUtf8": 277963,
-      "gzip": 87366,
-      "brotli": 72350,
-      "zipDeflatePayload": 87348,
+      "strings": 3287,
+      "installedUtf8": 278604,
+      "gzip": 87535,
+      "brotli": 72531,
+      "zipDeflatePayload": 87517,
       "namespaces": {
         "boot": {
           "total": 17,
@@ -921,8 +921,8 @@
           "translated": 790
         },
         "messages": {
-          "total": 2119,
-          "translated": 2119
+          "total": 2122,
+          "translated": 2122
         },
         "pages": {
           "total": 335,
@@ -936,11 +936,11 @@
     },
     "ig": {
       "ready": true,
-      "strings": 3284,
-      "installedUtf8": 280952,
-      "gzip": 82900,
-      "brotli": 68590,
-      "zipDeflatePayload": 82882,
+      "strings": 3287,
+      "installedUtf8": 281563,
+      "gzip": 83032,
+      "brotli": 68706,
+      "zipDeflatePayload": 83014,
       "namespaces": {
         "boot": {
           "total": 17,
@@ -951,8 +951,8 @@
           "translated": 790
         },
         "messages": {
-          "total": 2119,
-          "translated": 2119
+          "total": 2122,
+          "translated": 2122
         },
         "pages": {
           "total": 335,
@@ -966,11 +966,11 @@
     },
     "mr": {
       "ready": true,
-      "strings": 3284,
-      "installedUtf8": 442486,
-      "gzip": 98961,
-      "brotli": 75622,
-      "zipDeflatePayload": 98943,
+      "strings": 3287,
+      "installedUtf8": 443571,
+      "gzip": 99183,
+      "brotli": 75808,
+      "zipDeflatePayload": 99165,
       "namespaces": {
         "boot": {
           "total": 17,
@@ -981,8 +981,8 @@
           "translated": 790
         },
         "messages": {
-          "total": 2119,
-          "translated": 2119
+          "total": 2122,
+          "translated": 2122
         },
         "pages": {
           "total": 335,
@@ -996,11 +996,11 @@
     },
     "te": {
       "ready": true,
-      "strings": 3284,
-      "installedUtf8": 462875,
-      "gzip": 100269,
-      "brotli": 76019,
-      "zipDeflatePayload": 100251,
+      "strings": 3287,
+      "installedUtf8": 464100,
+      "gzip": 100539,
+      "brotli": 76180,
+      "zipDeflatePayload": 100521,
       "namespaces": {
         "boot": {
           "total": 17,
@@ -1011,8 +1011,8 @@
           "translated": 790
         },
         "messages": {
-          "total": 2119,
-          "translated": 2119
+          "total": 2122,
+          "translated": 2122
         },
         "pages": {
           "total": 335,
@@ -1026,11 +1026,11 @@
     },
     "ta": {
       "ready": true,
-      "strings": 3284,
-      "installedUtf8": 529228,
-      "gzip": 101455,
-      "brotli": 76231,
-      "zipDeflatePayload": 101437,
+      "strings": 3287,
+      "installedUtf8": 530759,
+      "gzip": 101694,
+      "brotli": 76422,
+      "zipDeflatePayload": 101676,
       "namespaces": {
         "boot": {
           "total": 17,
@@ -1041,8 +1041,8 @@
           "translated": 790
         },
         "messages": {
-          "total": 2119,
-          "translated": 2119
+          "total": 2122,
+          "translated": 2122
         },
         "pages": {
           "total": 335,
@@ -1056,11 +1056,11 @@
     },
     "gu": {
       "ready": true,
-      "strings": 3284,
-      "installedUtf8": 429243,
-      "gzip": 98008,
-      "brotli": 75140,
-      "zipDeflatePayload": 97990,
+      "strings": 3287,
+      "installedUtf8": 430326,
+      "gzip": 98156,
+      "brotli": 75325,
+      "zipDeflatePayload": 98138,
       "namespaces": {
         "boot": {
           "total": 17,
@@ -1071,8 +1071,8 @@
           "translated": 790
         },
         "messages": {
-          "total": 2119,
-          "translated": 2119
+          "total": 2122,
+          "translated": 2122
         },
         "pages": {
           "total": 335,
@@ -1086,11 +1086,11 @@
     },
     "kn": {
       "ready": true,
-      "strings": 3284,
-      "installedUtf8": 472445,
-      "gzip": 99386,
-      "brotli": 75640,
-      "zipDeflatePayload": 99368,
+      "strings": 3287,
+      "installedUtf8": 473742,
+      "gzip": 99617,
+      "brotli": 75807,
+      "zipDeflatePayload": 99599,
       "namespaces": {
         "boot": {
           "total": 17,
@@ -1101,8 +1101,8 @@
           "translated": 790
         },
         "messages": {
-          "total": 2119,
-          "translated": 2119
+          "total": 2122,
+          "translated": 2122
         },
         "pages": {
           "total": 335,
@@ -1116,11 +1116,11 @@
     },
     "ml": {
       "ready": true,
-      "strings": 3284,
-      "installedUtf8": 503195,
-      "gzip": 102449,
-      "brotli": 77134,
-      "zipDeflatePayload": 102431,
+      "strings": 3287,
+      "installedUtf8": 504620,
+      "gzip": 102700,
+      "brotli": 77325,
+      "zipDeflatePayload": 102682,
       "namespaces": {
         "boot": {
           "total": 17,
@@ -1131,8 +1131,8 @@
           "translated": 790
         },
         "messages": {
-          "total": 2119,
-          "translated": 2119
+          "total": 2122,
+          "translated": 2122
         },
         "pages": {
           "total": 335,
@@ -1146,11 +1146,11 @@
     },
     "pa": {
       "ready": true,
-      "strings": 3284,
-      "installedUtf8": 440181,
-      "gzip": 99321,
-      "brotli": 76014,
-      "zipDeflatePayload": 99303,
+      "strings": 3287,
+      "installedUtf8": 441331,
+      "gzip": 99588,
+      "brotli": 76202,
+      "zipDeflatePayload": 99570,
       "namespaces": {
         "boot": {
           "total": 17,
@@ -1161,8 +1161,8 @@
           "translated": 790
         },
         "messages": {
-          "total": 2119,
-          "translated": 2119
+          "total": 2122,
+          "translated": 2122
         },
         "pages": {
           "total": 335,
@@ -1176,11 +1176,11 @@
     },
     "ro": {
       "ready": true,
-      "strings": 3284,
-      "installedUtf8": 278021,
-      "gzip": 88807,
-      "brotli": 73490,
-      "zipDeflatePayload": 88789,
+      "strings": 3287,
+      "installedUtf8": 278628,
+      "gzip": 88971,
+      "brotli": 73673,
+      "zipDeflatePayload": 88953,
       "namespaces": {
         "boot": {
           "total": 17,
@@ -1191,8 +1191,8 @@
           "translated": 790
         },
         "messages": {
-          "total": 2119,
-          "translated": 2119
+          "total": 2122,
+          "translated": 2122
         },
         "pages": {
           "total": 335,
@@ -1206,11 +1206,11 @@
     },
     "cs": {
       "ready": true,
-      "strings": 3284,
-      "installedUtf8": 273131,
-      "gzip": 90993,
-      "brotli": 74875,
-      "zipDeflatePayload": 90975,
+      "strings": 3287,
+      "installedUtf8": 273679,
+      "gzip": 91142,
+      "brotli": 75023,
+      "zipDeflatePayload": 91124,
       "namespaces": {
         "boot": {
           "total": 17,
@@ -1221,8 +1221,8 @@
           "translated": 790
         },
         "messages": {
-          "total": 2119,
-          "translated": 2119
+          "total": 2122,
+          "translated": 2122
         },
         "pages": {
           "total": 335,
@@ -1236,11 +1236,11 @@
     },
     "el": {
       "ready": true,
-      "strings": 3284,
-      "installedUtf8": 401919,
-      "gzip": 105244,
-      "brotli": 80176,
-      "zipDeflatePayload": 105226,
+      "strings": 3287,
+      "installedUtf8": 402931,
+      "gzip": 105401,
+      "brotli": 80390,
+      "zipDeflatePayload": 105383,
       "namespaces": {
         "boot": {
           "total": 17,
@@ -1251,8 +1251,8 @@
           "translated": 790
         },
         "messages": {
-          "total": 2119,
-          "translated": 2119
+          "total": 2122,
+          "translated": 2122
         },
         "pages": {
           "total": 335,
@@ -1266,11 +1266,11 @@
     },
     "he": {
       "ready": true,
-      "strings": 3284,
-      "installedUtf8": 310812,
-      "gzip": 89044,
-      "brotli": 71411,
-      "zipDeflatePayload": 89026,
+      "strings": 3287,
+      "installedUtf8": 311577,
+      "gzip": 89199,
+      "brotli": 71505,
+      "zipDeflatePayload": 89181,
       "namespaces": {
         "boot": {
           "total": 17,
@@ -1281,8 +1281,8 @@
           "translated": 790
         },
         "messages": {
-          "total": 2119,
-          "translated": 2119
+          "total": 2122,
+          "translated": 2122
         },
         "pages": {
           "total": 335,
@@ -1296,11 +1296,11 @@
     },
     "hu": {
       "ready": true,
-      "strings": 3284,
-      "installedUtf8": 278447,
-      "gzip": 91358,
-      "brotli": 75116,
-      "zipDeflatePayload": 91340,
+      "strings": 3287,
+      "installedUtf8": 279045,
+      "gzip": 91512,
+      "brotli": 75231,
+      "zipDeflatePayload": 91494,
       "namespaces": {
         "boot": {
           "total": 17,
@@ -1311,8 +1311,8 @@
           "translated": 790
         },
         "messages": {
-          "total": 2119,
-          "translated": 2119
+          "total": 2122,
+          "translated": 2122
         },
         "pages": {
           "total": 335,
@@ -1326,11 +1326,11 @@
     },
     "sv": {
       "ready": true,
-      "strings": 3284,
-      "installedUtf8": 260081,
-      "gzip": 84249,
-      "brotli": 70483,
-      "zipDeflatePayload": 84231,
+      "strings": 3287,
+      "installedUtf8": 260616,
+      "gzip": 84391,
+      "brotli": 70622,
+      "zipDeflatePayload": 84373,
       "namespaces": {
         "boot": {
           "total": 17,
@@ -1341,8 +1341,8 @@
           "translated": 790
         },
         "messages": {
-          "total": 2119,
-          "translated": 2119
+          "total": 2122,
+          "translated": 2122
         },
         "pages": {
           "total": 335,
@@ -1356,11 +1356,11 @@
     },
     "ca": {
       "ready": true,
-      "strings": 3284,
-      "installedUtf8": 275267,
-      "gzip": 87564,
-      "brotli": 72378,
-      "zipDeflatePayload": 87546,
+      "strings": 3287,
+      "installedUtf8": 275852,
+      "gzip": 87727,
+      "brotli": 72511,
+      "zipDeflatePayload": 87709,
       "namespaces": {
         "boot": {
           "total": 17,
@@ -1371,8 +1371,8 @@
           "translated": 790
         },
         "messages": {
-          "total": 2119,
-          "translated": 2119
+          "total": 2122,
+          "translated": 2122
         },
         "pages": {
           "total": 335,
@@ -1386,11 +1386,11 @@
     },
     "hr": {
       "ready": true,
-      "strings": 3284,
-      "installedUtf8": 263761,
-      "gzip": 87338,
-      "brotli": 72547,
-      "zipDeflatePayload": 87320,
+      "strings": 3287,
+      "installedUtf8": 264310,
+      "gzip": 87478,
+      "brotli": 72695,
+      "zipDeflatePayload": 87460,
       "namespaces": {
         "boot": {
           "total": 17,
@@ -1401,8 +1401,8 @@
           "translated": 790
         },
         "messages": {
-          "total": 2119,
-          "translated": 2119
+          "total": 2122,
+          "translated": 2122
         },
         "pages": {
           "total": 335,
@@ -1416,11 +1416,11 @@
     },
     "da": {
       "ready": true,
-      "strings": 3284,
-      "installedUtf8": 257789,
-      "gzip": 83806,
-      "brotli": 70080,
-      "zipDeflatePayload": 83788,
+      "strings": 3287,
+      "installedUtf8": 258315,
+      "gzip": 83942,
+      "brotli": 70234,
+      "zipDeflatePayload": 83924,
       "namespaces": {
         "boot": {
           "total": 17,
@@ -1431,8 +1431,8 @@
           "translated": 790
         },
         "messages": {
-          "total": 2119,
-          "translated": 2119
+          "total": 2122,
+          "translated": 2122
         },
         "pages": {
           "total": 335,
@@ -1446,11 +1446,11 @@
     },
     "fi": {
       "ready": true,
-      "strings": 3284,
-      "installedUtf8": 267799,
-      "gzip": 87247,
-      "brotli": 72799,
-      "zipDeflatePayload": 87229,
+      "strings": 3287,
+      "installedUtf8": 268408,
+      "gzip": 87392,
+      "brotli": 72893,
+      "zipDeflatePayload": 87374,
       "namespaces": {
         "boot": {
           "total": 17,
@@ -1461,8 +1461,8 @@
           "translated": 790
         },
         "messages": {
-          "total": 2119,
-          "translated": 2119
+          "total": 2122,
+          "translated": 2122
         },
         "pages": {
           "total": 335,
@@ -1476,11 +1476,11 @@
     },
     "nb": {
       "ready": true,
-      "strings": 3284,
-      "installedUtf8": 258438,
-      "gzip": 83736,
-      "brotli": 70114,
-      "zipDeflatePayload": 83718,
+      "strings": 3287,
+      "installedUtf8": 258960,
+      "gzip": 83874,
+      "brotli": 70283,
+      "zipDeflatePayload": 83856,
       "namespaces": {
         "boot": {
           "total": 17,
@@ -1491,8 +1491,8 @@
           "translated": 790
         },
         "messages": {
-          "total": 2119,
-          "translated": 2119
+          "total": 2122,
+          "translated": 2122
         },
         "pages": {
           "total": 335,
@@ -1506,11 +1506,11 @@
     },
     "sk": {
       "ready": true,
-      "strings": 3284,
-      "installedUtf8": 272987,
-      "gzip": 90932,
-      "brotli": 75015,
-      "zipDeflatePayload": 90914,
+      "strings": 3287,
+      "installedUtf8": 273547,
+      "gzip": 91085,
+      "brotli": 75078,
+      "zipDeflatePayload": 91067,
       "namespaces": {
         "boot": {
           "total": 17,
@@ -1521,8 +1521,8 @@
           "translated": 790
         },
         "messages": {
-          "total": 2119,
-          "translated": 2119
+          "total": 2122,
+          "translated": 2122
         },
         "pages": {
           "total": 335,
@@ -1536,11 +1536,11 @@
     },
     "sl": {
       "ready": true,
-      "strings": 3284,
-      "installedUtf8": 264394,
-      "gzip": 87284,
-      "brotli": 72697,
-      "zipDeflatePayload": 87266,
+      "strings": 3287,
+      "installedUtf8": 264949,
+      "gzip": 87420,
+      "brotli": 72845,
+      "zipDeflatePayload": 87402,
       "namespaces": {
         "boot": {
           "total": 17,
@@ -1551,8 +1551,8 @@
           "translated": 790
         },
         "messages": {
-          "total": 2119,
-          "translated": 2119
+          "total": 2122,
+          "translated": 2122
         },
         "pages": {
           "total": 335,
@@ -1566,11 +1566,11 @@
     },
     "or": {
       "ready": true,
-      "strings": 3284,
-      "installedUtf8": 454335,
-      "gzip": 96620,
-      "brotli": 74155,
-      "zipDeflatePayload": 96602,
+      "strings": 3287,
+      "installedUtf8": 455523,
+      "gzip": 96890,
+      "brotli": 74298,
+      "zipDeflatePayload": 96872,
       "namespaces": {
         "boot": {
           "total": 17,
@@ -1581,8 +1581,8 @@
           "translated": 790
         },
         "messages": {
-          "total": 2119,
-          "translated": 2119
+          "total": 2122,
+          "translated": 2122
         },
         "pages": {
           "total": 335,
@@ -1599,26 +1599,26 @@
     "50_languages_at_1x_spanish": {
       "estimate": true,
       "basis": "Complete Spanish client text pack, six public pages, PWA manifest and locale resources multiplied by 50 and the stated expansion factor. English is already embedded, so this intentionally overestimates 49 added packs. The other 0 target languages are not ready or measured; fonts use the existing OS fallback policy.",
-      "installedUtf8": 16432300,
-      "gzip": 5359700,
-      "brotli": 4429900,
-      "zipArchive": 5426400
+      "installedUtf8": 16461750,
+      "gzip": 5367450,
+      "brotli": 4434500,
+      "zipArchive": 5434150
     },
     "50_languages_at_1.5x_spanish": {
       "estimate": true,
       "basis": "Complete Spanish client text pack, six public pages, PWA manifest and locale resources multiplied by 50 and the stated expansion factor. English is already embedded, so this intentionally overestimates 49 added packs. The other 0 target languages are not ready or measured; fonts use the existing OS fallback policy.",
-      "installedUtf8": 24648450,
-      "gzip": 8039550,
-      "brotli": 6644850,
-      "zipArchive": 8139600
+      "installedUtf8": 24692625,
+      "gzip": 8051175,
+      "brotli": 6651750,
+      "zipArchive": 8151225
     },
     "50_languages_at_2x_spanish": {
       "estimate": true,
       "basis": "Complete Spanish client text pack, six public pages, PWA manifest and locale resources multiplied by 50 and the stated expansion factor. English is already embedded, so this intentionally overestimates 49 added packs. The other 0 target languages are not ready or measured; fonts use the existing OS fallback policy.",
-      "installedUtf8": 32864600,
-      "gzip": 10719400,
-      "brotli": 8859800,
-      "zipArchive": 10852800
+      "installedUtf8": 32923500,
+      "gzip": 10734900,
+      "brotli": 8869000,
+      "zipArchive": 10868300
     }
   },
   "decision": "Bundle every completed language in native installs; the web caches only the chosen language. No extra font is needed for Spanish.",

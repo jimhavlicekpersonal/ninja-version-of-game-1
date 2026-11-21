@@ -69,7 +69,7 @@ const MAX_LOGGED_TYPE = 40;
 
 /** The HTTP adapter shares its rate limiter with the core (`nodeContext`); tests and tools get one per context. */
 const ownLimiters = new WeakMap<ServerContext, RateLimiter>();
-function limiterOf(ctx: ServerContext): RateLimiter {
+export function limiterOf(ctx: ServerContext): RateLimiter {
   const shared = (ctx as ServerContext & { limiter?: RateLimiter }).limiter;
   if (shared) return shared;
   let l = ownLimiters.get(ctx);
@@ -391,4 +391,15 @@ export async function refreshBaseFromVillage(ctx: ServerContext, me: { id: strin
 /** True when this player's village lives on the server. */
 export async function hasServerVillage(repo: Repo, playerId: string): Promise<boolean> {
   return Boolean(await repo.getVillage(playerId));
+}
+
+/**
+ * Beast Mode SEC-01: with REQUIRE_SERVER_VILLAGE on, ranked play (anything that changes honor, ratings, war score,
+ * loot or donations) needs a village the server holds. A village on the device still plays offline and Practice.
+ */
+export async function requireHeldVillage(ctx: ServerContext, playerId: string): Promise<void> {
+  if (!ctx.policy.requireServerVillage) return;
+  if (await hasServerVillage(ctx.repo, playerId)) return;
+  ctx.metrics.count('tk_refused_total', { reason: 'village_required' });
+  throw fail(404, 'no_village', 'pvp.village_required');
 }

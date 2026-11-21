@@ -70,6 +70,7 @@ export class MemoryPlayers extends MemoryBase implements PlayerStore {
     return [...this.players.values()]
       .filter((p) => p.base && !p.bannedUntil && !q.excludeIds.includes(p.id) && !locked.has(p.id) && p.shieldUntil <= q.now)
       .filter((p) => p.hallLevel >= q.minHall && p.hallLevel <= q.maxHall && p.trophies >= q.minTrophies && p.trophies <= q.maxTrophies)
+      .filter((p) => !q.heldOnly || this.villageRows.has(p.id))
       .slice(0, q.limit)
       .map(clone);
   }

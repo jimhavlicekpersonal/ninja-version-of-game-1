@@ -85,6 +85,7 @@ export abstract class MemoryBase {
 
   /** Last gaps 2026-11-14: may this ranked player appear on a leaderboard read with `filter`? */
   protected onBoard(p: Player, filter?: BoardFilter): boolean {
+    if (filter?.heldOnly && !this.villageRows.has(p.id)) return false;
     return !(filter?.hideUnder13 && this.ageRows.get(p.id)?.band === 'under13');
   }
 

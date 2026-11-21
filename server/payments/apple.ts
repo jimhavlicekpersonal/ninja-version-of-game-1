@@ -111,7 +111,7 @@ function hasExtension(der: Buffer, oid: Buffer): boolean {
 }
 
 /** ECO-09: how far back a JWS's own signing time is believed for the certificate dates (3 years). */
-export const SIGNED_DATE_MAX_AGE_MS = 3 * 365 * 86_400_000;
+const SIGNED_DATE_MAX_AGE_MS = 3 * 365 * 86_400_000;
 
 export class AppleVerifier {
   private readonly roots: Set<string>;

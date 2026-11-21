@@ -183,6 +183,9 @@ export function checkConfig(env: Record<string, string | undefined>): { deploy: 
     if (list(env.APPLE_ENVIRONMENTS).includes('Xcode')) errors.push('Xcode-signed purchases are for local testing, not production.');
     if (env.GOOGLE_PLAY_ALLOW_TEST === '1') warnings.push('GOOGLE_PLAY_ALLOW_TEST=1: license-tester purchases are credited in production.');
     if (env.MIGRATE_ON_BOOT === '1') warnings.push('MIGRATE_ON_BOOT=1 in production: run "npm run server:migrate" as a release step instead when there is more than one instance.');
+    // Beast Mode SEC-01: device-held villages are trusted in ranked play until this is on (owner decision D8).
+    if (env.REQUIRE_SERVER_VILLAGE === undefined || env.REQUIRE_SERVER_VILLAGE === '') warnings.push('REQUIRE_SERVER_VILLAGE is not set: villages kept on the device take part in ranked play (honor, loot, wars, both leaderboards) on trust. Set it to 1 after a release where the game has moved villages to the server, or to 0 to accept this knowingly.');
+    if (env.UPLOAD_ACCOUNT_AGE === '0') warnings.push('UPLOAD_ACCOUNT_AGE=0 in production: a new account can upload a Keep 15 base and be ranked and matched there at once. Keep it for staging contract runs only.');
     // Beast Mode ECO-06: without rates, App Store local prices count at the catalog USD (the under-18 cap and revenue).
     if ((env.APPLE_BUNDLE_IDS || env.GAMECENTER_BUNDLE_IDS) && !/"[A-Z]{3}"/.test((env.USD_RATES ?? '').replace(/"USD"/g, ''))) warnings.push('USD_RATES has no currency besides USD: App Store purchases in other currencies count at the catalog USD price for the under-18 cap and revenue. Set it monthly (docs/SHIPPING.md).');
     // Beast Mode SEC-03 (defence in depth): a sign-in token relayed through another server is refused only with nonces required.
@@ -257,6 +260,8 @@ export function policyFromEnv(env: Record<string, string | undefined>): Partial<
     if (!m) throw new Error('UNDER13_MODE must be offline, limited or families.');
     out.under13Mode = m;
   }
+  if (env.UPLOAD_ACCOUNT_AGE !== undefined && env.UPLOAD_ACCOUNT_AGE !== '') out.uploadAccountAge = env.UPLOAD_ACCOUNT_AGE !== '0';
+  if (env.REQUIRE_SERVER_VILLAGE !== undefined) out.requireServerVillage = env.REQUIRE_SERVER_VILLAGE === '1';
   if (env.EU_JADE_VALUE !== undefined) out.euJadeValue = env.EU_JADE_VALUE === '1';
   if (env.APPLE_CONSUMPTION_RESPONSE !== undefined) out.appleConsumptionResponse = env.APPLE_CONSUMPTION_RESPONSE === '1';
   if (env.SIGNIFICANT_UPDATE_BUILD !== undefined && env.SIGNIFICANT_UPDATE_BUILD.trim() !== '') {
