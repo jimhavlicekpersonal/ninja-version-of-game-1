@@ -2,6 +2,7 @@
 
 import type { Player, DuelRecord, DuelTally, DuelChallenge, Squad, FriendRequest } from '../types';
 import { MemoryBase, clone } from './base';
+import { skeletonOfKey } from '../../../src/backend/net/names';
 
 export class MemoryFriends extends MemoryBase {
   async playerByFriendCode(code: string): Promise<Player | null> {
@@ -14,6 +15,13 @@ export class MemoryFriends extends MemoryBase {
   }
   async holdName(key: string, playerId: string, until: number): Promise<void> {
     this.nameHolds.set(key, { playerId, until });
+  }
+  async playerBySkeleton(skeleton: string, exceptId: string | null): Promise<Player | null> {
+    const p = [...this.players.values()].find((x) => x.nameKey && x.id !== exceptId && skeletonOfKey(x.nameKey) === skeleton);
+    return p ? clone(p) : null;
+  }
+  async backfillSkeletons(): Promise<number> {
+    return 0; // computed from the key on every read
   }
   async playersWithoutNameKey(limit: number): Promise<Player[]> {
     return [...this.players.values()]

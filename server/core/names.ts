@@ -14,7 +14,7 @@
  *   at server start): the oldest account keeps a shared name, the others get
  *   digits added, and everyone migrated gets one free change.
  */
-import { NAME_CHANGE_DAYS, NAME_HOLD_DAYS, NAME_MAX, isReservedName, nameKey, nameShapeProblem, tidyName } from '../../src/backend/net/names';
+import { NAME_CHANGE_DAYS, NAME_HOLD_DAYS, NAME_MAX, isReservedName, nameKey, nameShapeProblem, skeletonOfKey, tidyName } from '../../src/backend/net/names';
 import { censorText, hasContact } from '../../src/gameplay/sim/social/grove';
 import { nameWidth, sanitizeName } from '../../src/gameplay/sim/social/names';
 import { NameTakenError, type Player } from '../repo';
@@ -40,6 +40,8 @@ export function nameProblem(ctx: ServerContext, name: string): string | null {
 export async function nameFree(ctx: ServerContext, key: string, playerId: string | null): Promise<boolean> {
   const owner = await ctx.repo.playerByNameKey(key);
   if (owner && owner.id !== playerId) return false;
+  // Beast Mode SEC-06: nor a look-alike of another player's name in another script.
+  if (await ctx.repo.playerBySkeleton(skeletonOfKey(key), playerId)) return false;
   const hold = await ctx.repo.nameHold(key, ctx.now());
   return !hold || hold.playerId === playerId;
 }
@@ -143,6 +145,8 @@ export async function changeName(ctx: ServerContext, me: Player, wanted: unknown
  * free change. Idempotent; returns how many were done.
  */
 export async function migrateNames(ctx: ServerContext, batch = 200): Promise<number> {
+  // Beast Mode SEC-06: skeletons for players named before migration 0044, in batches.
+  while ((await ctx.repo.backfillSkeletons(batch)) === batch);
   let done = 0;
   for (;;) {
     const list = await ctx.repo.playersWithoutNameKey(batch);

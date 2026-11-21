@@ -2,6 +2,7 @@
 import type { Player, DuelRecord, DuelTally, DuelChallenge, Squad, FriendRequest } from '../types';
 import { type Row, num, toPlayer } from './rows';
 import { PgBase } from './base';
+import { skeletonOfKey } from '../../../src/backend/net/names';
 
 const toChallenge = (x: Row): DuelChallenge => ({ id: String(x.id), fromId: String(x.from_id), toId: String(x.to_id), createdAt: num(x.created_at), expiresAt: num(x.expires_at), fromResult: (x.from_result as DuelChallenge['fromResult']) ?? null, toResult: (x.to_result as DuelChallenge['toResult']) ?? null });
 
@@ -16,6 +17,15 @@ export class PgFriends extends PgBase {
   }
   async holdName(key: string, playerId: string, until: number): Promise<void> {
     await this.db.query('insert into name_holds (name_key, player_id, until) values ($1, $2, $3) on conflict (name_key) do update set player_id = excluded.player_id, until = excluded.until', [key, playerId, until]);
+  }
+  async playerBySkeleton(skeleton: string, exceptId: string | null): Promise<Player | null> {
+    const r = await this.rows('select * from players where name_skeleton = $1 and ($2::text is null or id <> $2) limit 1', [skeleton, exceptId]);
+    return r[0] ? toPlayer(r[0]) : null;
+  }
+  async backfillSkeletons(limit: number): Promise<number> {
+    const list = await this.rows('select id, name_key from players where name_skeleton is null and name_key is not null limit $1', [limit]);
+    for (const r of list) await this.db.query('update players set name_skeleton = $2 where id = $1', [r.id, skeletonOfKey(String(r.name_key))]);
+    return list.length;
   }
   async playersWithoutNameKey(limit: number): Promise<Player[]> {
     return (await this.rows('select * from players where name_key is null order by created_at, id limit $1', [limit])).map(toPlayer);

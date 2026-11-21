@@ -329,6 +329,10 @@ export interface SocialStore {
   nameHold(key: string, now: number): Promise<{ playerId: string; until: number } | null>;
   /** Keep a released name for its previous owner until `until` (replaces an older hold on it). */
   holdName(key: string, playerId: string, until: number): Promise<void>;
+  /** Beast Mode SEC-06: another player whose name has this skeleton (`nameSkeleton`), or null. */
+  playerBySkeleton(skeleton: string, exceptId: string | null): Promise<Player | null>;
+  /** SEC-06: players with a name key but no stored skeleton yet (the start-up backfill); sets theirs; how many. */
+  backfillSkeletons(limit: number): Promise<number>;
   /** Players from before step 59 with no name key yet, oldest first (the name migration). */
   playersWithoutNameKey(limit: number): Promise<Player[]>;
   addFriendship(a: string, b: string, at: number): Promise<void>;

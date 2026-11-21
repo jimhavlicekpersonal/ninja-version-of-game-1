@@ -7,13 +7,14 @@ import type { PlayerStore } from '../ports';
 import { type Row, num, strOrNull, toPlayer, isUniqueClash, toDeletion, boardFilterSql, PUT_BASE } from './rows';
 import { contentHash } from '../../contentHash';
 import { PgBase, dbOf } from './base';
+import { skeletonOfKey } from '../../../src/backend/net/names';
 
 export class PgPlayers extends PgBase implements PlayerStore {
   async createPlayer(p: Player): Promise<void> {
     await this.db.query(
-      `insert into players (id, name, token_hash, trophies, hall_level, shield_until, base, grove_id, created_at, updated_at, last_seen_at, muted_until, name_key, free_renames)
-       values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)`,
-      [p.id, p.name, p.tokenHash, p.trophies, p.hallLevel, p.shieldUntil, p.base ? JSON.stringify(p.base) : null, p.groveId, p.createdAt, p.updatedAt, p.lastSeenAt, p.mutedUntil ?? 0, p.nameKey ?? null, p.freeRenames ?? 0],
+      `insert into players (id, name, token_hash, trophies, hall_level, shield_until, base, grove_id, created_at, updated_at, last_seen_at, muted_until, name_key, free_renames, name_skeleton)
+       values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)`,
+      [p.id, p.name, p.tokenHash, p.trophies, p.hallLevel, p.shieldUntil, p.base ? JSON.stringify(p.base) : null, p.groveId, p.createdAt, p.updatedAt, p.lastSeenAt, p.mutedUntil ?? 0, p.nameKey ?? null, p.freeRenames ?? 0, p.nameKey ? skeletonOfKey(p.nameKey) : null],
     ).catch((e) => {
       throw isUniqueClash(e) ? new NameTakenError() : e;
     });
@@ -107,6 +108,8 @@ export class PgPlayers extends PgBase implements PlayerStore {
       vals.push(v);
       sets.push(col + ' = $' + vals.length);
     };
+    // Beast Mode SEC-06: the skeleton follows the name key.
+    if ('nameKey' in patch) put('name_skeleton', patch.nameKey ? skeletonOfKey(patch.nameKey) : null);
     if (patch.ratings) {
       const { attack: a, base: b } = patch.ratings;
       put('attack_rating', a.rating);

@@ -46,7 +46,22 @@ export function nameKey(name: string): string {
   return tidyName(name).toLowerCase().normalize('NFC').replace(/[ _-]/g, '_');
 }
 
-/** Digits read as the letters they imitate, separators removed (for the reserved-word check only). */
+/**
+ * Beast Mode SEC-06 (security audit S5, open part): the skeleton two names may not share. A name written only in
+ * scripts that imitate Latin letters (Latin, Cyrillic, Greek, Armenian, Georgian, Cherokee) is read through the
+ * look-alike folds and digit folds ("Јоhn" in Cyrillic and "John" share one); any other name keeps its key as it
+ * is, because the folds drop combining marks, and Indic vowel signs are marks.
+ */
+export function nameSkeleton(name: string): string {
+  return skeletonOfKey(nameKey(name));
+}
+
+/** `nameSkeleton` from a stored name key. */
+export function skeletonOfKey(key: string): string {
+  return /^[\p{Script=Latin}\p{Script=Cyrillic}\p{Script=Greek}\p{Script=Armenian}\p{Script=Georgian}\p{Script=Cherokee}\p{M}\p{N}\p{Cf} _'.-]*$/u.test(key) ? lookalike(key) : key;
+}
+
+/** Digits read as the letters they imitate, separators removed (the reserved-word check and name skeletons). */
 function lookalike(name: string): string {
   return foldLookalikes(name)
     .replace(/[ _-]/g, '')
