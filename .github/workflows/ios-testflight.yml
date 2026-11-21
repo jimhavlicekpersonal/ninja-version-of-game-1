@@ -41,12 +41,18 @@ jobs:
       # PUB-04 (P7-01): a store build needs the publisher facts, dated terms and the app id; the preflight lists
       # everything still open and stops here on the blocking ones (docs/store/OWNER_CHECKLIST.md).
       - name: Store readiness
-        run: node tools/release/check-store-ready.mjs --store
+        run: node tools/release/check-store-ready.mjs --store --platform=ios
         env:
           APP_ID: ${{ vars.IOS_BUNDLE_ID || vars.APP_ID }}
           ALLOW_LEGACY_APP_ID: ${{ vars.ALLOW_LEGACY_APP_ID }}
           VITE_SERVER_URL: ${{ vars.VITE_SERVER_URL }}
           ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          VITE_PUBLIC_URL: ${{ vars.VITE_PUBLIC_URL }}
+          VITE_GOOGLE_CLIENT_ID: ${{ vars.VITE_GOOGLE_CLIENT_ID }}
+          VITE_SENTRY_DSN: ${{ vars.VITE_SENTRY_DSN }}
+          VITE_APP_STORE_URL: ${{ vars.VITE_APP_STORE_URL }}
+          VITE_PLAY_STORE_URL: ${{ vars.VITE_PLAY_STORE_URL }}
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
       - name: Bundle id chosen
         run: node tools/release/check-app-id.mjs
         env:

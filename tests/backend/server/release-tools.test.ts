@@ -136,7 +136,7 @@ describe('PUB-02 / XPL-07: CI, the server image and the test runs share one exac
 describe('PUB-04 (P7-01): the store-readiness preflight', () => {
   const run = (args: string[], env: Record<string, string>) =>
     new Promise<{ code: number; out: string }>((resolve) => {
-      const clean = Object.fromEntries(Object.entries(process.env).filter(([k]) => !['APP_ID', 'ALLOW_LEGACY_APP_ID', 'GITHUB_STEP_SUMMARY', 'VITE_SERVER_URL'].includes(k)));
+      const clean = Object.fromEntries(Object.entries(process.env).filter(([k]) => !['APP_ID', 'ALLOW_LEGACY_APP_ID', 'GITHUB_STEP_SUMMARY', 'VITE_SERVER_URL', 'VITE_PUBLIC_URL', 'VITE_GOOGLE_CLIENT_ID', 'VITE_SENTRY_DSN', 'SENTRY_AUTH_TOKEN', 'VITE_APP_STORE_URL', 'VITE_PLAY_STORE_URL'].includes(k)));
       execFile(process.execPath, ['tools/release/check-store-ready.mjs', ...args], { env: { ...clean, ...env } }, (err, stdout) => resolve({ code: err ? Number((err as { code?: number }).code ?? 1) : 0, out: stdout }));
     });
 
@@ -150,5 +150,22 @@ describe('PUB-04 (P7-01): the store-readiness preflight', () => {
     expect(store.code).toBe(1);
     expect(store.out).toMatch(/::error title=Not ready for a store build::/);
     expect(store.out).not.toMatch(/✗ App id/);
+  });
+
+  it('Beast Mode OPS-12: lists the launch variables; missing VITE_PUBLIC_URL is blocking with --store', async () => {
+    const notice = await run([], {});
+    expect(notice.code).toBe(0);
+    for (const row of ['Public game URL', 'Google sign-in', 'Crash reports', 'Store links']) expect(notice.out).toContain(row);
+    const store = await run(['--store', '--platform=android'], { APP_ID: 'com.example.kagemura' });
+    expect(store.out).toMatch(/✗ Public game URL/);
+    expect(store.out).toMatch(/✗ Google sign-in/);
+    expect(store.out).toMatch(/::error title=Not ready for a store build::.*Public game URL/);
+    // Google sign-in blocks only the Android store build.
+    const ios = await run(['--store', '--platform=ios'], { APP_ID: 'com.example.kagemura', VITE_PUBLIC_URL: 'https://example.com/game/' });
+    expect(ios.out).not.toMatch(/✗ Public game URL/);
+    expect(ios.out).toMatch(/· Google sign-in/);
+    expect(ios.out).not.toMatch(/iPhone privacy manifest/);
+    // With a DSN, the source-map token is asked for.
+    expect((await run([], { VITE_SENTRY_DSN: 'https://k@o1.ingest.sentry.io/1' })).out).toMatch(/· Source maps: SENTRY_AUTH_TOKEN/);
   });
 });

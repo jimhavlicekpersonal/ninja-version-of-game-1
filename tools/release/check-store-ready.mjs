@@ -1,6 +1,7 @@
 // Store-readiness preflight (PUB-04, P7-01): one table of everything still missing for a store build.
 //   npm run release:preflight              a notice (web build, local check): always exits 0
-//   npm run release:preflight -- --store   the signed Android and TestFlight jobs: exits 1 when a fact a store
+//   npm run release:preflight -- --store [--platform=android|ios]
+//                                          the signed Android and TestFlight jobs: exits 1 when a fact a store
 //                                          build needs is empty (operator, support email, deletion URL, terms date)
 //                                          or malformed, or the app id is the legacy one (unless allowed)
 // It reads only the repository and the environment the job gives it; it never invents a value.
@@ -28,6 +29,15 @@ for (const [name, label] of [['ANDROID_KEYSTORE_BASE64', 'Android upload key'], 
   if (!process.env[name]) add(label, `${name} not given to this job`);
 }
 if (!process.env.VITE_SERVER_URL) add('Server URL', 'VITE_SERVER_URL not set: the build plays offline only');
+// Beast Mode OPS-12: the launch variables RELEASE.md "Before submitting" names. `--platform=android|ios` says
+// which store job runs this (Sign in with Google is required on Android only).
+const platform = /^--platform=(\w+)$/.exec(process.argv.find((a) => a.startsWith('--platform=')) ?? '')?.[1];
+if (!process.env.VITE_PUBLIC_URL) add('Public game URL', 'VITE_PUBLIC_URL not set: friend and replay links shared from the app point nowhere', true);
+if (!process.env.VITE_GOOGLE_CLIENT_ID) add('Google sign-in', 'VITE_GOOGLE_CLIENT_ID not set: no Sign in with Google (the server also needs GOOGLE_CLIENT_IDS)', platform === 'android');
+if (!process.env.VITE_SENTRY_DSN) add('Crash reports', 'VITE_SENTRY_DSN not set: the build sends no crash reports and Settings hides the switch');
+else if (!process.env.SENTRY_AUTH_TOKEN) add('Source maps', 'SENTRY_AUTH_TOKEN not given: crash stacks stay minified (OPS-02)');
+if (!process.env.VITE_APP_STORE_URL || !process.env.VITE_PLAY_STORE_URL) add('Store links', `${[!process.env.VITE_APP_STORE_URL && 'VITE_APP_STORE_URL', !process.env.VITE_PLAY_STORE_URL && 'VITE_PLAY_STORE_URL'].filter(Boolean).join(' and ')} not set: "Update Kagemura" and review prompts cannot open the store page`);
+if (platform !== 'android' && !existsSync('ios/App/App/PrivacyInfo.xcprivacy')) add('iPhone privacy manifest', 'ios/App/App/PrivacyInfo.xcprivacy is missing (OPS-10)', platform === 'ios');
 // Beast Mode STB-01: push on Android without the Firebase file crashes the app when it registers.
 if (process.env.VITE_ANDROID_PUSH === '1' && !existsSync('android/app/google-services.json')) add('Android push', 'VITE_ANDROID_PUSH=1 but android/app/google-services.json is missing: registering for push would crash the app', true);
 
