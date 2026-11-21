@@ -2082,6 +2082,8 @@
   "srv.purchase.unknown_store": { "en": "Unknown store.", "text": "അജ്ഞാത സ്റ്റോർ." },
   "srv.purchase.not_set_up": { "en": "Purchases are not set up on this server yet. Nothing was charged.", "text": "ഈ സെർവറിൽ വാങ്ങലുകൾ ഇതുവരെ സജ്ജീകരിച്ചിട്ടില്ല. പണമൊന്നും ഈടാക്കിയില്ല." },
   "srv.purchase.unavailable": { "en": "That item is not available.", "text": "ആ ഇനം ലഭ്യമല്ല." },
+  "srv.purchase.already_in_progress": { "en": "A purchase of this item is already in progress. Nothing more was charged.", "text": "ഈ ഇനത്തിന്റെ ഒരു വാങ്ങൽ ഇതിനകം നടക്കുന്നു. കൂടുതൽ പണമൊന്നും ഈടാക്കിയില്ല." },
+  "srv.purchase.already_owned": { "en": "You already own this. This second purchase was not delivered: contact support from Settings for a refund.", "text": "ഇത് ഇതിനകം നിങ്ങൾക്കുണ്ട്. ഈ രണ്ടാമത്തെ വാങ്ങൽ നൽകിയിട്ടില്ല: റീഫണ്ടിനായി ക്രമീകരണങ്ങളിൽ നിന്ന് സപ്പോർട്ടുമായി ബന്ധപ്പെടുക." },
   "srv.purchase.age_first": { "en": "Please tell us your age group first.", "text": "ദയവായി ആദ്യം നിങ്ങളുടെ പ്രായവിഭാഗം അറിയിക്കുക." },
   "srv.purchase.paused_refunds": { "en": "Purchases are paused on this account after several refunds. Contact support from Settings. Nothing was charged.", "text": "പലതവണ റീഫണ്ട് ചെയ്തതിനാൽ ഈ അക്കൗണ്ടിൽ വാങ്ങലുകൾ നിർത്തിവച്ചിരിക്കുന്നു. ക്രമീകരണങ്ങളിൽ നിന്ന് സപ്പോർട്ടുമായി ബന്ധപ്പെടുക. പണമൊന്നും ഈടാക്കിയില്ല." },
   "srv.purchase.minor_cap": { "en": "Monthly spending limit of ${limit} reached for players under 18. Nothing was charged.", "text": "18 വയസ്സിൽ താഴെയുള്ളവരുടെ ${limit} പ്രതിമാസ ചെലവ് പരിധിയെത്തി. പണമൊന്നും ഈടാക്കിയില്ല." },

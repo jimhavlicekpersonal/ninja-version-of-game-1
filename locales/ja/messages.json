@@ -2082,6 +2082,8 @@
   "srv.purchase.unknown_store": { "en": "Unknown store.", "text": "不明なストアです。" },
   "srv.purchase.not_set_up": { "en": "Purchases are not set up on this server yet. Nothing was charged.", "text": "このサーバーではまだ購入が設定されていません。料金は発生していません。" },
   "srv.purchase.unavailable": { "en": "That item is not available.", "text": "そのアイテムは利用できません。" },
+  "srv.purchase.already_in_progress": { "en": "A purchase of this item is already in progress. Nothing more was charged.", "text": "このアイテムの購入はすでに処理中です。追加の料金は発生していません。" },
+  "srv.purchase.already_owned": { "en": "You already own this. This second purchase was not delivered: contact support from Settings for a refund.", "text": "これはすでに持っています。2回目の購入は付与されていません。返金については設定からサポートにご連絡ください。" },
   "srv.purchase.age_first": { "en": "Please tell us your age group first.", "text": "先に年齢層を教えてください。" },
   "srv.purchase.paused_refunds": { "en": "Purchases are paused on this account after several refunds. Contact support from Settings. Nothing was charged.", "text": "返金が複数回あったため、このアカウントでの購入は一時停止中です。設定からサポートにご連絡ください。料金は発生していません。" },
   "srv.purchase.minor_cap": { "en": "Monthly spending limit of ${limit} reached for players under 18. Nothing was charged.", "text": "18歳未満のプレイヤーの月間支出上限 ${limit} に達しました。料金は発生していません。" },

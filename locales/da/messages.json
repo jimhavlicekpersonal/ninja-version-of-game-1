@@ -2082,6 +2082,8 @@
   "srv.purchase.unknown_store": { "en": "Unknown store.", "text": "Ukendt butik." },
   "srv.purchase.not_set_up": { "en": "Purchases are not set up on this server yet. Nothing was charged.", "text": "Køb er ikke sat op på denne server endnu. Der er ikke trukket noget." },
   "srv.purchase.unavailable": { "en": "That item is not available.", "text": "Den vare er ikke tilgængelig." },
+  "srv.purchase.already_in_progress": { "en": "A purchase of this item is already in progress. Nothing more was charged.", "text": "Et køb af denne vare er allerede i gang. Der er ikke trukket mere." },
+  "srv.purchase.already_owned": { "en": "You already own this. This second purchase was not delivered: contact support from Settings for a refund.", "text": "Du ejer allerede dette. Det andet køb blev ikke leveret: kontakt support via Indstillinger for at få en refusion." },
   "srv.purchase.age_first": { "en": "Please tell us your age group first.", "text": "Fortæl os først, hvilken aldersgruppe du tilhører." },
   "srv.purchase.paused_refunds": { "en": "Purchases are paused on this account after several refunds. Contact support from Settings. Nothing was charged.", "text": "Køb er sat på pause på denne konto efter flere refusioner. Kontakt support via Indstillinger. Der er ikke trukket noget." },
   "srv.purchase.minor_cap": { "en": "Monthly spending limit of ${limit} reached for players under 18. Nothing was charged.", "text": "Den månedlige forbrugsgrænse på ${limit} for spillere under 18 er nået. Der er ikke trukket noget." },

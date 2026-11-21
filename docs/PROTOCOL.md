@@ -437,6 +437,10 @@ Closure record: `docs/store/WORLDWIDE_AUDIT.md` "2026-11-20 security audit". Tes
 - **First attack keeps the shield (P3-12, review #1).** The server asks its ticket store whether the player used a PvP ticket before (`attackedBefore`, Postgres and memory) and keeps a 0-honor player's new-player shield through their first attack only, as the game does (`sim/shield.ts`).
 - **Word lists (P7-07).** `social.json` `profanityByLanguage` joins `profanity` in `censorText`, which the server uses for names and chat: deploy them together.
 
+## Beast Mode 2026-11-21 (additive, no protocol bump; `docs/audit/bulletproof-2026-11-21/PROGRESS.md`)
+
+- **One open intent per one-time product (ECO-01).** `POST /v1/purchases/intent` for an offer, the Season Scroll or the Clan Stipend answers `403 purchase_refused` (`srv.purchase.already_in_progress`) while the player has another unused intent for the same product whose hold has not run out, for server-held and device-held villages alike. A cancelled intent (`/v1/purchases/intent/release`, `cancelled`) frees it at once. `POST /v1/purchases/redeem` for a Scroll the server-held village already owns this season, or a once-per-account offer it already bought, answers `409 conflict` (`srv.purchase.already_owned`): nothing is credited or granted, the store transaction stays unfinished for support to refund (owner decision D4: credit to the next season instead), `tk_refused_total{reason="duplicate_one_time"}`.
+
 ## Server-owned village (beta)
 
 | | request | response |

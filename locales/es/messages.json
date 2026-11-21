@@ -2082,6 +2082,8 @@
   "srv.purchase.unknown_store": { "en": "Unknown store.", "text": "Tienda desconocida." },
   "srv.purchase.not_set_up": { "en": "Purchases are not set up on this server yet. Nothing was charged.", "text": "Las compras aún no están configuradas en este servidor. No se cobró nada." },
   "srv.purchase.unavailable": { "en": "That item is not available.", "text": "Ese artículo no está disponible." },
+  "srv.purchase.already_in_progress": { "en": "A purchase of this item is already in progress. Nothing more was charged.", "text": "Ya hay una compra de este artículo en curso. No se cobró nada más." },
+  "srv.purchase.already_owned": { "en": "You already own this. This second purchase was not delivered: contact support from Settings for a refund.", "text": "Ya tienes esto. Esta segunda compra no se entregó: contacta con soporte desde Ajustes para un reembolso." },
   "srv.purchase.age_first": { "en": "Please tell us your age group first.", "text": "Primero indica tu grupo de edad." },
   "srv.purchase.paused_refunds": { "en": "Purchases are paused on this account after several refunds. Contact support from Settings. Nothing was charged.", "text": "Las compras de esta cuenta están suspendidas tras varios reembolsos. Contacta con soporte desde Ajustes. No se cobró nada." },
   "srv.purchase.minor_cap": { "en": "Monthly spending limit of ${limit} reached for players under 18. Nothing was charged.", "text": "Se alcanzó el límite mensual de gastos de ${limit} para menores de 18 años. No se cobró nada." },

@@ -151,6 +151,7 @@
   "purchase.reinstated": { "en": "{n, plural, one {A refund was reversed: your purchase is back.} other {# refunds were reversed: your purchases are back.}}", "text": "{n, plural, one {ஒரு பணத்திருப்பம் ரத்தானது: உங்கள் வாங்குதல் திரும்ப வந்தது.} other {# பணத்திருப்பங்கள் ரத்தாயின: உங்கள் வாங்குதல்கள் திரும்ப வந்தன.}}" },
   "store.withdrawalStipend": { "en": "Delivery starts at once: the first payment can be claimed now and one more each day; by buying you agree that you lose the right to cancel, as the law allows for digital content.", "text": "வழங்கல் உடனே தொடங்கும்: முதல் கொடுப்பனவை இப்போதே பெறலாம், ஒவ்வொரு நாளும் இன்னொன்று; வாங்குவதன் மூலம், டிஜிட்டல் உள்ளடக்கத்துக்குச் சட்டம் அனுமதிப்பது போல, ரத்துசெய்யும் உரிமையை இழக்க ஒப்புக்கொள்கிறீர்கள்." },
   "store.calendarLook": { "en": "28-day calendar reward", "text": "28 நாள் நாட்காட்டி வெகுமதி" },
+  "store.purchaseInProgress": { "en": "Purchase in progress…", "text": "வாங்குதல் நடைபெறுகிறது…" },
   "store.error.cancelled": { "en": "Purchase cancelled. Nothing was charged.", "text": "வாங்குதல் ரத்துசெய்யப்பட்டது. எந்தக் கட்டணமும் வசூலிக்கப்படவில்லை." },
   "store.error.unavailable": { "en": "Purchases are not available right now. Try again later.", "text": "இப்போது வாங்க முடியாது. பின்னர் முயலுங்கள்." },
   "store.error.failed": { "en": "The purchase did not go through. If you were charged, it is delivered as soon as the store confirms it.", "text": "வாங்குதல் நிறைவடையவில்லை. கட்டணம் வசூலிக்கப்பட்டிருந்தால், கடை உறுதிசெய்தவுடன் அது வழங்கப்படும்." },

@@ -2082,6 +2082,8 @@
   "srv.purchase.unknown_store": { "en": "Unknown store.", "text": "Neznámy obchod." },
   "srv.purchase.not_set_up": { "en": "Purchases are not set up on this server yet. Nothing was charged.", "text": "Nákupy na tomto serveri ešte nie sú nastavené. Nič sa nestrhlo." },
   "srv.purchase.unavailable": { "en": "That item is not available.", "text": "Táto položka nie je dostupná." },
+  "srv.purchase.already_in_progress": { "en": "A purchase of this item is already in progress. Nothing more was charged.", "text": "Nákup tejto položky už prebieha. Nič ďalšie sa nestrhlo." },
+  "srv.purchase.already_owned": { "en": "You already own this. This second purchase was not delivered: contact support from Settings for a refund.", "text": "Toto už máš. Druhý nákup nebol doručený: kvôli vráteniu peňazí kontaktuj podporu cez Nastavenia." },
   "srv.purchase.age_first": { "en": "Please tell us your age group first.", "text": "Najprv nám povedz svoju vekovú skupinu." },
   "srv.purchase.paused_refunds": { "en": "Purchases are paused on this account after several refunds. Contact support from Settings. Nothing was charged.", "text": "Nákupy sú na tomto účte po niekoľkých vráteniach peňazí pozastavené. Kontaktuj podporu cez Nastavenia. Nič sa nestrhlo." },
   "srv.purchase.minor_cap": { "en": "Monthly spending limit of ${limit} reached for players under 18. Nothing was charged.", "text": "Dosiahnutý mesačný limit útraty ${limit} pre hráčov do 18 rokov. Nič sa nestrhlo." },

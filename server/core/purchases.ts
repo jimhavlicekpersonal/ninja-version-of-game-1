@@ -22,6 +22,7 @@ import type { IntentReleaseResponse, PurchaseHistoryResponse, PurchaseIntentResp
 import { canPurchase, monthStart, productForStoreId, productInfo, storeProductId } from '../../src/gameplay/sim/monetization';
 import { advance } from '../../src/gameplay/sim/village';
 import { deserialize } from '../../src/gameplay/sim/save';
+import type { VillageState } from '../../src/gameplay/sim/types';
 import { PurchaseError } from '../payments/apple';
 import { STATE_NOTICES, type Player, type PurchaseRow, type Repo } from '../repo';
 import { HOUR, MIN, type ServerContext } from './context';
@@ -120,6 +121,18 @@ export function countedCents(ctx: ServerContext, catalogUsd: number, currency: s
   return cents(catalogUsd);
 }
 
+/** Beast Mode ECO-01: the village already owns this one-time product (this season's Scroll, a once-per-account offer). */
+function alreadyOwned(state: VillageState, productId: string, _now: number, ctx: ServerContext): boolean {
+  const product = productInfo(ctx.data, productId);
+  if (!product) return false;
+  if (product.kind === 'pass') return state.pass.premium;
+  if (product.kind === 'offer') {
+    const rule = ctx.data.offers.rules.find((o) => o.productId === productId);
+    return Boolean(rule?.oncePerAccount && state.offers.bought.includes(rule.id));
+  }
+  return false;
+}
+
 export async function purchaseIntent(ctx: ServerContext, me: Player, body: { store?: unknown; productId?: unknown; under18?: unknown; device?: unknown; install?: unknown } | undefined): Promise<PurchaseIntentResponse> {
   storeOf(ctx, body?.store);
   const product = productInfo(ctx.data, String(body?.productId ?? ''));
@@ -161,6 +174,15 @@ export async function purchaseIntent(ctx: ServerContext, me: Player, body: { sto
           ctx.metrics.count('tk_refused_total', { reason: 'not_on_offer' });
           throw fail(403, 'purchase_refused', 'purchase.unavailable');
         }
+      }
+    }
+    // Beast Mode ECO-01: one open intent per one-time product (an offer, the Season Scroll, the Clan Stipend). A
+    // second tap, a second device or a second Ask-to-Buy request while the first is still open would charge twice
+    // for something the village can own once. Device-held villages too: the rule needs only the intent table.
+    if (product.kind === 'offer' || product.kind === 'pass' || product.kind === 'stipend') {
+      if ((await tx.openIntentsFor(me.id, product.id, now)).length > 0) {
+        ctx.metrics.count('tk_refused_total', { reason: 'purchase_in_progress' });
+        throw fail(403, 'purchase_refused', 'purchase.already_in_progress');
       }
     }
     const id = ctx.uuid().toLowerCase();
@@ -360,6 +382,17 @@ export async function redeem(ctx: ServerContext, me: Player, body: { store?: unk
     if (!(await tx.addPurchase(row))) {
       const again = await tx.getPurchase(store, c.transactionId);
       return answer(again!, true);
+    }
+    // Beast Mode ECO-01 (step 4): a second Season Scroll for a season the server village already owns, or a second
+    // once-per-account offer, is not granted twice. The store transaction stays unfinished (support refunds it;
+    // owner decision D4 may credit it to the next season instead) and nothing is recorded as credited.
+    if (heldOnServer && (product.kind === 'pass' || product.kind === 'offer')) {
+      const vrow = await tx.getVillage(me.id);
+      if (vrow && alreadyOwned(advance(deserialize(vrow.file, ctx.data), Math.max(vrow.at, now), ctx.data).state, product.id, now, ctx)) {
+        ctx.metrics.count('tk_refused_total', { reason: 'duplicate_one_time' });
+        ctx.log('warn', 'duplicate one-time purchase not granted (support: refund)', { store, transactionId: c.transactionId, productId: product.id });
+        throw fail(409, 'conflict', 'purchase.already_owned');
+      }
     }
     if (heldOnServer) {
       const r = await applyServerResult(tx, ctx, me, [{ cmd: { type: 'grantPurchase', productId: product.id, transactionId: villageId(store, c.transactionId), verified: true }, reason: `purchase:${store}` }], villageId(store, c.transactionId));

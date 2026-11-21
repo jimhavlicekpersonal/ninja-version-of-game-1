@@ -327,6 +327,19 @@ export class GameController {
    * (`deliverUnfinished`).
    */
   async purchase(productId: string): Promise<PurchaseOutcome> {
+    // Beast Mode ECO-01: one purchase at a time. A second call while one runs (a double tap, a second panel)
+    // would open a second store sheet and could charge twice for a one-time product.
+    if (this.purchasing) return { ok: false, code: 'IN_PROGRESS', message: 'A purchase is already in progress.' };
+    this.purchasing = true;
+    try {
+      return await this.purchaseOnce(productId);
+    } finally {
+      this.purchasing = false;
+    }
+  }
+  private purchasing = false;
+
+  private async purchaseOnce(productId: string): Promise<PurchaseOutcome> {
     const check = canPurchase(this.state, productId, this.now(), this.deps.data);
     if (!check.ok) return { ok: false, code: check.code, message: check.message };
     if (!this.payments.available()) return { ok: false, code: 'UNAVAILABLE', message: 'Purchases are not available on this device.' };

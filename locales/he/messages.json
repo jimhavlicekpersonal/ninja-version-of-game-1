@@ -2082,6 +2082,8 @@
   "srv.purchase.unknown_store": { "en": "Unknown store.", "text": "חנות לא ידועה." },
   "srv.purchase.not_set_up": { "en": "Purchases are not set up on this server yet. Nothing was charged.", "text": "רכישות עדיין לא מוגדרות בשרת הזה. לא בוצע חיוב." },
   "srv.purchase.unavailable": { "en": "That item is not available.", "text": "הפריט הזה אינו זמין." },
+  "srv.purchase.already_in_progress": { "en": "A purchase of this item is already in progress. Nothing more was charged.", "text": "רכישה של הפריט הזה כבר מתבצעת. לא בוצע חיוב נוסף." },
+  "srv.purchase.already_owned": { "en": "You already own this. This second purchase was not delivered: contact support from Settings for a refund.", "text": "זה כבר שלך. הרכישה השנייה הזו לא נמסרה: פנו לתמיכה דרך ההגדרות לקבלת החזר." },
   "srv.purchase.age_first": { "en": "Please tell us your age group first.", "text": "קודם ספרו לנו מה קבוצת הגיל שלך." },
   "srv.purchase.paused_refunds": { "en": "Purchases are paused on this account after several refunds. Contact support from Settings. Nothing was charged.", "text": "הרכישות בחשבון הזה מושהות אחרי כמה החזרים כספיים. פנו לתמיכה דרך ההגדרות. לא בוצע חיוב." },
   "srv.purchase.minor_cap": { "en": "Monthly spending limit of ${limit} reached for players under 18. Nothing was charged.", "text": "הגעת למגבלת ההוצאות החודשית של ${limit} לשחקנים מתחת לגיל 18. לא בוצע חיוב." },

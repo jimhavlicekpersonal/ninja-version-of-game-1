@@ -151,6 +151,7 @@
   "purchase.reinstated": { "en": "{n, plural, one {A refund was reversed: your purchase is back.} other {# refunds were reversed: your purchases are back.}}", "text": "{n, plural, one {ಹಣ ಮರಳಿಕೆಯನ್ನು ರದ್ದುಪಡಿಸಲಾಗಿದೆ: ನಿಮ್ಮ ಖರೀದಿ ಮರಳಿ ಬಂದಿದೆ.} other {# ಹಣ ಮರಳಿಕೆಗಳನ್ನು ರದ್ದುಪಡಿಸಲಾಗಿದೆ: ನಿಮ್ಮ ಖರೀದಿಗಳು ಮರಳಿ ಬಂದಿವೆ.}}" },
   "store.withdrawalStipend": { "en": "Delivery starts at once: the first payment can be claimed now and one more each day; by buying you agree that you lose the right to cancel, as the law allows for digital content.", "text": "ವಿತರಣೆ ತಕ್ಷಣ ಆರಂಭವಾಗುತ್ತದೆ: ಮೊದಲ ಪಾವತಿಯನ್ನು ಈಗಲೇ ಪಡೆಯಬಹುದು, ನಂತರ ಪ್ರತಿದಿನ ಒಂದು; ಖರೀದಿಸುವ ಮೂಲಕ, ಡಿಜಿಟಲ್ ವಿಷಯಕ್ಕೆ ಕಾನೂನು ಅನುಮತಿಸುವಂತೆ, ರದ್ದುಪಡಿಸುವ ಹಕ್ಕನ್ನು ಕಳೆದುಕೊಳ್ಳಲು ನೀವು ಒಪ್ಪುತ್ತೀರಿ." },
   "store.calendarLook": { "en": "28-day calendar reward", "text": "28 ದಿನಗಳ ಕ್ಯಾಲೆಂಡರ್ ಬಹುಮಾನ" },
+  "store.purchaseInProgress": { "en": "Purchase in progress…", "text": "ಖರೀದಿ ನಡೆಯುತ್ತಿದೆ…" },
   "store.error.cancelled": { "en": "Purchase cancelled. Nothing was charged.", "text": "ಖರೀದಿ ರದ್ದಾಗಿದೆ. ಯಾವುದೇ ಶುಲ್ಕ ವಿಧಿಸಿಲ್ಲ." },
   "store.error.unavailable": { "en": "Purchases are not available right now. Try again later.", "text": "ಸದ್ಯಕ್ಕೆ ಖರೀದಿಗಳು ಲಭ್ಯವಿಲ್ಲ. ನಂತರ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ." },
   "store.error.failed": { "en": "The purchase did not go through. If you were charged, it is delivered as soon as the store confirms it.", "text": "ಖರೀದಿ ಪೂರ್ಣಗೊಳ್ಳಲಿಲ್ಲ. ನಿಮಗೆ ಶುಲ್ಕ ವಿಧಿಸಲಾಗಿದ್ದರೆ, ಸ್ಟೋರ್ ಖಚಿತಪಡಿಸಿದ ತಕ್ಷಣ ಅದನ್ನು ತಲುಪಿಸಲಾಗುತ್ತದೆ." },

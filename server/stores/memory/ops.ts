@@ -93,6 +93,9 @@ export class MemoryOps extends MemoryBase implements OpsStore {
     const i = this.intentRows.find((x) => x.id === id);
     return i ? clone(i) : null;
   }
+  async openIntentsFor(playerId: string, productId: string, now: number): Promise<PurchaseIntent[]> {
+    return clone(this.intentRows.filter((x) => x.playerId === playerId && x.productId === productId && !x.used && x.holdUntil > now));
+  }
   async useIntent(id: string): Promise<void> {
     const i = this.intentRows.find((x) => x.id === id);
     if (i) i.used = true;

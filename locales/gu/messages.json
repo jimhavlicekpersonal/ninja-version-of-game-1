@@ -2082,6 +2082,8 @@
   "srv.purchase.unknown_store": { "en": "Unknown store.", "text": "અજાણ્યો સ્ટોર." },
   "srv.purchase.not_set_up": { "en": "Purchases are not set up on this server yet. Nothing was charged.", "text": "આ સર્વર પર હજુ ખરીદીઓ સેટ કરેલી નથી. કોઈ ચાર્જ લાગ્યો નથી." },
   "srv.purchase.unavailable": { "en": "That item is not available.", "text": "તે વસ્તુ ઉપલબ્ધ નથી." },
+  "srv.purchase.already_in_progress": { "en": "A purchase of this item is already in progress. Nothing more was charged.", "text": "આ વસ્તુની ખરીદી પહેલેથી ચાલુ છે. વધારાનો કોઈ ચાર્જ લાગ્યો નથી." },
+  "srv.purchase.already_owned": { "en": "You already own this. This second purchase was not delivered: contact support from Settings for a refund.", "text": "આ તમારી પાસે પહેલેથી છે. આ બીજી ખરીદી આપવામાં આવી નથી: રિફંડ માટે સેટિંગ્સમાંથી સપોર્ટનો સંપર્ક કરો." },
   "srv.purchase.age_first": { "en": "Please tell us your age group first.", "text": "કૃપા કરીને પહેલાં તમારું વય જૂથ જણાવો." },
   "srv.purchase.paused_refunds": { "en": "Purchases are paused on this account after several refunds. Contact support from Settings. Nothing was charged.", "text": "ઘણાં રિફંડ પછી આ એકાઉન્ટ પર ખરીદીઓ રોકવામાં આવી છે. સેટિંગ્સમાંથી સપોર્ટનો સંપર્ક કરો. કોઈ ચાર્જ લાગ્યો નથી." },
   "srv.purchase.minor_cap": { "en": "Monthly spending limit of ${limit} reached for players under 18. Nothing was charged.", "text": "18 વર્ષથી નાના ખેલાડીઓ માટેની ${limit} ની માસિક ખર્ચ મર્યાદા પૂરી થઈ. કોઈ ચાર્જ લાગ્યો નથી." },

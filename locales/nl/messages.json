@@ -2082,6 +2082,8 @@
   "srv.purchase.unknown_store": { "en": "Unknown store.", "text": "Onbekende winkel." },
   "srv.purchase.not_set_up": { "en": "Purchases are not set up on this server yet. Nothing was charged.", "text": "Aankopen zijn op deze server nog niet ingesteld. Er is niets afgeschreven." },
   "srv.purchase.unavailable": { "en": "That item is not available.", "text": "Dat item is niet beschikbaar." },
+  "srv.purchase.already_in_progress": { "en": "A purchase of this item is already in progress. Nothing more was charged.", "text": "Er loopt al een aankoop van dit item. Er is niets extra afgeschreven." },
+  "srv.purchase.already_owned": { "en": "You already own this. This second purchase was not delivered: contact support from Settings for a refund.", "text": "Je hebt dit al. Deze tweede aankoop is niet geleverd: neem contact op met support via Instellingen voor een terugbetaling." },
   "srv.purchase.age_first": { "en": "Please tell us your age group first.", "text": "Vertel ons eerst je leeftijdsgroep." },
   "srv.purchase.paused_refunds": { "en": "Purchases are paused on this account after several refunds. Contact support from Settings. Nothing was charged.", "text": "Aankopen zijn op dit account gepauzeerd na meerdere terugbetalingen. Neem contact op met support via Instellingen. Er is niets afgeschreven." },
   "srv.purchase.minor_cap": { "en": "Monthly spending limit of ${limit} reached for players under 18. Nothing was charged.", "text": "Maandelijkse uitgavenlimiet van ${limit} bereikt voor spelers onder de 18. Er is niets afgeschreven." },

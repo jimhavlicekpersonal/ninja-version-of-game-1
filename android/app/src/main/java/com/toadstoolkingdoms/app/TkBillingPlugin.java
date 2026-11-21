@@ -93,7 +93,10 @@ public class TkBillingPlugin extends Plugin implements PurchasesUpdatedListener 
                 boolean ok = result.getResponseCode() == BillingClient.BillingResponseCode.OK;
                 for (int i = 0; i < runs.size(); i++) {
                     if (ok) runs.get(i).run();
-                    else calls.get(i).reject("Google Play Billing is not available: " + result.getDebugMessage(), "unavailable");
+                    else {
+                        releasePending(calls.get(i));
+                        calls.get(i).reject("Google Play Billing is not available: " + result.getDebugMessage(), "unavailable");
+                    }
                 }
             }
 
@@ -202,7 +205,9 @@ public class TkBillingPlugin extends Plugin implements PurchasesUpdatedListener 
             call.reject("Missing productId", "failed");
             return;
         }
-        if (pendingPurchase != null) {
+        // Beast Mode ECO-01: claim the slot atomically before anything asynchronous, so a second call can never
+        // overwrite the first PluginCall (whose promise then never resolved). Released on every early reject.
+        if (!claimPending(call)) {
             call.reject("Another purchase is in progress.", "failed");
             return;
         }
@@ -211,6 +216,7 @@ public class TkBillingPlugin extends Plugin implements PurchasesUpdatedListener 
             (BillingResult result, QueryProductDetailsResult found) -> {
                 List<ProductDetails> details = found.getProductDetailsList();
                 if (result.getResponseCode() != BillingClient.BillingResponseCode.OK || details.isEmpty()) {
+                    releasePending(call);
                     call.reject("This item is not available in Google Play here.", "unavailable");
                     return;
                 }
@@ -220,10 +226,9 @@ public class TkBillingPlugin extends Plugin implements PurchasesUpdatedListener 
                 // The server's purchase intent: ties the purchase to this player.
                 if (accountId != null) params.setObfuscatedAccountId(accountId);
                 getActivity().runOnUiThread(() -> {
-                    pendingPurchase = call;
                     BillingResult launch = client.launchBillingFlow(getActivity(), params.build());
                     if (launch.getResponseCode() != BillingClient.BillingResponseCode.OK) {
-                        pendingPurchase = null;
+                        releasePending(call);
                         rejectPurchase(call, launch);
                     }
                 });
@@ -244,10 +249,25 @@ public class TkBillingPlugin extends Plugin implements PurchasesUpdatedListener 
         }
     }
 
-    @Override
-    public void onPurchasesUpdated(BillingResult result, List<Purchase> purchases) {
+    private synchronized boolean claimPending(PluginCall call) {
+        if (pendingPurchase != null) return false;
+        pendingPurchase = call;
+        return true;
+    }
+
+    private synchronized void releasePending(PluginCall call) {
+        if (pendingPurchase == call) pendingPurchase = null;
+    }
+
+    private synchronized PluginCall takePending() {
         PluginCall call = pendingPurchase;
         pendingPurchase = null;
+        return call;
+    }
+
+    @Override
+    public void onPurchasesUpdated(BillingResult result, List<Purchase> purchases) {
+        PluginCall call = takePending();
         int code = result.getResponseCode();
         if (code == BillingClient.BillingResponseCode.OK && purchases != null) {
             boolean answered = false;

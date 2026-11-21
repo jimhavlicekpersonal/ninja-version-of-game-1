@@ -1,0 +1,120 @@
+# Beast Mode 2026-11-21: progress ledger
+
+Source: `docs/prompts/BEAST_MODE_2026-11-21.md` (text of the PDF; audited commit 560ce7a). One row per work item.
+Status values: open, done, skipped-not-reproduced, reverted-with-numbers, blocked-owner, blocked-device, partial.
+OWNER, DEVICE and NEEDS-PLAYERS items are never closed from code.
+
+## Phase 0 baseline
+
+Run on 560ce7a in a clean worktree, 2026-11-21 (container, Node from the image):
+
+- `npm test`: 262 files passed, 1 skipped; 2348 tests passed, 19 skipped.
+- `npm run lint`: clean. `npm run build`: ok (index 561.83 kB / 183.88 kB gzip, phaser 660.58 kB / 175.47 kB, defineProperty 356.33 kB / 115.07 kB, keep 193.07 kB, communityRules 156.34 kB).
+- `npm run typecheck:server`: ok. `npm run server:build`: ok (main.js 17,155.87 kB).
+- Not available here: `TEST_DATABASE_URL`, `TEST_REDIS_URL` (Postgres and Redis tests skipped), devices, store sandboxes.
+
+Owner decisions D1-D8 (section 2.9) are not recorded in `docs/DECISIONS.md` yet. Items that need one are implemented only behind a switch with the conservative default, or left `blocked-owner`.
+
+New player-visible strings are translated into all 49 other ready languages in the same commit (machine-written by the coding session, not native-reviewed: worksheet `REVIEW.json` entries are not added).
+
+## Items
+
+| ID | Sev | Phase | Kind | Status | Commit | Test | Notes and limits |
+|---|---|---|---|---|---|---|---|
+| ECO-01 | HIGH | 1 | CODE | done |  | tests/backend/server/beast-mode-2026-11-21-money.test.ts (ECO-01), tests/presentation/dom/purchase-guard.dom.test.ts | Server: one open intent per offer/Scroll/Stipend (memory + pg openIntentsFor, no migration); redeem refuses a duplicate Scroll / once-per-account offer for a server village (409 already_owned, unfinished for support refund; D4 open). Client: EconomyUi buying flag disables every buy button; controller single-flight IN_PROGRESS. Android TkBillingPlugin claim/release synchronized (not compiled here). Limits: Ask-to-Buy double approval and real store sheets not run on devices; device-held duplicate Scroll receipts still granted by the device (intent rule prevents the second charge). |
+| ECO-02 | MEDIUM | 1 | CODE | open | | | |
+| ECO-03 | MEDIUM | 7 | DESIGN | open | | | |
+| ECO-04 | MEDIUM | 7 | DESIGN | open | | | |
+| ECO-05 | HIGH | Owner/device | DEVICE | open | | | |
+| ECO-06 | LOW | 1 | OWNER | open | | | |
+| ECO-07 | LOW | 2 | OWNER | open | | | |
+| ECO-08 | LOW | 1 | DESIGN | open | | | |
+| ECO-09 | LOW | 1 | CODE | open | | | |
+| ECO-10 | LOW | 1 | CODE | open | | | |
+| GT-01 | HIGH | 2 | DESIGN | open | | | |
+| GT-02 | HIGH | 7 | TOOLING | open | | | |
+| GT-03 | HIGH | 7 | DESIGN | open | | | |
+| GT-04 | HIGH | 7 | DESIGN | open | | | |
+| GT-05 | HIGH | 7 | DESIGN | open | | | |
+| GT-06 | HIGH | 7 | DESIGN | open | | | |
+| GT-07 | MEDIUM | 7 | DESIGN | open | | | |
+| GT-08 | MEDIUM | 7 | TOOLING | open | | | |
+| GT-09 | MEDIUM | 7 | DESIGN | open | | | |
+| GT-10 | MEDIUM | 7 | DESIGN | open | | | |
+| GT-11 | MEDIUM | 7 | TOOLING | open | | | |
+| GT-12 | MEDIUM | 7 | DESIGN | open | | | |
+| GT-13 | LOW | 7 | DESIGN | open | | | |
+| GT-14 | LOW | 7 | TOOLING | open | | | |
+| GT-15 | LOW | 7 | DESIGN | open | | | |
+| GT-16 | LOW | 7 | DESIGN | open | | | |
+| GT-17 | LOW | 7 | DESIGN | open | | | |
+| OPS-01 | HIGH | 5 | CODE | open | | | |
+| OPS-02 | HIGH | 4 | CODE | open | | | |
+| OPS-03 | HIGH | 4 | CODE | open | | | |
+| OPS-04 | MEDIUM | 5 | CODE | open | | | |
+| OPS-05 | MEDIUM | 5 | CODE | open | | | |
+| OPS-06 | MEDIUM | 4 | CODE | open | | | |
+| OPS-07 | MEDIUM | 4 | DOCS | open | | | |
+| OPS-08 | MEDIUM | 4 | DOCS | open | | | |
+| OPS-09 | MEDIUM | 5 | CODE | open | | | |
+| OPS-10 | MEDIUM | 5 | CODE | open | | | |
+| OPS-11 | MEDIUM | 8 | DOCS | open | | | |
+| OPS-12 | LOW | 5 | CODE | open | | | |
+| OPS-13 | LOW | 5 | DOCS | open | | | |
+| OPS-14 | LOW | 6 | CODE | open | | | |
+| SAV-01 | HIGH | 3 | CODE | open | | | |
+| SAV-02 | MEDIUM | 3 | CODE | open | | | |
+| SAV-03 | MEDIUM | 3 | CODE | open | | | |
+| SAV-04 | MEDIUM | 3 | CODE | open | | | |
+| SAV-05 | MEDIUM | 3 | CODE | open | | | |
+| SAV-06 | MEDIUM | 3 | CODE | open | | | |
+| SAV-07 | MEDIUM | 3 | CODE | open | | | |
+| SAV-08 | MEDIUM | 5 | CODE | open | | | |
+| SAV-09 | MEDIUM | 3 | CODE | open | | | |
+| SAV-10 | LOW | 3 | CODE | open | | | |
+| SAV-11 | LOW | 3 | CODE | open | | | |
+| SAV-12 | LOW | 2 | DESIGN | open | | | |
+| SAV-13 | LOW | 3 | CODE | open | | | |
+| SAV-14 | LOW | 3 | CODE | open | | | |
+| SAV-15 | LOW | Owner/device | OWNER | open | | | |
+| SAV-16 | LOW | Owner/device | DEVICE | open | | | |
+| SEC-01 | BLOCKER | 2 | CODE | open | | | |
+| SEC-02 | HIGH | 2 | CODE | open | | | |
+| SEC-03 | HIGH | 1 | CODE | open | | | |
+| SEC-04 | MEDIUM | 2 | CODE | open | | | |
+| SEC-05 | MEDIUM | 2 | CODE | open | | | |
+| SEC-06 | MEDIUM | 2 | CODE | open | | | |
+| SEC-07 | MEDIUM | 2 | CODE | open | | | |
+| SEC-08 | MEDIUM | 5 | CODE | open | | | |
+| SEC-09 | MEDIUM | 5 | OWNER | open | | | |
+| SEC-10 | LOW | 2 | CODE | open | | | |
+| SEC-11 | LOW | Owner/device | CODE | open | | | |
+| SEC-12 | LOW | 2 | OWNER | open | | | |
+| SEC-13 | LOW | 2 | CODE | open | | | |
+| SEC-14 | LOW | 2 | CODE | open | | | |
+| SEC-15 | LOW | 2 | CODE | open | | | |
+| SEC-16 | LOW | 2 | DOCS | open | | | |
+| SEC-17 | LOW | 2 | CODE | open | | | |
+| STB-01 | HIGH | 4 | CODE | open | | | |
+| STB-02 | HIGH | 4 | CODE | open | | | |
+| STB-03 | HIGH | 4 | CODE | open | | | |
+| STB-04 | HIGH | 4 | CODE | open | | | |
+| STB-05 | MEDIUM | 4 | CODE | open | | | |
+| STB-06 | MEDIUM | 4 | CODE | open | | | |
+| STB-07 | MEDIUM | 6 | CODE | open | | | |
+| STB-08 | MEDIUM | 6 | CODE | open | | | |
+| STB-09 | LOW | 6 | CODE | open | | | |
+| STB-10 | LOW | 6 | CODE | open | | | |
+| STB-11 | HIGH | Owner/device | DEVICE | open | | | |
+| STB-12 | MEDIUM | Owner/device | OWNER | open | | | |
+| UX-01 | HIGH | 1 | CODE | done |  | tests/presentation/dom/purchase-guard.dom.test.ts | Folded into ECO-01 (same commit). |
+| UX-02 | HIGH | 1 | CODE | open | | | |
+| UX-03 | HIGH | 1 | CODE | open | | | |
+| UX-04 | MEDIUM | 6 | CODE | open | | | |
+| UX-05 | MEDIUM | 6 | CODE | open | | | |
+| UX-06 | MEDIUM | 6 | CODE | open | | | |
+| UX-07 | MEDIUM | 6 | CODE | open | | | |
+| UX-08 | MEDIUM | 6 | CODE | open | | | |
+| UX-09 | LOW | 1 | CODE | open | | | |
+| UX-10 | LOW | 6 | CODE | open | | | |
+| UX-11 | LOW | 6 | DEVICE | open | | | |

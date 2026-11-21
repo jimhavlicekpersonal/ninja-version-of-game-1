@@ -2082,6 +2082,8 @@
   "srv.purchase.unknown_store": { "en": "Unknown store.", "text": "نامعلوم دکان۔" },
   "srv.purchase.not_set_up": { "en": "Purchases are not set up on this server yet. Nothing was charged.", "text": "اس سرور پر ابھی خریداریاں ترتیب نہیں دی گئیں۔ کوئی رقم نہیں کٹی۔" },
   "srv.purchase.unavailable": { "en": "That item is not available.", "text": "یہ چیز دستیاب نہیں۔" },
+  "srv.purchase.already_in_progress": { "en": "A purchase of this item is already in progress. Nothing more was charged.", "text": "اس آئٹم کی ایک خریداری پہلے سے جاری ہے۔ مزید کوئی رقم نہیں کٹی۔" },
+  "srv.purchase.already_owned": { "en": "You already own this. This second purchase was not delivered: contact support from Settings for a refund.", "text": "یہ آپ کے پاس پہلے سے ہے۔ یہ دوسری خریداری نہیں دی گئی: رقم واپسی کے لیے ترتیبات سے سپورٹ سے رابطہ کریں۔" },
   "srv.purchase.age_first": { "en": "Please tell us your age group first.", "text": "براہ کرم پہلے ہمیں اپنی عمر کا گروپ بتائیں۔" },
   "srv.purchase.paused_refunds": { "en": "Purchases are paused on this account after several refunds. Contact support from Settings. Nothing was charged.", "text": "کئی بار رقم واپسی کے بعد اس اکاؤنٹ پر خریداریاں روک دی گئی ہیں۔ ترتیبات سے سپورٹ سے رابطہ کریں۔ کوئی رقم نہیں کٹی۔" },
   "srv.purchase.minor_cap": { "en": "Monthly spending limit of ${limit} reached for players under 18. Nothing was charged.", "text": "18 سال سے کم عمر کھلاڑیوں کے لیے ${limit} کی ماہانہ خرچ کی حد پوری ہو گئی۔ کوئی رقم نہیں کٹی۔" },

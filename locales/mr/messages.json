@@ -2082,6 +2082,8 @@
   "srv.purchase.unknown_store": { "en": "Unknown store.", "text": "अज्ञात स्टोअर." },
   "srv.purchase.not_set_up": { "en": "Purchases are not set up on this server yet. Nothing was charged.", "text": "या सर्व्हरवर अजून खरेदी सेट केलेली नाही. कोणतेही शुल्क आकारले नाही." },
   "srv.purchase.unavailable": { "en": "That item is not available.", "text": "ती वस्तू उपलब्ध नाही." },
+  "srv.purchase.already_in_progress": { "en": "A purchase of this item is already in progress. Nothing more was charged.", "text": "या वस्तूची खरेदी आधीच सुरू आहे. आणखी कोणतेही शुल्क आकारले नाही." },
+  "srv.purchase.already_owned": { "en": "You already own this. This second purchase was not delivered: contact support from Settings for a refund.", "text": "हे तुमच्याकडे आधीच आहे. ही दुसरी खरेदी दिली गेली नाही: परताव्यासाठी सेटिंग्जमधून सपोर्टशी संपर्क साधा." },
   "srv.purchase.age_first": { "en": "Please tell us your age group first.", "text": "कृपया आधी तुमचा वयोगट सांगा." },
   "srv.purchase.paused_refunds": { "en": "Purchases are paused on this account after several refunds. Contact support from Settings. Nothing was charged.", "text": "अनेक परताव्यांनंतर या खात्यावरील खरेदी थांबवली आहे. सेटिंग्जमधून सपोर्टशी संपर्क साधा. कोणतेही शुल्क आकारले नाही." },
   "srv.purchase.minor_cap": { "en": "Monthly spending limit of ${limit} reached for players under 18. Nothing was charged.", "text": "18 वर्षांखालील खेळाडूंसाठीची ${limit} ची मासिक खर्च मर्यादा गाठली. कोणतेही शुल्क आकारले नाही." },

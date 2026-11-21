@@ -2082,6 +2082,8 @@
   "srv.purchase.unknown_store": { "en": "Unknown store.", "text": "Magazin necunoscut." },
   "srv.purchase.not_set_up": { "en": "Purchases are not set up on this server yet. Nothing was charged.", "text": "Achizițiile nu sunt încă configurate pe acest server. Nu ți s-a perceput nimic." },
   "srv.purchase.unavailable": { "en": "That item is not available.", "text": "Acel articol nu e disponibil." },
+  "srv.purchase.already_in_progress": { "en": "A purchase of this item is already in progress. Nothing more was charged.", "text": "O achiziție a acestui articol este deja în curs. Nu ți s-a mai perceput nimic." },
+  "srv.purchase.already_owned": { "en": "You already own this. This second purchase was not delivered: contact support from Settings for a refund.", "text": "Deții deja acest articol. A doua achiziție nu a fost livrată: contactează asistența din Setări pentru o rambursare." },
   "srv.purchase.age_first": { "en": "Please tell us your age group first.", "text": "Spune-ne întâi grupa ta de vârstă." },
   "srv.purchase.paused_refunds": { "en": "Purchases are paused on this account after several refunds. Contact support from Settings. Nothing was charged.", "text": "Achizițiile sunt suspendate pe acest cont după mai multe rambursări. Contactează asistența din Setări. Nu ți s-a perceput nimic." },
   "srv.purchase.minor_cap": { "en": "Monthly spending limit of ${limit} reached for players under 18. Nothing was charged.", "text": "Limita lunară de cheltuieli de ${limit} pentru jucătorii sub 18 ani a fost atinsă. Nu ți s-a perceput nimic." },

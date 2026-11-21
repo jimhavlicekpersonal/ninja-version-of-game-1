@@ -130,11 +130,42 @@ export class EconomyUi {
     return found ? { label: found.formatted, buyable: true } : { label: i18nText("ui.not_sold_here_a8410f6905"), buyable: false };
   }
 
+  /**
+   * Beast Mode ECO-01 / UX-01: the product being bought, from the first tap until the purchase flow ends. While it is
+   * set every buy button is disabled and the tapped one says "Purchase in progress…" (no price on it), so a double
+   * tap, or a tap on another card while the store sheet opens, cannot start a second purchase.
+   */
+  private buying: string | null = null;
+  private readonly liveBuyButtons = new Set<HTMLButtonElement>();
+
+  /** Whether a purchase flow is running (tests, and the Store's own redraws). */
+  get purchaseInProgress(): boolean {
+    return this.buying !== null;
+  }
+
+  private refreshBuyButtons(): void {
+    for (const b of [...this.liveBuyButtons]) {
+      if (!b.isConnected) {
+        this.liveBuyButtons.delete(b);
+        continue;
+      }
+      const id = b.dataset.product!;
+      const pr = this.price(id);
+      b.disabled = !pr.buyable || this.buying !== null;
+      b.textContent = this.buying === id ? t('store.purchaseInProgress') : pr.label;
+      b.setAttribute('aria-busy', this.buying === id ? 'true' : 'false');
+    }
+  }
+
   private buyButton(productId: string, cls: string, after?: () => void): HTMLElement {
     const pr = this.price(productId);
-    const b = h('button', { class: `btn ${cls}`, type: 'button' }, pr.label) as HTMLButtonElement;
-    b.disabled = !pr.buyable;
-    b.addEventListener('click', () => void this.buy(productId).then(() => after?.()));
+    const b = h('button', { class: `btn ${cls}`, type: 'button', 'data-product': productId }, this.buying === productId ? t('store.purchaseInProgress') : pr.label) as HTMLButtonElement;
+    b.disabled = !pr.buyable || this.buying !== null;
+    this.liveBuyButtons.add(b);
+    b.addEventListener('click', () => {
+      if (this.buying !== null) return;
+      void this.buy(productId).then(() => after?.());
+    });
     return b;
   }
 
@@ -177,6 +208,18 @@ export class EconomyUi {
 
   /** Full purchase flow: age group, clear confirm step, provider, result. */
   async buy(productId: string): Promise<void> {
+    if (this.buying !== null) return;
+    this.buying = productId;
+    this.refreshBuyButtons();
+    try {
+      await this.buyOnce(productId);
+    } finally {
+      this.buying = null;
+      this.refreshBuyButtons();
+    }
+  }
+
+  private async buyOnce(productId: string): Promise<void> {
     if (!(await this.ensureAge())) return;
     const p = productInfo(localizedData(this.c.data), productId);
     if (!p) return;

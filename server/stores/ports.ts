@@ -235,6 +235,8 @@ export interface OpsStore {
   pruneStats(before: number): Promise<number>;
   addIntent(i: PurchaseIntent): Promise<void>;
   getIntent(id: string): Promise<PurchaseIntent | null>;
+  /** Beast Mode ECO-01: this player's unused intents for one product whose hold has not run out at `now`. */
+  openIntentsFor(playerId: string, productId: string, now: number): Promise<PurchaseIntent[]>;
   useIntent(id: string): Promise<void>;
   /** Set an unused intent's hold (the player's own only); false when nothing changed. */
   holdIntent(id: string, playerId: string, holdUntil: number): Promise<boolean>;

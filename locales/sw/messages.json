@@ -2082,6 +2082,8 @@
   "srv.purchase.unknown_store": { "en": "Unknown store.", "text": "Duka lisilojulikana." },
   "srv.purchase.not_set_up": { "en": "Purchases are not set up on this server yet. Nothing was charged.", "text": "Ununuzi bado haujawekwa kwenye seva hii. Hakuna kilichotozwa." },
   "srv.purchase.unavailable": { "en": "That item is not available.", "text": "Bidhaa hiyo haipatikani." },
+  "srv.purchase.already_in_progress": { "en": "A purchase of this item is already in progress. Nothing more was charged.", "text": "Ununuzi wa bidhaa hii tayari unaendelea. Hakuna kingine kilichotozwa." },
+  "srv.purchase.already_owned": { "en": "You already own this. This second purchase was not delivered: contact support from Settings for a refund.", "text": "Tayari unamiliki hiki. Ununuzi huu wa pili haukuwasilishwa: wasiliana na usaidizi kutoka Mipangilio ili urejeshewe pesa." },
   "srv.purchase.age_first": { "en": "Please tell us your age group first.", "text": "Tafadhali tuambie kwanza kundi lako la umri." },
   "srv.purchase.paused_refunds": { "en": "Purchases are paused on this account after several refunds. Contact support from Settings. Nothing was charged.", "text": "Ununuzi umesimamishwa kwenye akaunti hii baada ya marejesho kadhaa ya pesa. Wasiliana na usaidizi kutoka Mipangilio. Hakuna kilichotozwa." },
   "srv.purchase.minor_cap": { "en": "Monthly spending limit of ${limit} reached for players under 18. Nothing was charged.", "text": "Kikomo cha matumizi cha kila mwezi cha ${limit} kwa wachezaji walio chini ya miaka 18 kimefikiwa. Hakuna kilichotozwa." },

@@ -2082,6 +2082,8 @@
   "srv.purchase.unknown_store": { "en": "Unknown store.", "text": "Isitolo esingaziwa." },
   "srv.purchase.not_set_up": { "en": "Purchases are not set up on this server yet. Nothing was charged.", "text": "Ukuthenga akukasethwa kule seva. Akukho okukhokhisiwe." },
   "srv.purchase.unavailable": { "en": "That item is not available.", "text": "Leyo nto ayitholakali." },
+  "srv.purchase.already_in_progress": { "en": "A purchase of this item is already in progress. Nothing more was charged.", "text": "Kukhona ukuthenga kwalento osekuqhubeka. Akukho okunye okukhokhisiwe." },
+  "srv.purchase.already_owned": { "en": "You already own this. This second purchase was not delivered: contact support from Settings for a refund.", "text": "Usunakho lokhu. Lokhu kuthenga kwesibili akulethwanga: xhumana nosizo kusuka ku-Izilungiselelo ukuze ubuyiselwe imali." },
   "srv.purchase.age_first": { "en": "Please tell us your age group first.", "text": "Sicela uqale usitshele iqembu lakho leminyaka." },
   "srv.purchase.paused_refunds": { "en": "Purchases are paused on this account after several refunds. Contact support from Settings. Nothing was charged.", "text": "Ukuthenga kumisiwe kule akhawunti ngemuva kokubuyiswa kwemali kaningana. Xhumana nosizo kusuka ku-Izilungiselelo. Akukho okukhokhisiwe." },
   "srv.purchase.minor_cap": { "en": "Monthly spending limit of ${limit} reached for players under 18. Nothing was charged.", "text": "Umkhawulo wokusebenzisa imali wanyanga zonke ongu-${limit} wabadlali abangaphansi kweminyaka eyi-18 ufinyelelwe. Akukho okukhokhisiwe." },

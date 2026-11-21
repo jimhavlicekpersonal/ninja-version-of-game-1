@@ -86,6 +86,11 @@ export class PgOps extends PgBase implements OpsStore {
     return r[0] ? { id: String(r[0].id), playerId: String(r[0].player_id), productId: String(r[0].product_id), cents: num(r[0].cents), at: num(r[0].at), used: Boolean(r[0].used), holdUntil: r[0].hold_until == null ? num(r[0].at) + 1_800_000 : num(r[0].hold_until), device: strOrNull(r[0].device) } : null;
   }
 
+  async openIntentsFor(playerId: string, productId: string, now: number): Promise<PurchaseIntent[]> {
+    const r = await this.rows('select * from purchase_intents where player_id = $1 and product_id = $2 and not used and coalesce(hold_until, at + 1800000) > $3', [playerId, productId, now]);
+    return r.map((x) => ({ id: String(x.id), playerId: String(x.player_id), productId: String(x.product_id), cents: num(x.cents), at: num(x.at), used: Boolean(x.used), holdUntil: x.hold_until == null ? num(x.at) + 1_800_000 : num(x.hold_until), device: strOrNull(x.device) }));
+  }
+
   async useIntent(id: string): Promise<void> {
     await this.db.query('update purchase_intents set used = true where id = $1', [id]);
   }

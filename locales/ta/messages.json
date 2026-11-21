@@ -2082,6 +2082,8 @@
   "srv.purchase.unknown_store": { "en": "Unknown store.", "text": "தெரியாத கடை." },
   "srv.purchase.not_set_up": { "en": "Purchases are not set up on this server yet. Nothing was charged.", "text": "இந்தச் சர்வரில் இன்னும் வாங்குதல்கள் அமைக்கப்படவில்லை. எந்தக் கட்டணமும் வசூலிக்கப்படவில்லை." },
   "srv.purchase.unavailable": { "en": "That item is not available.", "text": "அந்தப் பொருள் கிடைக்கவில்லை." },
+  "srv.purchase.already_in_progress": { "en": "A purchase of this item is already in progress. Nothing more was charged.", "text": "இந்தப் பொருளுக்கான ஒரு வாங்குதல் ஏற்கெனவே நடைபெறுகிறது. கூடுதல் கட்டணம் எதுவும் வசூலிக்கப்படவில்லை." },
+  "srv.purchase.already_owned": { "en": "You already own this. This second purchase was not delivered: contact support from Settings for a refund.", "text": "இது ஏற்கெனவே உங்களிடம் உள்ளது. இந்த இரண்டாவது வாங்குதல் வழங்கப்படவில்லை: பணத்திருப்பத்துக்கு அமைப்புகளிலிருந்து ஆதரவைத் தொடர்புகொள்ளுங்கள்." },
   "srv.purchase.age_first": { "en": "Please tell us your age group first.", "text": "முதலில் உங்கள் வயதுக் குழுவைச் சொல்லுங்கள்." },
   "srv.purchase.paused_refunds": { "en": "Purchases are paused on this account after several refunds. Contact support from Settings. Nothing was charged.", "text": "பல பணத்திருப்பங்களுக்குப் பிறகு இந்தக் கணக்கில் வாங்குதல்கள் நிறுத்திவைக்கப்பட்டுள்ளன. அமைப்புகளிலிருந்து ஆதரவைத் தொடர்புகொள்ளுங்கள். எந்தக் கட்டணமும் வசூலிக்கப்படவில்லை." },
   "srv.purchase.minor_cap": { "en": "Monthly spending limit of ${limit} reached for players under 18. Nothing was charged.", "text": "18 வயதுக்குட்பட்டவர்களுக்கான ${limit} மாதச் செலவு வரம்பு எட்டப்பட்டது. எந்தக் கட்டணமும் வசூலிக்கப்படவில்லை." },

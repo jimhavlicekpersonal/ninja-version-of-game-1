@@ -2082,6 +2082,8 @@
   "srv.purchase.unknown_store": { "en": "Unknown store.", "text": "ଅଜଣା ଷ୍ଟୋର୍।" },
   "srv.purchase.not_set_up": { "en": "Purchases are not set up on this server yet. Nothing was charged.", "text": "ଏହି ସର୍ଭରରେ ଏପର୍ଯ୍ୟନ୍ତ କ୍ରୟ ସେଟ୍ ଅପ୍ ହୋଇନାହିଁ। କିଛି ଟଙ୍କା କଟାଯାଇନାହିଁ।" },
   "srv.purchase.unavailable": { "en": "That item is not available.", "text": "ସେହି ଜିନିଷ ଉପଲବ୍ଧ ନାହିଁ।" },
+  "srv.purchase.already_in_progress": { "en": "A purchase of this item is already in progress. Nothing more was charged.", "text": "ଏହି ଜିନିଷର ଏକ କ୍ରୟ ପୂର୍ବରୁ ଚାଲିଛି। ଅଧିକ କିଛି ଟଙ୍କା କଟାଯାଇନାହିଁ।" },
+  "srv.purchase.already_owned": { "en": "You already own this. This second purchase was not delivered: contact support from Settings for a refund.", "text": "ଏହା ପୂର୍ବରୁ ଆପଣଙ୍କ ପାଖରେ ଅଛି। ଏହି ଦ୍ୱିତୀୟ କ୍ରୟ ଦିଆଯାଇନାହିଁ: ଟଙ୍କା ଫେରସ୍ତ ପାଇଁ ସେଟିଂସ୍ରୁ ସପୋର୍ଟ ସହ ଯୋଗାଯୋଗ କରନ୍ତୁ।" },
   "srv.purchase.age_first": { "en": "Please tell us your age group first.", "text": "ଦୟାକରି ପ୍ରଥମେ ଆପଣଙ୍କ ବୟସ ବର୍ଗ ଜଣାନ୍ତୁ।" },
   "srv.purchase.paused_refunds": { "en": "Purchases are paused on this account after several refunds. Contact support from Settings. Nothing was charged.", "text": "ଅନେକ ଟଙ୍କା ଫେରସ୍ତ ପରେ ଏହି ଆକାଉଣ୍ଟରେ କ୍ରୟ ବନ୍ଦ ରଖାଯାଇଛି। ସେଟିଂସ୍ରୁ ସପୋର୍ଟ ସହ ଯୋଗାଯୋଗ କରନ୍ତୁ। କିଛି ଟଙ୍କା କଟାଯାଇନାହିଁ।" },
   "srv.purchase.minor_cap": { "en": "Monthly spending limit of ${limit} reached for players under 18. Nothing was charged.", "text": "18 ବର୍ଷରୁ କମ୍ ଖେଳାଳିଙ୍କ ମାସିକ ଖର୍ଚ୍ଚ ସୀମା ${limit} ପୂର୍ଣ୍ଣ ହେଲା। କିଛି ଟଙ୍କା କଟାଯାଇନାହିଁ।" },
