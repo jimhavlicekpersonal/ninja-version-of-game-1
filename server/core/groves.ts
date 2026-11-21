@@ -93,8 +93,13 @@ export async function joinGrove(ctx: ServerContext, me: Player, id: string): Pro
   const rows = await ctx.repo.members(grove.id);
   if (!rows.length) throw fail(404, 'not_found', 'alliance.empty');
   if (rows.length >= maxMembers(ctx)) throw fail(409, 'full', 'alliance.full');
-  if (!(await ctx.repo.addMember({ groveId: grove.id, playerId: me.id, role: 'Member', joinedAt: ctx.now(), xp: 0 }))) throw fail(409, 'already_in_grove', 'alliance.leave_first');
-  await ctx.repo.updatePlayer(me.id, { groveId: grove.id });
+  await ctx.repo.transaction(async (tx) => {
+    // Beast Mode SEC-13 (L1): counted again under the Alliance's lock, so parallel joins cannot overfill it.
+    await tx.lockPlayer(`grove:${grove.id}`);
+    if ((await tx.members(grove.id)).length >= maxMembers(ctx)) throw fail(409, 'full', 'alliance.full');
+    if (!(await tx.addMember({ groveId: grove.id, playerId: me.id, role: 'Member', joinedAt: ctx.now(), xp: 0 }))) throw fail(409, 'already_in_grove', 'alliance.leave_first');
+    await tx.updatePlayer(me.id, { groveId: grove.id });
+  });
   await system(ctx, grove.id, `${isolateName(me.name)} joined the Alliance. Say hello!`);
   return groveView(ctx, { ...me, groveId: grove.id }, grove);
 }

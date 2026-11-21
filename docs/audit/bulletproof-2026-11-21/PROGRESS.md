@@ -90,7 +90,7 @@ New player-visible strings are translated into all 49 other ready languages in t
 | SEC-10 | LOW | 2 | CODE | open | | | |
 | SEC-11 | LOW | Owner/device | CODE | open | | | |
 | SEC-12 | LOW | 2 | OWNER | partial |  | tests/backend/server/beast-mode-2026-11-21-config.test.ts SEC-12 | Code: production checkConfig errors when store checks are configured and SANDBOX_CREDIT_DAILY_CAP_USD is unset (explicit 0 allowed); SHIPPING 3h updated. Open (OWNER): set the value in production. |
-| SEC-13 | LOW | 2 | CODE | open | | | |
+| SEC-13 | LOW | 2 | CODE | partial |  | tests/backend/server/l1-caps.test.ts (memory; fails before the fix: 10 parallel joins overfilled; the Postgres variant runs with TEST_DATABASE_URL, not run here) | Alliance join, Gang join and friendship cap re-counted inside the transaction under tx.lockPlayer('grove:'/'squad:' id, or both player ids sorted). Done-when needs the Postgres run (not available here). |
 | SEC-14 | LOW | 2 | CODE | open | | | |
 | SEC-15 | LOW | 2 | CODE | done |  | tests/backend/server/register-wide.test.ts | Rule registerWide (3000/h) keyed by IPv6 /48 (ipKey48), checked with register on IPv6 only (IPv4 stays per address for carrier NAT); tk_rate_limited_total{rule=registerWide} through tooMany; shareOf divides it like every rule. |
 | SEC-16 | LOW | 2 | DOCS | open | | | |

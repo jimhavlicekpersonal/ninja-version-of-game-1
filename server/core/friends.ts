@@ -198,10 +198,12 @@ export async function byCode(ctx: ServerContext, me: Player, rawCode: unknown): 
 
 async function becomeFriends(ctx: ServerContext, a: Player, b: Player): Promise<number> {
   const t = ctx.now();
-  const [fa, fb] = await Promise.all([ctx.repo.friendsOf(a.id), ctx.repo.friendsOf(b.id)]);
-  if (fa.length >= MAX_FRIENDS) throw fail(409, 'full', 'friend.you_full', { max: MAX_FRIENDS });
-  if (fb.length >= MAX_FRIENDS) throw fail(409, 'full', 'friend.they_full', { name: isolateName(b.name) });
   await ctx.repo.transaction(async (tx) => {
+    // Beast Mode SEC-13 (L1): counted under both players' locks (in id order), so parallel accepts cannot pass the cap.
+    for (const id of [a.id, b.id].sort()) await tx.lockPlayer(id);
+    const [fa, fb] = await Promise.all([tx.friendsOf(a.id), tx.friendsOf(b.id)]);
+    if (fa.length >= MAX_FRIENDS) throw fail(409, 'full', 'friend.you_full', { max: MAX_FRIENDS });
+    if (fb.length >= MAX_FRIENDS) throw fail(409, 'full', 'friend.they_full', { name: isolateName(b.name) });
     await tx.addFriendship(a.id, b.id, t);
     await tx.deleteFriendRequestsBetween(a.id, b.id);
   });

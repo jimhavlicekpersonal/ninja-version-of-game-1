@@ -147,6 +147,9 @@ export async function answerInvite(ctx: ServerContext, me: Player, id: unknown, 
   const leader = members.find((m) => m.role === 'leader');
   if (!leader || !(await areFriends(ctx, me.id, leader.playerId))) throw fail(409, 'conflict', 'gang.not_friends');
   await ctx.repo.transaction(async (tx) => {
+    // Beast Mode SEC-13 (L1): the seat count again under the Gang's lock, so parallel joins cannot overfill it.
+    await tx.lockPlayer(`squad:${squad.id}`);
+    if ((await tx.squadMembers(squad.id)).length >= SQUAD_MAX) throw fail(409, 'full', 'gang.full');
     if (!(await tx.addSquadMember({ playerId: me.id, squadId: squad.id, role: 'member', joinedAt: ctx.now() }))) throw fail(409, 'conflict', 'gang.already_member');
     await tx.deleteSquadInvitesTo(me.id);
   });
