@@ -152,6 +152,7 @@
   "store.withdrawalStipend": { "en": "Delivery starts at once: the first payment can be claimed now and one more each day; by buying you agree that you lose the right to cancel, as the law allows for digital content.", "text": "ବିତରଣ ତୁରନ୍ତ ଆରମ୍ଭ ହୁଏ: ପ୍ରଥମ ଦେୟ ଏବେ ଦାବି କରିହେବ ଓ ପ୍ରତିଦିନ ଆଉ ଗୋଟିଏ; କିଣିବା ଦ୍ୱାରା ଆପଣ ସହମତ ହେଉଛନ୍ତି ଯେ ଡିଜିଟାଲ୍ ବିଷୟବସ୍ତୁ ପାଇଁ ଆଇନ ଅନୁମତି ଦେଉଥିବା ପରି ଆପଣ ବାତିଲ କରିବାର ଅଧିକାର ହରାଉଛନ୍ତି।" },
   "store.calendarLook": { "en": "28-day calendar reward", "text": "28 ଦିନିଆ କ୍ୟାଲେଣ୍ଡର୍ ପୁରସ୍କାର" },
   "store.purchaseInProgress": { "en": "Purchase in progress…", "text": "କ୍ରୟ ଚାଲିଛି…" },
+  "save.restoredPrevious": { "en": "Your latest save could not be read, so an earlier copy ({when}) was loaded.", "text": "ଆପଣଙ୍କ ସାମ୍ପ୍ରତିକ ସେଭ୍ ପଢ଼ିହେଲା ନାହିଁ, ତେଣୁ ପୂର୍ବର ଏକ କପି ({when}) ଲୋଡ୍ କରାଗଲା।" },
   "save.openFailed.title": { "en": "Your village couldn't be opened", "text": "ଆପଣଙ୍କ ଗାଁ ଖୋଲିହେଲା ନାହିଁ" },
   "save.openFailed.body": { "en": "This device didn't open its saved village in time. Try again, or play a temporary village for now: it is not saved and stays offline.", "text": "ଏହି ଡିଭାଇସ୍ ଆପଣଙ୍କ ସଞ୍ଚିତ ଗାଁକୁ ସମୟରେ ଖୋଲିପାରିଲା ନାହିଁ। ପୁଣି ଚେଷ୍ଟା କରନ୍ତୁ, କିମ୍ବା ଏବେ ପାଇଁ ଏକ ଅସ୍ଥାୟୀ ଗାଁ ଖେଳନ୍ତୁ: ଏହା ସଞ୍ଚିତ ହୁଏ ନାହିଁ ଏବଂ ଅଫଲାଇନ୍ ରହେ।" },
   "save.openFailed.temporary": { "en": "Play a temporary village", "text": "ଅସ୍ଥାୟୀ ଗାଁ ଖେଳନ୍ତୁ" },

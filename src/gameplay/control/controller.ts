@@ -1,6 +1,6 @@
 import { localDayIndex } from '../sim/calendar';
 import type { Analytics } from '../../backend/analytics/events';
-import { SaveConflictError, type SaveStore } from '../../backend/persist/saveStore';
+import { MemorySaveStore, SaveConflictError, type SaveStore } from '../../backend/persist/saveStore';
 import type { Clock } from '../sim/clock';
 import { computeOfflineProgress, type OfflineSummary } from '../sim/offline';
 import { deserialize, NewerSaveError, serialize } from '../sim/save';
@@ -46,6 +46,13 @@ export interface StartResult {
   isNew: boolean;
   /** Set when the old save could not be read and a fresh village was started. */
   loadError?: string;
+  /**
+   * Beast Mode SAV-02: false when the save could not be read and could not be copied either, so it was left as it
+   * is and this session runs on a village that is not saved (free some space, then start again).
+   */
+  kept?: boolean;
+  /** Beast Mode SAV-03: the latest save could not be read; this earlier copy (its save time) was loaded instead. */
+  restoredFrom?: number;
 }
 
 /** An earlier village kept after a failed load, described so the player can recognise it. */
@@ -119,6 +126,9 @@ export class GameController {
       loadError = `Could not read your save: ${(e as Error).message}`;
     }
     let state: VillageState | null = null;
+    let restoredFrom: number | undefined;
+    // Beast Mode SAV-02: whether what is stored may be written over (it was read, or copied first).
+    let overwrite = loadError === undefined;
     if (raw) {
       try {
         state = deserialize(raw, deps.data);
@@ -126,17 +136,36 @@ export class GameController {
         // A newer game wrote this save. It is healthy: stop here rather than replace it with a new village.
         if (e instanceof NewerSaveError) throw e;
         loadError = (e as Error).message;
-        await deps.store.backupDamaged(raw).catch(() => undefined);
+        overwrite = await deps.store.backupDamaged(raw).then(
+          () => true,
+          () => false,
+        );
+        // SAV-03: an earlier copy of this village, newest first, before starting over.
+        for (const prev of (await deps.store.previous?.().catch(() => [])) ?? []) {
+          try {
+            state = deserialize(prev, deps.data);
+            restoredFrom = Number((prev as { savedAt?: number }).savedAt) || undefined;
+            break;
+          } catch (e2) {
+            if (e2 instanceof NewerSaveError) throw e2;
+          }
+        }
       }
     }
+    // SAV-02: the damaged save could not be copied (storage full): it stays as it is, and this session runs on an
+    // unsaved village. Nothing is written over a save that has not been copied first.
+    const session = overwrite ? deps : { ...deps, store: new MemorySaveStore() };
     if (!state) {
-      const controller = new GameController(deps, GameController.marked(createNewVillage(now, deps.data), deps));
+      const controller = new GameController(session, GameController.marked(createNewVillage(now, deps.data), deps));
       await controller.save();
-      return { controller, offline: null, isNew: true, loadError };
+      return { controller, offline: null, isNew: true, loadError, ...(overwrite ? {} : { kept: false }) };
     }
     const { state: caughtUp, summary } = computeOfflineProgress(state, now, deps.data, { botRaids: deps.botRaids });
-    const controller = new GameController(deps, GameController.marked(caughtUp, deps));
+    const controller = new GameController(session, GameController.marked(caughtUp, deps));
     await controller.save();
+    if (loadError) {
+      return { controller, offline: null, isNew: false, loadError, restoredFrom: restoredFrom ?? 0, ...(overwrite ? {} : { kept: false }) };
+    }
     // The welcome-back dialog needs a real absence, but a Season Scroll payout is told whatever the gap: a restart
     // across the season's end must not credit in silence (review SCR-07).
     const show = summary.awayMs >= deps.data.economy.welcomeBackMinAwaySeconds * 1000 || summary.scroll !== undefined;

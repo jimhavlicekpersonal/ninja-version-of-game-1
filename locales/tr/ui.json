@@ -152,6 +152,7 @@
   "store.withdrawalStipend": { "en": "Delivery starts at once: the first payment can be claimed now and one more each day; by buying you agree that you lose the right to cancel, as the law allows for digital content.", "text": "Teslimat hemen başlar: ilk ödeme şimdi, sonra her gün bir tane daha alınabilir; satın alarak, yasanın dijital içerik için izin verdiği şekilde cayma hakkını kaybettiğini kabul edersin." },
   "store.calendarLook": { "en": "28-day calendar reward", "text": "28 günlük takvim ödülü" },
   "store.purchaseInProgress": { "en": "Purchase in progress…", "text": "Satın alma sürüyor…" },
+  "save.restoredPrevious": { "en": "Your latest save could not be read, so an earlier copy ({when}) was loaded.", "text": "Son kaydın okunamadı, bu yüzden daha önceki bir kopya ({when}) yüklendi." },
   "save.openFailed.title": { "en": "Your village couldn't be opened", "text": "Köyün açılamadı" },
   "save.openFailed.body": { "en": "This device didn't open its saved village in time. Try again, or play a temporary village for now: it is not saved and stays offline.", "text": "Bu cihaz kayıtlı köyünü zamanında açamadı. Yeniden dene ya da şimdilik geçici bir köyde oyna: kaydedilmez ve çevrim dışı kalır." },
   "save.openFailed.temporary": { "en": "Play a temporary village", "text": "Geçici köyde oyna" },

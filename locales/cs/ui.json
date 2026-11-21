@@ -152,6 +152,7 @@
   "store.withdrawalStipend": { "en": "Delivery starts at once: the first payment can be claimed now and one more each day; by buying you agree that you lose the right to cancel, as the law allows for digital content.", "text": "Dodání začíná okamžitě: první platbu lze vyzvednout hned a každý den další; nákupem souhlasíš se ztrátou práva na odstoupení, jak to zákon u digitálního obsahu umožňuje." },
   "store.calendarLook": { "en": "28-day calendar reward", "text": "Odměna z 28denního kalendáře" },
   "store.purchaseInProgress": { "en": "Purchase in progress…", "text": "Probíhá nákup…" },
+  "save.restoredPrevious": { "en": "Your latest save could not be read, so an earlier copy ({when}) was loaded.", "text": "Poslední uložení se nepodařilo přečíst, proto byla načtena starší kopie ({when})." },
   "save.openFailed.title": { "en": "Your village couldn't be opened", "text": "Tvou vesnici se nepodařilo otevřít" },
   "save.openFailed.body": { "en": "This device didn't open its saved village in time. Try again, or play a temporary village for now: it is not saved and stays offline.", "text": "Toto zařízení neotevřelo uloženou vesnici včas. Zkus to znovu, nebo zatím hraj dočasnou vesnici: neukládá se a zůstává offline." },
   "save.openFailed.temporary": { "en": "Play a temporary village", "text": "Hrát dočasnou vesnici" },

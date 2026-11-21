@@ -152,6 +152,7 @@
   "store.withdrawalStipend": { "en": "Delivery starts at once: the first payment can be claimed now and one more each day; by buying you agree that you lose the right to cancel, as the law allows for digital content.", "text": "Leveringen begynder straks: den første udbetaling kan hentes nu og én til hver dag; ved at købe accepterer du, at du mister fortrydelsesretten, som loven tillader for digitalt indhold." },
   "store.calendarLook": { "en": "28-day calendar reward", "text": "Belønning fra 28-dageskalenderen" },
   "store.purchaseInProgress": { "en": "Purchase in progress…", "text": "Køb i gang…" },
+  "save.restoredPrevious": { "en": "Your latest save could not be read, so an earlier copy ({when}) was loaded.", "text": "Din seneste gemning kunne ikke læses, så en tidligere kopi ({when}) blev indlæst." },
   "save.openFailed.title": { "en": "Your village couldn't be opened", "text": "Din landsby kunne ikke åbnes" },
   "save.openFailed.body": { "en": "This device didn't open its saved village in time. Try again, or play a temporary village for now: it is not saved and stays offline.", "text": "Denne enhed åbnede ikke din gemte landsby i tide. Prøv igen, eller spil en midlertidig landsby indtil videre: den gemmes ikke og forbliver offline." },
   "save.openFailed.temporary": { "en": "Play a temporary village", "text": "Spil en midlertidig landsby" },

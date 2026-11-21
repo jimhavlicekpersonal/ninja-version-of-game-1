@@ -152,6 +152,7 @@
   "store.withdrawalStipend": { "en": "Delivery starts at once: the first payment can be claimed now and one more each day; by buying you agree that you lose the right to cancel, as the law allows for digital content.", "text": "ವಿತರಣೆ ತಕ್ಷಣ ಆರಂಭವಾಗುತ್ತದೆ: ಮೊದಲ ಪಾವತಿಯನ್ನು ಈಗಲೇ ಪಡೆಯಬಹುದು, ನಂತರ ಪ್ರತಿದಿನ ಒಂದು; ಖರೀದಿಸುವ ಮೂಲಕ, ಡಿಜಿಟಲ್ ವಿಷಯಕ್ಕೆ ಕಾನೂನು ಅನುಮತಿಸುವಂತೆ, ರದ್ದುಪಡಿಸುವ ಹಕ್ಕನ್ನು ಕಳೆದುಕೊಳ್ಳಲು ನೀವು ಒಪ್ಪುತ್ತೀರಿ." },
   "store.calendarLook": { "en": "28-day calendar reward", "text": "28 ದಿನಗಳ ಕ್ಯಾಲೆಂಡರ್ ಬಹುಮಾನ" },
   "store.purchaseInProgress": { "en": "Purchase in progress…", "text": "ಖರೀದಿ ನಡೆಯುತ್ತಿದೆ…" },
+  "save.restoredPrevious": { "en": "Your latest save could not be read, so an earlier copy ({when}) was loaded.", "text": "ನಿಮ್ಮ ಇತ್ತೀಚಿನ ಉಳಿಕೆಯನ್ನು ಓದಲಾಗಲಿಲ್ಲ, ಆದ್ದರಿಂದ ಹಿಂದಿನ ಪ್ರತಿ ({when}) ಲೋಡ್ ಮಾಡಲಾಗಿದೆ." },
   "save.openFailed.title": { "en": "Your village couldn't be opened", "text": "ನಿಮ್ಮ ಗ್ರಾಮವನ್ನು ತೆರೆಯಲಾಗಲಿಲ್ಲ" },
   "save.openFailed.body": { "en": "This device didn't open its saved village in time. Try again, or play a temporary village for now: it is not saved and stays offline.", "text": "ಈ ಸಾಧನ ನಿಮ್ಮ ಉಳಿಸಿದ ಗ್ರಾಮವನ್ನು ಸಮಯಕ್ಕೆ ತೆರೆಯಲಿಲ್ಲ. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ, ಅಥವಾ ಸದ್ಯಕ್ಕೆ ತಾತ್ಕಾಲಿಕ ಗ್ರಾಮದಲ್ಲಿ ಆಡಿ: ಅದು ಉಳಿಯುವುದಿಲ್ಲ ಮತ್ತು ಆಫ್‌ಲೈನ್‌ನಲ್ಲೇ ಇರುತ್ತದೆ." },
   "save.openFailed.temporary": { "en": "Play a temporary village", "text": "ತಾತ್ಕಾಲಿಕ ಗ್ರಾಮದಲ್ಲಿ ಆಡಿ" },

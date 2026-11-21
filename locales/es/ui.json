@@ -152,6 +152,7 @@
   "store.withdrawalStipend": { "en": "Delivery starts at once: the first payment can be claimed now and one more each day; by buying you agree that you lose the right to cancel, as the law allows for digital content.", "text": "La entrega empieza al instante: puedes reclamar el primer pago ahora y uno más cada día; al comprar aceptas perder el derecho de desistimiento según lo permitido por la ley para contenido digital." },
   "store.calendarLook": { "en": "28-day calendar reward", "text": "Recompensa del calendario de 28 días" },
   "store.purchaseInProgress": { "en": "Purchase in progress…", "text": "Compra en curso…" },
+  "save.restoredPrevious": { "en": "Your latest save could not be read, so an earlier copy ({when}) was loaded.", "text": "No se pudo leer tu último guardado, así que se cargó una copia anterior ({when})." },
   "save.openFailed.title": { "en": "Your village couldn't be opened", "text": "No se pudo abrir tu aldea" },
   "save.openFailed.body": { "en": "This device didn't open its saved village in time. Try again, or play a temporary village for now: it is not saved and stays offline.", "text": "Este dispositivo no abrió tu aldea guardada a tiempo. Vuelve a intentarlo o juega por ahora en una aldea temporal: no se guarda y queda sin conexión." },
   "save.openFailed.temporary": { "en": "Play a temporary village", "text": "Jugar en una aldea temporal" },

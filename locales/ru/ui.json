@@ -152,6 +152,7 @@
   "store.withdrawalStipend": { "en": "Delivery starts at once: the first payment can be claimed now and one more each day; by buying you agree that you lose the right to cancel, as the law allows for digital content.", "text": "Доставка начинается сразу: первую выплату можно получить сейчас и ещё по одной каждый день; совершая покупку, ты соглашаешься с утратой права на отказ, как позволяет закон для цифрового контента." },
   "store.calendarLook": { "en": "28-day calendar reward", "text": "Награда календаря на 28 дней" },
   "store.purchaseInProgress": { "en": "Purchase in progress…", "text": "Идёт покупка…" },
+  "save.restoredPrevious": { "en": "Your latest save could not be read, so an earlier copy ({when}) was loaded.", "text": "Последнее сохранение не удалось прочитать, поэтому загружена более ранняя копия ({when})." },
   "save.openFailed.title": { "en": "Your village couldn't be opened", "text": "Не удалось открыть твою деревню" },
   "save.openFailed.body": { "en": "This device didn't open its saved village in time. Try again, or play a temporary village for now: it is not saved and stays offline.", "text": "Устройство не успело открыть сохранённую деревню. Попробуй ещё раз или пока сыграй во временной деревне: она не сохраняется и остаётся офлайн." },
   "save.openFailed.temporary": { "en": "Play a temporary village", "text": "Играть во временной деревне" },

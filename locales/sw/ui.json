@@ -152,6 +152,7 @@
   "store.withdrawalStipend": { "en": "Delivery starts at once: the first payment can be claimed now and one more each day; by buying you agree that you lose the right to cancel, as the law allows for digital content.", "text": "Uwasilishaji unaanza mara moja: malipo ya kwanza yanaweza kudaiwa sasa na mengine moja kila siku; kwa kununua unakubali kwamba unapoteza haki ya kughairi, kama sheria inavyoruhusu kwa maudhui ya kidijitali." },
   "store.calendarLook": { "en": "28-day calendar reward", "text": "Zawadi ya kalenda ya siku 28" },
   "store.purchaseInProgress": { "en": "Purchase in progress…", "text": "Ununuzi unaendelea…" },
+  "save.restoredPrevious": { "en": "Your latest save could not be read, so an earlier copy ({when}) was loaded.", "text": "Hifadhi yako ya karibuni haikuweza kusomwa, kwa hiyo nakala ya awali ({when}) imepakiwa." },
   "save.openFailed.title": { "en": "Your village couldn't be opened", "text": "Kijiji chako hakikuweza kufunguliwa" },
   "save.openFailed.body": { "en": "This device didn't open its saved village in time. Try again, or play a temporary village for now: it is not saved and stays offline.", "text": "Kifaa hiki hakikufungua kijiji chako kilichohifadhiwa kwa wakati. Jaribu tena, au cheza kijiji cha muda kwa sasa: hakihifadhiwi na kinabaki nje ya mtandao." },
   "save.openFailed.temporary": { "en": "Play a temporary village", "text": "Cheza kijiji cha muda" },

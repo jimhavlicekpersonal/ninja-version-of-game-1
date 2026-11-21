@@ -36,7 +36,7 @@ import { sharedReplayCard } from './presentation/ui/growthUi';
 import { provideReviewHook } from './presentation/ui/reviewPrompt';
 import { replayable } from './gameplay/sim/battle/battle';
 import type { BattleRecord } from './gameplay/sim/battle/types';
-import { messageText as messageTextOf } from './presentation/ui/i18n';
+import { messageText as messageTextOf, dateText as i18nDate } from './presentation/ui/i18n';
 import { SIM_RULES } from './gameplay/sim/battle/battle';
 import { LocalGroveSource, RemoteGroveSource, type GroveSource } from './backend/social/groveSource';
 import { sound } from './presentation/audio/sound';
@@ -351,7 +351,7 @@ async function boot(): Promise<void> {
   // its own save and never goes online. Third verification fixes 2026-11-14: only in a dev build, or `?debug&preview`
   // in a build with VITE_ALLOW_PREVIEW=1 (never set by the deploy workflow), so the public build always plays the shipped data.
   const gameData = previewAllowed(location.search, { dev: import.meta.env.DEV, allowPreview: import.meta.env.VITE_ALLOW_PREVIEW === '1' }) ? withPreview(defaultData) : defaultData;
-  const { controller, offline, isNew, loadError } = await GameController.start({ clock, store, analytics, data: gameData, payments, botRaids: !serverUrl, sandbox });
+  const { controller, offline, isNew, loadError, kept, restoredFrom } = await GameController.start({ clock, store, analytics, data: gameData, payments, botRaids: !serverUrl, sandbox });
   // "Update Kagemura" (roadmap step 75) opens the store listing in the apps; the web build reloads.
   const env = import.meta.env as Record<string, string | undefined>;
   const updateUrl = isNative() ? (platform() === 'ios' ? env.VITE_APP_STORE_URL : platform() === 'android' ? env.VITE_PLAY_STORE_URL : undefined) : undefined;
@@ -810,7 +810,13 @@ async function boot(): Promise<void> {
 
   // Re-audit: no paid offer after a loss (the Rebuild Kit after raids, often simulated ones, read as "pay to not lose").
   if (offline) hud.showWelcomeBack(offline, () => undefined);
-  if (loadError) hud.toast(i18nText("ui.a_backup_was_kept_and_a_new_village_st_6cb7ba05bd", { arg1: loadError }), 'error');
+  // Beast Mode SAV-02/SAV-03: an earlier copy was loaded, or the damaged save could not even be copied (it is left
+  // as it is and this session is not saved), or a backup was kept and a new village started.
+  if (loadError && restoredFrom !== undefined) hud.toast(t('save.restoredPrevious', { when: restoredFrom ? i18nDate(restoredFrom) : '—' }), 'info');
+  else if (loadError && kept === false) {
+    hud.toast(i18nText("ui.your_village_could_not_be_saved_free_s_e56253c28f", { arg1: loadError }), 'error');
+    showBanner('tk-banner-save', i18nText("ui.this_browser_can_t_save_your_village_p_2206e03480"), [{ label: i18nText("ui.hide_ac20a57bfd"), onClick: (close) => close() }]);
+  } else if (loadError) hud.toast(i18nText("ui.a_backup_was_kept_and_a_new_village_st_6cb7ba05bd", { arg1: loadError }), 'error');
   // P6-09: skipping the tutorial asks once, through the HUD's own dialog.
   tutorial = new Tutorial(controller, analytics, document.body, (title, text, label) => hud.confirm(title, text, label));
   tutorial.start();

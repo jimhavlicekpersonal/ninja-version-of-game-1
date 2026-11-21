@@ -152,6 +152,7 @@
   "store.withdrawalStipend": { "en": "Delivery starts at once: the first payment can be claimed now and one more each day; by buying you agree that you lose the right to cancel, as the law allows for digital content.", "text": "Leveransen börjar direkt: den första utbetalningen kan hämtas nu och sedan en till varje dag; genom att köpa godkänner du att du förlorar ångerrätten, som lagen tillåter för digitalt innehåll." },
   "store.calendarLook": { "en": "28-day calendar reward", "text": "Belöning från 28-dagarskalendern" },
   "store.purchaseInProgress": { "en": "Purchase in progress…", "text": "Köp pågår…" },
+  "save.restoredPrevious": { "en": "Your latest save could not be read, so an earlier copy ({when}) was loaded.", "text": "Din senaste sparning kunde inte läsas, så en tidigare kopia ({when}) laddades." },
   "save.openFailed.title": { "en": "Your village couldn't be opened", "text": "Din by kunde inte öppnas" },
   "save.openFailed.body": { "en": "This device didn't open its saved village in time. Try again, or play a temporary village for now: it is not saved and stays offline.", "text": "Enheten öppnade inte din sparade by i tid. Försök igen, eller spela en tillfällig by så länge: den sparas inte och förblir offline." },
   "save.openFailed.temporary": { "en": "Play a temporary village", "text": "Spela en tillfällig by" },

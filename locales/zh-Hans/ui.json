@@ -152,6 +152,7 @@
   "store.withdrawalStipend": { "en": "Delivery starts at once: the first payment can be claimed now and one more each day; by buying you agree that you lose the right to cancel, as the law allows for digital content.", "text": "立即开始发放：第一次发放现在即可领取，之后每天一次；购买即表示你同意放弃取消的权利，这是法律对数字内容所允许的。" },
   "store.calendarLook": { "en": "28-day calendar reward", "text": "28 天日历奖励" },
   "store.purchaseInProgress": { "en": "Purchase in progress…", "text": "正在购买…" },
+  "save.restoredPrevious": { "en": "Your latest save could not be read, so an earlier copy ({when}) was loaded.", "text": "无法读取你最新的存档，因此已加载较早的副本（{when}）。" },
   "save.openFailed.title": { "en": "Your village couldn't be opened", "text": "无法打开你的村庄" },
   "save.openFailed.body": { "en": "This device didn't open its saved village in time. Try again, or play a temporary village for now: it is not saved and stays offline.", "text": "此设备未能及时打开你保存的村庄。请重试，或先玩一个临时村庄：它不会保存，并保持离线。" },
   "save.openFailed.temporary": { "en": "Play a temporary village", "text": "玩临时村庄" },

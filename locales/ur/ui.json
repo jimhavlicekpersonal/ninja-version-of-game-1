@@ -152,6 +152,7 @@
   "store.withdrawalStipend": { "en": "Delivery starts at once: the first payment can be claimed now and one more each day; by buying you agree that you lose the right to cancel, as the law allows for digital content.", "text": "ترسیل فوراً شروع ہوتی ہے: پہلی ادائیگی ابھی حاصل کی جا سکتی ہے اور ہر روز ایک اور؛ خریداری کر کے آپ اس پر راضی ہیں کہ منسوخی کا حق ختم ہو جاتا ہے، جیسا کہ قانون ڈیجیٹل مواد کے لیے اجازت دیتا ہے۔" },
   "store.calendarLook": { "en": "28-day calendar reward", "text": "28 دن کے کیلنڈر کا انعام" },
   "store.purchaseInProgress": { "en": "Purchase in progress…", "text": "خریداری جاری ہے…" },
+  "save.restoredPrevious": { "en": "Your latest save could not be read, so an earlier copy ({when}) was loaded.", "text": "آپ کا تازہ ترین سیو نہیں پڑھا جا سکا، اس لیے پہلے کی ایک کاپی ({when}) لوڈ کی گئی۔" },
   "save.openFailed.title": { "en": "Your village couldn't be opened", "text": "آپ کا گاؤں نہیں کھل سکا" },
   "save.openFailed.body": { "en": "This device didn't open its saved village in time. Try again, or play a temporary village for now: it is not saved and stays offline.", "text": "یہ آلہ آپ کا محفوظ گاؤں وقت پر نہیں کھول سکا۔ دوبارہ کوشش کریں، یا فی الحال ایک عارضی گاؤں میں کھیلیں: یہ محفوظ نہیں ہوتا اور آف لائن رہتا ہے۔" },
   "save.openFailed.temporary": { "en": "Play a temporary village", "text": "عارضی گاؤں میں کھیلیں" },

@@ -260,6 +260,7 @@ export function migrate(raw: unknown, data?: GD): SaveFile {
   repairStats(v);
   repairTrainingQueue(v);
   if (data) repairTempers(v, data);
+  if (data) repairFields(v, data);
   out.version = SAVE_VERSION;
   return out;
 }
@@ -297,6 +298,53 @@ function repairTrainingQueue(v: Record<string, unknown> | undefined): void {
  * Tempering (v21): a temper the rules do not allow (an edited save, or a type that stopped being temperable)
  * is dropped, never a reason to refuse the village. Runs on every load.
  */
+/**
+ * Beast Mode SAV-03: one bad field no longer replaces a whole village. At load, a resource that is not a finite
+ * number reads 0, a building of a type this build does not know (a removed or renamed one) is dropped, a level
+ * above the highest this build defines is lowered to it (a data change that lowered a cap), and an army entry for
+ * an unknown warrior or with a bad count is dropped. Structural damage (no Keep, no buildings list) still fails
+ * `validateVillage`. Load-time only: nothing about the save format changes. Each repair is logged once.
+ */
+function repairFields(v: Record<string, unknown> | undefined, data: GameData): void {
+  if (!v || typeof v !== 'object') return;
+  const fixed: string[] = [];
+  const res = v.resources as Record<string, unknown> | undefined;
+  if (res && typeof res === 'object') {
+    for (const k of RESOURCE_KINDS) {
+      if (!Number.isFinite(res[k])) {
+        res[k] = 0;
+        fixed.push(`resource ${k}`);
+      }
+    }
+  }
+  if (Array.isArray(v.buildings)) {
+    const kept = (v.buildings as { type?: string; level?: number; upgrade?: { toLevel?: number } }[]).filter((b) => {
+      if (b && typeof b.type === 'string' && data.buildings[b.type]) return true;
+      fixed.push(`unknown building ${String(b?.type)}`);
+      return false;
+    });
+    for (const b of kept) {
+      const max = maxDefinedLevel(data, b.type!);
+      if (Number.isInteger(b.level) && b.level! > max) {
+        b.level = max;
+        delete b.upgrade;
+        fixed.push(`level of ${b.type}`);
+      }
+    }
+    if (kept.length !== v.buildings.length) v.buildings = kept;
+  }
+  const army = v.army as Record<string, unknown> | undefined;
+  if (army && typeof army === 'object') {
+    for (const [t, n] of Object.entries(army)) {
+      if (!data.troops[t] || !Number.isInteger(n) || (n as number) < 0) {
+        delete army[t];
+        fixed.push(`army ${t}`);
+      }
+    }
+  }
+  if (fixed.length) console.warn(`Save repaired at load: ${fixed.slice(0, 5).join(', ')}${fixed.length > 5 ? ' …' : ''}`);
+}
+
 function repairTempers(v: Record<string, unknown> | undefined, data: GameData): void {
   if (!v || !Array.isArray(v.buildings)) return;
   for (const b of v.buildings as { type: string; temper?: unknown }[]) {

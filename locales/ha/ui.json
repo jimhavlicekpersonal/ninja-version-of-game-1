@@ -152,6 +152,7 @@
   "store.withdrawalStipend": { "en": "Delivery starts at once: the first payment can be claimed now and one more each day; by buying you agree that you lose the right to cancel, as the law allows for digital content.", "text": "Isarwa tana farawa nan take: ana iya karɓar biya na farko yanzu, ɗaya kuma a kowace rana; ta hanyar saya kun yarda cewa kun rasa damar soke sayen, kamar yadda doka ta ba da dama ga abubuwan dijital." },
   "store.calendarLook": { "en": "28-day calendar reward", "text": "Ladan kalandar kwana 28" },
   "store.purchaseInProgress": { "en": "Purchase in progress…", "text": "Ana ci gaba da sayayya…" },
+  "save.restoredPrevious": { "en": "Your latest save could not be read, so an earlier copy ({when}) was loaded.", "text": "Ba a iya karanta ajiyarku ta ƙarshe ba, don haka an loda kwafi na baya ({when})." },
   "save.openFailed.title": { "en": "Your village couldn't be opened", "text": "Ba a iya buɗe ƙauyenku ba" },
   "save.openFailed.body": { "en": "This device didn't open its saved village in time. Try again, or play a temporary village for now: it is not saved and stays offline.", "text": "Wannan na'urar ba ta buɗe ƙauyenku da aka adana a kan lokaci ba. Ku sake gwadawa, ko ku yi wasa da ƙauye na wucin gadi a yanzu: ba a adana shi kuma yana nan ba tare da intanet ba." },
   "save.openFailed.temporary": { "en": "Play a temporary village", "text": "Yi wasa da ƙauye na wucin gadi" },

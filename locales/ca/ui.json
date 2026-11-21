@@ -152,6 +152,7 @@
   "store.withdrawalStipend": { "en": "Delivery starts at once: the first payment can be claimed now and one more each day; by buying you agree that you lose the right to cancel, as the law allows for digital content.", "text": "El lliurament comença de seguida: el primer pagament es pot reclamar ara i un altre cada dia; en comprar, acceptes que perds el dret de desistiment, tal com permet la llei per al contingut digital." },
   "store.calendarLook": { "en": "28-day calendar reward", "text": "Recompensa del calendari de 28 dies" },
   "store.purchaseInProgress": { "en": "Purchase in progress…", "text": "Compra en curs…" },
+  "save.restoredPrevious": { "en": "Your latest save could not be read, so an earlier copy ({when}) was loaded.", "text": "No s'ha pogut llegir la teva última partida desada, així que s'ha carregat una còpia anterior ({when})." },
   "save.openFailed.title": { "en": "Your village couldn't be opened", "text": "No s'ha pogut obrir el teu poble" },
   "save.openFailed.body": { "en": "This device didn't open its saved village in time. Try again, or play a temporary village for now: it is not saved and stays offline.", "text": "Aquest dispositiu no ha obert a temps el poble desat. Torna-ho a provar, o juga de moment en un poble temporal: no es desa i es manté sense connexió." },
   "save.openFailed.temporary": { "en": "Play a temporary village", "text": "Juga en un poble temporal" },

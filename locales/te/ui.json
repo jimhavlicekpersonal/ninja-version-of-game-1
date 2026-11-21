@@ -152,6 +152,7 @@
   "store.withdrawalStipend": { "en": "Delivery starts at once: the first payment can be claimed now and one more each day; by buying you agree that you lose the right to cancel, as the law allows for digital content.", "text": "అందజేత వెంటనే మొదలవుతుంది: మొదటి చెల్లింపు ఇప్పుడే, తర్వాత రోజుకొకటి క్లెయిమ్ చేయవచ్చు; కొనడం ద్వారా, డిజిటల్ కంటెంట్‌కు చట్టం అనుమతించినట్టు, రద్దు చేసుకునే హక్కును కోల్పోతారని మీరు అంగీకరిస్తున్నారు." },
   "store.calendarLook": { "en": "28-day calendar reward", "text": "28 రోజుల క్యాలెండర్ బహుమతి" },
   "store.purchaseInProgress": { "en": "Purchase in progress…", "text": "కొనుగోలు జరుగుతోంది…" },
+  "save.restoredPrevious": { "en": "Your latest save could not be read, so an earlier copy ({when}) was loaded.", "text": "మీ తాజా సేవ్‌ను చదవడం సాధ్యం కాలేదు, కాబట్టి ఒక పాత కాపీ ({when}) లోడ్ చేయబడింది." },
   "save.openFailed.title": { "en": "Your village couldn't be opened", "text": "మీ గ్రామాన్ని తెరవడం సాధ్యం కాలేదు" },
   "save.openFailed.body": { "en": "This device didn't open its saved village in time. Try again, or play a temporary village for now: it is not saved and stays offline.", "text": "ఈ పరికరం మీ సేవ్ చేసిన గ్రామాన్ని సమయానికి తెరవలేకపోయింది. మళ్లీ ప్రయత్నించండి, లేదా ప్రస్తుతానికి తాత్కాలిక గ్రామంలో ఆడండి: అది సేవ్ కాదు, ఆఫ్‌లైన్‌లోనే ఉంటుంది." },
   "save.openFailed.temporary": { "en": "Play a temporary village", "text": "తాత్కాలిక గ్రామంలో ఆడండి" },

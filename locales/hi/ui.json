@@ -152,6 +152,7 @@
   "store.withdrawalStipend": { "en": "Delivery starts at once: the first payment can be claimed now and one more each day; by buying you agree that you lose the right to cancel, as the law allows for digital content.", "text": "डिलीवरी तुरंत शुरू होती है: पहला भुगतान अभी लिया जा सकता है और हर दिन एक और। ख़रीदकर आप मानते हैं कि डिजिटल सामग्री के लिए क़ानून के अनुसार आप रद्द करने का अधिकार खो देते हैं।" },
   "store.calendarLook": { "en": "28-day calendar reward", "text": "28 दिन के कैलेंडर का इनाम" },
   "store.purchaseInProgress": { "en": "Purchase in progress…", "text": "ख़रीदारी जारी है…" },
+  "save.restoredPrevious": { "en": "Your latest save could not be read, so an earlier copy ({when}) was loaded.", "text": "आपका नया सेव पढ़ा नहीं जा सका, इसलिए पहले की एक कॉपी ({when}) लोड की गई।" },
   "save.openFailed.title": { "en": "Your village couldn't be opened", "text": "आपका गाँव खोला नहीं जा सका" },
   "save.openFailed.body": { "en": "This device didn't open its saved village in time. Try again, or play a temporary village for now: it is not saved and stays offline.", "text": "यह डिवाइस आपका सहेजा गया गाँव समय पर नहीं खोल पाया। फिर से कोशिश करें, या अभी के लिए एक अस्थायी गाँव में खेलें: वह सहेजा नहीं जाता और ऑफ़लाइन रहता है।" },
   "save.openFailed.temporary": { "en": "Play a temporary village", "text": "अस्थायी गाँव में खेलें" },

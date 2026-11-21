@@ -152,6 +152,7 @@
   "store.withdrawalStipend": { "en": "Delivery starts at once: the first payment can be claimed now and one more each day; by buying you agree that you lose the right to cancel, as the law allows for digital content.", "text": "Η παράδοση ξεκινά αμέσως: η πρώτη πληρωμή μπορεί να ληφθεί τώρα και άλλη μία κάθε μέρα· με την αγορά συμφωνείς ότι χάνεις το δικαίωμα υπαναχώρησης, όπως επιτρέπει ο νόμος για ψηφιακό περιεχόμενο." },
   "store.calendarLook": { "en": "28-day calendar reward", "text": "Ανταμοιβή ημερολογίου 28 ημερών" },
   "store.purchaseInProgress": { "en": "Purchase in progress…", "text": "Αγορά σε εξέλιξη…" },
+  "save.restoredPrevious": { "en": "Your latest save could not be read, so an earlier copy ({when}) was loaded.", "text": "Η τελευταία αποθήκευση δεν διαβάστηκε, οπότε φορτώθηκε ένα παλαιότερο αντίγραφο ({when})." },
   "save.openFailed.title": { "en": "Your village couldn't be opened", "text": "Δεν ήταν δυνατό να ανοίξει το χωριό σου" },
   "save.openFailed.body": { "en": "This device didn't open its saved village in time. Try again, or play a temporary village for now: it is not saved and stays offline.", "text": "Αυτή η συσκευή δεν άνοιξε εγκαίρως το αποθηκευμένο χωριό σου. Δοκίμασε ξανά ή παίξε προς το παρόν ένα προσωρινό χωριό: δεν αποθηκεύεται και μένει εκτός σύνδεσης." },
   "save.openFailed.temporary": { "en": "Play a temporary village", "text": "Παίξε ένα προσωρινό χωριό" },

@@ -152,6 +152,7 @@
   "store.withdrawalStipend": { "en": "Delivery starts at once: the first payment can be claimed now and one more each day; by buying you agree that you lose the right to cancel, as the law allows for digital content.", "text": "Penghantaran bermula serta-merta: bayaran pertama boleh dituntut sekarang dan satu lagi setiap hari; dengan membeli, kamu bersetuju bahawa kamu kehilangan hak untuk membatalkan, seperti yang dibenarkan undang-undang bagi kandungan digital." },
   "store.calendarLook": { "en": "28-day calendar reward", "text": "Ganjaran kalendar 28 hari" },
   "store.purchaseInProgress": { "en": "Purchase in progress…", "text": "Pembelian sedang diproses…" },
+  "save.restoredPrevious": { "en": "Your latest save could not be read, so an earlier copy ({when}) was loaded.", "text": "Simpanan terkini anda tidak dapat dibaca, jadi salinan terdahulu ({when}) dimuatkan." },
   "save.openFailed.title": { "en": "Your village couldn't be opened", "text": "Kampung anda tidak dapat dibuka" },
   "save.openFailed.body": { "en": "This device didn't open its saved village in time. Try again, or play a temporary village for now: it is not saved and stays offline.", "text": "Peranti ini tidak membuka kampung tersimpan anda tepat pada masanya. Cuba lagi, atau main kampung sementara buat masa ini: ia tidak disimpan dan kekal luar talian." },
   "save.openFailed.temporary": { "en": "Play a temporary village", "text": "Main kampung sementara" },

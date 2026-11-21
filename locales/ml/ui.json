@@ -152,6 +152,7 @@
   "store.withdrawalStipend": { "en": "Delivery starts at once: the first payment can be claimed now and one more each day; by buying you agree that you lose the right to cancel, as the law allows for digital content.", "text": "വിതരണം ഉടൻ തുടങ്ങും: ആദ്യ തവണ ഇപ്പോൾ ക്ലെയിം ചെയ്യാം, പിന്നെ ദിവസം ഒന്നുവീതം; വാങ്ങുന്നതിലൂടെ, ഡിജിറ്റൽ ഉള്ളടക്കത്തിന് നിയമം അനുവദിക്കുന്നതുപോലെ, റദ്ദാക്കാനുള്ള അവകാശം നഷ്ടപ്പെടുമെന്ന് നിങ്ങൾ സമ്മതിക്കുന്നു." },
   "store.calendarLook": { "en": "28-day calendar reward", "text": "28 ദിവസ കലണ്ടർ സമ്മാനം" },
   "store.purchaseInProgress": { "en": "Purchase in progress…", "text": "വാങ്ങൽ നടക്കുന്നു…" },
+  "save.restoredPrevious": { "en": "Your latest save could not be read, so an earlier copy ({when}) was loaded.", "text": "നിങ്ങളുടെ ഏറ്റവും പുതിയ സേവ് വായിക്കാനായില്ല, അതിനാൽ മുമ്പത്തെ ഒരു പകർപ്പ് ({when}) ലോഡ് ചെയ്തു." },
   "save.openFailed.title": { "en": "Your village couldn't be opened", "text": "നിങ്ങളുടെ ഗ്രാമം തുറക്കാനായില്ല" },
   "save.openFailed.body": { "en": "This device didn't open its saved village in time. Try again, or play a temporary village for now: it is not saved and stays offline.", "text": "ഈ ഉപകരണത്തിന് സംരക്ഷിച്ച നിങ്ങളുടെ ഗ്രാമം സമയത്ത് തുറക്കാനായില്ല. വീണ്ടും ശ്രമിക്കുക, അല്ലെങ്കിൽ ഇപ്പോൾ ഒരു താൽക്കാലിക ഗ്രാമത്തിൽ കളിക്കുക: അത് സംരക്ഷിക്കപ്പെടില്ല, ഓഫ്‌ലൈനായി തുടരും." },
   "save.openFailed.temporary": { "en": "Play a temporary village", "text": "താൽക്കാലിക ഗ്രാമത്തിൽ കളിക്കുക" },

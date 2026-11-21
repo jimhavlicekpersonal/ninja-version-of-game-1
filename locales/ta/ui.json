@@ -152,6 +152,7 @@
   "store.withdrawalStipend": { "en": "Delivery starts at once: the first payment can be claimed now and one more each day; by buying you agree that you lose the right to cancel, as the law allows for digital content.", "text": "வழங்கல் உடனே தொடங்கும்: முதல் கொடுப்பனவை இப்போதே பெறலாம், ஒவ்வொரு நாளும் இன்னொன்று; வாங்குவதன் மூலம், டிஜிட்டல் உள்ளடக்கத்துக்குச் சட்டம் அனுமதிப்பது போல, ரத்துசெய்யும் உரிமையை இழக்க ஒப்புக்கொள்கிறீர்கள்." },
   "store.calendarLook": { "en": "28-day calendar reward", "text": "28 நாள் நாட்காட்டி வெகுமதி" },
   "store.purchaseInProgress": { "en": "Purchase in progress…", "text": "வாங்குதல் நடைபெறுகிறது…" },
+  "save.restoredPrevious": { "en": "Your latest save could not be read, so an earlier copy ({when}) was loaded.", "text": "உங்கள் சமீபத்திய சேமிப்பைப் படிக்க முடியவில்லை, எனவே முந்தைய நகல் ({when}) ஏற்றப்பட்டது." },
   "save.openFailed.title": { "en": "Your village couldn't be opened", "text": "உங்கள் கிராமத்தைத் திறக்க முடியவில்லை" },
   "save.openFailed.body": { "en": "This device didn't open its saved village in time. Try again, or play a temporary village for now: it is not saved and stays offline.", "text": "இந்தச் சாதனம் சேமித்த உங்கள் கிராமத்தை நேரத்தில் திறக்கவில்லை. மீண்டும் முயலுங்கள், அல்லது இப்போதைக்கு ஒரு தற்காலிக கிராமத்தில் விளையாடுங்கள்: அது சேமிக்கப்படாது, ஆஃப்லைனிலேயே இருக்கும்." },
   "save.openFailed.temporary": { "en": "Play a temporary village", "text": "தற்காலிக கிராமத்தில் விளையாடு" },

@@ -152,6 +152,7 @@
   "store.withdrawalStipend": { "en": "Delivery starts at once: the first payment can be claimed now and one more each day; by buying you agree that you lose the right to cancel, as the law allows for digital content.", "text": "Dodanie začína hneď: prvú platbu môžeš vyzdvihnúť teraz a každý deň ďalšiu; nákupom súhlasíš, že strácaš právo na odstúpenie, ako to zákon pri digitálnom obsahu umožňuje." },
   "store.calendarLook": { "en": "28-day calendar reward", "text": "Odmena z 28-dňového kalendára" },
   "store.purchaseInProgress": { "en": "Purchase in progress…", "text": "Prebieha nákup…" },
+  "save.restoredPrevious": { "en": "Your latest save could not be read, so an earlier copy ({when}) was loaded.", "text": "Posledné uloženie sa nepodarilo prečítať, preto sa načítala staršia kópia ({when})." },
   "save.openFailed.title": { "en": "Your village couldn't be opened", "text": "Tvoju dedinu sa nepodarilo otvoriť" },
   "save.openFailed.body": { "en": "This device didn't open its saved village in time. Try again, or play a temporary village for now: it is not saved and stays offline.", "text": "Toto zariadenie neotvorilo uloženú dedinu včas. Skús to znova alebo zatiaľ hraj dočasnú dedinu: neukladá sa a zostáva offline." },
   "save.openFailed.temporary": { "en": "Play a temporary village", "text": "Hrať dočasnú dedinu" },

@@ -152,6 +152,7 @@
   "store.withdrawalStipend": { "en": "Delivery starts at once: the first payment can be claimed now and one more each day; by buying you agree that you lose the right to cancel, as the law allows for digital content.", "text": "De levering begint meteen: de eerste betaling kun je nu claimen en daarna elke dag één; door te kopen ga je ermee akkoord dat je je herroepingsrecht verliest, zoals de wet toestaat voor digitale inhoud." },
   "store.calendarLook": { "en": "28-day calendar reward", "text": "Beloning van de 28-dagenkalender" },
   "store.purchaseInProgress": { "en": "Purchase in progress…", "text": "Aankoop bezig…" },
+  "save.restoredPrevious": { "en": "Your latest save could not be read, so an earlier copy ({when}) was loaded.", "text": "Je laatste opslag kon niet worden gelezen, dus een eerdere kopie ({when}) is geladen." },
   "save.openFailed.title": { "en": "Your village couldn't be opened", "text": "Je dorp kon niet worden geopend" },
   "save.openFailed.body": { "en": "This device didn't open its saved village in time. Try again, or play a temporary village for now: it is not saved and stays offline.", "text": "Dit apparaat opende je opgeslagen dorp niet op tijd. Probeer het opnieuw, of speel voorlopig een tijdelijk dorp: het wordt niet opgeslagen en blijft offline." },
   "save.openFailed.temporary": { "en": "Play a temporary village", "text": "Speel een tijdelijk dorp" },

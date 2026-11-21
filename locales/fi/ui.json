@@ -152,6 +152,7 @@
   "store.withdrawalStipend": { "en": "Delivery starts at once: the first payment can be claimed now and one more each day; by buying you agree that you lose the right to cancel, as the law allows for digital content.", "text": "Toimitus alkaa heti: ensimmäisen maksun voi lunastaa nyt ja yhden lisää joka päivä. Ostamalla hyväksyt, että menetät peruutusoikeutesi, kuten laki digitaalisen sisällön osalta sallii." },
   "store.calendarLook": { "en": "28-day calendar reward", "text": "28 päivän kalenterin palkinto" },
   "store.purchaseInProgress": { "en": "Purchase in progress…", "text": "Osto käynnissä…" },
+  "save.restoredPrevious": { "en": "Your latest save could not be read, so an earlier copy ({when}) was loaded.", "text": "Viimeisintä tallennustasi ei voitu lukea, joten ladattiin aiempi kopio ({when})." },
   "save.openFailed.title": { "en": "Your village couldn't be opened", "text": "Kyläsi avaaminen epäonnistui" },
   "save.openFailed.body": { "en": "This device didn't open its saved village in time. Try again, or play a temporary village for now: it is not saved and stays offline.", "text": "Tämä laite ei avannut tallennettua kylääsi ajoissa. Yritä uudelleen tai pelaa toistaiseksi väliaikaisella kylällä: sitä ei tallenneta ja se pysyy offline-tilassa." },
   "save.openFailed.temporary": { "en": "Play a temporary village", "text": "Pelaa väliaikaisella kylällä" },

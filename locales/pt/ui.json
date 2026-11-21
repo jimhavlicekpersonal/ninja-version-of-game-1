@@ -152,6 +152,7 @@
   "store.withdrawalStipend": { "en": "Delivery starts at once: the first payment can be claimed now and one more each day; by buying you agree that you lose the right to cancel, as the law allows for digital content.", "text": "A entrega começa na hora: o primeiro pagamento pode ser pego agora e mais um a cada dia; ao comprar, você concorda em perder o direito de arrependimento, como a lei permite para conteúdo digital." },
   "store.calendarLook": { "en": "28-day calendar reward", "text": "Recompensa do calendário de 28 dias" },
   "store.purchaseInProgress": { "en": "Purchase in progress…", "text": "Compra em andamento…" },
+  "save.restoredPrevious": { "en": "Your latest save could not be read, so an earlier copy ({when}) was loaded.", "text": "Não foi possível ler seu último salvamento, então uma cópia anterior ({when}) foi carregada." },
   "save.openFailed.title": { "en": "Your village couldn't be opened", "text": "Não foi possível abrir sua vila" },
   "save.openFailed.body": { "en": "This device didn't open its saved village in time. Try again, or play a temporary village for now: it is not saved and stays offline.", "text": "Este aparelho não abriu sua vila salva a tempo. Tente de novo ou jogue por enquanto numa vila temporária: ela não é salva e fica offline." },
   "save.openFailed.temporary": { "en": "Play a temporary village", "text": "Jogar numa vila temporária" },
