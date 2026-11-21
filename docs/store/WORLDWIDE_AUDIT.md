@@ -1446,3 +1446,22 @@ No save, `SIM_RULES`, protocol-version or migration change (an additive error co
 
 Not run: GitHub Actions (no workflow executed), Xcode, a staging server, Postgres and Redis, devices. Passing tests here do not establish release readiness.
 
+### 2026-11-21 Beast Mode bulletproofing pass, Phase 6: performance, polish and accessibility (integration session; ledger `docs/audit/bulletproof-2026-11-21/PROGRESS.md`), commits `9344ba6` to `74ac797` on `claude/optimistic-faraday-qq0uoc`
+
+No save, `SIM_RULES`, protocol or migration change; `src/gameplay` untouched. New player-visible text (five strings) translated into all 49 other languages by the coding session (not by native reviewers). Browser numbers are Chromium headless on this container (CPU throttling where stated), never a phone.
+
+| # | Finding | Status | What changed | Proving test | Limits |
+|---|---|---|---|---|---|
+| STB-07 | **MEDIUM** first-use painting stutter at battle open and the first ruin | code done (`9344ba6`) | `battleKeys.ts` plans every level look and ruin a base can show; `battlePrepaint.ts` paints the missing ones in 8 ms slices before the battle scene starts (held until the scene holds them) | `battlePrepaint.test.ts`; Chromium 360×640 low profile, CPU ×4, one run each: longest open task 108 → 69 ms, worst frame gap after the first ruin 56 → 43 ms | **DEVICE:** a cheap Android; thumbnails still `toDataURL` |
+| STB-08 | **MEDIUM** a 193 KB inline head script with every language | done (`504b574`, `054883b`) | explicit `BOOT_INLINE_KEYS`; English inline only, `lang/boot-<code>-<hash>.json` per language (precached with its pack); the boot guard waits up to 3 s for it | `boot-script.test.ts`; `index.html` 53 → 11.9 KB gzip; Chromium with the module blocked: German and Japanese failure cards translated | FCP on the 240 kbps profile not measured; `tools/i18n` changed by the integration session |
+| STB-09 + UX-05 | **LOW** pause without hide did not suspend sound or plan reminders; interrupted audio stayed silent | code done (`588537c`, test fix in `ce27fbf`) | `wentToBackground` / `cameBack` from visibilitychange and Capacitor pause/resume; `unlock()` resumes any non-running state; timers already skip a hidden page (SAV-07) | `lifecycle.test.ts`, `music.test.ts`, `memoryPressure.test.ts` | **DEVICE:** iOS pause without visibilitychange; volume levels not built |
+| STB-10 | **LOW** no bundle budget | done (`516e781`) | `tools/perf/bundle-budget.mjs` after the web and Android builds: critical path ≤ 660,000 B gzip (measured ~642,000), `index.html` ≤ 25 KB | `bundle-budget.test.ts` | — |
+| UX-04 | **MEDIUM** shake and flashes ignored reduced motion; no switch | done (`ce27fbf`) | `calmEffects()` (OS flag or Settings "Reduce screen shake and flashes"): no shake, no slow-motion, soft Keep fade, no additive star ring, HUD animations off (`html.calm`) | `reduce-effects.dom.test.ts`; Chromium practice raid: 4 shakes → 0 | — |
+| UX-06 | **MEDIUM** buy buttons named only by price; Jade pill unreachable | done (`9143f27`) | "Buy {name} for {price}"; the Jade pill a named `<button>`; error toasts `role=alert` | `store-names.dom.test.ts`; Chromium 320×568: fits, Tab reaches the pill | No screen-reader run |
+| UX-07 | **MEDIUM** top-bar pills under 44 px | done (`5b39197`) | 7 px hit-area extension on Jade, Artisans and Honor; unlock chip and point chips | `village-hud-batch.test.ts`; Chromium en/de/fi/ta/ar at 320×568, 360×640, 844×390: all ≥ 44×44 and hit 6 px outside | — |
+| UX-08 | **MEDIUM** no in-game text size | code done (`13c3c73`) | Settings → Text size 100/115/130 %, applied by `boot.js` before the first paint; canvas labels scale; the tutorial's Skip no longer overlaps its step label (it did in German at 100 %) | `text-size.dom.test.ts`; Chromium 130 % at 320 and 360 px, en/de: no overflow, every HUD button hit-testable | **DEVICE:** Android font scale and iOS Larger Text |
+| OPS-14 + UX-10 | **LOW** review prompt: wins counted only on "Return home"; no problem guard | done (`74ac797`) | count on show, ask on close through any button; no ask after a purchase problem, a crash or a refused server in the session | `reviewPrompt.test.ts` | — |
+| UX-11 | battle clock behind iOS Control Center | **DEVICE** | — | — | Device run first, then code |
+
+Not run: phones (Android, iPhone), screen readers, the 240 kbps first-paint profile. Passing tests here do not establish release readiness.
+
