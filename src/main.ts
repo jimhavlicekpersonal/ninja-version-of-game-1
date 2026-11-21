@@ -36,7 +36,7 @@ import { parseShareCode, shareLink } from './backend/net/growth';
 import { AchievementReporter, nativeAchievementPort } from './backend/platform/achievements';
 import { lastRendererExit, nativeReviewRequest, rendererExitReport } from './backend/platform/native';
 import { sharedReplayCard } from './presentation/ui/growthUi';
-import { provideReviewHook } from './presentation/ui/reviewPrompt';
+import { blockReviewThisSession, provideReviewHook } from './presentation/ui/reviewPrompt';
 import { replayable } from './gameplay/sim/battle/battle';
 import type { BattleRecord } from './gameplay/sim/battle/types';
 import { messageText as messageTextOf, dateText as i18nDate } from './presentation/ui/i18n';
@@ -343,6 +343,7 @@ async function boot(): Promise<void> {
     if (!exit) return;
     console.warn('The WebView renderer stopped and the app was rebuilt', exit);
     const r = rendererExitReport(exit);
+    blockReviewThisSession('crash');
     crashReporter?.report(r.error, r.tags);
   });
   const debugTime = sandbox ? createDebugTime() : { offsetMs: () => 0, skip: () => undefined };
@@ -418,6 +419,12 @@ async function boot(): Promise<void> {
     report();
     controller.subscribe(report);
     provideReviewHook(nativeReviewRequest());
+    // Beast Mode OPS-14: never ask for a review in a session where the game crashed or the server refused it.
+    window.addEventListener('error', () => blockReviewThisSession('crash'));
+    window.addEventListener('unhandledrejection', () => blockReviewThisSession('crash'));
+    connection.subscribe(() => {
+      if (connection.status === 'suspended' || connection.status === 'incompatible') blockReviewThisSession('server');
+    });
   }
   // Report section 5 step 8 (growth 9): task days roll at the player's own midnight (the sim allows a change once a week).
   {
@@ -634,6 +641,7 @@ async function boot(): Promise<void> {
   const installGuard = () => guardLoop(game.loop as unknown as GuardableLoop, {
     onError: (e, count) => {
       console.error('Frame error', e);
+      blockReviewThisSession('crash');
       crashReporter?.report(e, { kind: 'frame', scene: game.scene.getScenes(true).map((s) => s.scene.key).join(',') || 'none', battle: String(app?.inBattle ?? false), count: String(count) });
     },
     onFatal: () => {
@@ -660,6 +668,7 @@ async function boot(): Promise<void> {
     if (game.renderer.type !== Phaser.CANVAS) {
       watchContext(game.renderer as unknown as ContextEvents, {
         onLost: () => {
+          blockReviewThisSession('crash');
           crashReporter?.report(new Error('webgl_context_lost'), { kind: 'webgl' });
           trimTextureCaches(game.textures);
         },
@@ -1238,6 +1247,7 @@ function markHomeScreenHintShown(): void {
 boot().catch((e) => {
   console.error(e);
   bootGuard?.stop();
+  blockReviewThisSession('crash');
   crashReporter?.report(e, { kind: 'boot' });
   const el = document.getElementById('boot');
   if (!el) return;

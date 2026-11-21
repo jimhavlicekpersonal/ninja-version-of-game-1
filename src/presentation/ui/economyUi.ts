@@ -1,5 +1,6 @@
 import { messageText as ownedError } from './i18n';
 import { listText as i18nList } from './i18n';
+import { blockReviewThisSession } from './reviewPrompt';
 import { displayData as localizedData, labelText as i18nLabel } from './i18n';
 import { t as i18nText } from './i18n';
 import { language, t } from './i18n';
@@ -274,6 +275,8 @@ export class EconomyUi {
       if (!ok2) return;
     }
     const r = await this.c.purchase(productId);
+    // Beast Mode OPS-14: no review request in a session where a purchase went wrong (cancelled or waiting is not wrong).
+    if ((r.ok && r.unsaved) || (!r.ok && !['PENDING', 'pending', 'cancelled', 'IN_PROGRESS'].includes(r.code))) blockReviewThisSession('purchase');
     if (r.ok && r.unsaved) this.kit.toast(i18nText("ui.your_purchase_is_here_but_this_device__e9f1afc3af"), 'error');
     else if (r.ok) this.kit.toast(i18nText("ui.thank_you_your_purchase_has_been_deliv_7e995803ae"), 'success');
     else this.kit.toast(r.message, r.code === 'PENDING' || r.code === 'pending' ? 'info' : 'error');

@@ -3,8 +3,12 @@
  * never twice in four months and at most three times ever. The stores show their own sheet (and may show nothing:
  * Apple limits it to three a year); the game never asks "do you like it?" first and never gates anything on it.
  *
- * No native review plugin is installed, so `requestReview` does nothing until the composition root provides one
- * (`provideReviewHook`, e.g. a Capacitor in-app review plugin: owner/native work). On the web it is always a no-op.
+ * The composition root provides the native request (`provideReviewHook`: `@capacitor-community/in-app-review`
+ * through `platform/native.ts` `nativeReviewRequest` in the apps). On the web there is none, so it never asks.
+ *
+ * Beast Mode 2026-11-21 OPS-14 / UX-10: a win is counted when its result screen opens (`countBattleResult`), so
+ * leaving through any button counts; the sheet is asked for only when that screen closes (`maybeAskForReview`);
+ * nothing is asked in a session that had a purchase problem, a crash or a refused server (`blockReviewThisSession`).
  */
 interface ReviewState {
   /** Wins counted on this device. */
@@ -56,13 +60,28 @@ function save(s: ReviewState): boolean {
   }
 }
 
-/**
- * Count a real raid's result and, after the result screen is closed, maybe ask the store for its review sheet.
- * Practice, trials, replays and simulated fights are not passed here.
- */
-export function noteBattleResult(win: boolean, tutorialDone: boolean, now = Date.now()): boolean {
+/** Why this session must not ask (a purchase problem, a crash, a refused server); null = it may. */
+let blocked: string | null = null;
+export function blockReviewThisSession(reason: string): void {
+  blocked ??= reason;
+}
+/** Tests only: a new session. */
+export function resetReviewSession(): void {
+  blocked = null;
+}
+
+/** Count a real raid's win as its result screen opens. Practice, trials, replays and simulated fights never come here. */
+export function countBattleResult(win: boolean): void {
+  if (!win) return;
   const s = load();
-  if (win) s.wins++;
+  s.wins++;
+  save(s);
+}
+
+/** After that result screen closed (through any button): maybe ask the store for its review sheet. */
+export function maybeAskForReview(win: boolean, tutorialDone: boolean, now = Date.now()): boolean {
+  if (blocked) return false;
+  const s = load();
   const ask = Boolean(hook) && shouldAskForReview(s, now, win, tutorialDone);
   if (ask) {
     s.last = now;

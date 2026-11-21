@@ -26,7 +26,7 @@ import { sound } from '../audio/sound';
 import { celebrate, countUp, reducedMotion, removeWithExit, uiArt } from './feedback';
 import { layoutChevrons } from './chevronLayout';
 import { cardBadge } from './cardArt';
-import { noteBattleResult } from './reviewPrompt';
+import { countBattleResult, maybeAskForReview } from './reviewPrompt';
 
 interface BattleHudDeps {
   root: HTMLElement;
@@ -876,18 +876,18 @@ export class BattleHud {
         : null,
     );
     const next = this.deps.nextActions?.(r) ?? [];
+    // Retention audit G26 / Beast Mode UX-10: a real raid's win is counted as this screen opens, and the store's review
+    // sheet may follow (rarely; reviewPrompt.ts) when it closes through any of its buttons.
+    const realRaid = !this.deps.grove && !this.deps.trial && !this.deps.practice && !this.deps.special && !this.deps.replayOf;
+    if (realRaid) countBattleResult(r.stars > 0);
+    const leave = (go: () => void) => () => {
+      go();
+      if (realRaid) maybeAskForReview(r.stars > 0, !this.deps.coach);
+    };
     this.modal(title, body, [
-      { label: t('battle.watchReplay'), onClick: () => this.deps.onReplay() },
-      ...next.map((a) => ({ label: a.label, primary: a.primary, onClick: () => a.onClick() })),
-      {
-        label: t('battle.returnHome'),
-        primary: !next.some((a) => a.primary),
-        onClick: () => {
-          // Retention audit G26: a real raid's win may be followed by the store's review sheet (rarely; reviewPrompt.ts).
-          if (!this.deps.grove && !this.deps.trial && !this.deps.practice && !this.deps.special && !this.deps.replayOf) noteBattleResult(r.stars > 0, !this.deps.coach);
-          this.deps.onHome();
-        },
-      },
+      { label: t('battle.watchReplay'), onClick: leave(() => this.deps.onReplay()) },
+      ...next.map((a) => ({ label: a.label, primary: a.primary, onClick: leave(() => a.onClick()) })),
+      { label: t('battle.returnHome'), primary: !next.some((a) => a.primary), onClick: leave(() => this.deps.onHome()) },
     ], false);
   }
 
