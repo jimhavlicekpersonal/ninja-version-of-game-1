@@ -1428,3 +1428,21 @@ No save, `SIM_RULES`, protocol-version or migration change (two additive hello f
 | STB-11, STB-12 | device evidence; crash-report decisions | **DEVICE / OWNER (D7)** | — | — | — |
 
 Not run: devices, a staging Sentry project, Postgres and Redis. Passing tests here do not establish release readiness.
+
+### 2026-11-21 Beast Mode bulletproofing pass, Phase 5: release machinery (integration session; ledger `docs/audit/bulletproof-2026-11-21/PROGRESS.md`), commits `090a107` to `c2c0274` on `claude/optimistic-faraday-qq0uoc`
+
+No save, `SIM_RULES`, protocol-version or migration change (an additive error code `feature_paused` and hello field `pausedProducts`, in `docs/PROTOCOL.md`). No workflow was run on GitHub Actions; the workflow tests read the files. New player-visible text (two server messages) translated by the coding session.
+
+| # | Finding | Status | What changed | Proving test | Limits |
+|---|---|---|---|---|---|
+| OPS-01 + SAV-08 | **HIGH** nothing forced a version bump when save, rules, protocol or migrations changed | code done (`090a107`) | `tools/release/last-release.json` baseline and `check-version.mjs` in the web, AAB and TestFlight workflows; save-shape and protocol-surface fingerprints next to their versions; previous-client contract test fails without a tag once released | `version-guard.test.ts` | **OWNER:** first store version bump and `v*` tag; `MIN_CLIENT_BUILD` across two real builds |
+| OPS-09 | **MEDIUM** no server kill switch | code done (`5bc4d59`) | `PRODUCTS_OFF` / `FEATURES_OFF`: a paused product is refused before payment and listed in hello; paused features leave hello and their writes are refused | `kill-switches.test.ts` | **OWNER:** staging drill |
+| OPS-05 + SEC-09 (code part) | **MEDIUM** no rollback for the web game; server rollback rebuilt and retested | code done (`85f89f6`, `9477983`) | Pages artifacts kept 30 days; build writes `version.json`; `rollback-web.yml`; `server.yml` `image_tag`; `rollback-check.mjs` refuses a save-version or battle-rules regression; RELEASE.md commands and rollback table | `rollback.test.ts` | **OWNER (OWN-33):** rehearsal on staging, times recorded; autoscaling, budget alerts, PITR (SEC-09) |
+| OPS-04 | **MEDIUM** native test builds could not target staging; crash environment was the platform | code done (`8ee549e`) | `target` input and GitHub environment on the `aab`/`testflight` jobs; `VITE_DEPLOY_ENV` is the Sentry environment (platform a tag); AAB name carries the target | `release-config.test.ts` OPS-04, `crash-sessions.test.ts` | **DEVICE/OWNER:** a staging TestFlight build showing the test-server label and its crash under `staging` |
+| OPS-10 | **MEDIUM** no app-level privacy manifest | code done (`cf47fa5`) | `ios/App/App/PrivacyInfo.xcprivacy` (no tracking; collected types as PRIVACY.md) in the App target's resources | `release-config.test.ts` OPS-10 | **OWNER (OWN-13):** Xcode archive privacy report; not compiled here |
+| OPS-12 | **LOW** preflight missed launch variables | done (`4c5898e`) | public URL (blocking), Google client id (blocking on Android), Sentry DSN, source-map token, store links, privacy manifest | `release-tools.test.ts` OPS-12 | — |
+| SEC-08 | **MEDIUM** load test without a 10x target or held-village traffic | code done (`660c0e1`) | `--mix` held-village sessions (hello, commands, notices); 10x target and pass criteria in SHIPPING.md 3h | `load.test.ts` (mix against a local server, 2 s) | **OWNER:** a recorded staging run with Postgres and Redis |
+| OPS-13 | **LOW** no launch-day, hotfix or sunset documents | docs done (`c2c0274`) | `docs/ops/LAUNCH_DAY.md`, `docs/ops/SUNSET.md`, linked from RELEASE.md | `rollback.test.ts` OPS-13 (presence) | Names, times and per-market legal checks are owner steps; no known-issues section in `support.html` |
+
+Not run: GitHub Actions (no workflow executed), Xcode, a staging server, Postgres and Redis, devices. Passing tests here do not establish release readiness.
+
