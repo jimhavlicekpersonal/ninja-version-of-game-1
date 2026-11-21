@@ -16,7 +16,8 @@ import { ApiError, createCore, type ServerCore } from './core';
 import { bodyFor, errorBody, staffError, type MessageCode } from './core/errors';
 import { nodeContext, type SharedStores } from './nodeContext';
 import { buildLabel, PromMetrics, rulesLabel, type ServerSentry } from './observability';
-import { BODY_LIMITS, DEFAULT_RATE_LIMITS, ipAllowList, ipKey, MemoryRateLimiter, type RateDecision, type RateLimiter, type RateLimits } from './rateLimit';
+import { BODY_LIMITS, DEFAULT_RATE_LIMITS, ipAllowList, ipKey, ipKey48, MemoryRateLimiter, type RateDecision, type RateLimiter, type RateLimits } from './rateLimit';
+import { isIP } from 'node:net';
 import type { Player, Repo } from './repo';
 import { battleRoutes } from './routes/battles';
 import { complianceRoutes } from './routes/compliance';
@@ -348,6 +349,11 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
     for (const rule of rules === undefined ? [] : Array.isArray(rules) ? rules : [rules]) {
       d = await limiter.hit(rule, rule === 'register' || rule === 'deletionRequest' || rule === 'villageImport' || rule === 'stats' || rule === 'nonce' || rule === 'complaint' ? ip : who, t);
       if (!d.ok) return tooMany(reply, d, rule === 'battle' ? 'rate.battle' : rule === 'lookup' || rule === 'lookupDay' ? 'rate.lookup' : 'rate.other', rule);
+      // Beast Mode SEC-15: registrations from IPv6 also count against their /48.
+      if (rule === 'register' && isIP(req.ip.replace(/^::ffff:/, '')) === 6) {
+        d = await limiter.hit('registerWide', `ip48:${ipKey48(req.ip)}`, t);
+        if (!d.ok) return tooMany(reply, d, 'rate.other', 'registerWide');
+      }
     }
   });
 

@@ -67,6 +67,8 @@ export interface RateLimits {
    * (a guessed seed predicts a raid's outcome about 98% of the time).
    */
   deviceRerolls: RateRule;
+  /** Beast Mode SEC-15: new players from one IPv6 /48 (one host can hold 65,536 /64s, each with its own `register`). */
+  registerWide: RateRule;
 }
 
 const MIN = 60_000;
@@ -104,6 +106,8 @@ export const DEFAULT_RATE_LIMITS: RateLimits = {
   replayShare: { limit: 30, windowMs: 24 * HOUR },
   // A player tapping Next to look over a few bases; a script picking only predicted wins needs far more.
   deviceRerolls: { limit: 12, windowMs: 10 * MIN },
+  // Ten /64 subscribers' worth of `register` from one site an hour.
+  registerWide: { limit: 3000, windowMs: HOUR },
 };
 
 /**
@@ -124,6 +128,15 @@ export function shareOf(limits: RateLimits, instances: number): RateLimits {
  * subscriber cannot rotate through its 2^64 addresses to dodge a limit.
  */
 export function ipKey(ip: string): string {
+  return ipPrefix(ip, 4);
+}
+
+/** Beast Mode SEC-15: an IPv6 address by its /48 (a site's whole allocation); IPv4 as `ipKey`. */
+export function ipKey48(ip: string): string {
+  return ipPrefix(ip, 3);
+}
+
+function ipPrefix(ip: string, groupsKept: number): string {
   if (unmapped(ip) !== ip) return unmapped(ip);
   if (!isIPv6(ip)) return ip;
   const [head, tail = ''] = ip.split('::');
@@ -131,9 +144,9 @@ export function ipKey(ip: string): string {
   const right = tail ? tail.split(':') : [];
   const groups = ip.includes('::') ? [...left, ...Array(Math.max(0, 8 - left.length - right.length)).fill('0'), ...right] : left;
   return `${groups
-    .slice(0, 4)
+    .slice(0, groupsKept)
     .map((g) => (parseInt(g, 16) || 0).toString(16))
-    .join(':')}::/64`;
+    .join(':')}::/${groupsKept * 16}`;
 }
 
 export interface RateDecision {

@@ -92,7 +92,7 @@ New player-visible strings are translated into all 49 other ready languages in t
 | SEC-12 | LOW | 2 | OWNER | partial |  | tests/backend/server/beast-mode-2026-11-21-config.test.ts SEC-12 | Code: production checkConfig errors when store checks are configured and SANDBOX_CREDIT_DAILY_CAP_USD is unset (explicit 0 allowed); SHIPPING 3h updated. Open (OWNER): set the value in production. |
 | SEC-13 | LOW | 2 | CODE | open | | | |
 | SEC-14 | LOW | 2 | CODE | open | | | |
-| SEC-15 | LOW | 2 | CODE | open | | | |
+| SEC-15 | LOW | 2 | CODE | done |  | tests/backend/server/register-wide.test.ts | Rule registerWide (3000/h) keyed by IPv6 /48 (ipKey48), checked with register on IPv6 only (IPv4 stays per address for carrier NAT); tk_rate_limited_total{rule=registerWide} through tooMany; shareOf divides it like every rule. |
 | SEC-16 | LOW | 2 | DOCS | open | | | |
 | SEC-17 | LOW | 2 | CODE | done |  | tests/backend/server/beast-mode-2026-11-21-config.test.ts SEC-17 | Production warnings: SIGNIN_NONCE_REQUIRED (SEC-03 commit), REQUIRE_SERVER_VILLAGE (SEC-01 commit), REDIS_URL without RATE_LIMIT_INSTANCES (here), SANDBOX_CREDIT_DAILY_CAP_USD (error, SEC-12). Boot logs 'security switches {…}' (securitySwitches: values only, no secrets/URLs). |
 | STB-01 | HIGH | 4 | CODE | open | | | |
