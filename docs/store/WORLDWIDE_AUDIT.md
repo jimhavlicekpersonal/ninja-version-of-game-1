@@ -1387,3 +1387,26 @@ Each regression test fails on the code before its fix and passes after. Two new 
 | SAV-12 + SEC-05 | **LOW** backdated windowed claims (X1) | **blocked (owner D1)** | — | — | — |
 
 Not run: Postgres and Redis tests, a staging deploy, devices. Passing tests here do not establish release readiness.
+
+### 2026-11-21 Beast Mode bulletproofing pass, Phase 3: save and network durability (integration session; ledger `docs/audit/bulletproof-2026-11-21/PROGRESS.md`), commits `4493ebd` to `d83511a` on `claude/optimistic-faraday-qq0uoc`
+
+No save-format, `SIM_RULES`, protocol-version or migration change (the save repairs are load-time; the Idempotency-Key reuse is documented in `docs/PROTOCOL.md`). New player-visible text (nine strings) translated into the 49 other ready languages by the coding session (not native-reviewed).
+
+| # | Finding | Status | What changed | Proving test | Limits |
+|---|---|---|---|---|---|
+| SAV-01 | **HIGH** a failed IndexedDB open gave a returning player a throwaway village that could go online and later replace the real one | fixed (`4493ebd`) | a returning player chooses Retry (longer waits) or a temporary village that is offline and unsaved; memory-store games never move their village; a lower-Keep server village is adopted whole with a backup | `villageSync.test.ts` SAV-01 (2); Playwright with `indexedDB.open` never answering | iOS IndexedDB hang not reproduced on a device |
+| SAV-02 | **MEDIUM** a damaged save was overwritten when its backup failed | fixed (`682639c`) | nothing is written over an uncopied save; the session runs unsaved and says so | `save-durability.test.ts` SAV-02 (2) | — |
+| SAV-03 | **MEDIUM** no rolling saves; one bad field replaced the village | fixed (`682639c`) | two generations kept in the save's transaction; automatic fallback; load-time repairs of non-finite resources, unknown buildings, over-cap levels, bad army entries | `save-durability.test.ts` SAV-03 (3) | IndexedDB generation path not unit-tested |
+| SAV-04 | **MEDIUM** sign-out could drop unsent actions and reports | fixed (`43a85f1`) | refused with the counts while anything is waiting | `session-control.test.ts` SAV-04 | — |
+| SAV-05 | **MEDIUM** scouting on a poor link forfeited a won raid | code fixed (`43a85f1`) | no match while an attack report is in the outbox | none automated (App needs Phaser) | Optional `409 report_pending` not built |
+| SAV-07 (+STB-09 timers) | **MEDIUM** retry storms, no breaker, traffic while hidden | fixed (`1142d45`) | jittered backoff the minute sync respects, flush breaker, timers off while hidden, unchanged base not re-sent | `connectionNetwork.test.ts` SAV-07 (3) | — |
+| SAV-06 | **MEDIUM** one 15 s timeout for every body | partly fixed (`8525db9`) | deadlines grow with body size (8 KB/s, ≤ 120 s); battle commands in their own requests | `slow-link.test.ts` | gzip request bodies, throttled-browser and 3G phone runs not done |
+| SAV-10 | **LOW** Idempotency-Key never reused on retry | fixed (`2d1b3e5`) | the same write after a network error carries the same key | `httpAdapter.test.ts` SAV-10 (2) | — |
+| SAV-13 | **LOW** no client-server clock offset | partly fixed (`fbb7556`) | offset measured on every hello; Settings warns past 5 min | `connectionNetwork.test.ts` SAV-13 | War countdowns not shifted |
+| SAV-11 | **LOW** too-late raids became practice with a generic reason | code fixed (`fbb7556`) | the toast names the raid's date and the 72-hour limit | none automated | **OWNER:** state the 72 h promise in help and listings |
+| SAV-09 | **MEDIUM** no real save per version | partly done (`d83511a`) | `tools/saves/make-fixture.mjs`; real fixtures v21-v24 and a Keep 15 village | `save-fixtures.test.ts` (6) | History starts at v21: v1-v20 have synthetic saves only |
+| SAV-14 | **LOW** every command wrote the whole village | code fixed (`aec0f0e`) | a queued save takes later ones along | `save-coalesce.test.ts` | **DEVICE:** frame time on a cheap Android |
+| SAV-12 + SEC-05 | X1 backdated claims | **blocked (owner D1)** | — | — | — |
+| SAV-15, SAV-16 | reinstall/restore paths; network handoff | **DEVICE / OWNER** | — | — | — |
+
+Not run: devices, a link conditioner, Postgres and Redis. Passing tests here do not establish release readiness.
