@@ -4,7 +4,8 @@ import { nameNoticePatterns } from '../notices';
 import { NameTakenError, REVOKED_TOKEN_PREFIX, DELETED_PLAYER } from '../types';
 import type { ComplianceRow, Player, PlayerPatch, StaffAction, IdentityLink, PlayerNotice, TokenRotation, DeletionRequest, OpponentQuery, BoardFilter } from '../types';
 import type { PlayerStore } from '../ports';
-import { type Row, num, strOrNull, toPlayer, isUniqueClash, toDeletion, boardFilterSql } from './rows';
+import { type Row, num, strOrNull, toPlayer, isUniqueClash, toDeletion, boardFilterSql, PUT_BASE } from './rows';
+import { contentHash } from '../../contentHash';
 import { PgBase, dbOf } from './base';
 
 export class PgPlayers extends PgBase implements PlayerStore {
@@ -191,7 +192,18 @@ export class PgPlayers extends PgBase implements PlayerStore {
       await q('delete from shared_replays where owner_id = $1 or defender_id = $1', [id]);
       // Compliance switches 2026-11-14: terms acceptance and consumption consent.
       await q('delete from player_compliance where player_id = $1', [id]);
-      await q('update tickets set defender_id = null where defender_id = $1', [id]);
+      // Beast Mode SEC-14: open tickets on the player keep their base (war scores, replays) under the deleted name:
+      // a renamed copy is stored as its own base version and the ticket points at it; the old version goes with
+      // retention once nothing refers to it.
+      for (const r of (await q('select t.id, b.base from tickets t join base_versions b on b.hash = t.base_hash where t.defender_id = $1', [id])).rows as { id: string; base: Record<string, unknown> | null }[]) {
+        if (!r.base) continue;
+        const renamed = { ...r.base, name: D.name };
+        await q(`${PUT_BASE} update tickets set base_hash = $1 where id = $4`, [contentHash(renamed), JSON.stringify(renamed), at, r.id]);
+      }
+      await q('update tickets set defender_id = null, defender_name = $2 where defender_id = $1', [id, D.name]);
+      await q('update squad_war_attacks set attacker_id = $2 where attacker_id = $1', [id, D.id]);
+      await q('update squad_war_relays set last_by = $2 where last_by = $1', [id, D.id]);
+      await q('update squad_war_relays set holder = null, hold_until = 0 where holder = $1', [id]);
       await q('delete from attacks where defender_id = $1', [id]);
       await q(`update attacks set attacker_id = $2, record = record || jsonb_build_object('attackerId', $2::text, 'attackerName', $3::text) where attacker_id = $1`, [id, D.id, D.name]);
       await q('delete from grove_members where player_id = $1', [id]);

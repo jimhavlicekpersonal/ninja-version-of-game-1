@@ -5,6 +5,7 @@ import { NameTakenError, REVOKED_TOKEN_PREFIX, DELETED_PLAYER } from '../types';
 import type { ComplianceRow, Player, PlayerPatch, StaffAction, IdentityLink, PlayerNotice, TokenRow, TokenRotation, DeletionRequest, OpponentQuery, BoardFilter } from '../types';
 import type { PlayerStore } from '../ports';
 import { MemoryBase, clone } from './base';
+import { contentHash } from '../../contentHash';
 
 const NO_COMPLIANCE: ComplianceRow = { termsVersion: null, termsAcceptedAt: null, consumptionConsent: false, consumptionConsentAt: null };
 
@@ -97,7 +98,23 @@ export class MemoryPlayers extends MemoryBase implements PlayerStore {
     this.complianceRows.delete(id);
     for (const [k, t] of this.tickets) {
       if (t.attackerId === id) this.tickets.delete(k);
-      else if (t.defenderId === id) t.defenderId = null;
+      else if (t.defenderId === id) {
+        // Beast Mode SEC-14: the base stays under the deleted name (a renamed copy, its own version).
+        const stored = this.bases.get(t.baseHash);
+        if (stored) {
+          const renamed = { ...stored.base, name: D.name };
+          const hash = contentHash(renamed);
+          if (!this.bases.has(hash)) this.bases.set(hash, { base: renamed, createdAt: at, lastUsedAt: at });
+          t.baseHash = hash;
+        }
+        Object.assign(t, { defenderId: null, defenderName: D.name });
+      }
+    }
+    // Beast Mode SEC-14: Gang War rows keep the strike, not the player.
+    for (const a of this.warAttackRows) if (a.attackerId === id) a.attackerId = D.id;
+    for (const r of this.relayRows) {
+      if (r.lastBy === id) r.lastBy = D.id;
+      if (r.holder === id) Object.assign(r, { holder: null, holdUntil: 0 });
     }
     this.attacks = this.attacks.filter((a) => a.defenderId !== id);
     for (const a of this.attacks) if (a.attackerId === id) Object.assign(a, { attackerId: D.id, attackerName: D.name });
