@@ -62,7 +62,7 @@ a contract, a device or a decision.
 
 ## 5. Devices, testing and players
 
-Beast Mode OPS-11: the plan and protocols are `docs/store/SOFT_LAUNCH.md` (waves, KPIs, kill lines: OWN-21), `docs/store/DEVICE_MATRIX.md` (devices, cold start ×50, memory, thermal, interruptions: OWN-24) and `docs/store/PLAYTEST.md` (silent first-time playtest: OWN-25). Fill their owner cells and results tables.
+Beast Mode OPS-11: the plan and protocols are `docs/store/SOFT_LAUNCH.md` (waves, KPIs, kill lines: OWN-25), `docs/store/DEVICE_MATRIX.md` (devices, cold start ×50, memory, thermal, interruptions: OWN-21) and `docs/store/PLAYTEST.md` (silent first-time playtest: OWN-24). Fill their owner cells and results tables.
 
 | Task | Blocks | Done when |
 |---|---|---|
@@ -72,3 +72,59 @@ Beast Mode OPS-11: the plan and protocols are `docs/store/SOFT_LAUNCH.md` (waves
 | Real-player playtests of every number the 2026-11-16 pass changed (Scroll bonus, task targets, Trial growth, defense rewards and later phases) | knowing the changes are right | Playtest notes; model players are not players |
 | Mixed-army check of the remaining 13 counter pairs before the Codex may name them (P6-18; `tools/balance/run-counter-check.mjs`) | Codex accuracy | `src/gameplay/data/codex.json` lists every confirmed pair |
 | An artist and music (seasonal looks are two colours and a name today) | presentation | Art delivered |
+
+## 6. Beast Mode 2026-11-21 hand-off (Part C of `docs/prompts/BEAST_MODE_2026-11-21.md`)
+
+Code cannot close these. Each row says what the code side already prepared ("ready") and what evidence closes it.
+Record the evidence here and in the ledger (`docs/audit/bulletproof-2026-11-21/PROGRESS.md`). Nothing below is done.
+
+| ID | What to do | Code side | Evidence that closes it |
+|---|---|---|---|
+| OWN-01 | Choose the publisher; bank and tax in both stores; Apple Small Business Program; EU DSA trader declaration | — | Payee accepted in both consoles |
+| OWN-02 | Trademark and store-name search for "Kagemura" (USPTO, EUIPO, JPO; classes 9 and 41); a fallback name | — | Search report filed |
+| OWN-03 | Final bundle id: `APP_ID`, `strings.xml`, the Xcode identifier, server `APPLE_BUNDLE_IDS` / `GOOGLE_PLAY_PACKAGE` / `GAMECENTER_BUNDLE_IDS` | ready: preflight row, `ALLOW_LEGACY_APP_ID` guard | `npm run release:preflight` has no App id row |
+| OWN-04 | Fill every fact in `public/legal-config.js`; date `termsEffective` after legal review | ready: pages say "not published yet", preflight blocks | Live pages show no draft text; preflight has no legal rows |
+| OWN-05 | Lawyer review per market; decide `UNDER13_MODE`, COPPA, `EU_JADE_VALUE`, `APPLE_CONSUMPTION_RESPONSE`, the EAA statement | ready: every switch exists with a safe default | Decisions recorded in `docs/legal/MARKETS.md` |
+| OWN-06 | Domain, hosting and Sentry regions; `api.<domain>` A and AAAA; HSTS | ready: `tools/ops/check-domain.mjs` | That check passes (IPv6 too) |
+| OWN-07 | Apple: App ID capabilities, keys (SIWA, App Store Server API, APNs), notification URLs, privacy label | ready: `PrivacyInfo.xcprivacy` (OPS-10), PRIVACY.md label | Privacy section submitted; a TestFlight build processes |
+| OWN-08 | Play: Data safety, target audience 13+, IARC, Age Signals access, deletion URL, service account and RTDN, license testers | ready: PRIVACY.md answers | Every App content form "Completed" |
+| OWN-09 | Both age-rating questionnaires (prepared answers in PRIVACY.md) | ready | Ratings shown in both consoles |
+| OWN-10 | The 13 in-app products with the `store.json` ids and regional prices; prices checked in 3+ storefronts on phones | ready: store prices only from the store | Screenshots: store sheet vs in-game confirm (USD, EUR, JPY or INR) |
+| OWN-11 | Upload keystore; the four `ANDROID_KEYSTORE_*` secrets; offline backups; Play App Signing | ready: the `aab` job | Upload certificate SHA-256 matches Play |
+| OWN-12 | First signed AAB to internal testing (Billing ≥ 8, versionCode up, 16 KB) | ready: `android.yml` `target` input (OPS-04) | Run log and Play Console screenshot |
+| OWN-13 | Apple signing secrets; first `ios-testflight.yml` run; archive validates with the privacy manifest | ready: manifest in the App target (OPS-10) | TestFlight build, no SDK warning; Xcode privacy report lists the manifest |
+| OWN-14 | OAuth web and Android clients; `VITE_GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_IDS`; reinstall and second-device recovery | ready: preflight blocks the Android build without it (OPS-12) | Test log with date, build and phones |
+| OWN-15 | Staging and production servers: GitHub environments with `DEPLOY_HOOK` / `SERVER_URL`, production reviewers, every secret | ready: `server.yml`, staging/production native builds (OPS-04) | Staging contract tests ran; production `/readyz` green |
+| OWN-16 | `npm run server:load -- --mix` on staging at the 10× target; size instances, `RESIM_WORKERS`, rate limits; pre-scale for launch | ready: `--mix`, targets in SHIPPING.md 3h (SEC-08) | Run recorded in PVP_ROADMAP step 46; pass criteria met |
+| OWN-17 | Sentry game and server projects; DSNs; "Prevent Storing of IP Addresses" on; region; `SENTRY_AUTH_TOKEN`; issue alerts to the pager | ready: source maps (OPS-02), `VITE_DEPLOY_ENV` environments (OPS-04) | A staging test crash shows TypeScript lines; IP storage off |
+| OWN-18 | Scrape `/metrics`; load the alert rules; route pages to a pager; uptime check and status page on `/readyz` | ready: runbooks and the Alertmanager example (OPS-07) | A test alert reaches the pager |
+| OWN-19 | On-call rota; moderators; support mailbox; refund, chargeback and ban policies | ready: support templates (OPS-13) | Rota published; mailbox answers |
+| OWN-20 | Community channel staffed; the known-issues post (OPS-13) | ready: `docs/ops/LAUNCH_DAY.md` rule | Link live; known-issues post pinned |
+| OWN-21 | Run the device matrix (`docs/store/DEVICE_MATRIX.md`), a 2 GB Android Go included, renderer kill (OPS-03) | ready: the protocol and results table (OPS-11) | Filled results table for a release build |
+| OWN-22 | Signed-build store tests (purchases, refunds, Ask to Buy, sign-ins, push, Android Back, update over the previous build) | ready: `docs/store/TESTING.md` "Native checks" | Each line dated with build and phone |
+| OWN-23 | Closed testing: TestFlight external group; Play closed track ≥ 12 testers for 14 days | — | Play shows the 14 days; production access granted |
+| OWN-24 | Silent first-time playtest (`docs/store/PLAYTEST.md`) | ready: the protocol (OPS-11) | Notes table filled |
+| OWN-25 | Soft-launch markets, dates, targets and kill lines (`docs/store/SOFT_LAUNCH.md`); decision owner named | ready: the plan with starting targets (OPS-11) | Plan signed off before any market opens |
+| OWN-26 | Native-speaker review of the 49 machine-translated languages, word lists and store listings | — | Reviews recorded (`docs/localization/`) |
+| OWN-27 | Store screenshots from a store-configured build at every size; feature graphic | ready: `npm run store:screenshots` | Screenshots uploaded |
+| OWN-28 | Territories (exclude mainland China, Vietnam, Indonesia before PSE, sanctioned markets) | — | Territory list saved |
+| OWN-29 | `VITE_PUBLIC_URL` and the App Links / Universal Links files; uncomment the manifest filter and entitlement | ready: preflight blocks a store build without the URL (OPS-12) | A friend link opens the app on both platforms |
+| OWN-30 | Backups to an owned bucket (PITR or WAL) and one real restore drill | ready: `tools/ops/restore.mjs` | Drill date and duration recorded |
+| OWN-31 | Rehearse a web rollback, a server image rollback and a hotfix on staging | ready: `rollback-web.yml`, `server.yml` `image_tag` (OPS-05), hotfix path (OPS-13) | Times recorded in `docs/store/RELEASE.md` |
+| OWN-32 | Tag every store release `v<version>` and update `tools/release/last-release.json` | ready: the version guard (OPS-01) | The tag exists; the previous-client contract runs |
+| OWN-33 | Define the offline promise; test long outages after first connection | — | Decision in `docs/DECISIONS.md`; outage test log |
+| OWN-34 | Turn off the old Toadstool Kingdoms Pages site on the same origin | — | Old URL returns 404 |
+| OWN-35 | Every year: Play target API and Billing deadlines, Apple minimum SDK; rotate keys; renew Apple membership | — | Calendar entries exist |
+
+### Owner decisions this pass is waiting for
+
+| # | Decision | Blocks | Default in code until decided |
+|---|---|---|---|
+| D1 | How far back a time-window claim may be dated while idle (keep 12 h, or per-device last-contact evidence) | SAV-12, SEC-05 | 12 h (unchanged) |
+| D2 | Honor model: should a lost defense cost honor, should wins against generated bases earn honor | GT-01, GT-12 | unchanged (`defenseHonorLossShare` 0) |
+| D3 | How much of their loot casual players may lose to raids | GT-06, ECO-04 | unchanged |
+| D4 | A duplicate Season Scroll receipt: refund it, or credit it to the next season | ECO-01 | refused for support to refund (409 `purchase.already_owned`) |
+| D5 | Certificate pinning: yes or no, and on which hosts | SEC-16 | no pinning (`docs/DECISIONS.md` transport) |
+| D6 | Under-18 cap currency: local money from the store's price | ECO-06 | USD with `USD_RATES` |
+| D7 | Crash reports: opt-in or ask at first launch; the Sentry project, region and alert routing | STB-12, OPS-02 | opt-in, off by default |
+| D8 | `REQUIRE_SERVER_VILLAGE`: on at launch, or after a migration window | SEC-01 | off (`REQUIRE_SERVER_VILLAGE=0`), production warns |

@@ -1,6 +1,6 @@
 # Soft launch plan (Beast Mode 2026-11-21 OPS-11)
 
-The owner chooses markets, dates and cohort sizes and fills every **owner** cell before wave A starts (OWN-21). The
+The owner chooses markets, dates and cohort sizes and fills every **owner** cell before wave A starts (OWN-25). The
 targets below are starting points from the retention audit (`docs/audit/areas/09-retention-and-marketing.md`), not
 measurements: the model-player campaigns (`docs/game-theory/CAMPAIGN.md`) are not players and are never reported as
 such.

@@ -1,6 +1,6 @@
 /**
  * Beast Mode 2026-11-21 OPS-05: one-command rollback. The workflows cannot run here, so these read them
- * (a regression guard, not proof a rollback works: the owner rehearsal OWN-33 is that), and unit-test the
+ * (a regression guard, not proof a rollback works: the owner rehearsal OWN-31 is that), and unit-test the
  * comparison that refuses a rollback across save or battle-rules versions.
  */
 import { readFileSync } from 'node:fs';

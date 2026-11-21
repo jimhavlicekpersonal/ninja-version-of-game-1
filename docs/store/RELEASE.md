@@ -4,7 +4,7 @@ Soft launch waves, KPIs and kill lines: `SOFT_LAUNCH.md`; device tests: `DEVICE_
 
 ## Before submitting
 
-- [ ] **Owner (OPS-11):** the soft-launch targets and kill lines in `SOFT_LAUNCH.md` are filled (OWN-21), the device matrix ran on this build (`DEVICE_MATRIX.md`, OWN-24), and a silent playtest ran since the last first-hour change (`PLAYTEST.md`, OWN-25).
+- [ ] **Owner (OPS-11):** the soft-launch targets and kill lines in `SOFT_LAUNCH.md` are filled (OWN-25), the device matrix ran on this build (`DEVICE_MATRIX.md`, OWN-21), and a silent playtest ran since the last first-hour change (`PLAYTEST.md`, OWN-24).
 - [ ] Server: production deployed by hand from the release workflow (`docs/SHIPPING.md` 3g), `/readyz` green, alerts on (`ops/prometheus/alerts.yml`), a backup made and the last Sunday drill passed (`.github/workflows/backup.yml`).
 - [ ] The server is built from the same commit as the game (same `SIM_RULES` in `src/gameplay/sim/battle/battle.ts`); the release workflow's contract tests passed on staging.
 - [ ] Products approved in both stores with the store ids (`docs/SHIPPING.md` 3b); App Store Server Notifications and Play RTDN point at production.
@@ -59,4 +59,4 @@ Also:
 | Database migration | yes | yes only if the previous build ran on the new schema (additive migrations) |
 | Protocol version | yes while the server still accepts the old client | no if live clients already need the new protocol |
 
-The owner rehearses both once on staging before launch (OWN-33): note the time each took here.
+The owner rehearses both once on staging before launch (OWN-31): note the time each took here.

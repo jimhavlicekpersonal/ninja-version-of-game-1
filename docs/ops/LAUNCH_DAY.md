@@ -8,7 +8,7 @@ names, times and links on the first staging rehearsal.
 
 | When | What | Check |
 |---|---|---|
-| T − 7 days | Staging rehearsal: server deploy, web deploy, one rollback of each (OWN-33), load test at the 10x target (`docs/SHIPPING.md` 3h) | Times recorded in RELEASE.md; load run recorded in PVP_ROADMAP step 46 |
+| T − 7 days | Staging rehearsal: server deploy, web deploy, one rollback of each (OWN-31), load test at the 10x target (`docs/SHIPPING.md` 3h) | Times recorded in RELEASE.md; load run recorded in PVP_ROADMAP step 46 |
 | T − 2 days | Freeze: only fixes for launch blockers. Store builds approved and held ("manual release" / Play staged rollout at 0 %) | Builds in App Store Connect and Play Console show the release version |
 | T − 1 day | Pre-scale the server (at least 2 instances, worker pool on), database plan sized, backup + PITR on, alerts routed (`ops/alertmanager/`) | `/readyz` on every instance; a test alert reaches the pager |
 | T − 2 h | Deploy the **server** first (`server.yml`, target production), then the **web** game (`deploy.yml` on `main`) | `check-published-game.mjs` green; `/v1/hello` lists the release's rules and protocol |

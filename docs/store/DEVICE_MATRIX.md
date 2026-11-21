@@ -1,7 +1,7 @@
 # Device test matrix and protocol (Beast Mode 2026-11-21 OPS-11)
 
 Release builds only (never `?debug` or the sandbox). Pass and fail thresholds are owner cells set from the first full
-run (OWN-24); until then a row only records numbers. Browser emulation on a desktop is not a device result.
+run (OWN-21); until then a row only records numbers. Browser emulation on a desktop is not a device result.
 
 ## Devices (10-20; the owner lists the exact models)
 

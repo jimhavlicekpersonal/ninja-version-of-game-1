@@ -1,7 +1,7 @@
 # Silent first-time playtest (Beast Mode 2026-11-21 OPS-11)
 
 The model player measures pacing; only people show where the game confuses them. Run this before wave A and after any
-change to the first hour (OWN-25).
+change to the first hour (OWN-24).
 
 ## Protocol
 
