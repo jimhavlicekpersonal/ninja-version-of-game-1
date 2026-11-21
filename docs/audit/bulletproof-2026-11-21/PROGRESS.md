@@ -28,7 +28,7 @@ New player-visible strings are translated into all 49 other ready languages in t
 | ECO-05 | HIGH | Owner/device | DEVICE | open | | | |
 | ECO-06 | LOW | 1 | OWNER | open | | | |
 | ECO-07 | LOW | 2 | OWNER | open | | | |
-| ECO-08 | LOW | 1 | DESIGN | open | | | |
+| ECO-08 | LOW | 1 | DESIGN | done |  | tests/presentation/dom/keep-rush.dom.test.ts | The Keep's Jade 'Finish now' and resource top-up confirms carry keep.armyBehind (existing text) as a note under the spend when armyBehindKeep (no hard gate; no real-money figure). spendMoonstones(…, note?). |
 | ECO-09 | LOW | 1 | CODE | open | | | |
 | ECO-10 | LOW | 1 | CODE | open | | | |
 | GT-01 | HIGH | 2 | DESIGN | open | | | |

@@ -274,7 +274,7 @@ export class EconomyUi {
   }
 
   /** Confirm a Moonstone spend, then run it. */
-  async spendMoonstones(title: string, what: string, moonstones: number, run: () => boolean): Promise<void> {
+  async spendMoonstones(title: string, what: string, moonstones: number, run: () => boolean, note?: string): Promise<void> {
     if (this.c.state.resources.moonstones < moonstones) {
       const go = await this.kit.confirm(i18nText("ui.not_enough_jade_0209424a79"), i18nText("ui.costs_jade_and_you_have_a0f0c4813d", { arg1: what, arg2: moonstones, arg3: this.c.state.resources.moonstones }), i18nText("ui.visit_the_store_f4a400762a"), false, i18nText("ui.not_now_a0e63d7c71"));
       if (go) this.openStore('moonstones');
@@ -282,7 +282,9 @@ export class EconomyUi {
     }
     // No real-money figure here: this confirm sits in the village, outside the Store (CLAUDE.md, money rules).
     const text = i18nText("ui.for_jade_e82ccb5ba3", { arg1: what, arg2: moonstones });
-    const ok = await this.kit.confirm(title, text, i18nText("ui.spend_f1b31dbc4d", { arg1: moonstones }), false, i18nText("ui.cancel_19766ed6cc"));
+    // Beast Mode ECO-08: a warning that belongs to this spend (rushing the Keep with the army behind) sits under it.
+    const body = note ? h('div', {}, h('p', {}, text), h('p', { class: 'note keep-rush' }, note)) : text;
+    const ok = await this.kit.confirm(title, body, i18nText("ui.spend_f1b31dbc4d", { arg1: moonstones }), false, i18nText("ui.cancel_19766ed6cc"));
     if (ok && !run()) this.kit.toast(i18nText("ui.that_did_not_work_try_again_d38eba7d01"), 'error');
   }
 

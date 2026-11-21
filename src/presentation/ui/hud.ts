@@ -1055,6 +1055,11 @@ export class Hud {
     );
   }
 
+  /** Beast Mode ECO-08: the Keep's Jade finish and top-up confirms repeat the sheet's warning when the army is behind. */
+  private keepRushNote(category: string): string | undefined {
+    return category === 'hall' && armyBehindKeep(this.c.state, this.c.data) ? t('keep.armyBehind') : undefined;
+  }
+
   static ledgerReason(code: string): string {
     return i18nLabel(ledgerReason(code));
   }
@@ -1761,7 +1766,7 @@ export class Hud {
         actions.append(
           h(
             'button',
-            { class: 'btn gold', type: 'button', onclick: () => void this.econ.spendMoonstones(i18nText("ui.finish_now_1d29b1c493"), i18nText("ui.finish_now_a84a870c3f", { arg1: def.name }), skipQuote(this.c.state, b.id, this.c.now(), gd)?.moonstones ?? sq.moonstones, () => this.c.dispatch({ type: 'skip', id: b.id }).ok) },
+            { class: 'btn gold', type: 'button', onclick: () => void this.econ.spendMoonstones(i18nText("ui.finish_now_1d29b1c493"), i18nText("ui.finish_now_a84a870c3f", { arg1: def.name }), skipQuote(this.c.state, b.id, this.c.now(), gd)?.moonstones ?? sq.moonstones, () => this.c.dispatch({ type: 'skip', id: b.id }).ok, this.keepRushNote(def.category)) },
             i18nText("ui.finish_now_3e2c46dd09"),
             h('span', { class: 'chip' }, icon(icons.moonstones), String(sq.moonstones)),
           ),
@@ -1790,7 +1795,7 @@ export class Hud {
                 class: 'btn gold',
                 type: 'button',
                 onclick: () =>
-                  void this.econ.spendMoonstones(i18nText("ui.buy_missing_resources_7c77856aa0"), i18nText("ui.buy_the_missing_and_start_the_upgrade_68b76516be", { arg1: missing }), topUpQuote(this.c.state, action, this.c.now(), gd)?.moonstones ?? tq.moonstones, () => this.c.dispatch({ type: 'topUp', then: action }).ok),
+                  void this.econ.spendMoonstones(i18nText("ui.buy_missing_resources_7c77856aa0"), i18nText("ui.buy_the_missing_and_start_the_upgrade_68b76516be", { arg1: missing }), topUpQuote(this.c.state, action, this.c.now(), gd)?.moonstones ?? tq.moonstones, () => this.c.dispatch({ type: 'topUp', then: action }).ok, this.keepRushNote(def.category)),
               },
               i18nText("ui.buy_missing_60a848c106"),
               h('span', { class: 'chip' }, icon(icons.moonstones), String(tq.moonstones)),
