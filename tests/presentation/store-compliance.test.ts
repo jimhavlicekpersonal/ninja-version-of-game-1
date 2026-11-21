@@ -169,3 +169,16 @@ describe('Apple age-rating answers match what the game does (C05, P7-04)', () =>
     expect(row('Parental controls')).toMatch(/\*\*No\*\*/);
   });
 });
+
+describe('short landscape battle: the bottom buttons never cover the cards (Beast Mode UX-02)', () => {
+  const css = read('src/presentation/ui/styles.css');
+  it('Speed and End battle stack in a column no wider than the space left of the cards', () => {
+    const block = css.split('@media (max-height: 480px) {').find((b) => b.includes('#battle-hud .b-troops { bottom:'))!;
+    const troopsLeft = Number(/#battle-hud \.b-troops \{[^}]*left: calc\((\d+)px/.exec(block)![1]);
+    const live = /#battle-hud:not\(\[data-mode='scout'\]\) \.b-bottom \{([^}]*)\}/.exec(block)![1];
+    expect(live).toMatch(/flex-direction: column/);
+    const width = Number(/width: (\d+)px/.exec(live)![1]);
+    // .b-bottom starts 12 px from the left edge (plus the safe area, which .b-troops adds too).
+    expect(12 + width).toBeLessThan(troopsLeft);
+  });
+});

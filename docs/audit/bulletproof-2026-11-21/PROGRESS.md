@@ -108,7 +108,7 @@ New player-visible strings are translated into all 49 other ready languages in t
 | STB-11 | HIGH | Owner/device | DEVICE | open | | | |
 | STB-12 | MEDIUM | Owner/device | OWNER | open | | | |
 | UX-01 | HIGH | 1 | CODE | done |  | tests/presentation/dom/purchase-guard.dom.test.ts | Folded into ECO-01 (same commit). |
-| UX-02 | HIGH | 1 | CODE | open | | | |
+| UX-02 | HIGH | 1 | CODE | done |  | tools/ui/surfaces.mjs --battle (new card hit test) at 568×320, 640×360, 844×390, 320×568, 390×844 in en and de: every card passes after Speed shows (before: smoke_bomb covered by End battle at all three landscape sizes); tests/presentation/store-compliance.test.ts UX-02 | Short landscape (max-height 480px): live-mode .b-bottom stacks Speed over End battle, 138 px wide (< the cards' 158 px). Remaining (pre-existing, same before the fix): at 568×320 the scripted squad tap finds no ring inside the free area and the camera stays at the entry fit; in de the squad row scrolls by 7 px. Chromium emulation, not a device. |
 | UX-03 | HIGH | 1 | CODE | done |  | tests/presentation/dom/web-back.dom.test.ts; Playwright 360×640 Chromium (store open → Back closes it, game stays; Back again → 'Leave Kagemura?') | src/presentation/ui/webBack.ts: one guard history entry, re-armed after each Back; battle → battleBack, else closeTop, else the Leave confirm (save, then history.go(-2)). Wired in main.ts installBackButton for !isNative(). Limits: battle Back and iOS Safari swipe-back not run in a browser here (unit test only; iOS NEEDS-DEVICE); installed standalone PWA not tested. |
 | UX-04 | MEDIUM | 6 | CODE | open | | | |
 | UX-05 | MEDIUM | 6 | CODE | open | | | |

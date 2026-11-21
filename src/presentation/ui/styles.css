@@ -816,6 +816,10 @@ a.btn.primary, a.btn.danger, a.btn.sky { color: #fff; }
   #battle-hud .troop-card.ability .icon { height: 36px; }
   #battle-hud .b-troops { bottom: calc(2px + var(--safe-b)); left: calc(158px + var(--safe-l)); transform: none; max-width: calc(100% - 316px - var(--safe-l) - var(--safe-r)); }
   #battle-hud .b-bottom { bottom: calc(10px + var(--safe-b)); right: auto; }
+  /* Beast Mode UX-02: Speed stacks above End battle, so the pair stays narrower than the 158 px the cards start at
+     (side by side they took ~237 px and covered the Smoke Bomb card once Speed appeared). */
+  #battle-hud:not([data-mode='scout']) .b-bottom { flex-direction: column; align-items: stretch; gap: 6px; width: 138px; }
+  #battle-hud:not([data-mode='scout']) .b-bottom .btn { width: 100%; min-width: 0; min-height: 44px; padding: 4px 8px; white-space: normal; line-height: 1.1; }
   #battle-hud[data-mode='scout'] .b-bottom { left: auto; right: calc(8px + var(--safe-r)); width: min(380px, 47%); }
   #battle-hud[data-mode='scout'] .b-troops { left: calc(8px + var(--safe-l)); max-width: calc(53% - 28px - var(--safe-l)); }
   /* Sideways the scout drawer sits between the top cards, so the map keeps the middle of a short screen. */

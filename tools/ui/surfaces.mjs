@@ -208,6 +208,24 @@ for (const lang of LANGS) {
         });
         if (!hitOk) problems.push({ problem: 'speed button covered or off screen' });
       }
+      // Beast Mode UX-02: with the Speed button shown, every troop and ability card can still be tapped, and no
+      // bottom button covers a card (short landscape put "End battle" over the Smoke Bomb card).
+      problems.push(...(await page.evaluate(() => {
+        const out = [];
+        const buttons = [...document.querySelectorAll('#battle-hud .b-bottom button')].map((b) => b.getBoundingClientRect());
+        for (const c of document.querySelectorAll('#battle-hud .troop-card')) {
+          const r = c.getBoundingClientRect();
+          if (!r.width) continue;
+          // A card scrolled out of the row is reached by scrolling the row, not covered.
+          const row = c.closest('.b-troops')?.getBoundingClientRect();
+          const cx = r.left + r.width / 2;
+          if (row && (cx < row.left || cx > row.right)) continue;
+          const hit = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+          if (!hit || !(hit === c || c.contains(hit))) out.push({ problem: `card ${c.getAttribute('data-type')} covered by ${hit?.className ?? 'nothing'}` });
+          for (const q of buttons) if (r.left < q.right && q.left < r.right && r.top < q.bottom && q.top < r.bottom) out.push({ problem: `card ${c.getAttribute('data-type')} overlaps a bottom button` });
+        }
+        return out;
+      })));
       report.push({ key: `${lang} ${w}x${hgt} battle (zoom ${zooms.zooms[0]} -> ${Math.max(...zooms.zooms.slice(1))}, speed ${zooms.speed})`, problems });
       if (SHOTS) await page.screenshot({ path: join(SHOTS, `${lang}-${w}x${hgt}-battle.png`) });
       await ctx.close();
