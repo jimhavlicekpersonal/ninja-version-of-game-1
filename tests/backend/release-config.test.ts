@@ -344,3 +344,24 @@ describe('P7-09 (PUB-12): link previews and install screenshots', () => {
     expect(read('.github/workflows/deploy.yml')).toMatch(/VITE_PUBLIC_URL: \$\{\{ vars\.VITE_PUBLIC_URL \}\}/);
   });
 });
+
+describe('Beast Mode OPS-04: staging and production native builds', () => {
+  it('aab and testflight jobs declare an environment from a target input', () => {
+    for (const [file, job] of [['.github/workflows/android.yml', 'aab'], ['.github/workflows/ios-testflight.yml', 'testflight']] as const) {
+      const wf = read(file);
+      expect(wf, file).toMatch(/workflow_dispatch:\n\s+inputs:\n\s+target:[\s\S]*?options: \[staging, production\]/);
+      const body = new RegExp(`\\n  ${job}:\\n([\\s\\S]*?)\\n    steps:`).exec(wf)?.[1] ?? '';
+      expect(body, file).toContain("environment: ${{ github.event.inputs.target || 'production' }}");
+      expect(wf, file).toContain('VITE_DEPLOY_ENV: ${{ env.DEPLOY_TARGET }}');
+    }
+    expect(read('.github/workflows/android.yml')).toContain('kagemura-android-release-aab-${{ env.DEPLOY_TARGET }}-${{ env.ANDROID_VERSION_CODE }}');
+    // The public web build keeps production.
+    expect(read('.github/workflows/deploy.yml')).toContain('VITE_DEPLOY_ENV: production');
+  });
+
+  it('main.ts crash reporter environment comes from VITE_DEPLOY_ENV, with the platform as a tag', () => {
+    const main = read('src/main.ts');
+    expect(main).toMatch(/environment: deployEnvironment\(import\.meta\.env\.VITE_DEPLOY_ENV/);
+    expect(main).toMatch(/tags: \{ device: platformName\(\), platform: /);
+  });
+});

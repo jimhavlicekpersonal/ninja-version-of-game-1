@@ -7,7 +7,7 @@ import { RESOURCE_KINDS, type Cost } from './gameplay/sim/types';
 import Phaser from 'phaser';
 import './presentation/ui/styles.css';
 import { Analytics, IdbEventStore, MemoryEventStore, type EventStore } from './backend/analytics/events';
-import { CrashReporter, crashReportsAllowed } from './backend/analytics/crashReports';
+import { CrashReporter, crashReportsAllowed, deployEnvironment } from './backend/analytics/crashReports';
 import { httpStatsTransport, StatsSharing } from './backend/analytics/share';
 import { armOf } from './backend/net/balanceBundle';
 import { platformSignIn } from './backend/platform/auth';
@@ -331,9 +331,9 @@ async function boot(): Promise<void> {
     // Beast Mode STB-02: a release per build and the platform as its dist (source maps are uploaded per both).
     release: `kagemura@${__APP_VERSION__}+${__BUILD_ID__}`,
     dist: isNative() ? platform() : 'web',
-    environment: isNative() ? platform() : 'web',
+    environment: deployEnvironment(import.meta.env.VITE_DEPLOY_ENV as string | undefined, import.meta.env.DEV),
     enabled: () => crashReportsAllowed(prefs.get('crashReports'), crashBand()),
-    tags: { device: platformName() },
+    tags: { device: platformName(), platform: isNative() ? platform() : 'web' },
   });
   crashReporter.install();
   // Beast Mode OPS-03 / STB-04: Android rebuilt the app after the WebView renderer died (recorded natively): report

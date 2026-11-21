@@ -4,7 +4,7 @@ Use the **staging** server for testers (`docs/SHIPPING.md` 3f): its builds say s
 
 ## Apple: TestFlight
 
-1. Build with the staging `VITE_SERVER_URL` (GitHub Environment `staging`) and upload (`.github/workflows/ios-testflight.yml`).
+1. Run `.github/workflows/ios-testflight.yml` with `target` = `staging`: the job reads `VITE_SERVER_URL` and the rest from the GitHub Environment `staging` and uploads the build.
 2. Internal testers (up to 100, your team): available at once.
 3. External testers (up to 10,000): create a group, add the build, answer the Beta App Review questions (same notes as `REVIEW_NOTES.md`). The first build of a version waits for a short review.
 4. Testers buy with sandbox accounts (`docs/SHIPPING.md` 3d).
@@ -13,7 +13,7 @@ Use the **staging** server for testers (`docs/SHIPPING.md` 3f): its builds say s
 
 New personal developer accounts must run a **closed test with at least 12 testers opted in for 14 days in a row** before they can apply for production. Plan for it early:
 1. Play Console → Testing → Closed testing → create a track; add testers by Google Group or email list (keep at least 15, some drop out).
-2. Upload the signed `.aab` from the Android workflow's `aab` job (built with `VITE_PLAY_BILLING=1`; set `VITE_SERVER_URL` to the staging server for test builds; owner setup in `docs/SHIPPING.md` 1b); add the testers as license testers too (Settings → License testing).
+2. Upload the signed `.aab` from the Android workflow's `aab` job (built with `VITE_PLAY_BILLING=1`; run the workflow by hand with `target` = `staging` for test builds (the artifact is named `…-staging-<versionCode>`); owner setup in `docs/SHIPPING.md` 1b); add the testers as license testers too (Settings → License testing).
 3. Share the opt-in link; check the "testers opted in" count daily. The 14 days restart if it falls below 12.
 4. After 14 days, apply for production access (Play asks how the test went: keep notes from step 5).
 
@@ -36,4 +36,4 @@ Unit tests and CI cannot prove these (no device, no store in `npm test`); record
 - Buy the cheapest Jade pack and the Season Scroll (sandbox / test card); refund one (Apple sandbox purchase history, Play Console order) and check it is taken back within an hour.
 - Turn notifications on; get raided by another tester; check the push arrives (not in quiet hours).
 - Delete the account on one device; check that device stops being online and the name disappears from the leaderboard.
-- Anything that crashed: the build sends crash reports when the switch is on (Sentry, staging environment).
+- Anything that crashed: the build sends crash reports when the switch is on (Sentry environment `staging` for builds made with `target` = `staging`, from `VITE_DEPLOY_ENV`; the platform is the `platform` tag).

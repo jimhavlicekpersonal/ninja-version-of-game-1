@@ -1,6 +1,6 @@
 /** Beast Mode 2026-11-21 STB-05 / OPS-08: crash reports carry context; opt-in sessions give release health a denominator. */
 import { describe, expect, it } from 'vitest';
-import { CrashReporter } from '../../src/backend/analytics/crashReports';
+import { CrashReporter, deployEnvironment } from '../../src/backend/analytics/crashReports';
 
 const DSN = 'https://key@o1.ingest.sentry.io/42';
 
@@ -38,5 +38,14 @@ describe('STB-05 / OPS-08', () => {
     r.report(new Error('x'));
     r.endSession('exited');
     expect(posts).toHaveLength(0);
+  });
+});
+
+describe('Beast Mode OPS-04: deploy environment', () => {
+  it('is staging or production from VITE_DEPLOY_ENV, else production in a release build and development in dev', () => {
+    expect(deployEnvironment('staging', false)).toBe('staging');
+    expect(deployEnvironment('production', true)).toBe('production');
+    expect(deployEnvironment(undefined, false)).toBe('production');
+    expect(deployEnvironment('ios', true)).toBe('development');
   });
 });

@@ -217,7 +217,7 @@ Run two separate servers, each with its own database (and Redis, Sentry environm
 - `DEPLOY_ENV=staging`: TestFlight and internal-track builds, the contract tests, sandbox purchases and `APNS_SANDBOX=1`. The game says "This is a staging server" in Settings.
 - `DEPLOY_ENV=production`: the store builds. It refuses to start without `DATABASE_URL`, `ADMIN_TOKENS` (or `ADMIN_TOKEN`), an explicit `CORS_ORIGIN` list and a `TRUST_PROXY` other than `true`, or with `APNS_SANDBOX=1` or an unverified database TLS connection not allowed by `PG_SSL_ALLOW_UNVERIFIED=1`, and warns about missing Sentry and metrics (`server/config.ts`).
 - Each database remembers the first deployment that used it (`server_meta`), and a server of the other kind refuses to start on it, so a copied `DATABASE_URL` can never let staging write to production's data.
-- Build games against each with GitHub **Environments** (Settings → Environments → `staging`, `production`), each with its own `VITE_SERVER_URL` variable.
+- Build games against each with GitHub **Environments** (Settings → Environments → `staging`, `production`), each with its own `VITE_SERVER_URL`, `VITE_SENTRY_DSN` and other `VITE_*` variables (Beast Mode OPS-04). Run `android.yml` or `ios-testflight.yml` by hand with input `target` (`staging` by default): the `aab` and `testflight` jobs run in that environment, so `vars.*` come from it first, and the build sets `VITE_DEPLOY_ENV` to the target, which becomes the crash reports' Sentry environment (the platform is a tag). Pushes to `main` build the AAB for `production`; the web game (`deploy.yml`) always uses production. Give `production` required reviewers if you want a person to approve each production build.
 
 ### 3g. Server releases (roadmap step 43)
 

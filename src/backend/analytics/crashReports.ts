@@ -13,7 +13,7 @@ interface CrashReporterOptions {
   release: string;
   /** Beast Mode STB-02: the build's platform as Sentry's `dist`. */
   dist?: string;
-  /** 'web' | 'ios' | 'android'. */
+  /** Beast Mode OPS-04: staging, production or development (deployEnvironment); the platform is a tag. */
   environment: string;
   /** The player's choice, read at the moment of each report. */
   enabled(): boolean;
@@ -31,6 +31,16 @@ interface CrashReporterOptions {
  * Whether crash reports may be sent now (compliance switches 2026-11-14, C04; main.ts `enabled`): the player
  * switched them on, and the village's band is not under 13 (never for an under-13 band, in any mode).
  */
+/**
+ * Beast Mode OPS-04: the crash reports' environment is where the build points (VITE_DEPLOY_ENV: staging or
+ * production), not the platform (that is a tag), so testers' staging crashes do not mix with players'.
+ * A build without it is production when built for release and development otherwise.
+ */
+export function deployEnvironment(raw: string | undefined, dev: boolean): 'staging' | 'production' | 'development' {
+  if (raw === 'staging' || raw === 'production') return raw;
+  return dev ? 'development' : 'production';
+}
+
 export function crashReportsAllowed(prefOn: boolean, band: string | null | undefined): boolean {
   return prefOn && band !== 'under13';
 }

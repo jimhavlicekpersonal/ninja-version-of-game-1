@@ -14,6 +14,8 @@
 - [ ] Both apps were built with `VITE_PUBLIC_URL` and `VITE_GOOGLE_CLIENT_ID` set (friend links open the web game; Android Sign in with Google), and the server's `GOOGLE_CLIENT_IDS` lists that client id.
 - [ ] The device checks in `TESTING.md` ("Native checks before production") passed on real phones with the store-installed build.
 
+Only a build made with `target` = `production` goes to Play's production track or App Store review: the AAB artifact's name says its target (`kagemura-android-release-aab-<target>-<versionCode>`), and a staging build talks to the staging server, which accepts test purchases (Beast Mode OPS-04).
+
 ## Rollout
 
 - **App Store:** choose "Phased release for automatic updates" (1%, 2%, 5%, 10%, 20%, 50%, 100% over 7 days). New downloads get the version at once; the phase only paces updates.
