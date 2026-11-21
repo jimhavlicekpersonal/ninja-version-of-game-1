@@ -44,7 +44,7 @@ a contract, a device or a decision.
 | Build variables: `VITE_SERVER_URL`, `VITE_PUBLIC_URL`, `VITE_APP_STORE_URL`, `VITE_PLAY_STORE_URL`, `VITE_SUPPORT_EMAIL`, legal page URLs | online play, links, "Update Kagemura" | **(preflight: server URL)** |
 | Territories (exclude where licensing is missing: mainland China, Vietnam, Indonesia until PSE, sanctioned markets) | listing | Store consoles configured |
 | First run of the iPhone release workflow on the `macos-26` image (P7-06; it has never run and stops below iOS SDK 26) | TestFlight | A TestFlight build exists |
-| Xcode-only steps this pass could not compile (P7-15): add an app-level `PrivacyInfo.xcprivacy` to the App target, check the ambient audio session on a device, build a Game Center / Play Games achievements plugin if wanted | App Review, device sound | Archive validates in Xcode; device check recorded |
+| Xcode-only steps this pass could not compile (P7-15): archive in Xcode and check "Generate Privacy Report" lists the app-level `ios/App/App/PrivacyInfo.xcprivacy` (added to the App target by Beast Mode OPS-10; OWN-13), check the ambient audio session on a device, build a Game Center / Play Games achievements plugin if wanted | App Review, device sound | Archive validates in Xcode; device check recorded |
 | Store copy: keywords that name things the game does not contain ("samurai", "castle") are the owner's call (`docs/store/LISTING.md`) | Apple 2.3.7 | Keywords decided |
 
 ## 4. Hosting and operations (blocks online play)

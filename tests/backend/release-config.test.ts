@@ -365,3 +365,46 @@ describe('Beast Mode OPS-04: staging and production native builds', () => {
     expect(main).toMatch(/tags: \{ device: platformName\(\), platform: /);
   });
 });
+
+describe('Beast Mode OPS-10: the iPhone app privacy manifest', () => {
+  const manifest = read('ios/App/App/PrivacyInfo.xcprivacy');
+  /** Collected types from the manifest: type → linked. */
+  const collected = new Map([...manifest.matchAll(/NSPrivacyCollectedDataType(\w+)<\/string>\s*<key>NSPrivacyCollectedDataTypeLinked<\/key>\s*<(true|false)\/>/g)].map((m) => [m[1], m[2] === 'true']));
+  /** The bold Apple types under a heading of PRIVACY.md's "App Store privacy label", spaces removed. */
+  const labelTypes = (heading: string) => {
+    const doc = read('docs/store/PRIVACY.md');
+    const at = doc.indexOf(`- **${heading}`);
+    if (at < 0) throw new Error(`PRIVACY.md has no "${heading}"`);
+    const block = doc.slice(at).split(/\n- \*\*/)[0];
+    return new Set([...block.matchAll(/(?:→|and) \*\*([^*]+)\*\*/g)].map((m) => m[1].replace(/\s+/g, '')));
+  };
+
+  it('exists, is a well-formed plist and says the app does not track', () => {
+    expect(manifest.startsWith('<?xml')).toBe(true);
+    expect(manifest).toMatch(/<plist version="1\.0">[\s\S]*<\/plist>\s*$/);
+    expect((manifest.match(/<dict>/g) ?? []).length).toBe((manifest.match(/<\/dict>/g) ?? []).length);
+    expect(manifest).toMatch(/<key>NSPrivacyTracking<\/key>\s*<false\/>/);
+    expect(manifest).toMatch(/<key>NSPrivacyTrackingDomains<\/key>\s*<array\/>/);
+    expect(manifest).not.toMatch(/NSPrivacyCollectedDataTypeTracking<\/key>\s*<true\/>/);
+  });
+
+  it('is in the App target resources', () => {
+    const pbx = read('ios/App/App.xcodeproj/project.pbxproj');
+    const ref = /(\w{24}) \/\* PrivacyInfo\.xcprivacy \*\/ = \{isa = PBXFileReference;/.exec(pbx)?.[1];
+    expect(ref).toBeDefined();
+    const build = new RegExp(`(\\w{24}) /\\* PrivacyInfo\\.xcprivacy in Resources \\*/ = \\{isa = PBXBuildFile; fileRef = ${ref}`).exec(pbx)?.[1];
+    expect(build).toBeDefined();
+    const resources = /isa = PBXResourcesBuildPhase;[\s\S]*?files = \(([\s\S]*?)\);/.exec(pbx)?.[1] ?? '';
+    expect(resources).toContain(`${build} /* PrivacyInfo.xcprivacy in Resources */`);
+    expect(resources).toContain('Assets.xcassets in Resources');
+  });
+
+  it('declares the collected types PRIVACY.md lists, linked and not linked', () => {
+    const linked = labelTypes('Data linked to you');
+    const notLinked = labelTypes('Data not linked to you');
+    expect(linked.size).toBeGreaterThanOrEqual(5);
+    for (const t of linked) expect(collected.get(t), t).toBe(true);
+    for (const t of notLinked) if (!linked.has(t)) expect(collected.get(t), t).toBe(false);
+    for (const [t, isLinked] of collected) expect(isLinked ? linked.has(t) : notLinked.has(t), t).toBe(true);
+  });
+});
