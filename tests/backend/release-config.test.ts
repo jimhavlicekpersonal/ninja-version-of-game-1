@@ -49,6 +49,9 @@ describe('Android build configuration', () => {
     expect(main).toContain('registerPlugin(TkAuthPlugin.class)');
     expect(read('android/app/src/main/java/com/toadstoolkingdoms/app/TkAuthPlugin.java')).toContain('@CapacitorPlugin(name = "TkAuth")');
     expect(main).toContain('registerPlugin(TkAgePlugin.class)');
+    // Beast Mode OPS-03 / STB-04: a renderer death rebuilds the activity instead of killing the app, and is recorded.
+    expect(main).toContain('registerPlugin(TkNativePlugin.class)');
+    expect(main).toMatch(/addWebViewListener\(new WebViewListener\(\) \{[\s\S]*public boolean onRenderProcessGone\(WebView view, RenderProcessGoneDetail detail\) \{[\s\S]*recreate\(\);\s*return true;/);
   });
 });
 

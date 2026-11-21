@@ -32,7 +32,7 @@ import { EventScheduleLoader } from './backend/net/eventScheduleLoader';
 import { fetchSharedReplay, GrowthClient } from './backend/net/growthClient';
 import { parseShareCode, shareLink } from './backend/net/growth';
 import { AchievementReporter, nativeAchievementPort } from './backend/platform/achievements';
-import { nativeReviewRequest } from './backend/platform/native';
+import { lastRendererExit, nativeReviewRequest, rendererExitReport } from './backend/platform/native';
 import { sharedReplayCard } from './presentation/ui/growthUi';
 import { provideReviewHook } from './presentation/ui/reviewPrompt';
 import { replayable } from './gameplay/sim/battle/battle';
@@ -332,6 +332,14 @@ async function boot(): Promise<void> {
     tags: { device: platformName() },
   });
   crashReporter.install();
+  // Beast Mode OPS-03 / STB-04: Android rebuilt the app after the WebView renderer died (recorded natively): report
+  // it once, if the player allows crash reports.
+  void lastRendererExit().then((exit) => {
+    if (!exit) return;
+    console.warn('The WebView renderer stopped and the app was rebuilt', exit);
+    const r = rendererExitReport(exit);
+    crashReporter?.report(r.error, r.tags);
+  });
   const debugTime = sandbox ? createDebugTime() : { offsetMs: () => 0, skip: () => undefined };
   const clock = new OffsetClock(new SystemClock(), debugTime.offsetMs);
   // Report section 5 step 9: the player's language (stored choice, else the device's), before any game text shows.

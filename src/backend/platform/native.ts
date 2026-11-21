@@ -52,3 +52,28 @@ export function nativeReviewRequest(): (() => Promise<void>) | null {
   const plugin = registerPlugin<{ requestReview(): Promise<void> }>('InAppReview');
   return () => plugin.requestReview();
 }
+
+/** Beast Mode OPS-03 / STB-04: the last WebView renderer exit the native side recorded (cleared once read). */
+export interface RendererExit {
+  at: number;
+  didCrash: boolean;
+  priority: number;
+  count: number;
+}
+
+const TkNative = registerPlugin<{ lastRendererExit(): Promise<Partial<RendererExit>> }>('TkNative');
+
+export async function lastRendererExit(): Promise<RendererExit | null> {
+  if (!Capacitor.isNativePlatform() || !Capacitor.isPluginAvailable('TkNative')) return null;
+  try {
+    const r = await TkNative.lastRendererExit();
+    return typeof r.at === 'number' && r.at > 0 ? { at: r.at, didCrash: Boolean(r.didCrash), priority: Number(r.priority ?? -1), count: Number(r.count ?? 1) } : null;
+  } catch {
+    return null;
+  }
+}
+
+/** OPS-03: what a recorded renderer exit becomes for the crash reporter (only when crash reports are allowed). */
+export function rendererExitReport(exit: RendererExit): { error: Error; tags: Record<string, string> } {
+  return { error: new Error('WebView renderer process gone'), tags: { kind: 'renderer', didCrash: String(exit.didCrash), priority: String(exit.priority), count: String(exit.count) } };
+}
