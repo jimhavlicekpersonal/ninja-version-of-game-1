@@ -99,7 +99,8 @@ export class EconomyUi {
     if (!pay.prices || !pay.available() || this.storePrices === 'loading' || this.pricesComplete || this.pricesAskedBy === redraw) return;
     this.pricesAskedBy = redraw;
     const d = localizedData(this.c.data);
-    const ids = [...new Set([...d.store.packs.map((p) => p.id), d.pass.productId, ...d.offers.rules.map((o) => o.productId), ...(d.store.stipend ? [d.store.stipend.id] : [])].map((id) => storeProductId(d, id)))];
+    // Beast Mode ECO-10: a retired offer has no store product, so asking for it kept prices from ever being complete.
+    const ids = [...new Set([...d.store.packs.map((p) => p.id), d.pass.productId, ...d.offers.rules.filter((o) => !o.retired).map((o) => o.productId), ...(d.store.stipend ? [d.store.stipend.id] : [])].map((id) => storeProductId(d, id)))];
     // A partial answer stays on screen while the store is asked again.
     if (this.storePrices === null || this.storePrices === 'failed') this.storePrices = 'loading';
     pay.prices(ids).then(

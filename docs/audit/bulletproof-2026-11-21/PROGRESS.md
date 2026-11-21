@@ -30,7 +30,7 @@ New player-visible strings are translated into all 49 other ready languages in t
 | ECO-07 | LOW | 2 | OWNER | open | | | |
 | ECO-08 | LOW | 1 | DESIGN | done |  | tests/presentation/dom/keep-rush.dom.test.ts | The Keep's Jade 'Finish now' and resource top-up confirms carry keep.armyBehind (existing text) as a note under the spend when armyBehindKeep (no hard gate; no real-money figure). spendMoonstones(…, note?). |
 | ECO-09 | LOW | 1 | CODE | open | | | |
-| ECO-10 | LOW | 1 | CODE | open | | | |
+| ECO-10 | LOW | 1 | CODE | done |  | tests/presentation/dom/store-prices.dom.test.ts | loadPrices skips retired offers (offer_rebuild); one ask per session once complete. |
 | GT-01 | HIGH | 2 | DESIGN | open | | | |
 | GT-02 | HIGH | 7 | TOOLING | open | | | |
 | GT-03 | HIGH | 7 | DESIGN | open | | | |
