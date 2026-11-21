@@ -36,7 +36,7 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
     if (!res.ok) throw new Error(`${u}: HTTP ${res.status}`);
     return res.json();
   };
-  let problem = null;
+  let problem;
   if (kind === 'web') {
     const live = url ? await get(new URL('version.json', url.endsWith('/') ? url : `${url}/`).href).catch(() => null) : null;
     problem = webRollbackProblem(live, JSON.parse(readFileSync(target, 'utf8')));
