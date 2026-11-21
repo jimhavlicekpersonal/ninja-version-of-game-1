@@ -104,3 +104,10 @@ groups:
         labels: { severity: warn }
         annotations:
           summary: 'No retention run has finished for a day: replays, command logs and idempotency rows are piling up (check the retention job log lines).'
+
+      # Beast Mode SEC-02: a metric reached MAX_SERIES_PER_METRIC label sets (a client sending made-up label values, or a new label that needs a normaliser).
+      - alert: MetricsSeriesOverflow
+        expr: sum(increase(tk_metrics_series_dropped_total[1h])) > 0
+        labels: { severity: warn }
+        annotations:
+          summary: 'A metric is counting into its overflow="1" series: some label takes values it should not (see the metric label of tk_metrics_series_dropped_total).'

@@ -62,7 +62,22 @@ export const METRIC_HELP: Record<string, string> = {
   tk_redis_errors_total: 'Redis calls that failed and degraded (rate limits let the request through, leaderboard read the database, locks fell back to tickets), by use.',
   tk_redis_up: 'Whether this instance can reach Redis right now (1) or is failing fast after an outage (0).',
   tk_http_compressed_total: 'Responses sent compressed, by encoding (gzip, br).',
+  tk_metrics_series_dropped_total: 'Observations counted into a metric\'s overflow="1" series because it already had MAX_SERIES_PER_METRIC label sets (Beast Mode SEC-02; alert MetricsSeriesOverflow).',
 };
+
+/** Beast Mode SEC-02: label sets one metric may hold; beyond it, observations go to `{overflow="1"}`. */
+export const MAX_SERIES_PER_METRIC = 500;
+
+/** SEC-02: a client build header as a label: `1.4.0`, `1.4.0+ios`, … (at most 4 numbers), else `other`. */
+export function buildLabel(v: unknown): string {
+  return typeof v === 'string' && /^\d{1,4}(\.\d{1,4}){1,3}(\+(web|ios|android))?$/.test(v) ? v : 'other';
+}
+
+/** SEC-02: battle rules as a label: a version this server knows, else `other`. */
+export function rulesLabel(v: unknown, known: readonly number[]): string {
+  const n = typeof v === 'number' ? v : typeof v === 'string' && /^\d{1,4}$/.test(v) ? Number(v) : NaN;
+  return Number.isInteger(n) && known.includes(n) ? String(n) : v === undefined || v === null || v === '?' ? '?' : 'other';
+}
 
 const DEFAULT_BUCKETS = [1, 5, 10, 25, 50, 100, 250, 500, 1000, 2500, 5000];
 
@@ -82,14 +97,24 @@ export class PromMetrics implements Metrics {
   count(name: string, labels?: Labels, by = 1): void {
     const m = this.counters.get(name) ?? new Map<string, number>();
     this.counters.set(name, m);
-    const k = key(labels);
+    const k = this.bounded(name, m, key(labels));
     m.set(k, (m.get(k) ?? 0) + by);
+  }
+
+  /** SEC-02: a new label set past the cap is counted as `{overflow="1"}` (and the drop itself, by metric name). */
+  private bounded(name: string, series: Map<string, unknown>, k: string): string {
+    if (series.has(k) || series.size < MAX_SERIES_PER_METRIC || name === 'tk_metrics_series_dropped_total') return k;
+    const dropped = this.counters.get('tk_metrics_series_dropped_total') ?? new Map<string, number>();
+    this.counters.set('tk_metrics_series_dropped_total', dropped);
+    const dk = key({ metric: name });
+    dropped.set(dk, (dropped.get(dk) ?? 0) + 1);
+    return key({ overflow: '1' });
   }
 
   observe(name: string, value: number, labels?: Labels): void {
     const m = this.histograms.get(name) ?? new Map();
     this.histograms.set(name, m);
-    const k = key(labels);
+    const k = this.bounded(name, m, key(labels));
     const h = m.get(k) ?? { buckets: this.buckets.map(() => 0), sum: 0, count: 0 };
     this.buckets.forEach((b, i) => {
       if (value <= b) h.buckets[i]++;

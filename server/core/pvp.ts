@@ -33,6 +33,7 @@ import { applyServerResult, hasServerVillage, limiterOf, refreshBaseFromVillage,
 import { capBaseLoot, layoutReset } from './baseRules';
 import { fail, detailError, busyCode, english, msg } from './errors';
 import { importMinAccountDays } from './accountAge';
+import { rulesLabel } from '../observability';
 
 export { capBaseLoot, layoutReset } from './baseRules';
 
@@ -331,7 +332,7 @@ export async function match(ctx: ServerContext, me: Player, client?: ClientInfo)
   const recent = await repo.recentTargets(me.id, t - HOUR);
   const mates = me.groveId ? (await repo.members(me.groveId)).map((m) => m.playerId) : [];
   if (client?.protocol !== undefined && client.protocol < SEED_AT_START_PROTOCOL) {
-    ctx.metrics.count('tk_refused_total', { reason: 'protocol_too_old', rules: String(client.rules ?? '?') });
+    ctx.metrics.count('tk_refused_total', { reason: 'protocol_too_old', rules: rulesLabel(client.rules, ctx.rules.supportedRules()) });
     throw fail(426, 'version_mismatch', 'version.battle_update');
   }
   // Ledger audit A1/E15: for a village the server keeps, a new opponent needs a new scout in that village
@@ -641,7 +642,7 @@ export async function forfeitExpired(ctx: ServerContext, limit = 500): Promise<n
 export function engineForClient(ctx: ServerContext, client: ClientInfo | undefined): RulesEngine {
   const e = ctx.rules.forClient(client);
   if (!e) {
-    ctx.metrics.count('tk_refused_total', { reason: 'rules_unsupported', rules: String(client?.rules ?? '?') });
+    ctx.metrics.count('tk_refused_total', { reason: 'rules_unsupported', rules: rulesLabel(client?.rules, ctx.rules.supportedRules()) });
     throw fail(426, 'version_mismatch', 'version.battle_update');
   }
   return e;
@@ -655,12 +656,12 @@ export function engineForClient(ctx: ServerContext, client: ClientInfo | undefin
  */
 export function engineForTicket(ctx: ServerContext, ticket: Ticket, sub: BattleReport): RulesEngine {
   if (ticket.rules !== undefined && sub.rules !== undefined && sub.rules !== null && Number(sub.rules) !== ticket.rules) {
-    ctx.metrics.count('tk_refused_total', { reason: 'rules_changed', rules: String(sub.rules) });
+    ctx.metrics.count('tk_refused_total', { reason: 'rules_changed', rules: rulesLabel(sub.rules, ctx.rules.supportedRules()) });
     throw fail(400, 'bad_request', 'pvp.rules_differ');
   }
   const e = ctx.rules.forTicket(ticket.rules, ticket.dataVersion);
   if (!e) {
-    ctx.metrics.count('tk_refused_total', { reason: 'rules_retired', rules: String(ticket.rules ?? '?') });
+    ctx.metrics.count('tk_refused_total', { reason: 'rules_retired', rules: rulesLabel(ticket.rules, ctx.rules.supportedRules()) });
     throw fail(426, 'version_mismatch', 'version.battle_update');
   }
   return e;

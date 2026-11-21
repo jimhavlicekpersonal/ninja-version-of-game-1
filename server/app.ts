@@ -15,7 +15,7 @@ import type { GameData } from '../src/gameplay/sim/types';
 import { ApiError, createCore, type ServerCore } from './core';
 import { bodyFor, errorBody, staffError, type MessageCode } from './core/errors';
 import { nodeContext, type SharedStores } from './nodeContext';
-import { PromMetrics, type ServerSentry } from './observability';
+import { buildLabel, PromMetrics, rulesLabel, type ServerSentry } from './observability';
 import { BODY_LIMITS, DEFAULT_RATE_LIMITS, ipAllowList, ipKey, MemoryRateLimiter, type RateDecision, type RateLimiter, type RateLimits } from './rateLimit';
 import type { Player, Repo } from './repo';
 import { battleRoutes } from './routes/battles';
@@ -259,12 +259,10 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
     const path = routedPath(req);
     if (v !== undefined && path.startsWith('/v1/') && path !== Routes.hello && (Number(v) < MIN_PROTOCOL || tooOldBuild)) {
       metrics.count('tk_errors_total', { code: 'version_mismatch' });
-      metrics.count('tk_refused_total', { reason: tooOldBuild ? 'build_too_old' : 'protocol_too_old', rules: String(req.headers[ClientHeaders.simRules] ?? '?').slice(0, 8) });
+      metrics.count('tk_refused_total', { reason: tooOldBuild ? 'build_too_old' : 'protocol_too_old', rules: rulesLabel(req.headers[ClientHeaders.simRules], core.ctx.rules.supportedRules()) });
       const body = bodyFor('version_mismatch', 'version.too_old');
       return reply.code(426).send(body);
     }
-    const build = req.headers[ClientHeaders.clientBuild];
-    if (typeof build === 'string') metrics.count('tk_client_requests_total', { build: build.slice(0, 40), rules: String(req.headers[ClientHeaders.simRules] ?? '?').slice(0, 8) });
   });
 
   // Idempotent writes (protocol 7): the same Idempotency-Key from the same caller gets the first answer back.
@@ -303,6 +301,9 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
     const route = req.routeOptions?.url ?? 'unmatched';
     metrics.count('tk_http_requests_total', { route, method: req.method, status: String(reply.statusCode) });
     metrics.observe('tk_http_request_duration_ms', reply.elapsedTime, { route });
+    // Beast Mode SEC-02: game versions only for matched routes that passed the rate limits, and only as known shapes.
+    const build = req.headers[ClientHeaders.clientBuild];
+    if (typeof build === 'string' && req.routeOptions?.url && reply.statusCode !== 429) metrics.count('tk_client_requests_total', { build: buildLabel(build), rules: rulesLabel(req.headers[ClientHeaders.simRules], core.ctx.rules.supportedRules()) });
   });
 
   // Rate limits: every caller by IP address, every player by token, and the
