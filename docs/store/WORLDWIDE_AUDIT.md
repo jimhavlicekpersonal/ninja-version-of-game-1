@@ -1410,3 +1410,21 @@ No save-format, `SIM_RULES`, protocol-version or migration change (the save repa
 | SAV-15, SAV-16 | reinstall/restore paths; network handoff | **DEVICE / OWNER** | — | — | — |
 
 Not run: devices, a link conditioner, Postgres and Redis. Passing tests here do not establish release readiness.
+
+### 2026-11-21 Beast Mode bulletproofing pass, Phase 4: crashes and observability (integration session; ledger `docs/audit/bulletproof-2026-11-21/PROGRESS.md`), commits `2fb22e0` to `e191f69` on `claude/optimistic-faraday-qq0uoc`
+
+No save, `SIM_RULES`, protocol-version or migration change (two additive hello features `push-apns`/`push-fcm` and an additive `StatsBatch.schema`, in `docs/PROTOCOL.md`). Java (`TkNativePlugin`, `MainActivity`) was not compiled here. New player-visible text (three strings) translated by the coding session.
+
+| # | Finding | Status | What changed | Proving test | Limits |
+|---|---|---|---|---|---|
+| STB-01 | **HIGH** Android crash loop registering for push without Firebase | code fixed (`2fb22e0`) | Android registers only with `VITE_ANDROID_PUSH=1`, set by the workflow only when it wrote `google-services.json`; hello names `push-apns`/`push-fcm`; the game asks only for a listed platform; preflight blocks the bad combination | `platform-push.test.ts`, `push-platforms.test.ts` | **DEVICE:** 10 launches of an APK without Firebase |
+| STB-03 | **HIGH** one scene error froze the map for good | fixed (`dbf86d4`) | `guardLoop` reports and restarts the loop; > 3 errors in 10 s: save and a reload card | `frameGuard.test.ts`; Chromium: one throw keeps drawing, repeated throws show the card | — |
+| OPS-02 + STB-02 | **HIGH** no source maps, one release id for every build | code done (`1a6b11d`) | hidden maps uploaded privately (when the owner's Sentry secrets exist) and deleted before shipping (CI fails if any remain); release `kagemura@<version>+<sha>` with `dist` per platform; `abs_path` on frames | `source-maps.test.ts`; build: 18 maps, no `sourceMappingURL` | **OWNER/staging:** Sentry showing TypeScript lines |
+| OPS-03 + STB-04 | **HIGH** Android renderer death killed the app | code done (`eb75a0f`) | `onRenderProcessGone` records and recreates the activity; reported once at the next start | `release-config.test.ts`, `renderer-exit.test.ts` | iOS count not built; **DEVICE** kill test |
+| STB-05 + OPS-08 | **MEDIUM** no crash context, no session denominator | done (`ca3a554`) | report context (scene, battle, quality, renderer, last command, online); opt-in Sentry sessions; RELEASE.md: store consoles are the crash-free gate | `crash-sessions.test.ts` (3) | Staging release-health check not run |
+| STB-06 | **MEDIUM** a lost WebGL context left a black canvas | code fixed (`002cd26`, `fca5588`) | 8 s of visible loss: save and a reload card; the loss is reported | `contextLoss.test.ts` (3); Chromium `loseContext()`: card | Restore repaint not re-checked |
+| OPS-06 | **MEDIUM** statistics lacked end reason, Trials, quits | partly done (`cf56830`) | `raid_end` end reason/ticks/Keep, `trial_end`, `schema: 2`, staff report per tier and Keep | `stats-battles.test.ts` (5) | `scout_leave` not built; the explainer still says "raids" |
+| OPS-07 | **MEDIUM** alerts without runbooks or routing | done (`e191f69`) | `docs/ops/RUNBOOK.md`, runbook links and team labels on all 17 rules, `PurchasesStalled`, `ResimBusy`, an Alertmanager example | `metrics-labels.test.ts` OPS-07 | **OWNER:** a real pager (OWN-18) |
+| STB-11, STB-12 | device evidence; crash-report decisions | **DEVICE / OWNER (D7)** | — | — | — |
+
+Not run: devices, a staging Sentry project, Postgres and Redis. Passing tests here do not establish release readiness.
