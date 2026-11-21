@@ -182,3 +182,23 @@ describe('short landscape battle: the bottom buttons never cover the cards (Beas
     expect(12 + width).toBeLessThan(troopsLeft);
   });
 });
+
+describe('soft launch, device matrix and playtest documents (Beast Mode OPS-11)', () => {
+  const doc = (f: string) => readFileSync(`docs/store/${f}`, 'utf8');
+  it('SOFT_LAUNCH.md names a kill line for D1 and the crash-free rate, and says statistics are an opt-in sample', () => {
+    const s = doc('SOFT_LAUNCH.md');
+    expect(s).toMatch(/\| D1 retention \|[^\n]*\*\*D1 < 25%\*\*/);
+    expect(s).toMatch(/\| Crash-free users \|[^\n]*\| < 98\.0% \|/);
+    expect(s).toMatch(/opt-in/);
+    expect(s).toMatch(/never reported/);
+  });
+  it('DEVICE_MATRIX.md lists a ≤ 2 GB Android device and the cold-start ×50 protocol; PLAYTEST.md is silent', () => {
+    const m = doc('DEVICE_MATRIX.md');
+    expect(m).toMatch(/≤ 2 GB Android Go/);
+    expect(m).toMatch(/Cold start ×50/);
+    expect(doc('PLAYTEST.md')).toMatch(/No help, no hints, no answers/);
+  });
+  it('RELEASE.md and the owner checklist link all three', () => {
+    for (const f of ['RELEASE.md', 'OWNER_CHECKLIST.md']) for (const d of ['SOFT_LAUNCH.md', 'DEVICE_MATRIX.md', 'PLAYTEST.md']) expect(doc(f), `${f} -> ${d}`).toContain(d);
+  });
+});

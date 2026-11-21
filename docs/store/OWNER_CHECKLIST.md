@@ -62,6 +62,8 @@ a contract, a device or a decision.
 
 ## 5. Devices, testing and players
 
+Beast Mode OPS-11: the plan and protocols are `docs/store/SOFT_LAUNCH.md` (waves, KPIs, kill lines: OWN-21), `docs/store/DEVICE_MATRIX.md` (devices, cold start ×50, memory, thermal, interruptions: OWN-24) and `docs/store/PLAYTEST.md` (silent first-time playtest: OWN-25). Fill their owner cells and results tables.
+
 | Task | Blocks | Done when |
 |---|---|---|
 | Measure on real phones (2 GB Android Go, 3-4 GB Android, 2019-class iPhone, current flagships): cold start, memory over 30 minutes, battle FPS, battery, offline, 3G, low storage, kill/resume, Canvas fallback | "works on cheap phones" | Quality thresholds set from the numbers |

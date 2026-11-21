@@ -1,9 +1,10 @@
 # Submission and staged rollout (step 53, checklist)
 
-Launch day, support templates and the hotfix path: `docs/ops/LAUNCH_DAY.md`. Ending online play: `docs/ops/SUNSET.md`. Alerts: `docs/ops/RUNBOOK.md`.
+Soft launch waves, KPIs and kill lines: `SOFT_LAUNCH.md`; device tests: `DEVICE_MATRIX.md`; the silent first-time playtest: `PLAYTEST.md` (Beast Mode OPS-11). Launch day, support templates and the hotfix path: `docs/ops/LAUNCH_DAY.md`. Ending online play: `docs/ops/SUNSET.md`. Alerts: `docs/ops/RUNBOOK.md`.
 
 ## Before submitting
 
+- [ ] **Owner (OPS-11):** the soft-launch targets and kill lines in `SOFT_LAUNCH.md` are filled (OWN-21), the device matrix ran on this build (`DEVICE_MATRIX.md`, OWN-24), and a silent playtest ran since the last first-hour change (`PLAYTEST.md`, OWN-25).
 - [ ] Server: production deployed by hand from the release workflow (`docs/SHIPPING.md` 3g), `/readyz` green, alerts on (`ops/prometheus/alerts.yml`), a backup made and the last Sunday drill passed (`.github/workflows/backup.yml`).
 - [ ] The server is built from the same commit as the game (same `SIM_RULES` in `src/gameplay/sim/battle/battle.ts`); the release workflow's contract tests passed on staging.
 - [ ] Products approved in both stores with the store ids (`docs/SHIPPING.md` 3b); App Store Server Notifications and Play RTDN point at production.
