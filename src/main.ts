@@ -1071,32 +1071,41 @@ function installLifecycle({ controller, connection, game, thumbs, reminders, cur
   };
   // Android onTrimMemory and iOS memory warnings, forwarded by the app's native code (MainActivity, TkViewController).
   window.addEventListener('tkmemorywarning', lowMemory);
-  document.addEventListener('visibilitychange', () => {
-    const hidden = document.visibilityState === 'hidden';
-    sound.suspend(hidden);
-    if (hidden) {
-      goingAway();
-      void connection.uploadBase();
-      if (prefs.get('reminders')) {
-        // Opt-in only: the player's chosen types, no quiet-hours pings, a daily cap.
-        const gd = controller.data;
-        // A type the server pushes (the Alliance War) is not also scheduled on the device.
-        const enabled = notifyPrefs.enabledSet(gd.notifications.types);
-        for (const t of connection.pushTypes) enabled.delete(t);
-        const planned = planNotifications(upcomingReminders(controller.state, controller.now(), gd), enabled, controller.now(), new Date().getTimezoneOffset(), gd);
-        void reminders.schedule(planned);
-      }
-    } else {
-      void reminders.cancelAll();
-      // A save right away also tells a tab left in the background that another one has taken over.
-      void controller.save();
+  // Beast Mode STB-09: going to the background and coming back, from whichever signal arrives (the WebView may stay
+  // "visible" while the app is paused: iOS app switcher, Android split screen), each handled once per change.
+  let away = false;
+  const wentToBackground = () => {
+    goingAway();
+    if (away) return;
+    away = true;
+    sound.suspend(true);
+    void connection.uploadBase();
+    if (prefs.get('reminders')) {
+      // Opt-in only: the player's chosen types, no quiet-hours pings, a daily cap.
+      const gd = controller.data;
+      // A type the server pushes (the Alliance War) is not also scheduled on the device.
+      const enabled = notifyPrefs.enabledSet(gd.notifications.types);
+      for (const t of connection.pushTypes) enabled.delete(t);
+      const planned = planNotifications(upcomingReminders(controller.state, controller.now(), gd), enabled, controller.now(), new Date().getTimezoneOffset(), gd);
+      void reminders.schedule(planned);
     }
-  });
+  };
+  const cameBack = () => {
+    if (!away) return;
+    away = false;
+    sound.suspend(false);
+    void reminders.cancelAll();
+    // A save right away also tells a tab left in the background that another one has taken over.
+    void controller.save();
+  };
+  document.addEventListener('visibilitychange', () => (document.visibilityState === 'hidden' ? wentToBackground() : cameBack()));
   window.addEventListener('pagehide', goingAway);
-  // In the apps the WebView may stay "visible" while the app is paused (iOS app switcher, Android split screen).
   if (isNative()) {
     void import('@capacitor/app')
-      .then(({ App: CapApp }) => CapApp.addListener('pause', goingAway))
+      .then(({ App: CapApp }) => {
+        void CapApp.addListener('pause', wentToBackground);
+        void CapApp.addListener('resume', cameBack);
+      })
       .catch(() => undefined);
   }
 }

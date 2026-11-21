@@ -98,4 +98,22 @@ describe('audio context (device F9/F18)', () => {
     expect(suspends).toBe(s0 + 2);
     expect(fresh.musicRunning).toBe(false);
   });
+
+  it('Beast Mode STB-09: unlock() resumes a context Safari left interrupted (a call, Siri)', () => {
+    sound.setMusic(true);
+    sound.suspend(false);
+    const ctx = (sound as unknown as { ctx: FakeAudioContext }).ctx;
+    let resumed = 0;
+    ctx.resume = async () => void resumed++;
+    (ctx as { state: string }).state = 'interrupted';
+    sound.unlock();
+    expect(resumed).toBe(1);
+    // Hidden (the app paused it on purpose): a stray unlock does not wake it.
+    sound.suspend(true);
+    resumed = 0;
+    sound.unlock();
+    expect(resumed).toBe(0);
+    sound.suspend(false);
+  });
 });
+

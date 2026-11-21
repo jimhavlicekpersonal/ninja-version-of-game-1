@@ -92,7 +92,8 @@ class SoundEngine {
         d[i] = (seed / 2147483647) * 2 - 1;
       }
     }
-    if (this.ctx.state === 'suspended') void this.ctx.resume();
+    // Beast Mode STB-09 (UX-05): Safari leaves a context 'interrupted' after a call or Siri; a tap resumes it too.
+    if (this.ctx.state !== 'running' && this.ctx.state !== 'closed' && !this.musicPaused) void this.ctx.resume();
     this.syncMusicLoop();
     this.prewarm();
   }
