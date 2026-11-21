@@ -31,7 +31,7 @@ The stores' own crash tools come first (report section 5 step 5, growth 2): they
 
 Also:
 
-- Crash-free sessions (Sentry, the stores' vitals), `HighErrorRate`, `SlowResponses`, `EventLoopBlocked`, `DesyncsRising`, `RefundSpike`.
+- Crash-free users and sessions: Play vitals and Xcode Organizer are the gate (Beast Mode OPS-08); Sentry counts errors and, since STB-05, sessions only from players who switched crash reports on (an opted-in sample, not the population), `HighErrorRate`, `SlowResponses`, `EventLoopBlocked`, `DesyncsRising`, `RefundSpike`.
 - Shared play statistics (`GET /admin/v1/stats`, staff token; only adults who chose to share): D1 and the tutorial rate of the release days against the week before. A drop beside a rollout is a release problem until shown otherwise.
 - Desyncs by client build (`tk_desyncs_total`, `tk_client_requests_total`): a rise right after the release means the build and server disagree on rules.
 - Store reviews and support mail for purchase problems.

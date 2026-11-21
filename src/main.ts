@@ -322,7 +322,10 @@ async function boot(): Promise<void> {
   // Crash reports (VITE_SENTRY_DSN builds only; Settings can switch them off; never from the sandbox).
   // Compliance switches 2026-11-14 (C04): set once the village is loaded (below).
   let crashBand: () => string | null = () => null;
+  // Beast Mode STB-05: what the game was doing when a report is made (set once the game exists).
+  let crashContext: () => Record<string, string> = () => ({});
   crashReporter = new CrashReporter({
+    context: () => crashContext(),
     dsn: sandbox ? undefined : (import.meta.env.VITE_SENTRY_DSN as string | undefined),
     // Beast Mode STB-02: a release per build and the platform as its dist (source maps are uploaded per both).
     release: `kagemura@${__APP_VERSION__}+${__BUILD_ID__}`,
@@ -630,9 +633,21 @@ async function boot(): Promise<void> {
       crashReporter?.report(e, { kind: 'frame', scene: game.scene.getScenes(true).map((s) => s.scene.key).join(',') || 'none', battle: String(app?.inBattle ?? false), count: String(count) });
     },
     onFatal: () => {
+      crashReporter?.endSession('crashed');
       app?.flushBattle();
       void controller.save().finally(() => showFrameFailure());
     },
+  });
+  // Beast Mode STB-05: the report context (types and states only, never names, ids or chat).
+  let lastCommand = 'none';
+  controller.onCommand((cmd) => (lastCommand = cmd.type));
+  crashContext = () => ({
+    scene: game.scene.getScenes(true).map((x) => x.scene.key).join(',') || 'none',
+    battle: String(app?.inBattle ?? false),
+    quality: quality().profile,
+    renderer: game.renderer?.type === Phaser.CANVAS ? 'canvas' : 'webgl',
+    lastCommand,
+    online: connection.status,
   });
   // READY comes before TimeStep.start; the first step comes after it (from the next frame on, the guard runs).
   game.events.once(Phaser.Core.Events.STEP, () => void installGuard());
@@ -724,6 +739,12 @@ async function boot(): Promise<void> {
   provideJadeValueSwitch(() => env.VITE_EU_JADE_VALUE === '1' || connection.hasFeature('eu-jade-value'));
   // C04: no crash reports from an under-13 player.
   crashBand = () => controller.state.profile.ageBand ?? null;
+  // Beast Mode STB-05 / OPS-08: release-health sessions for players who allow crash reports (no user id): one per
+  // visible stretch, ended on hide or close, `crashed` after a fatal frame error.
+  crashReporter.startSession();
+  const endCrashSession = () => crashReporter?.endSession('exited');
+  window.addEventListener('pagehide', endCrashSession);
+  document.addEventListener('visibilitychange', () => (document.visibilityState === 'hidden' ? endCrashSession() : crashReporter?.startSession()));
   // C02: a minor's iPhone asks a parent to acknowledge a significant update (Declared Age Range; native code uncompiled).
   if (!sandbox && isNative() && platform() === 'ios') {
     let asked = false;

@@ -122,6 +122,16 @@ export function buildEnvelope(dsn: SentryDsn, input: SentryEventInput, id: strin
   return `${JSON.stringify(header)}\n${JSON.stringify({ type: 'event' })}\n${JSON.stringify(event)}\n`;
 }
 
+/**
+ * Beast Mode STB-05 / OPS-08: one Sentry session update (release health's denominator for crash-free sessions). No
+ * `did` (no user or device id), only the release, environment, a random session id and counts.
+ */
+export function buildSessionEnvelope(dsn: SentryDsn, s: { sid: string; init: boolean; status: 'ok' | 'exited' | 'crashed' | 'abnormal'; started: number; duration: number; errors: number; release: string; environment: string }, nowMs: number): string {
+  const header = { sent_at: new Date(nowMs).toISOString(), dsn: dsn.dsn };
+  const session = { sid: s.sid, init: s.init, started: new Date(s.started).toISOString(), timestamp: new Date(nowMs).toISOString(), status: s.status, errors: s.errors, duration: Math.max(0, s.duration / 1000), attrs: { release: s.release, environment: s.environment } };
+  return `${JSON.stringify(header)}\n${JSON.stringify({ type: 'session' })}\n${JSON.stringify(session)}\n`;
+}
+
 /** Where to POST: the key goes in the query string, so a browser sends a simple (no preflight) request. */
 export function envelopeEndpoint(dsn: SentryDsn, client: string): string {
   return `${dsn.envelopeUrl}?sentry_key=${encodeURIComponent(dsn.publicKey)}&sentry_version=7&sentry_client=${encodeURIComponent(client)}`;

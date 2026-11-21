@@ -55,7 +55,7 @@ New player-visible strings are translated into all 49 other ready languages in t
 | OPS-05 | MEDIUM | 5 | CODE | open | | | |
 | OPS-06 | MEDIUM | 4 | CODE | open | | | |
 | OPS-07 | MEDIUM | 4 | DOCS | open | | | |
-| OPS-08 | MEDIUM | 4 | DOCS | open | | | |
+| OPS-08 | MEDIUM | 4 | DOCS | done |  | same as STB-05 | Docs: RELEASE.md now says the crash-free gate is Play vitals and Xcode Organizer, Sentry counts opted-in players only. Code part folded into STB-05 (same commit). |
 | OPS-09 | MEDIUM | 5 | CODE | open | | | |
 | OPS-10 | MEDIUM | 5 | CODE | open | | | |
 | OPS-11 | MEDIUM | 8 | DOCS | open | | | |
@@ -99,7 +99,7 @@ New player-visible strings are translated into all 49 other ready languages in t
 | STB-02 | HIGH | 4 | CODE | partial |  | same as OPS-02 | Folded into OPS-02 (same commit): release kagemura@<version>+<GITHUB_SHA[0:12]> (__BUILD_ID__, 'local' outside CI) and dist web/ios/android on every crash report. |
 | STB-03 | HIGH | 4 | CODE | done |  | tests/presentation/render/frameGuard.test.ts (2); Chromium ?debug: one throw in the village's update → the map kept drawing (89 frames in 2 s); a throw every frame → the reload card | src/presentation/render/frameGuard.ts guardLoop wraps the TimeStep callback (installed on the first STEP: READY comes before TimeStep.start overwrites it): an error is reported (crash reports, opt-in, with scene, battle and count) and the loop restarted (sleep + wake); more than 3 within 10 s: the loop stops, the battle is flushed, the village saved, and a reload card shows (frame.failed.*, translated). |
 | STB-04 | HIGH | 4 | CODE | partial |  | same as OPS-03 | Folded into OPS-03 (same commit). |
-| STB-05 | MEDIUM | 4 | CODE | open | | | |
+| STB-05 | MEDIUM | 4 | CODE | partial |  | tests/backend/crash-sessions.test.ts (context tags; session start/crashed with release and errors, no did; nothing while off) | CrashReporter.context() read at report time (main.ts: active scene, battle, quality profile, renderer, last command type, online status: no names, ids or chat); buildSessionEnvelope + startSession/endSession (ok → exited on hide/pagehide, crashed on STB-03's fatal path), only while crash reports are allowed. Open (staging/OWNER): Sentry release health showing a crash-free rate for the opted-in sample; STB-04's native unclean exit is reported as an event, not a crashed session. |
 | STB-06 | MEDIUM | 4 | CODE | open | | | |
 | STB-07 | MEDIUM | 6 | CODE | open | | | |
 | STB-08 | MEDIUM | 6 | CODE | open | | | |

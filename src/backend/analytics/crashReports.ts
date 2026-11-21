@@ -6,7 +6,7 @@
  * no player name, id, token, chat or save (see sentryEnvelope.ts). Never in
  * the testing sandbox. At most 10 reports a minute, each message once.
  */
-import { buildEnvelope, envelopeEndpoint, eventId, parseDsn, ReportThrottle, type SentryDsn } from './sentryEnvelope';
+import { buildEnvelope, buildSessionEnvelope, envelopeEndpoint, eventId, parseDsn, ReportThrottle, type SentryDsn } from './sentryEnvelope';
 
 interface CrashReporterOptions {
   dsn: string | undefined;
@@ -18,6 +18,11 @@ interface CrashReporterOptions {
   /** The player's choice, read at the moment of each report. */
   enabled(): boolean;
   tags?: Record<string, string>;
+  /**
+   * Beast Mode STB-05: what the game was doing, read at report time (scene, battle, quality, renderer, the last
+   * command's type, online status). Values only, never names, ids or chat.
+   */
+  context?(): Record<string, string>;
   post?(url: string, body: string): void;
   now?(): number;
 }
@@ -51,12 +56,50 @@ export class CrashReporter {
     const msg = error instanceof Error ? `${error.name}:${error.message}` : String(error);
     if (!this.throttle.allow(msg, now)) return;
     const random = typeof crypto !== 'undefined' && crypto.getRandomValues ? () => crypto.getRandomValues(new Uint8Array(1))[0] / 256 : Math.random;
-    const body = buildEnvelope(this.dsn, { error, platform: 'javascript', release: this.o.release, ...(this.o.dist ? { dist: this.o.dist } : {}), environment: this.o.environment, tags: { side: 'client', ...this.o.tags, ...tags } }, eventId(random), now);
+    let context: Record<string, string> = {};
+    try {
+      context = this.o.context?.() ?? {};
+    } catch {
+      /* a broken context never stops the report */
+    }
+    const body = buildEnvelope(this.dsn, { error, platform: 'javascript', release: this.o.release, ...(this.o.dist ? { dist: this.o.dist } : {}), environment: this.o.environment, tags: { side: 'client', ...this.o.tags, ...context, ...tags } }, eventId(random), now);
     this.sent++;
+    if (this.session) this.session.errors++;
+    this.post(body);
+  }
+
+  private post(body: string): void {
+    if (!this.dsn) return;
     const url = envelopeEndpoint(this.dsn, 'kagemura-web/1');
     if (this.o.post) this.o.post(url, body);
     // text/plain keeps it a simple request (no CORS preflight); keepalive lets it finish as the page closes.
     else void fetch(url, { method: 'POST', body, keepalive: true, headers: { 'content-type': 'text/plain;charset=UTF-8' } }).catch(() => undefined);
+  }
+
+  /** STB-05: the running session (release health), while crash reports are allowed. */
+  private session: { sid: string; started: number; errors: number; sentInit: boolean } | null = null;
+
+  /** STB-05 / OPS-08: start a session (sent only while crash reports are allowed; no user or device id). */
+  startSession(): void {
+    if (!this.dsn || this.session) return;
+    const now = this.o.now?.() ?? Date.now();
+    this.session = { sid: eventId(), started: now, errors: 0, sentInit: false };
+    this.sendSession('ok');
+  }
+
+  /** STB-05: end the session: `exited` on a normal hide or close, `crashed` after a fatal error. */
+  endSession(status: 'exited' | 'crashed' | 'abnormal'): void {
+    if (!this.session) return;
+    this.sendSession(status);
+    this.session = null;
+  }
+
+  private sendSession(status: 'ok' | 'exited' | 'crashed' | 'abnormal'): void {
+    if (!this.dsn || !this.session || !this.o.enabled()) return;
+    const now = this.o.now?.() ?? Date.now();
+    const s = this.session;
+    this.post(buildSessionEnvelope(this.dsn, { sid: s.sid, init: !s.sentInit, status, started: s.started, duration: now - s.started, errors: s.errors, release: this.o.release, environment: this.o.environment }, now));
+    s.sentInit = true;
   }
 
   /** Listen for uncaught errors and unhandled rejections on this window. */
