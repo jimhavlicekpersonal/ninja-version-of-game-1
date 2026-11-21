@@ -24,7 +24,7 @@ New player-visible strings are translated into all 49 other ready languages in t
 | ECO-01 | HIGH | 1 | CODE | done | 86d7e52 | tests/backend/server/beast-mode-2026-11-21-money.test.ts (ECO-01), tests/presentation/dom/purchase-guard.dom.test.ts | Server: one open intent per offer/Scroll/Stipend (memory + pg openIntentsFor, no migration); redeem refuses a duplicate Scroll / once-per-account offer for a server village (409 already_owned, unfinished for support refund; D4 open). Client: EconomyUi buying flag disables every buy button; controller single-flight IN_PROGRESS. Android TkBillingPlugin claim/release synchronized (not compiled here). Limits: Ask-to-Buy double approval and real store sheets not run on devices; device-held duplicate Scroll receipts still granted by the device (intent rule prevents the second charge). |
 | ECO-02 | MEDIUM | 1 | CODE | done | 74e26d5 | tests/backend/server/purchases.test.ts 'ECO-02: …' (4 tests; the honest lost-answer test still passes) | Google consumed token → already, no grant. Apple known row → no grant into a server village started after the credit; 409 needs_support + import hold for staff. Import: not-carried credited rows granted at import when credited after the file's savedAt, else held for staff; rows marked held_on_server (Repo.markPurchaseHeld, existing column, no migration). Limits: a device clock set back before the purchase can make a stripped file look older (bounded: then the purchase is granted once and the row is held, so no second replay); Postgres path not run here. |
 | ECO-03 | MEDIUM | 7 | DESIGN | open | | | |
-| ECO-04 | MEDIUM | 7 | DESIGN | open | | | |
+| ECO-04 | MEDIUM | 7 | DESIGN | blocked-owner |  |  | folded into GT-06; needs D3 |
 | ECO-05 | HIGH | Owner/device | DEVICE | open | | | |
 | ECO-06 | LOW | 1 | OWNER | partial | eaa09de | tests/backend/server/purchases.test.ts 'ECO-06: …' | Code: Google purchaseType 1 → environment 'Promo', 0 counted cents, outside the sandbox cap; quantity > 1 logged + tk_refused_total{multi_quantity} (one unit delivered); checkConfig warns in production when App Store is on and USD_RATES has only USD; SHIPPING 3b: never enable multi-quantity. Open (OWNER, D6): set USD_RATES monthly or decide on local-money counting. |
 | ECO-07 | LOW | 2 | OWNER | partial | 1691f6b | same as SEC-12 | Folded into SEC-12 (same commit). Owner sets the cap. |
@@ -36,7 +36,7 @@ New player-visible strings are translated into all 49 other ready languages in t
 | GT-03 | HIGH | 7 | DESIGN | open | | | |
 | GT-04 | HIGH | 7 | DESIGN | open | | | |
 | GT-05 | HIGH | 7 | DESIGN | open | | | |
-| GT-06 | HIGH | 7 | DESIGN | open | | | |
+| GT-06 | HIGH | 7 | DESIGN | blocked-owner |  |  | needs owner decision D3 (how much of their loot casual players may lose); the gate targets (casual <= 0.6, explorer <= 0.8 stolen/looted) are the audit's proposal, not a decision. The pooled 4-seed numbers are in campaign.json (GT-11). |
 | GT-07 | MEDIUM | 7 | DESIGN | open | | | |
 | GT-08 | MEDIUM | 7 | TOOLING | open | | | |
 | GT-09 | MEDIUM | 7 | DESIGN | open | | | |

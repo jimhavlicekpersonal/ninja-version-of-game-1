@@ -11,4 +11,5 @@ export const SLOW_TESTS = [
   'tests/gameplay/battle/perf.test.ts',
   'tests/gameplay/balance/kits-tiers.test.ts',
   'tests/gameplay/planned/golive-gate.test.ts',
+  'tests/gameplay/balance/searched-attacker.test.ts',
 ];

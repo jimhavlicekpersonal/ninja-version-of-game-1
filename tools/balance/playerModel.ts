@@ -90,7 +90,34 @@ export interface RaidLog {
 
 export class ModelPlayer {
   clock = new FakeClock(Date.UTC(2026, 0, 5, 8, 0, 0));
-  state: VillageState;
+  private current!: VillageState;
+  /**
+   * Beast Mode 2026-11-21 GT-11 (ECO-03): Jade earned and spent over the campaign, by what moved it (the command's
+   * type, 'raid', 'offline' for time away, 'settle' for time passing with the game open: seasons, leagues, stipend).
+   */
+  jadeEarned: Record<string, number> = {};
+  jadeSpent: Record<string, number> = {};
+  private jadeSource = 'start';
+  get state(): VillageState {
+    return this.current;
+  }
+  set state(next: VillageState) {
+    const before = this.current?.resources.moonstones;
+    this.current = next;
+    if (before === undefined) return;
+    const delta = (next.resources.moonstones ?? 0) - before;
+    if (delta > 0) this.jadeEarned[this.jadeSource] = (this.jadeEarned[this.jadeSource] ?? 0) + delta;
+    else if (delta < 0) this.jadeSpent[this.jadeSource] = (this.jadeSpent[this.jadeSource] ?? 0) - delta;
+  }
+  private from<T>(source: string, fn: () => T): T {
+    const was = this.jadeSource;
+    this.jadeSource = source;
+    try {
+      return fn();
+    } finally {
+      this.jadeSource = was;
+    }
+  }
   hallReachedAt: Record<number, number> = {};
   raids = 0;
   raidLog: RaidLog[] = [];
@@ -116,7 +143,7 @@ export class ModelPlayer {
 
   private run(cmd: Command): boolean {
     const r = applyCommand(this.state, cmd, this.clock.now(), this.data);
-    if (r.ok) this.state = r.state;
+    if (r.ok) this.from(cmd.type, () => (this.state = r.state));
     return r.ok;
   }
 
@@ -129,7 +156,7 @@ export class ModelPlayer {
   away(ms: number): void {
     this.clock.advance(ms);
     const r = computeOfflineProgress(this.state, this.clock.now(), this.data);
-    this.state = r.state;
+    this.from('offline', () => (this.state = r.state));
     for (const d of r.summary.raids) this.defenseLog.push({ hall: hallLevel(this.state, this.data), stars: d.result.stars, destruction: d.result.destruction, lost: (d.result.loot.acorns ?? 0) + (d.result.loot.dew ?? 0), trophies: d.trophies ?? 0, reward: (d.banked?.acorns ?? 0) + (d.banked?.dew ?? 0) });
     this.state.defenseLog = [];
     this.noteHall();
@@ -138,7 +165,7 @@ export class ModelPlayer {
   /** Let time pass with the game open (no raids against us). */
   wait(ms: number): void {
     this.clock.advance(ms);
-    this.state = advance(this.state, this.clock.now(), this.data).state;
+    this.from('settle', () => (this.state = advance(this.state, this.clock.now(), this.data).state));
     this.state.lastSeenAt = this.clock.now();
     this.state.raidCheckAt = this.clock.now();
     this.noteHall();
@@ -146,7 +173,7 @@ export class ModelPlayer {
 
   session(): void {
     const d = this.data;
-    this.state = advance(this.state, this.clock.now(), d).state;
+    this.from('settle', () => (this.state = advance(this.state, this.clock.now(), d).state));
     this.noteHall();
     for (const b of this.state.buildings) if (d.buildings[b.type].produces) this.run({ type: 'collect', id: b.id });
     // The free daily chest (fails harmlessly once today's is open).
@@ -349,7 +376,7 @@ export class ModelPlayer {
       const before = this.state.resources.acorns + this.state.resources.dew;
       const res = applyCommand(this.state, { type: 'battleEnd', record: { at: this.clock.now(), opponentName: base.name, setup, deployments } }, this.clock.now(), d);
       if (!res.ok) throw new Error(`battleEnd failed: ${res.message}`);
-      this.state = res.state;
+      this.from('raid', () => (this.state = res.state));
       const rec = this.state.battleLog[this.state.battleLog.length - 1];
       this.raidLog.push({ hall: hl, opponentHall: base.hallLevel, stars: rec.result.stars, destruction: rec.result.destruction, loot: this.state.resources.acorns + this.state.resources.dew - before, trophies: this.state.trophies, strength });
       // Replays are not needed here, and cloning them on every command is slow; but the live rules read the latest
@@ -392,7 +419,7 @@ export class ModelPlayer {
   private scout(paid: boolean): number | null {
     const r = applyCommand(this.state, { type: 'scout', paid }, this.clock.now(), this.data);
     if (!r.ok) return null;
-    this.state = r.state;
+    this.from('scout', () => (this.state = r.state));
     const e = r.events.find((x) => x.kind === 'scout');
     return e && e.kind === 'scout' ? e.seed : null;
   }

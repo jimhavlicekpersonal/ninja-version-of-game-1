@@ -14,7 +14,7 @@
 import { describe, expect, it } from 'vitest';
 import campaigns from '../../../docs/game-theory/campaign.json';
 import { defaultData } from '../../../src/gameplay/sim/data';
-import { campaignData, campaignFingerprint, CAMPAIGNS, type CampaignResult } from '../../../tools/balance/campaign';
+import { campaignData, campaignFingerprint, CAMPAIGNS, meanCi, type CampaignResult } from '../../../tools/balance/campaign';
 
 const results = campaigns.results as unknown as CampaignResult[];
 const byId = (id: string) => {
@@ -40,6 +40,7 @@ const rows = (id: string, minRaids = 5) => byId(id).byKeep.filter((k) => k.keep 
 describe('the casual pace (P3-02, PAC-02)', () => {
   it('the casual player reaches Keep 6 by day 25', () => {
     expect(byId('casual').reached[6]).toBeLessThanOrEqual(25);
+    expect(byId('casual').reachedCi![6].hi, 'upper 95% bound across runs (GT-11)').toBeLessThanOrEqual(25);
   });
 
   it('no casual stretch between Keeps is longer than 21 days through Keep 10', () => {
@@ -53,6 +54,35 @@ describe('the fortress campaign\'s layout is a lab flag only (P2-04)', () => {
     expect(defaultData.raids.labAutoLayout).toBeUndefined();
     expect(defaultData.raids.labWalls).toBeUndefined();
     for (const c of CAMPAIGNS) expect(Boolean(campaignData(c).raids.labAutoLayout), c.id).toBe(c.id === 'regular_fortress');
+  });
+});
+
+describe('several seeds per campaign (Beast Mode GT-11)', () => {
+  it('every campaign pools at least 4 runs, and its Keep rows keep each run\'s stars', () => {
+    for (const r of results) {
+      expect(r.reps, r.id).toBeGreaterThanOrEqual(4);
+      for (const k of r.byKeep.filter((x) => x.raids)) expect(k.starsByRep?.length, `${r.id} Keep ${k.keep}`).toBeGreaterThanOrEqual(1);
+      for (const [keep, days] of Object.entries(r.reachedByRep ?? {})) expect(days.length, `${r.id} Keep ${keep}`).toBeLessThanOrEqual(r.reps!);
+    }
+  });
+
+  it('the Jade lifetime table is there: start, earned by source, spent, end (ECO-03)', () => {
+    for (const r of results) {
+      expect(r.jade, r.id).toBeDefined();
+      expect(Object.keys(r.jade.earned).length, r.id).toBeGreaterThan(0);
+      const earned = Object.values(r.jade.earned).reduce((a, v) => a + v, 0);
+      const spent = Object.values(r.jade.spent).reduce((a, v) => a + v, 0);
+      // Per-run means are rounded per source: the books balance within one Jade per source.
+      expect(Math.abs(r.jade.start + earned - spent - r.jade.end), r.id).toBeLessThanOrEqual(Object.keys(r.jade.earned).length + Object.keys(r.jade.spent).length + 1);
+    }
+  });
+
+  it('meanCi gives the mean and a Student-t interval', () => {
+    const c = meanCi([100, 102, 104, 106]);
+    expect(c.mean).toBe(103);
+    expect(c.lo).toBeLessThan(100);
+    expect(c.hi).toBeGreaterThan(106);
+    expect(meanCi([5]).lo).toBe(5);
   });
 });
 
@@ -76,6 +106,8 @@ describe('lower bounds: the model player keeps winning at every Keep (E24, E25)'
   it('Keep 3 is no longer a cliff after Keep 2 (E24: it was 0.88 stars, no three-stars)', () => {
     const k3 = byId('regular').byKeep.find((k) => k.keep === 3)!;
     expect(k3.stars).toBeGreaterThanOrEqual(1.2);
+    // GT-11: the lower 95% bound across runs, not one seed.
+    expect(meanCi(k3.starsByRep!).lo).toBeGreaterThanOrEqual(1.2);
   });
 
   it('the late game has no losing streak Keep for the regular player (E25: Keep 12 was 0.84 stars)', () => {
@@ -96,6 +128,49 @@ describe('lower bounds: the model player keeps winning at every Keep (E24, E25)'
   });
 });
 
+/** Lower bound of a proportion's Wilson score interval (z = 1.645: one-sided 95%, two-sided 90%). */
+const wilsonLower = (p: number, n: number, z = 1.645) => (n ? (p + (z * z) / (2 * n) - z * Math.sqrt((p * (1 - p) + (z * z) / (4 * n)) / n)) / (1 + (z * z) / n) : 0);
+
+// Beast Mode 2026-11-21 GT-02: the casual early Keeps, one Keep at a time over the pooled runs (the pair rule joined a
+// 2-star Keep 3 with a 0.57-star Keep 5 and the 3-raid Keep 4 was dropped). Done-when: >= 0.9 stars and >= 55% won at
+// Keeps 4 and 5, with the 90% Wilson lower bound of wins >= 0.5; Keeps 3-7 at least that lower bound.
+describe('the casual early Keeps, one Keep at a time (GT-02)', () => {
+  for (const id of ['casual', 'casual_explorer', 'casual_hires']) {
+    it(`${id}: Keeps 4 and 5 at >= 0.9 stars and >= 55% won; Keeps 3-7 win with a 90% lower bound >= 0.5`, () => {
+      for (let keep = 3; keep <= 7; keep++) {
+        const k = byId(id).byKeep.find((x) => x.keep === keep);
+        expect(k?.raids, `${id} Keep ${keep} raids`).toBeGreaterThanOrEqual(8);
+        if (keep === 4 || keep === 5) {
+          expect(k!.stars, `${id} Keep ${keep} stars`).toBeGreaterThanOrEqual(0.9);
+          expect(k!.won, `${id} Keep ${keep} won`).toBeGreaterThanOrEqual(0.55);
+        }
+        expect(wilsonLower(k!.won, k!.raids), `${id} Keep ${keep} wins, 90% lower bound`).toBeGreaterThanOrEqual(0.5);
+      }
+    });
+  }
+});
+
+// Beast Mode 2026-11-21 GT-08: Keep 15 alone (the Keep 14-15 pair averaged the cliff away).
+describe('Keep 15 alone (GT-08)', () => {
+  for (const id of ['regular', 'regular_defender', 'regular_fortress']) {
+    it(`${id}: Keep 15 at >= 1.2 stars and >= 65% won, pooled`, () => {
+      const k = byId(id).byKeep.find((x) => x.keep === 15)!;
+      expect(k.stars, `${id} Keep 15 stars`).toBeGreaterThanOrEqual(1.2);
+      expect(k.won, `${id} Keep 15 won`).toBeGreaterThanOrEqual(0.65);
+    });
+  }
+
+  it('regular: Keep 15 >= 1.4 stars and 70% won, lower 95% bound >= 1.25, and at most 0.25 stars below Keep 14', () => {
+    const r = byId('regular');
+    const k15 = r.byKeep.find((x) => x.keep === 15)!;
+    const k14 = r.byKeep.find((x) => x.keep === 14)!;
+    expect(k15.stars).toBeGreaterThanOrEqual(1.4);
+    expect(k15.won).toBeGreaterThanOrEqual(0.7);
+    expect(meanCi(k15.starsByRep!).lo).toBeGreaterThanOrEqual(1.25);
+    expect(k14.stars - k15.stars).toBeLessThanOrEqual(0.25);
+  });
+});
+
 describe('upper bounds: no farming (audit F22)', () => {
   it('no campaign three-stars more than half its raids at any Keep from 6 on', () => {
     for (const r of results) for (const k of pairs(r.byKeep.filter((x) => x.keep >= 6 && x.raids >= 5)).filter((x) => x.raids >= 10)) expect(k.threeStar, `${r.id} Keeps ${k.keeps}`).toBeLessThanOrEqual(0.5);
@@ -105,8 +180,11 @@ describe('upper bounds: no farming (audit F22)', () => {
   });
 
   it('the regular player reaches Keep 15 in 100-140 days, and casual play gets there inside the 400-day run', () => {
-    expect(byId('regular').reached[15]).toBeGreaterThanOrEqual(100);
-    expect(byId('regular').reached[15]).toBeLessThanOrEqual(140);
+    // GT-11: the whole 95% interval across runs inside the band (one seed sat on 100.2).
+    const ci = byId('regular').reachedCi![15];
+    expect(ci.n).toBe(byId('regular').reps);
+    expect(ci.lo).toBeGreaterThanOrEqual(100);
+    expect(ci.hi).toBeLessThanOrEqual(140);
     expect(byId('casual').reached[15]).toBeDefined();
   });
 });

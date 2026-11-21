@@ -55,6 +55,24 @@ export const CAMPAIGNS: CampaignSpec[] = [
   { id: 'regular_fortress', name: 'Regular fortress (4 sessions a day, counters within 2 levels of the caps before the Keep, walled generated layout)', opts: { raidsPerSession: 2, policy: 'fortress', fortressGap: 2 }, casual: false, maxDays: 220, labLayout: true },
 ];
 
+/**
+ * Beast Mode 2026-11-21 GT-11: every campaign is played this many times with differently seeded villages (`rep`), and
+ * the gates read the pooled rows and the spread between runs. One seed swung a Keep's stars by 0.1-0.6 and the
+ * Keep 15 day by ±3, inside the gates' margins. 4 for CI-sized runs; `CAMPAIGN_REPS=8` for a release run.
+ */
+export const CAMPAIGN_REPS = 4;
+
+/** Mean and 95% confidence interval (Student t) of a few runs' values. */
+export function meanCi(xs: number[]): { mean: number; lo: number; hi: number; sd: number; n: number } {
+  const n = xs.length;
+  const mean = n ? xs.reduce((a, x) => a + x, 0) / n : 0;
+  const sd = n > 1 ? Math.sqrt(xs.reduce((a, x) => a + (x - mean) ** 2, 0) / (n - 1)) : 0;
+  const t = [0, 12.71, 4.30, 3.18, 2.78, 2.57, 2.45, 2.36, 2.31, 2.26, 2.23][n - 1] ?? 2.0;
+  const half = n > 1 ? (t * sd) / Math.sqrt(n) : 0;
+  const r = (x: number) => +x.toFixed(3);
+  return { mean: r(mean), lo: r(mean - half), hi: r(mean + half), sd: r(sd), n };
+}
+
 export interface KeepRow {
   keep: number;
   raids: number;
@@ -76,6 +94,8 @@ export interface KeepRow {
   stolen: number;
   /** Average honor change per raid against the village. */
   defenseHonor: number;
+  /** Pooled results only (GT-11): this Keep's average stars in each run that raided at it. */
+  starsByRep?: number[];
 }
 
 export interface CampaignResult {
@@ -88,11 +108,18 @@ export interface CampaignResult {
   defenses: number;
   /** Over the whole campaign: Coins + Provisions banked from raids, taken by raids against the village, and paid for held raids. */
   totals: { looted: number; stolen: number; defenseRewards: number };
+  /** GT-11 (ECO-03): Jade at the start, earned and spent by source over the campaign, and left at the end. */
+  jade: { start: number; earned: Record<string, number>; spent: Record<string, number>; end: number };
+  /** Pooled results only (GT-11): how many runs, and each Keep's day in every run with its mean and 95% interval. */
+  reps?: number;
+  reachedByRep?: Record<number, number[]>;
+  reachedCi?: Record<number, ReturnType<typeof meanCi>>;
 }
 
-export function runCampaign(spec: CampaignSpec, live: GameData = defaultData): CampaignResult {
+export function runCampaign(spec: CampaignSpec, live: GameData = defaultData, rep = 0): CampaignResult {
   const data = campaignData(spec, live);
-  const p = new ModelPlayer(data, spec.opts);
+  const p = new ModelPlayer(data, rep ? { ...spec.opts, rep } : spec.opts);
+  const jadeStart = p.state.resources.moonstones ?? 0;
   activeHour(p, 60, 2);
   let days = 0;
   const step = spec.casual ? casualDays : normalDays;
@@ -137,6 +164,47 @@ export function runCampaign(spec: CampaignSpec, live: GameData = defaultData): C
     byKeep,
     defenses: p.defenseLog.length,
     totals: { looted: sum(p.raidLog, (r) => Math.max(0, r.loot)), stolen: sum(p.defenseLog, (d) => d.lost), defenseRewards: sum(p.defenseLog, (d) => d.reward) },
+    jade: { start: jadeStart, earned: p.jadeEarned, spent: p.jadeSpent, end: p.state.resources.moonstones ?? 0 },
+  };
+}
+
+/**
+ * GT-11: several runs of one campaign as one result. Each Keep's row pools every run's raids and raids against the
+ * village (weighted by count); `reached` is the mean day with each run's day and the 95% interval kept beside it;
+ * totals and Jade are per-run means.
+ */
+export function poolCampaign(runs: CampaignResult[]): CampaignResult {
+  const first = runs[0];
+  const keeps = [...new Set(runs.flatMap((r) => r.byKeep.map((k) => k.keep)))].sort((a, b) => a - b);
+  const byKeep: KeepRow[] = keeps.map((keep) => {
+    const rows = runs.map((r) => r.byKeep.find((k) => k.keep === keep)).filter((k): k is KeepRow => Boolean(k));
+    const raids = rows.reduce((a, k) => a + k.raids, 0);
+    const defenses = rows.reduce((a, k) => a + k.defenses, 0);
+    const byRaid = (f: (k: KeepRow) => number) => (raids ? rows.reduce((a, k) => a + f(k) * k.raids, 0) / raids : 0);
+    const byDef = (f: (k: KeepRow) => number) => (defenses ? rows.reduce((a, k) => a + f(k) * k.defenses, 0) / defenses : 0);
+    return {
+      keep, raids, stars: byRaid((k) => k.stars), threeStar: byRaid((k) => k.threeStar), won: byRaid((k) => k.won), destruction: byRaid((k) => k.destruction), loot: byRaid((k) => k.loot),
+      opponentKeep: byRaid((k) => k.opponentKeep), strength: byRaid((k) => k.strength), honor: byRaid((k) => k.honor),
+      defenses, held: byDef((k) => k.held), stolen: byDef((k) => k.stolen), defenseHonor: byDef((k) => k.defenseHonor),
+      starsByRep: rows.filter((k) => k.raids).map((k) => +k.stars.toFixed(3)),
+    };
+  });
+  const reachedByRep: Record<number, number[]> = {};
+  for (const r of runs) for (const [k, v] of Object.entries(r.reached)) (reachedByRep[Number(k)] ??= []).push(v);
+  const reachedCi = Object.fromEntries(Object.entries(reachedByRep).map(([k, v]) => [Number(k), meanCi(v)]));
+  // A Keep counts as reached only when every run reached it (a mean over fewer runs would flatter the pace).
+  const reached = Object.fromEntries(Object.entries(reachedByRep).filter(([, v]) => v.length === runs.length).map(([k, v]) => [Number(k), +(v.reduce((a, x) => a + x, 0) / v.length).toFixed(1)]));
+  const avg = (f: (r: CampaignResult) => number) => runs.reduce((a, r) => a + f(r), 0) / runs.length;
+  const bySource = (pick: (r: CampaignResult) => Record<string, number>) => {
+    const out: Record<string, number> = {};
+    for (const r of runs) for (const [k, v] of Object.entries(pick(r))) out[k] = (out[k] ?? 0) + v / runs.length;
+    return Object.fromEntries(Object.entries(out).map(([k, v]) => [k, Math.round(v)]));
+  };
+  return {
+    id: first.id, name: first.name, reached, days: Math.round(avg((r) => r.days)), byKeep, defenses: Math.round(avg((r) => r.defenses)),
+    totals: { looted: avg((r) => r.totals.looted), stolen: avg((r) => r.totals.stolen), defenseRewards: avg((r) => r.totals.defenseRewards) },
+    jade: { start: Math.round(avg((r) => r.jade.start)), earned: bySource((r) => r.jade.earned), spent: bySource((r) => r.jade.spent), end: Math.round(avg((r) => r.jade.end)) },
+    reps: runs.length, reachedByRep, reachedCi,
   };
 }
 
@@ -175,9 +243,11 @@ export function campaignMarkdown(results: CampaignResult[]): string {
   const L: string[] = ['# Campaigns (generated)', '', 'Generated by `npm run balance:campaign` (`tools/balance/campaign.ts`). Do not edit by hand. The same numbers are in `campaign.json`, which `tests/gameplay/balance/campaign-gates.test.ts` holds to lower and upper bounds (and fails when they are stale).', ''];
   L.push("The model player (`tools/balance/playerModel.ts`) plays real timers, earned resources, real battles and offline raids with the simple bot attack plan (a human usually does better). Opponents are matched by honor, but never below the attacker's earned strength minus the Keep's `powerSlackByKeep` (else `powerSlack`). Army strength is the Keep the army's research matches (`attackerStrength`: a Keep 12 army two levels behind its caps reads about 10.5); Honor is the average honor while raiding at that Keep. Loot is Acorns + Dew banked per raid.", '');
   L.push('Defense columns: raids against the village at that Keep (real offline bot raids against the real layout), the share held (no star lost), Acorns + Dew taken per raid, and the honor change per raid.', '');
+  if (results[0]?.reps) L.push(`Each campaign is played ${results[0].reps} times with differently seeded villages (Beast Mode GT-11). Keep days are means with the 95% interval in brackets; the tables pool every run's raids; totals and Jade are per-run means.`, '');
   for (const r of results) {
     L.push(`## ${r.name}`, '');
-    L.push(`Keep reached (day): ${Object.entries(r.reached).map(([k, v]) => `${k}: ${v}`).join(' · ')}. Played ${r.days} days; ${r.defenses} raids against the village.`, '');
+    const ci = (k: string) => (r.reachedCi?.[Number(k)] ? ` [${r.reachedCi[Number(k)].lo.toFixed(1)}–${r.reachedCi[Number(k)].hi.toFixed(1)}]` : '');
+    L.push(`Keep reached (day): ${Object.entries(r.reached).map(([k, v]) => `${k}: ${v}${ci(k)}`).join(' · ')}. Played ${r.days} days; ${r.defenses} raids against the village.`, '');
     L.push(`Totals: ${Math.round(r.totals.looted).toLocaleString('en-US')} looted, ${Math.round(r.totals.stolen).toLocaleString('en-US')} taken by raids against the village (${r.totals.looted ? Math.round((r.totals.stolen / r.totals.looted) * 100) : 0}% of the loot), ${Math.round(r.totals.defenseRewards).toLocaleString('en-US')} paid for held raids.`, '');
     L.push('| Keep | Raids | Avg stars | Won | 3★ rate | Destruction | Loot | Opponent Keep | Army strength | Honor | Raided | Held | Stolen | Honor lost |', '|---|---|---|---|---|---|---|---|---|---|---|---|---|---|');
     for (const k of r.byKeep) {
@@ -187,6 +257,16 @@ export function campaignMarkdown(results: CampaignResult[]): string {
     }
     L.push('');
   }
+  // GT-11 (ECO-03): where Jade comes from and goes over a campaign (per-run means).
+  L.push('## Jade over a campaign (economy ECO-03)', '', 'Per-run means. Earned and spent by what moved it: the command (openDailyChest, claimTask, claimTier, trialEnd, claimCalendar, claimAchievement, …), `settle` (time passing with the game open: league and season chests, the stipend), `offline` (time away) and `raid`. The model player buys nothing with money and spends Jade only on Artisans when its policy hires them.', '');
+  const sources = [...new Set(results.flatMap((r) => Object.keys(r.jade?.earned ?? {})))].sort();
+  L.push(`| Campaign | Start | ${sources.map((s) => `+${s}`).join(' | ')} | Spent | End |`, `|---|---|${sources.map(() => '---|').join('')}---|---|`);
+  for (const r of results) {
+    if (!r.jade) continue;
+    const spent = Object.entries(r.jade.spent).map(([k, v]) => `${v} (${k})`).join(', ') || '0';
+    L.push(`| ${r.id} | ${r.jade.start} | ${sources.map((s) => r.jade.earned[s] ?? 0).join(' | ')} | ${spent} | ${r.jade.end} |`);
+  }
+  L.push('');
   // P2-04 (DEF-03): what defense buys, by policy. The fortress plays a walled generated layout (`labLayout`), the
   // others the model's own placement; all four play the same raids against generated bases.
   const pols = ['regular_rusher', 'regular', 'regular_defender', 'regular_fortress'].map((id) => results.find((r) => r.id === id)).filter((r): r is CampaignResult => Boolean(r));
