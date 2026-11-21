@@ -191,3 +191,40 @@ export async function statsFunnel(ctx: ServerContext, days: unknown, basisRaw: u
   return funnelOf(await ctx.repo.installSummaries(basis, today - n, today + 1), basis, today, n);
 }
 
+
+/**
+ * Beast Mode OPS-06: battle outcomes from the shared statistics of installs first seen in the last `days` days:
+ * per Shadow Trial tier, attempts and clears; per Keep, raids and the share ended by surrender. A staff report;
+ * it reads the raw events of those installs (statistics are an opted-in adult sample).
+ */
+export function battleOutcomesOf(events: StatsEventRow[]): { tiers: { tier: number; attempts: number; clears: number; clearRate: number }[]; keeps: { keep: number; raids: number; surrenders: number; surrenderShare: number }[] } {
+  const tiers = new Map<number, { attempts: number; clears: number }>();
+  const keeps = new Map<number, { raids: number; surrenders: number }>();
+  for (const e of events) {
+    if (e.name === 'trial_end' && typeof e.props.tier === 'number') {
+      const t = tiers.get(e.props.tier) ?? { attempts: 0, clears: 0 };
+      t.attempts++;
+      if (e.props.cleared === true) t.clears++;
+      tiers.set(e.props.tier, t);
+    } else if (e.name === 'raid_end' && typeof e.props.keep === 'number') {
+      const k = keeps.get(e.props.keep) ?? { raids: 0, surrenders: 0 };
+      k.raids++;
+      if (e.props.endReason === 'surrender') k.surrenders++;
+      keeps.set(e.props.keep, k);
+    }
+  }
+  const share = (a: number, b: number) => (b ? Math.round((a / b) * 1000) / 1000 : 0);
+  return {
+    tiers: [...tiers].sort((a, b) => a[0] - b[0]).map(([tier, v]) => ({ tier, ...v, clearRate: share(v.clears, v.attempts) })),
+    keeps: [...keeps].sort((a, b) => a[0] - b[0]).map(([keep, v]) => ({ keep, ...v, surrenderShare: share(v.surrenders, v.raids) })),
+  };
+}
+
+export async function battleOutcomes(ctx: ServerContext, days: unknown) {
+  const n = Math.max(1, Math.min(90, Math.floor(Number(days)) || 30));
+  const today = utcDay(ctx.now());
+  const installs = (await ctx.repo.installSummaries('utc', today - n, today + 1)).map((s) => s.install);
+  const events: StatsEventRow[] = [];
+  for (let i = 0; i < installs.length; i += 500) events.push(...(await ctx.repo.statsEventsOf(installs.slice(i, i + 500))));
+  return { days: n, installs: installs.length, ...battleOutcomesOf(events) };
+}

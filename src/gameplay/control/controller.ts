@@ -211,7 +211,11 @@ export class GameController {
         console.warn(`Raid ${e.id} could not be traced (${e.reason}); its losses were not taken here.`);
       } else if (e.kind === 'raid_end') {
         const r = e.record.result;
-        this.deps.analytics.log('raid_end', { kind: e.record.kind, stars: r.stars, destruction: r.destruction, loot: r.loot, used: r.used, ticks: r.ticks, endReason: r.endReason });
+        this.deps.analytics.log('raid_end', { kind: e.record.kind, stars: r.stars, destruction: r.destruction, loot: r.loot, used: r.used, ticks: r.ticks, endReason: r.endReason, keep: hallLevel(this.state, this.deps.data) });
+      } else if (e.kind === 'trial_end') {
+        // Beast Mode OPS-06: Shadow Trials left no trace in the statistics.
+        const r = e.record.result;
+        this.deps.analytics.log('trial_end', { tier: e.tier, cleared: e.cleared, stars: r.stars, destruction: r.destruction, endReason: r.endReason });
       }
     }
     this.emit([]);

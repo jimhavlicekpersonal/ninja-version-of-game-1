@@ -10,6 +10,7 @@ export type AnalyticsEventName =
   | 'collect'
   | 'skip_used'
   | 'raid_end'
+  | 'trial_end'
   | 'offer_shown'
   | 'purchase'
   | 'save_export'

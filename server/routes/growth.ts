@@ -37,6 +37,8 @@ export function growthStaffRoutes(app: FastifyInstance, staff: StaffRoute, core:
   const report = query('days', 'basis');
   staff('GET', '/admin/v1/stats/local', { query: report }, async (_a, { query }) => core.growth.statsLocalReport(query.days, query.basis));
   staff('GET', '/admin/v1/stats/funnel', { query: report }, async (_a, { query }) => core.growth.statsFunnel(query.days, query.basis));
+  // Beast Mode OPS-06: per Trial tier the clear rate, per Keep the share of raids ended by surrender.
+  staff('GET', '/admin/v1/stats/battles', { query: report }, async (_a, { query }) => core.growth.battleOutcomes(query.days));
   app.get('/admin/stats', async (_req, reply) => reply.type('text/html; charset=utf-8').header('Content-Security-Policy', ADMIN_PAGE_CSP).header('Cache-Control', 'no-store').header('X-Robots-Tag', 'noindex').send(statsPage()));
   app.get('/admin/stats.js', async (_req, reply) => reply.type('text/javascript; charset=utf-8').header('Cache-Control', 'no-store').send(statsScript()));
 }

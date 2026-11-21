@@ -22,7 +22,9 @@ type Kind = 'number' | 'boolean' | 'id';
 export const STATS_EVENTS: Readonly<Record<string, Readonly<Record<string, Kind>>>> = {
   session_start: { isNew: 'boolean', platform: 'id' },
   tutorial_step: { step: 'number', done: 'boolean' },
-  raid_end: { kind: 'id', stars: 'number', destruction: 'number' },
+  // Beast Mode OPS-06: how a battle ended ('time', 'destroyed', 'no_troops', 'surrender'), its length and the Keep.
+  raid_end: { kind: 'id', stars: 'number', destruction: 'number', endReason: 'id', ticks: 'number', keep: 'number' },
+  trial_end: { tier: 'number', cleared: 'boolean', stars: 'number', destruction: 'number', endReason: 'id' },
   offer_shown: { offerId: 'id', trigger: 'id' },
   purchase: { productId: 'id', usd: 'number', kind: 'id' },
   skip_used: { what: 'id', moonstones: 'number' },
@@ -50,8 +52,13 @@ export interface StatsBatch {
    * counted on the player's own calendar. Absent: days count in UTC.
    */
   tz?: number;
+  /** Beast Mode OPS-06: the event list's version (2 adds raid_end endReason/ticks/keep and trial_end; absent: 1). */
+  schema?: number;
   events: StatsEvent[];
 }
+
+/** OPS-06: the statistics schema this build sends. */
+export const STATS_SCHEMA = 2;
 
 /** A UTC offset as shared: whole minutes rounded to 15, −12 h to +14 h; anything else is dropped. */
 export function cleanTz(v: unknown): number | undefined {

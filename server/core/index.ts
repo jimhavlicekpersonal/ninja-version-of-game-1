@@ -184,6 +184,7 @@ export function createCore(ctx: ServerContext) {
       deleteSharedReplay: sharedReplays.remove.bind(null, ctx),
       statsLocalReport: statsLocal.statsLocalReport.bind(null, ctx),
       statsFunnel: statsLocal.statsFunnel.bind(null, ctx),
+      battleOutcomes: statsLocal.battleOutcomes.bind(null, ctx),
     },
     /** Staff only (the admin API in server/app.ts). */
     admin: {

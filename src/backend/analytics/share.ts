@@ -12,7 +12,7 @@
  * Batches go every `FLUSH_MS` while the game is open and when it is hidden; nothing is kept on
  * disk, so a few events can be lost when the app is killed (statistics, not a ledger).
  */
-import { cleanStatsEvent, cleanTz, STATS_MAX_BATCH, type StatsBatch, type StatsEvent } from '../net/stats';
+import { cleanStatsEvent, cleanTz, STATS_MAX_BATCH, type StatsBatch, type StatsEvent, STATS_SCHEMA } from '../net/stats';
 import type { KeyValue } from '../net/connection';
 import type { AnalyticsEvent } from './events';
 
@@ -167,7 +167,7 @@ export class StatsSharing {
         // Growth batch 2026-11-14: the device's UTC offset (rounded to 15 minutes) so days count locally; only in
         // builds that say so (`sendTz`, VITE_STATS_TZ=1), once the privacy policy lists it (docs/store/PRIVACY.md).
         const tz = this.o.sendTz ? cleanTz(this.o.tzOffset ? this.o.tzOffset() : -new Date().getTimezoneOffset()) : undefined;
-        await this.o.transport.send({ install, build: this.o.build, ...(arm ? { arm } : {}), ...(tz !== undefined ? { tz } : {}), events }, opts);
+        await this.o.transport.send({ install, build: this.o.build, schema: STATS_SCHEMA, ...(arm ? { arm } : {}), ...(tz !== undefined ? { tz } : {}), events }, opts);
         this.queue.splice(0, events.length);
       }
     } catch {
