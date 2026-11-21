@@ -654,7 +654,7 @@ async function boot(): Promise<void> {
   game.events.once(Phaser.Core.Events.STEP, () => {
     installGuard();
     // Beast Mode STB-06: a WebGL context that stays lost for 8 s of visible time: save and offer a reload.
-    if (game.renderer.type === Phaser.WEBGL) {
+    if (game.renderer.type !== Phaser.CANVAS) {
       watchContext(game.renderer as unknown as ContextEvents, {
         onLost: () => {
           crashReporter?.report(new Error('webgl_context_lost'), { kind: 'webgl' });
