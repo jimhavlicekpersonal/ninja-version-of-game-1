@@ -184,6 +184,8 @@ export interface GangWarAttack {
   stars: number;
   destruction: number;
   at: number;
+  /** Beast Mode GT-13: counts toward the war chest (`warChestAttack`); absent on rows from before (they count). */
+  counts?: boolean;
 }
 /** A relay assault on one base: the damage so far, and who holds the next strike. */
 export interface GangRelay {
@@ -458,6 +460,8 @@ export interface RaidAttack {
   stars: number;
   destruction: number;
   at: number;
+  /** Beast Mode GT-13: counts toward the war chest (`warChestAttack`); absent on rows from before (they count). */
+  counts?: boolean;
 }
 
 export interface RaidClaim {

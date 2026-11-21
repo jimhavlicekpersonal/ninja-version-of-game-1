@@ -224,7 +224,7 @@ export class PgAlliances extends PgBase {
   }
 
   async addRaidAttack(a: RaidAttack): Promise<void> {
-    await this.db.query('insert into raid_attacks (id, week, grove_id, attacker_id, target, stars, destruction, at) values ($1,$2,$3,$4,$5,$6,$7,$8)', [
+    await this.db.query('insert into raid_attacks (id, week, grove_id, attacker_id, target, stars, destruction, at, counts) values ($1,$2,$3,$4,$5,$6,$7,$8,$9)', [
       a.id,
       a.week,
       a.groveId,
@@ -233,6 +233,7 @@ export class PgAlliances extends PgBase {
       a.stars,
       a.destruction,
       a.at,
+      a.counts !== false,
     ]);
   }
 

@@ -18,6 +18,7 @@
  * - Gang Rating (step 66): `rateTeams` once a war between two real Gangs ends.
  */
 import { requireLease, type StillHeld } from '../jobs';
+import { warChestAttack } from '../../src/gameplay/sim/army';
 import type { BaseLayout } from '../../src/gameplay/sim/battle/types';
 import { generateOpponent } from '../../src/gameplay/sim/battle/basegen';
 import { newRating, rateTeams, type Rating } from '../../src/gameplay/sim/rating';
@@ -348,7 +349,8 @@ export async function warAttack(ctx: ServerContext, me: Player, sub: BattleRepor
     await lockPlayers(tx, [me.id]);
     const used = (await tx.warAttacks(w.id)).filter((a) => a.attackerId === me.id).length;
     if (used >= ctx.data.social.gangWar.attacksPerMember) throw fail(409, 'no_attacks_left', 'war.attacks_used');
-    await tx.addWarAttack({ id: ctx.uuid(), warId: w.id, side, attackerId: me.id, target, relay: Boolean(ticket.relay), stars: result.stars, destruction: result.destruction, at: t });
+    const counts = warChestAttack(result.used, result.stars, me.hallLevel, ctx.data.social.gangWar.chestMinDeployShare, ctx.data);
+    await tx.addWarAttack({ id: ctx.uuid(), warId: w.id, side, attackerId: me.id, target, relay: Boolean(ticket.relay), stars: result.stars, destruction: result.destruction, at: t, counts });
     if (ticket.relay) {
       const prev = await tx.getRelay(w.id, side, target);
       await tx.putRelay({ warId: w.id, side, target, damage: carryRelayDamage(out.damage, ctx.data), stars: result.stars, destruction: result.destruction, strikes: (prev?.strikes ?? 0) + 1, lastBy: me.name, holder: null, holdUntil: 0 });
@@ -421,7 +423,8 @@ export async function claim(ctx: ServerContext, me: Player, warId: unknown): Pro
   // Exploit audit 2026-11-20 #10: the chest is for members who fought (`chestMinAttacks`, as Alliance Wars do);
   // a squad with an alt used to collect a chest a day without attacking.
   const minAttacks = ctx.data.social.gangWar.chestMinAttacks ?? 1;
-  if ((await ctx.repo.warAttacks(w.id)).filter((a) => a.attackerId === me.id).length < minAttacks) throw fail(404, 'not_found', 'war.not_part');
+  // Beast Mode GT-13: only attacks that count (a star, or most of the camps deployed).
+  if ((await ctx.repo.warAttacks(w.id)).filter((a) => a.attackerId === me.id && a.counts !== false).length < minAttacks) throw fail(404, 'not_found', 'war.not_part');
   const { ours, theirs } = await totals(ctx, w, side, w.endsAt);
   const outcome = gangWarOutcome(sideTotal(ours), sideTotal(theirs));
   const generated = w[other(side)].bot;

@@ -23,8 +23,10 @@ async function refusal(p: Promise<unknown>): Promise<ServerError> {
 }
 
 for (const [label, makeRepo] of repoFactories) {
+  // Beast Mode GT-13: these cases are about duplicates and timing, not the effort a chest needs (that is
+  // war-chest-effort.test.ts and gang-wars.test.ts), so a one-warrior strike still counts here.
   async function scene() {
-    const w = world({ repo: await makeRepo() });
+    const w = world({ repo: await makeRepo(), data: { ...data, social: { ...data.social, gangWar: { ...data.social.gangWar, chestMinDeployShare: 0 } } } });
     const p = async (name: string, seed: number) => w.player(name, baseAt(3, seed));
     const [ann, bo, cy, dee, eve] = [await p('Ann Swift', 1), await p('Bo Quietstep', 2), await p('Cy Ironpine', 3), await p('Dee Swiftwind', 4), await p('Eve Stonepath', 5)];
     const befriend = async (a: typeof ann, b: typeof ann) => {

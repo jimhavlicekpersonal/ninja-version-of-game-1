@@ -197,6 +197,7 @@ export const toRaidAttack = (r: Row): RaidAttack => ({
   stars: num(r.stars),
   destruction: num(r.destruction),
   at: num(r.at),
+  counts: r.counts !== false,
 });
 export const toDeletion = (r: Row): DeletionRequest => ({
   id: String(r.id),

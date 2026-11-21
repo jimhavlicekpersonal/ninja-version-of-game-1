@@ -1197,6 +1197,8 @@ export interface SocialDef {
     attacksPerMember: number;
     /** Ledger audit E12: own attacks in a war before its chest (and Alliance XP) is paid. */
     chestMinAttacks: number;
+    /** Beast Mode GT-13: share of the Keep's full camp housing an attack without a star must deploy to count. */
+    chestMinDeployShare?: number;
     /** Ledger audit E12: at most this many ended wars are paid when a player comes back. */
     settleWeeksMax: number;
     prepOfferHours: number;
@@ -1216,6 +1218,8 @@ export interface SocialDef {
     generatedOpponentJade: boolean;
     /** Attacks a member needs in the war for a chest (exploit audit 2026-11-20 #10). */
     chestMinAttacks?: number;
+    /** Beast Mode GT-13: as `groveRaid.chestMinDeployShare`. */
+    chestMinDeployShare?: number;
     botAfterMinutes: number;
     recentOpponents: number;
     rewards: Record<'win' | 'draw' | 'loss', Cost>;

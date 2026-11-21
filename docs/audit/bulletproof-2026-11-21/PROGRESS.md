@@ -43,7 +43,7 @@ New player-visible strings are translated into all 49 other ready languages in t
 | GT-10 | MEDIUM | 7 | DESIGN | open | | | |
 | GT-11 | MEDIUM | 7 | TOOLING | open | | | |
 | GT-12 | MEDIUM | 7 | DESIGN | open | | | |
-| GT-13 | LOW | 7 | DESIGN | open | | | |
+| GT-13 | LOW | 7 | DESIGN | partial |  | tests/backend/server/war-chest-effort.test.ts | token attacks (no star, < 80% of the Keep's camps deployed) do not count toward Alliance/Gang War chests (warChestAttack, migration 0045 counts). Not done: chest split by own stars (>= 30%); the offline device Alliance War keeps its own count |
 | GT-14 | LOW | 7 | TOOLING | open | | | |
 | GT-15 | LOW | 7 | DESIGN | open | | | |
 | GT-16 | LOW | 7 | DESIGN | open | | | |

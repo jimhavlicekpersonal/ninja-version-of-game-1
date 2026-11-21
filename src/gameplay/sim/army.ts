@@ -136,6 +136,16 @@ export function queueEndsAt(state: VillageState, now: number): number {
   return last ? Math.max(now, last.endsAt) : now;
 }
 
+/**
+ * Beast Mode 2026-11-21 GT-13: does a war attack count toward the war's chest? Only a real attack: it won a star, or
+ * it deployed at least `share` of the attacker's Keep's full camp housing (a one-warrior token attack does not).
+ */
+export function warChestAttack(used: Record<string, number>, stars: number, hallLevel: number, share: number | undefined, data: GameData): boolean {
+  if (stars >= 1 || !share) return true;
+  const camps = maxHousingAtHall(hallLevel, data);
+  return camps <= 0 || armyHousing(used, data) >= share * camps;
+}
+
 /** Largest Army Camp housing possible at a Keep level (every camp at its cap). */
 export function maxHousingAtHall(hallLevel: number, data: GameData): number {
   const levels = data.hall.levels;

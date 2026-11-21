@@ -4,6 +4,7 @@
  * and chests as the game's offline Grove Raid (src/sim/social/groveRaid.ts).
  */
 import { createRng, int, mixSeed, next } from '../../src/gameplay/sim/rng';
+import { warChestAttack } from '../../src/gameplay/sim/army';
 import { enemyGrove, raidPhase, raidWindow } from '../../src/gameplay/sim/social/groveRaid';
 import type { RaidAttackResponse, RaidClaimResponse, RaidTicketResponse, RaidView } from '../../src/backend/net/protocol';
 import type { GroveSummaryRow, Player, RaidPairing, RosterEntry } from '../repo';
@@ -162,7 +163,8 @@ function outcomeOf(s: { ours: number; theirs: number; ourDestruction?: number; t
 
 /** Ledger audit E14: did this member attack at least `chestMinAttacks` times in that week's war? */
 async function foughtIn(ctx: ServerContext, week: number, groveId: string, playerId: string): Promise<boolean> {
-  return (await ctx.repo.raidAttacks(week, groveId)).filter((a) => a.attackerId === playerId).length >= ctx.data.social.groveRaid.chestMinAttacks;
+  // Beast Mode GT-13: only attacks that count (a star, or most of the camps deployed).
+  return (await ctx.repo.raidAttacks(week, groveId)).filter((a) => a.attackerId === playerId && a.counts !== false).length >= ctx.data.social.groveRaid.chestMinAttacks;
 }
 
 export async function raid(ctx: ServerContext, me: Player): Promise<RaidView> {
@@ -267,7 +269,8 @@ export async function raidAttack(ctx: ServerContext, me: Player, sub: BattleRepo
     // A village the server keeps spends the warriors who fought (roadmap step 22).
     const spent = await applyServerResult(tx, ctx, me, [{ cmd: { type: 'remoteGroveBattleEnd', target: ticket.target!, record: { at: ctx.now(), opponentName: ticket.defenderName, setup, deployments, endTick: sub.endTick }, known: result }, reason: 'war:troops' }], ticket.id);
     if (spent && !spent.ok) throw fail(400, 'bad_request', 'village.says', { detail: spent.message });
-    await tx.addRaidAttack({ id: ctx.uuid(), week, groveId: ticket.groveId!, attackerId: me.id, target: ticket.target!, stars: result.stars, destruction: result.destruction, at: t });
+    const counts = warChestAttack(result.used, result.stars, me.hallLevel, ctx.data.social.groveRaid.chestMinDeployShare, ctx.data);
+    await tx.addRaidAttack({ id: ctx.uuid(), week, groveId: ticket.groveId!, attackerId: me.id, target: ticket.target!, stars: result.stars, destruction: result.destruction, at: t, counts });
   });
   const s = await scores(ctx, pairing, ctx.now());
   return { result, stars: result.stars, ours: s.ours, theirs: s.theirs };

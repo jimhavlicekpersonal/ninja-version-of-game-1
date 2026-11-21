@@ -128,9 +128,10 @@ for (const [label, makeRepo] of repoFactories) {
       const claim = await ann.gangWarClaim(end.id);
       expect(claim).toMatchObject({ outcome: 'win', alreadyClaimed: false });
       expect((await ann.gangWarClaim(end.id)).alreadyClaimed).toBe(true);
-      // Exploit audit 2026-11-20 #10: Cy never attacked, so no chest; Dee did, and gets the loss chest.
+      // Exploit audit 2026-11-20 #10: Cy never attacked, so no chest. Beast Mode GT-13: Dee's one-warrior strike
+      // (no star, nothing like the camps deployed) uses an attack but does not earn the chest either.
       expect((await refusal(cy.gangWarClaim(end.id))).code).toBe('not_found');
-      expect((await dee.gangWarClaim(end.id)).outcome).toBe('loss');
+      expect((await refusal(dee.gangWarClaim(end.id))).code).toBe('not_found');
       // Step 66: the Gang Ratings moved once, the right way.
       const [mine, theirs] = [(await ann.squad()).squad!.rating, (await cy.squad()).squad!.rating];
       expect(mine).toBeGreaterThan(data.ranks.rating.initial);

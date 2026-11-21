@@ -92,11 +92,11 @@ export class PgGangs extends PgBase {
     return (await this.rows('select * from squad_wars where squad_a = $1 or squad_b = $1 order by created_at desc limit $2', [squadId, limit])).map(toWar);
   }
   async addWarAttack(a: GangWarAttack): Promise<void> {
-    await this.db.query('insert into squad_war_attacks (id, war_id, side, attacker_id, target, relay, stars, destruction, at) values ($1, $2, $3, $4, $5, $6, $7, $8, $9)', [a.id, a.warId, a.side, a.attackerId, a.target, a.relay, a.stars, a.destruction, a.at]);
+    await this.db.query('insert into squad_war_attacks (id, war_id, side, attacker_id, target, relay, stars, destruction, at, counts) values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)', [a.id, a.warId, a.side, a.attackerId, a.target, a.relay, a.stars, a.destruction, a.at, a.counts !== false]);
   }
   async warAttacks(warId: string): Promise<GangWarAttack[]> {
     const r = await this.rows('select * from squad_war_attacks where war_id = $1 order by at', [warId]);
-    return r.map((x) => ({ id: String(x.id), warId: String(x.war_id), side: x.side === 'b' ? 'b' : 'a', attackerId: String(x.attacker_id), target: num(x.target), relay: Boolean(x.relay), stars: num(x.stars), destruction: num(x.destruction), at: num(x.at) }));
+    return r.map((x) => ({ id: String(x.id), warId: String(x.war_id), side: x.side === 'b' ? 'b' : 'a', attackerId: String(x.attacker_id), target: num(x.target), relay: Boolean(x.relay), stars: num(x.stars), destruction: num(x.destruction), at: num(x.at), counts: x.counts !== false }));
   }
   async getRelay(warId: string, side: 'a' | 'b', target: number): Promise<GangRelay | null> {
     const r = await this.rows('select * from squad_war_relays where war_id = $1 and side = $2 and target = $3', [warId, side, target]);
