@@ -370,5 +370,6 @@
   "pass.bonus.detail": { "en": "{left, plural, =0 {All {max} bonuses collected this season ({got} of {max})} one {Every task still pays: the next bonus in # point ({got} of {max} this season)} other {Every task still pays: the next bonus in # points ({got} of {max} this season)}}", "text": "{left, plural, =0 {เก็บโบนัสครบทั้ง {max} ครั้งของซีซันนี้แล้ว ({got} จาก {max})} other {ทุกภารกิจยังให้แต้มอยู่: โบนัสถัดไปในอีก # แต้ม ({got} จาก {max} ในซีซันนี้)}}" },
   "settings.reduceEffects": { "en": "Reduce screen shake and flashes", "text": "ลดการสั่นของหน้าจอและแสงวาบ" },
   "store.buyNamed": { "en": "Buy {name} for {price}", "text": "ซื้อ {name} ในราคา {price}" },
-  "res.jadeOpenStore": { "en": "Jade: {n}. Open the Store", "text": "หยก: {n} เปิดร้านค้า" }
+  "res.jadeOpenStore": { "en": "Jade: {n}. Open the Store", "text": "หยก: {n} เปิดร้านค้า" },
+  "settings.textSize": { "en": "Text size", "text": "ขนาดตัวอักษร" }
 }

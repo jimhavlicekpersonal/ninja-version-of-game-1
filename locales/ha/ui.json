@@ -370,5 +370,6 @@
   "pass.bonus.detail": { "en": "{left, plural, =0 {All {max} bonuses collected this season ({got} of {max})} one {Every task still pays: the next bonus in # point ({got} of {max} this season)} other {Every task still pays: the next bonus in # points ({got} of {max} this season)}}", "text": "{left, plural, =0 {An karɓi duk ƙari {max} na wannan kaka ({got} cikin {max})} one {Kowane aiki yana ci gaba da ba da lada: ƙari na gaba saura maki # ({got} cikin {max} a wannan kaka)} other {Kowane aiki yana ci gaba da ba da lada: ƙari na gaba saura maki # ({got} cikin {max} a wannan kaka)}}" },
   "settings.reduceEffects": { "en": "Reduce screen shake and flashes", "text": "Rage girgizar allo da walƙiya" },
   "store.buyNamed": { "en": "Buy {name} for {price}", "text": "Saya {name} kan {price}" },
-  "res.jadeOpenStore": { "en": "Jade: {n}. Open the Store", "text": "Jed: {n}. Buɗe Shago" }
+  "res.jadeOpenStore": { "en": "Jade: {n}. Open the Store", "text": "Jed: {n}. Buɗe Shago" },
+  "settings.textSize": { "en": "Text size", "text": "Girman rubutu" }
 }

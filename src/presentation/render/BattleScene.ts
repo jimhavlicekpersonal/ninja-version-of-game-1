@@ -1,5 +1,6 @@
 import { messageText as ownedText, labelText } from '../ui/i18n';
 import { pointLabel, t } from '../ui/i18n';
+import { scaledPx } from './textScale';
 import Phaser from 'phaser';
 import { BODY_FONT } from './fonts';
 import { queueArt } from './artManifest';
@@ -629,7 +630,7 @@ export class BattleScene extends Phaser.Scene {
       this.entryGfx = this.add.graphics().setDepth(-3);
       this.entryLabels = entry.points.map(() =>
         this.add
-          .text(0, 0, '', { fontFamily: BODY_FONT, fontSize: '15px', fontStyle: 'bold', color: '#fff6c8', stroke: '#26303d', strokeThickness: 4, align: 'center', resolution: Math.max(2, this.renderScale) })
+          .text(0, 0, '', { fontFamily: BODY_FONT, fontSize: scaledPx(15), fontStyle: 'bold', color: '#fff6c8', stroke: '#26303d', strokeThickness: 4, align: 'center', resolution: Math.max(2, this.renderScale) })
           .setShadow(0, 2, 'rgba(15,20,30,0.45)', 3, true, true)
           .setOrigin(0.5, 1)
           .setDepth(OVER - 50),
@@ -964,7 +965,7 @@ export class BattleScene extends Phaser.Scene {
     const zoom = this.cam.userZoom;
     const shown = ownedText(text);
     const label = this.add
-      .text(x, y, shown, { fontFamily: BODY_FONT, fontSize: '13px', fontStyle: 'bold', color, stroke: '#26303d', strokeThickness: 4, resolution: Math.max(2, this.renderScale) })
+      .text(x, y, shown, { fontFamily: BODY_FONT, fontSize: scaledPx(13), fontStyle: 'bold', color, stroke: '#26303d', strokeThickness: 4, resolution: Math.max(2, this.renderScale) })
       .setShadow(0, 2, 'rgba(15,20,30,0.45)', 3, true, true)
       .setOrigin(0.5, 1)
       .setScale(1 / zoom)

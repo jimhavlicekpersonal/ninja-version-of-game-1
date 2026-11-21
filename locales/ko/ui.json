@@ -370,5 +370,6 @@
   "pass.bonus.detail": { "en": "{left, plural, =0 {All {max} bonuses collected this season ({got} of {max})} one {Every task still pays: the next bonus in # point ({got} of {max} this season)} other {Every task still pays: the next bonus in # points ({got} of {max} this season)}}", "text": "{left, plural, =0 {이번 시즌 보너스 {max}개를 모두 받았어요({got}/{max})} other {과제는 계속 포인트를 줘요: 다음 보너스까지 #포인트(이번 시즌 {got}/{max})}}" },
   "settings.reduceEffects": { "en": "Reduce screen shake and flashes", "text": "화면 흔들림과 번쩍임 줄이기" },
   "store.buyNamed": { "en": "Buy {name} for {price}", "text": "{name} {price}에 구매" },
-  "res.jadeOpenStore": { "en": "Jade: {n}. Open the Store", "text": "비취: {n}. 상점 열기" }
+  "res.jadeOpenStore": { "en": "Jade: {n}. Open the Store", "text": "비취: {n}. 상점 열기" },
+  "settings.textSize": { "en": "Text size", "text": "글자 크기" }
 }

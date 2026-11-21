@@ -370,5 +370,6 @@
   "pass.bonus.detail": { "en": "{left, plural, =0 {All {max} bonuses collected this season ({got} of {max})} one {Every task still pays: the next bonus in # point ({got} of {max} this season)} other {Every task still pays: the next bonus in # points ({got} of {max} this season)}}", "text": "{left, plural, =0 {Zbrani so vsi bonusi te sezone ({got} od {max})} one {Vsaka naloga še šteje: do naslednjega bonusa še # točka ({got} od {max} v tej sezoni)} two {Vsaka naloga še šteje: do naslednjega bonusa še # točki ({got} od {max} v tej sezoni)} few {Vsaka naloga še šteje: do naslednjega bonusa še # točke ({got} od {max} v tej sezoni)} other {Vsaka naloga še šteje: do naslednjega bonusa še # točk ({got} od {max} v tej sezoni)}}" },
   "settings.reduceEffects": { "en": "Reduce screen shake and flashes", "text": "Zmanjšaj tresenje zaslona in bliske" },
   "store.buyNamed": { "en": "Buy {name} for {price}", "text": "Kupi {name} za {price}" },
-  "res.jadeOpenStore": { "en": "Jade: {n}. Open the Store", "text": "Žad: {n}. Odpri trgovino" }
+  "res.jadeOpenStore": { "en": "Jade: {n}. Open the Store", "text": "Žad: {n}. Odpri trgovino" },
+  "settings.textSize": { "en": "Text size", "text": "Velikost besedila" }
 }

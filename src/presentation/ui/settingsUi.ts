@@ -7,6 +7,7 @@
 import { messageText as i18nMessage, dateText as i18nDate } from './i18n';
 import { displayData as localizedData, labelText as i18nLabel } from './i18n';
 import { t as i18nText } from './i18n';
+import { fmtPercent } from './i18n';
 import { automaticLanguage, language, languageCoverage, languagePreference, languages, READY_COVERAGE, setLanguagePreference, useLanguage, t } from './i18n';
 import { Capacitor } from '@capacitor/core';
 import type { GameController, VillageBackup } from '../../gameplay/control/controller';
@@ -20,6 +21,7 @@ import { clear, h } from './dom';
 import { formatDuration } from './format';
 import { getQualityChoice, quality, setQualityChoice, type QualityChoice } from '../render/quality';
 import { reduceEffectsChoice, setReduceEffects } from '../render/motion';
+import { TEXT_SCALES, setTextScale, textScale } from '../render/textScale';
 import { uiArt } from './feedback';
 import { statsExplainer } from './statsText';
 
@@ -124,7 +126,7 @@ export class SettingsUi {
 
     // Graphics
     body.append(this.languageRow());
-    body.append(h('h3', {}, i18nText("ui.graphics_a874fca87c")), this.qualityRow());
+    body.append(h('h3', {}, i18nText("ui.graphics_a874fca87c")), this.qualityRow(), this.textSizeRow());
 
     // Privacy and help (crash reports are a privacy choice, so they sit here)
     body.append(this.privacySection());
@@ -273,6 +275,14 @@ export class SettingsUi {
       }
     });
     return h('div', {}, h('label', { class: 'toggle' }, i18nText("ui.graphics_8a3477b096"), select), note);
+  }
+
+  /** Beast Mode UX-08: text size, applied to the HUD at once (rem) and to map labels from the next scene. */
+  private textSizeRow(): HTMLElement {
+    const now = textScale();
+    const select = h('select', { class: 'text', 'data-id': 'text-size', 'aria-label': t('settings.textSize') }, ...TEXT_SCALES.map((v) => h('option', { value: String(v), ...(v === now ? { selected: true } : {}) }, fmtPercent(v * 100)))) as HTMLSelectElement;
+    select.addEventListener('change', () => setTextScale(Number(select.value)));
+    return h('div', {}, h('label', { class: 'toggle' }, t('settings.textSize'), select));
   }
 
   private privacySection(): HTMLElement {

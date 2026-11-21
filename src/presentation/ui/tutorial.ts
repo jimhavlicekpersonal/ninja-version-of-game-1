@@ -206,7 +206,10 @@ export class Tutorial {
     const face = h('div', { class: 'tut-face' });
     if (uiArt.senseiPortrait) face.innerHTML = uiArt.senseiPortrait(step.mood ?? 'calm');
     else face.append(icon(icons.toadstool));
-    this.bubble.append(face, h('div', { class: 'tut-body' }, h('p', { class: 'tut-step' }, t('tutorial.step', { n: i + 1, total: STEPS.length })), this.text, extra ? h('p', { class: 'tut-extra' }, extra) : null, actions), i < STEPS.length - 1 ? skip : '');
+    // Beast Mode UX-08: the step label and Skip share one row that wraps, so a long translation or a larger text
+    // size never draws one over the other (Skip used to sit absolutely in the corner).
+    const head = h('div', { class: 'tut-head' }, h('p', { class: 'tut-step' }, t('tutorial.step', { n: i + 1, total: STEPS.length })), i < STEPS.length - 1 ? skip : '');
+    this.bubble.append(face, h('div', { class: 'tut-body' }, head, this.text, extra ? h('p', { class: 'tut-extra' }, extra) : null, actions));
   }
 
   private stepText(step: Step): string {

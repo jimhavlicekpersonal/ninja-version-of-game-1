@@ -370,5 +370,6 @@
   "pass.bonus.detail": { "en": "{left, plural, =0 {All {max} bonuses collected this season ({got} of {max})} one {Every task still pays: the next bonus in # point ({got} of {max} this season)} other {Every task still pays: the next bonus in # points ({got} of {max} this season)}}", "text": "{left, plural, =0 {Tutti i {max} bonus della stagione ottenuti ({got} su {max})} one {Ogni attività conta ancora: il prossimo bonus tra # punto ({got} su {max} in questa stagione)} other {Ogni attività conta ancora: il prossimo bonus tra # punti ({got} su {max} in questa stagione)}}" },
   "settings.reduceEffects": { "en": "Reduce screen shake and flashes", "text": "Riduci scosse e lampi dello schermo" },
   "store.buyNamed": { "en": "Buy {name} for {price}", "text": "Acquista {name} a {price}" },
-  "res.jadeOpenStore": { "en": "Jade: {n}. Open the Store", "text": "Giada: {n}. Apri il negozio" }
+  "res.jadeOpenStore": { "en": "Jade: {n}. Open the Store", "text": "Giada: {n}. Apri il negozio" },
+  "settings.textSize": { "en": "Text size", "text": "Dimensione del testo" }
 }

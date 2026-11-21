@@ -370,5 +370,6 @@
   "pass.bonus.detail": { "en": "{left, plural, =0 {All {max} bonuses collected this season ({got} of {max})} one {Every task still pays: the next bonus in # point ({got} of {max} this season)} other {Every task still pays: the next bonus in # points ({got} of {max} this season)}}", "text": "{left, plural, =0 {כל {max} הבונוסים של העונה נאספו ({got} מתוך {max})} one {כל משימה עדיין משתלמת: הבונוס הבא בעוד נקודה אחת ({got} מתוך {max} העונה)} two {כל משימה עדיין משתלמת: הבונוס הבא בעוד # נקודות ({got} מתוך {max} העונה)} other {כל משימה עדיין משתלמת: הבונוס הבא בעוד # נקודות ({got} מתוך {max} העונה)}}" },
   "settings.reduceEffects": { "en": "Reduce screen shake and flashes", "text": "הפחתת רעידות מסך והבזקים" },
   "store.buyNamed": { "en": "Buy {name} for {price}", "text": "קנייה של {name} ב-{price}" },
-  "res.jadeOpenStore": { "en": "Jade: {n}. Open the Store", "text": "ירקן: {n}. פתיחת החנות" }
+  "res.jadeOpenStore": { "en": "Jade: {n}. Open the Store", "text": "ירקן: {n}. פתיחת החנות" },
+  "settings.textSize": { "en": "Text size", "text": "גודל טקסט" }
 }

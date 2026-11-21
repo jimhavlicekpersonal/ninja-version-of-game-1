@@ -370,5 +370,6 @@
   "pass.bonus.detail": { "en": "{left, plural, =0 {All {max} bonuses collected this season ({got} of {max})} one {Every task still pays: the next bonus in # point ({got} of {max} this season)} other {Every task still pays: the next bonus in # points ({got} of {max} this season)}}", "text": "{left, plural, =0 {O ti gba gbogbo àfikún {max} ní àsìkò yìí ({got} nínú {max})} other {Iṣẹ́ kọ̀ọ̀kan ṣì ń mú èrè wá: àmì # ló kù kí àfikún tó kàn dé ({got} nínú {max} ní àsìkò yìí)}}" },
   "settings.reduceEffects": { "en": "Reduce screen shake and flashes", "text": "Dín mímì ojú iboju àti ìmọ́lẹ̀ tó ń tàn kù" },
   "store.buyNamed": { "en": "Buy {name} for {price}", "text": "Ra {name} ní {price}" },
-  "res.jadeOpenStore": { "en": "Jade: {n}. Open the Store", "text": "Jéèdì: {n}. Ṣí Ilé ìtajà" }
+  "res.jadeOpenStore": { "en": "Jade: {n}. Open the Store", "text": "Jéèdì: {n}. Ṣí Ilé ìtajà" },
+  "settings.textSize": { "en": "Text size", "text": "Ìwọ̀n ọ̀rọ̀" }
 }

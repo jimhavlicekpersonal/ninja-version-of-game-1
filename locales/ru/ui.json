@@ -370,5 +370,6 @@
   "pass.bonus.detail": { "en": "{left, plural, =0 {All {max} bonuses collected this season ({got} of {max})} one {Every task still pays: the next bonus in # point ({got} of {max} this season)} other {Every task still pays: the next bonus in # points ({got} of {max} this season)}}", "text": "{left, plural, =0 {Все бонусы сезона собраны ({got} из {max})} one {Каждое задание по-прежнему приносит пользу: до следующего бонуса # очко ({got} из {max} за сезон)} few {Каждое задание по-прежнему приносит пользу: до следующего бонуса # очка ({got} из {max} за сезон)} many {Каждое задание по-прежнему приносит пользу: до следующего бонуса # очков ({got} из {max} за сезон)} other {Каждое задание по-прежнему приносит пользу: до следующего бонуса # очка ({got} из {max} за сезон)}}" },
   "settings.reduceEffects": { "en": "Reduce screen shake and flashes", "text": "Уменьшить тряску экрана и вспышки" },
   "store.buyNamed": { "en": "Buy {name} for {price}", "text": "Купить «{name}» за {price}" },
-  "res.jadeOpenStore": { "en": "Jade: {n}. Open the Store", "text": "Нефрит: {n}. Открыть магазин" }
+  "res.jadeOpenStore": { "en": "Jade: {n}. Open the Store", "text": "Нефрит: {n}. Открыть магазин" },
+  "settings.textSize": { "en": "Text size", "text": "Размер текста" }
 }

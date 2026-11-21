@@ -1,5 +1,6 @@
 import { messageText as ownedText, labelText } from '../ui/i18n';
 import { provideBuildingLocator, type ScreenRect } from './anchors';
+import { scaledPx } from './textScale';
 import Phaser from 'phaser';
 import { BODY_FONT, DISPLAY_FONT } from './fonts';
 import { queueArt } from './artManifest';
@@ -238,7 +239,7 @@ export class VillageScene extends Phaser.Scene {
       const label = this.add
         .text(0, -15, '', {
           fontFamily: BODY_FONT,
-          fontSize: '14px',
+          fontSize: scaledPx(14),
           fontStyle: 'bold',
           color: '#ffffff',
           stroke: '#26303d',
@@ -402,7 +403,7 @@ export class VillageScene extends Phaser.Scene {
     const t = this.add
       .text(view.image.x, top, ownedText(text), {
         fontFamily: DISPLAY_FONT,
-        fontSize: '19px',
+        fontSize: scaledPx(19),
         fontStyle: 'normal',
         color,
         stroke: '#26303d',

@@ -370,5 +370,6 @@
   "pass.bonus.detail": { "en": "{left, plural, =0 {All {max} bonuses collected this season ({got} of {max})} one {Every task still pays: the next bonus in # point ({got} of {max} this season)} other {Every task still pays: the next bonus in # points ({got} of {max} this season)}}", "text": "{left, plural, =0 {Získáno všech {max} bonusů této sezóny ({got} z {max})} one {Každý úkol se stále vyplatí: do dalšího bonusu zbývá # bod ({got} z {max} v této sezóně)} few {Každý úkol se stále vyplatí: do dalšího bonusu zbývají # body ({got} z {max} v této sezóně)} many {Každý úkol se stále vyplatí: do dalšího bonusu zbývá # bodu ({got} z {max} v této sezóně)} other {Každý úkol se stále vyplatí: do dalšího bonusu zbývá # bodů ({got} z {max} v této sezóně)}}" },
   "settings.reduceEffects": { "en": "Reduce screen shake and flashes", "text": "Omezit otřesy obrazovky a záblesky" },
   "store.buyNamed": { "en": "Buy {name} for {price}", "text": "Koupit {name} za {price}" },
-  "res.jadeOpenStore": { "en": "Jade: {n}. Open the Store", "text": "Nefrit: {n}. Otevřít obchod" }
+  "res.jadeOpenStore": { "en": "Jade: {n}. Open the Store", "text": "Nefrit: {n}. Otevřít obchod" },
+  "settings.textSize": { "en": "Text size", "text": "Velikost textu" }
 }

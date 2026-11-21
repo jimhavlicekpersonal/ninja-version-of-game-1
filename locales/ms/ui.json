@@ -370,5 +370,6 @@
   "pass.bonus.detail": { "en": "{left, plural, =0 {All {max} bonuses collected this season ({got} of {max})} one {Every task still pays: the next bonus in # point ({got} of {max} this season)} other {Every task still pays: the next bonus in # points ({got} of {max} this season)}}", "text": "{left, plural, =0 {Semua {max} bonus dikutip musim ini ({got} daripada {max})} other {Setiap tugasan masih berbaloi: bonus seterusnya dalam # mata ({got} daripada {max} musim ini)}}" },
   "settings.reduceEffects": { "en": "Reduce screen shake and flashes", "text": "Kurangkan gegaran skrin dan kilatan" },
   "store.buyNamed": { "en": "Buy {name} for {price}", "text": "Beli {name} pada harga {price}" },
-  "res.jadeOpenStore": { "en": "Jade: {n}. Open the Store", "text": "Jed: {n}. Buka Kedai" }
+  "res.jadeOpenStore": { "en": "Jade: {n}. Open the Store", "text": "Jed: {n}. Buka Kedai" },
+  "settings.textSize": { "en": "Text size", "text": "Saiz teks" }
 }

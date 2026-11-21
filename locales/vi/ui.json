@@ -370,5 +370,6 @@
   "pass.bonus.detail": { "en": "{left, plural, =0 {All {max} bonuses collected this season ({got} of {max})} one {Every task still pays: the next bonus in # point ({got} of {max} this season)} other {Every task still pays: the next bonus in # points ({got} of {max} this season)}}", "text": "{left, plural, =0 {Đã nhận đủ {max} phần thưởng thêm của mùa giải này ({got}/{max})} other {Mọi nhiệm vụ vẫn có thưởng: phần thưởng thêm tiếp theo sau # điểm (mùa giải này {got}/{max})}}" },
   "settings.reduceEffects": { "en": "Reduce screen shake and flashes", "text": "Giảm rung màn hình và chớp sáng" },
   "store.buyNamed": { "en": "Buy {name} for {price}", "text": "Mua {name} với giá {price}" },
-  "res.jadeOpenStore": { "en": "Jade: {n}. Open the Store", "text": "Ngọc Bích: {n}. Mở Cửa hàng" }
+  "res.jadeOpenStore": { "en": "Jade: {n}. Open the Store", "text": "Ngọc Bích: {n}. Mở Cửa hàng" },
+  "settings.textSize": { "en": "Text size", "text": "Cỡ chữ" }
 }

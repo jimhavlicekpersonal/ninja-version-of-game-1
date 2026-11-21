@@ -558,6 +558,9 @@ details summary { cursor: pointer; font-weight: 800; margin: 8px 0 4px; }
 .tut-bubble.low { top: auto; bottom: calc(12px + var(--safe-b)); padding: 8px 12px; opacity: .97; }
 /* P6-09: the skip link in the bubble's top corner (never beside the bottom bar), and room for it in the text. */
 .tut-bubble .tut-skip.corner { position: absolute; top: 2px; inset-inline-end: 10px; padding: 4px 2px; min-height: 0; }
+/* Beast Mode UX-08: in the head row Skip is in the flow (it wraps under the step label when both do not fit). */
+.tut-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; column-gap: 8px; }
+.tut-head .tut-skip.corner { position: relative; top: auto; inset-inline-end: auto; margin-inline-start: auto; white-space: nowrap; }
 .tut-bubble .tut-body { padding-top: 14px; }
 .tut-bubble.low .tut-face { width: 36px; height: 36px; }
 .tut-bubble.low .tut-body p { font-size: 0.8125rem; margin-bottom: 4px; }

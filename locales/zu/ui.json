@@ -370,5 +370,6 @@
   "pass.bonus.detail": { "en": "{left, plural, =0 {All {max} bonuses collected this season ({got} of {max})} one {Every task still pays: the next bonus in # point ({got} of {max} this season)} other {Every task still pays: the next bonus in # points ({got} of {max} this season)}}", "text": "{left, plural, =0 {Wonke amabhonasi angu-{max} aqoqiwe kule sizini ({got} kwangu-{max})} one {Umsebenzi ngamunye usanikeza: kusele iphuzu elingu-# ukuthola ibhonasi elandelayo ({got} kwangu-{max} kule sizini)} other {Umsebenzi ngamunye usanikeza: kusele amaphuzu angu-# ukuthola ibhonasi elandelayo ({got} kwangu-{max} kule sizini)}}" },
   "settings.reduceEffects": { "en": "Reduce screen shake and flashes", "text": "Nciphisa ukunyakazisa kwesikrini nokukhanya okucwazimulayo" },
   "store.buyNamed": { "en": "Buy {name} for {price}", "text": "Thenga i-{name} nge-{price}" },
-  "res.jadeOpenStore": { "en": "Jade: {n}. Open the Store", "text": "Ijeyidi: {n}. Vula Isitolo" }
+  "res.jadeOpenStore": { "en": "Jade: {n}. Open the Store", "text": "Ijeyidi: {n}. Vula Isitolo" },
+  "settings.textSize": { "en": "Text size", "text": "Usayizi wombhalo" }
 }

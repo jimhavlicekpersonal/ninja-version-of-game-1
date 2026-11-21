@@ -370,5 +370,6 @@
   "pass.bonus.detail": { "en": "{left, plural, =0 {All {max} bonuses collected this season ({got} of {max})} one {Every task still pays: the next bonus in # point ({got} of {max} this season)} other {Every task still pays: the next bonus in # points ({got} of {max} this season)}}", "text": "{left, plural, =0 {本赛季的 {max} 份额外奖励已全部领取（{got}/{max}）} other {每个任务仍有回报：再获得 # 点即可领取下一份额外奖励（本赛季 {got}/{max}）}}" },
   "settings.reduceEffects": { "en": "Reduce screen shake and flashes", "text": "减少屏幕震动和闪光" },
   "store.buyNamed": { "en": "Buy {name} for {price}", "text": "以 {price} 购买{name}" },
-  "res.jadeOpenStore": { "en": "Jade: {n}. Open the Store", "text": "翡翠：{n}。打开商店" }
+  "res.jadeOpenStore": { "en": "Jade: {n}. Open the Store", "text": "翡翠：{n}。打开商店" },
+  "settings.textSize": { "en": "Text size", "text": "文字大小" }
 }

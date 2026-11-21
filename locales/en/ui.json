@@ -370,5 +370,6 @@
   "pass.bonus.detail": "{left, plural, =0 {All {max} bonuses collected this season ({got} of {max})} one {Every task still pays: the next bonus in # point ({got} of {max} this season)} other {Every task still pays: the next bonus in # points ({got} of {max} this season)}}",
   "settings.reduceEffects": "Reduce screen shake and flashes",
   "store.buyNamed": "Buy {name} for {price}",
-  "res.jadeOpenStore": "Jade: {n}. Open the Store"
+  "res.jadeOpenStore": "Jade: {n}. Open the Store",
+  "settings.textSize": "Text size"
 }

@@ -370,5 +370,6 @@
   "pass.bonus.detail": { "en": "{left, plural, =0 {All {max} bonuses collected this season ({got} of {max})} one {Every task still pays: the next bonus in # point ({got} of {max} this season)} other {Every task still pays: the next bonus in # points ({got} of {max} this season)}}", "text": "{left, plural, =0 {ഈ സീസണിലെ {max} ബോണസുകളും നേടി ({got}/{max})} one {ഓരോ ദൗത്യത്തിനും ഇപ്പോഴും പ്രതിഫലമുണ്ട്: അടുത്ത ബോണസിന് ഇനി # പോയിന്റ് (ഈ സീസണിൽ {got}/{max})} other {ഓരോ ദൗത്യത്തിനും ഇപ്പോഴും പ്രതിഫലമുണ്ട്: അടുത്ത ബോണസിന് ഇനി # പോയിന്റുകൾ (ഈ സീസണിൽ {got}/{max})}}" },
   "settings.reduceEffects": { "en": "Reduce screen shake and flashes", "text": "സ്ക്രീൻ കുലുക്കവും മിന്നലുകളും കുറയ്ക്കുക" },
   "store.buyNamed": { "en": "Buy {name} for {price}", "text": "{name} {price}-ന് വാങ്ങുക" },
-  "res.jadeOpenStore": { "en": "Jade: {n}. Open the Store", "text": "ജേഡ്: {n}. സ്റ്റോർ തുറക്കുക" }
+  "res.jadeOpenStore": { "en": "Jade: {n}. Open the Store", "text": "ജേഡ്: {n}. സ്റ്റോർ തുറക്കുക" },
+  "settings.textSize": { "en": "Text size", "text": "ടെക്സ്റ്റ് വലുപ്പം" }
 }

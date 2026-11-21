@@ -23,6 +23,13 @@
    Tests: tests/backend/pwa/boot.test.ts. */
 (function (w) {
   'use strict';
+  // Beast Mode UX-08: the player's text size before the first paint (render/textScale.ts writes it).
+  try {
+    var textScale = Number(w.localStorage.getItem('tk.textScale'));
+    if (textScale === 1.15 || textScale === 1.3) w.document.documentElement.style.fontSize = Math.round(textScale * 100) + '%';
+  } catch (e) {
+    /* storage blocked: the default size */
+  }
   var d = w.document;
   var SLOW_MS = 25000;
   var RETRY_KEY = 'tk.bootRetry';
