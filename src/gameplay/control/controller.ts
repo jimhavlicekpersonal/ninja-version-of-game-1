@@ -703,12 +703,18 @@ export class GameController {
     if (this.takenOver) return this.saveChain.then(() => false);
     const now = this.now();
     this.state = { ...this.state, lastSeenAt: now };
-    const file = serialize(this.state, now);
-    // Everything delivered so far is in this file.
-    const covered = this.awaitingSave.slice();
-    const run = this.saveChain
-      .then(() => this.deps.store.save(file))
-      .then(
+    // Beast Mode SAV-14: a save already queued and not started yet takes this one along: it serializes the village
+    // (and the receipts awaiting a save) when its turn comes, so a burst of commands writes once or twice, not once
+    // per command (each write is a 150-300 KB clone and put on a cheap phone).
+    if (this.queuedSave) return this.queuedSave;
+    const run = this.saveChain.then(() => {
+      this.queuedSave = null;
+      if (this.takenOver) return false;
+      const at = this.now();
+      const file = serialize(this.state, Math.max(at, this.state.lastSeenAt));
+      // Everything delivered so far is in this file.
+      const covered = this.awaitingSave.slice();
+      return this.deps.store.save(file).then(
         () => {
           this.awaitingSave = this.awaitingSave.filter((r) => !covered.includes(r));
           for (const r of covered) void this.payments.finish?.(r).catch(() => undefined);
@@ -721,9 +727,12 @@ export class GameController {
           return false;
         },
       );
+    });
+    this.queuedSave = run;
     this.saveChain = run.then(() => undefined);
     return run;
   }
+  private queuedSave: Promise<boolean> | null = null;
 
   subscribe(fn: Listener): () => void {
     this.listeners.add(fn);
