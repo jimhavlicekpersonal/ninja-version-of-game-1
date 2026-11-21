@@ -44,7 +44,7 @@ New player-visible strings are translated into all 49 other ready languages in t
 | GT-11 | MEDIUM | 7 | TOOLING | open | | | |
 | GT-12 | MEDIUM | 7 | DESIGN | partial |  | tests/backend/server/rating-power.test.ts | attacker power = research strength of a server-held village (attackPower) in rateBattle, forfeits and match ordering. Not done: defender power by defense strength, the board's own power weight, the extended convergence test with Keeps 3-15 |
 | GT-13 | LOW | 7 | DESIGN | partial |  | tests/backend/server/war-chest-effort.test.ts | token attacks (no star, < 80% of the Keep's camps deployed) do not count toward Alliance/Gang War chests (warChestAttack, migration 0045 counts). Not done: chest split by own stars (>= 30%); the offline device Alliance War keeps its own count |
-| GT-14 | LOW | 7 | TOOLING | open | | | |
+| GT-14 | LOW | 7 | TOOLING | partial |  | tests/gameplay/balance/rating-convergence.test.ts | sparse launch population (20 + smurfs, 70% generated fill, measured luck), 4 seeds: ratings learn (smurfs above start and the average near them) but a smurf still meets true expected ~0.95 after 10 rated battles (it.fails target 0.7): a sparse Keep window has nobody stronger. NEEDS-PLAYERS; telemetry spec in docs/backend/REQUESTS.md (GT-11) |
 | GT-15 | LOW | 7 | DESIGN | open | | | |
 | GT-16 | LOW | 7 | DESIGN | open | | | |
 | GT-17 | LOW | 7 | DESIGN | partial |  | tests/backend/server/pair-loot-cap.test.ts, attacks-economy.test.ts | per-pair daily loot cap PAIR_DAILY_LOOT_SHARE (0.5 of the defender Keep's storage cap per resource per UTC day) from server-held villages. Not done: a staff report of pairs with repeated mutual raids/donations; telemetry |
