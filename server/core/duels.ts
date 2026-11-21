@@ -18,7 +18,7 @@ import type { DuelChallenge, DuelTally, Player, Ticket } from '../repo';
 import type { ClientInfo } from '../rules/registry';
 import { HOUR, type ServerContext } from './context';
 import { battleSeed, capBaseLoot, checkArmy, engineForClient, engineForTicket, normalizeBase, resimulate, takeTicket, TICKET_TTL_MS, type BattleReport } from './pvp';
-import { fail, detailError } from './errors';
+import { fail, detailError, requireFeature } from './errors';
 import { requireHeldVillage } from './village';
 
 const DAY = 24 * HOUR;
@@ -87,6 +87,7 @@ function challengeView(ctx: ServerContext, me: Player, c: DuelChallenge, names: 
 
 /** POST /v1/duels/ticket */
 export async function duelTicket(ctx: ServerContext, me: Player, req: Partial<DuelTicketRequest> | undefined, client?: ClientInfo): Promise<DuelTicketResponse> {
+  requireFeature(ctx, 'duels'); // Beast Mode OPS-09
   await requireHeldVillage(ctx, me.id); // Beast Mode SEC-01
   const engine = engineForClient(ctx, client);
   const friend = await requireFriend(ctx, me, req?.friendId);
@@ -188,6 +189,7 @@ export async function setDuelLayout(ctx: ServerContext, me: Player, req: Partial
 
 /** POST /v1/duels/challenges { friendId }: one open challenge per pair. */
 export async function challenge(ctx: ServerContext, me: Player, friendId: unknown): Promise<ChallengeView> {
+  requireFeature(ctx, 'duels'); // Beast Mode OPS-09
   const friend = await requireFriend(ctx, me, friendId);
   const t = ctx.now();
   const open = (await ctx.repo.challengesOf(me.id, t - CHALLENGE_HOURS * HOUR)).find((c) => (c.fromId === friend.id || c.toId === friend.id) && t < c.expiresAt && !(c.fromResult && c.toResult));

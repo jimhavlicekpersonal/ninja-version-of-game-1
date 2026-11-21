@@ -36,7 +36,7 @@ import { ResimBusyError } from '../resim/resim';
 import { checkArmy, validateBase, type BattleReport } from './pvp';
 import { HOUR, type ServerContext } from './context';
 import { ageBandOf } from './ageBand';
-import { busyCode, fail } from './errors';
+import { busyCode, fail, requireFeature } from './errors';
 
 const DAY = 24 * HOUR;
 const OPPONENTS: readonly SharedOpponent[] = ['player', 'generated', 'practice'];
@@ -143,6 +143,7 @@ const RAID_LOOKBACK_MS = 31 * DAY;
 
 /** POST /v1/replays/shared. */
 export async function share(ctx: ServerContext, me: Player, body: Partial<ShareReplayRequest> | undefined): Promise<ShareReplayResponse> {
+  requireFeature(ctx, 'shared-replays'); // Beast Mode OPS-09
   const band = (await ctx.repo.getAgeBand(me.id))?.band ?? null;
   if (band === 'under13') throw fail(403, 'age_restricted', 'replay.not_for_age');
   const g = ctx.repo;

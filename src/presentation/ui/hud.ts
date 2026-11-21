@@ -153,7 +153,7 @@ export class Hud {
       closeAllModals: () => this.closeAllModals(),
       skinThumb: (skin) => this.deps.skinThumbnail?.(skin) ?? null,
       askAge: (why) => this.askAge(why),
-    });
+    }, () => this.deps.connection?.server?.pausedProducts ?? []);
     // A failed load is forgotten and told (lazyPanel): the next tap tries again.
     const failed = (e: unknown) => this.panelLoadFailed(e);
     this.settingsPanel = lazyPanel(() => import('./settingsUi'), failed);

@@ -95,7 +95,9 @@ export type ErrorCode =
   /** 403: accept the community rules first (`PUT /v1/me/rules`; report section 5 step 7, compliance C14). */
   | 'rules_required'
   /** 422: this Idempotency-Key was already used for another route or another body (backend batch 2026-11-13, A13); not retried. */
-  | 'idempotency_mismatch';
+  | 'idempotency_mismatch'
+  /** 403: the operators paused this feature or product (Beast Mode OPS-09: FEATURES_OFF / PRODUCTS_OFF); not retried. */
+  | 'feature_paused';
 
 /**
  * A server message as a stable code plus parameters (error codes, 2026-11-14). The game shows `srv.<key>`
@@ -262,6 +264,8 @@ export const Routes = {
 export interface HelloResponse {
   name: 'toadstool-kingdoms';
   protocol: number;
+  /** Beast Mode OPS-09: game product ids the operators paused (PRODUCTS_OFF); the Store shows them unavailable. */
+  pausedProducts?: string[];
   /** Oldest client protocol this server still accepts. */
   minProtocol: number;
   /** Server clock (epoch ms), so all players agree on Grove Raid times. */

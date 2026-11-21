@@ -62,7 +62,11 @@ export function rewardChips(r: Cost & { skin?: string }, skinName?: (id: string)
 
 export class EconomyUi {
   private readonly c: GameController;
-  constructor(private readonly kit: UiKit) {
+  constructor(
+    private readonly kit: UiKit,
+    /** Beast Mode OPS-09: product ids the server paused (PRODUCTS_OFF); shown as unavailable, never offered. */
+    private readonly pausedProducts: () => readonly string[] = () => [],
+  ) {
     this.c = kit.c;
   }
 
@@ -121,7 +125,7 @@ export class EconomyUi {
   private price(productId: string): { label: string; buyable: boolean } {
     const pay = this.c.payments;
     const p = productInfo(localizedData(this.c.data), productId);
-    if (!p || !pay.available()) return { label: i18nText("ui.not_available_67a926f700"), buyable: false };
+    if (!p || !pay.available() || this.pausedProducts().includes(productId)) return { label: i18nText("ui.not_available_67a926f700"), buyable: false };
     // The sandbox test store charges nothing: its numbers are the catalog's, marked as tests.
     if (!pay.prices) return pay.name === 'mock' ? { label: i18nText("ui.test_7394a4113a", { arg1: usd(p.usd) }), buyable: true } : { label: i18nText("ui.not_available_67a926f700"), buyable: false };
     const sp = this.storePrices;

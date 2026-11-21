@@ -288,6 +288,9 @@ export function policyFromEnv(env: Record<string, string | undefined>): Partial<
     if (!m) throw new Error('UNDER13_MODE must be offline, limited or families.');
     out.under13Mode = m;
   }
+  // Beast Mode OPS-09: kill switches (comma lists).
+  if (env.PRODUCTS_OFF !== undefined) out.productsOff = env.PRODUCTS_OFF.split(',').map((x) => x.trim()).filter(Boolean);
+  if (env.FEATURES_OFF !== undefined) out.featuresOff = env.FEATURES_OFF.split(',').map((x) => x.trim()).filter(Boolean);
   if (env.LATE_REPORT_RULE !== undefined) out.lateReportRule = env.LATE_REPORT_RULE === '1';
   if (env.UPLOAD_ACCOUNT_AGE !== undefined && env.UPLOAD_ACCOUNT_AGE !== '') out.uploadAccountAge = env.UPLOAD_ACCOUNT_AGE !== '0';
   if (env.REQUIRE_SERVER_VILLAGE !== undefined) out.requireServerVillage = env.REQUIRE_SERVER_VILLAGE === '1';

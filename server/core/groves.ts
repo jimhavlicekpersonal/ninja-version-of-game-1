@@ -15,7 +15,7 @@ import { checkChatAllowed, ageBandOf } from './age';
 import { withholdForReader } from './compliance';
 import { maxReinforcementAt } from './pvp';
 import { applyServerResult, hasServerVillage, requireHeldVillage } from './village';
-import { fail } from './errors';
+import { fail, requireFeature } from './errors';
 
 
 /** Longest chat message accepted (the game's input allows 160 characters). */
@@ -154,6 +154,7 @@ export async function postChat(ctx: ServerContext, me: Player, text: unknown): P
 }
 
 export async function postChatIn(ctx: ServerContext, me: Player, scopeId: string, text: unknown): Promise<ChatView> {
+  requireFeature(ctx, 'chat'); // Beast Mode OPS-09
   const grove = { id: scopeId };
   const raw = String(text ?? '').replace(/\s+/g, ' ').trim();
   if (!raw) throw fail(400, 'bad_request', 'chat.empty');

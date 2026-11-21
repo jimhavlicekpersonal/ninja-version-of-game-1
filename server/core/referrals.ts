@@ -23,7 +23,7 @@ import { hallLevel } from '../../src/gameplay/sim/village';
 import type { Player, ReferralRow, Repo } from '../repo';
 import { ageBandOf } from './ageBand';
 import { HOUR, type ServerContext } from './context';
-import { fail } from './errors';
+import { fail, requireFeature } from './errors';
 import { deviceId } from './purchases';
 import { applyServerResult } from './village';
 
@@ -114,6 +114,7 @@ export async function view(ctx: ServerContext, me: Player, granted?: number): Pr
 
 /** POST /v1/referrals: this new account came from `code`. */
 export async function link(ctx: ServerContext, me: Player, body: Partial<ReferralRequest> | undefined): Promise<ReferralView> {
+  requireFeature(ctx, 'referrals'); // Beast Mode OPS-09
   const now = ctx.now();
   if (now - me.createdAt > REFERRAL_WINDOW_DAYS * DAY) throw fail(409, 'conflict', 'referral.too_late', { days: REFERRAL_WINDOW_DAYS });
   const code = normalizeFriendCode(body?.code);
@@ -141,6 +142,7 @@ export async function link(ctx: ServerContext, me: Player, body: Partial<Referra
 
 /** POST /v1/referrals/claim: check every pair this player is in and pay what is due to them. */
 export async function claim(ctx: ServerContext, me: Player, body?: { install?: unknown }): Promise<ReferralView> {
+  requireFeature(ctx, 'referrals'); // Beast Mode OPS-09
   const g0 = ctx.repo;
   await noteInstall(ctx, me, body?.install);
   const pairs = [...(await g0.referralsBy(me.id))];

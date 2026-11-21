@@ -22,7 +22,7 @@ import { requireRules } from './rules';
 import { HOUR, type ServerContext } from './context';
 import { chatIn, donateIn, postChatIn, requestsIn, requestTroopsIn } from './groves';
 import { isReservedName } from '../../src/backend/net/names';
-import { fail, utcDate } from './errors';
+import { fail, utcDate, requireFeature } from './errors';
 
 export const SQUAD_MAX = 4;
 export const SQUAD_INVITE_DAYS = 7;
@@ -94,6 +94,7 @@ export async function mySquad(ctx: ServerContext, me: Player): Promise<SquadResp
 
 /** POST /v1/squad { name }: found a Gang and lead it. */
 export async function createSquad(ctx: ServerContext, me: Player, name: unknown): Promise<SquadResponse> {
+  requireFeature(ctx, 'gangs'); // Beast Mode OPS-09
   requireRules(ctx, me);
   const clean = cleanSquadName(name, ctx);
   if (await ctx.repo.squadOf(me.id)) throw fail(409, 'conflict', 'gang.leave_first');

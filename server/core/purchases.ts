@@ -175,6 +175,11 @@ export async function purchaseIntent(ctx: ServerContext, me: Player, body: { sto
   storeOf(ctx, body?.store);
   const product = productInfo(ctx.data, String(body?.productId ?? ''));
   if (!product) throw fail(400, 'bad_request', 'purchase.unavailable');
+  // Beast Mode OPS-09: a product the operators paused is refused before anything is charged (a paid one still delivers).
+  if (ctx.policy.productsOff.includes(product.id)) {
+    ctx.metrics.count('tk_refused_total', { reason: 'product_paused' });
+    throw fail(403, 'feature_paused', 'purchase.paused');
+  }
   const under18 = await ageGroupFor(ctx.repo, ctx, me.id, body?.under18);
   if (under18 === null) throw fail(403, 'purchase_refused', 'purchase.age_first');
   // Re-audit: buy, spend, refund, repeat. After several refunds, purchases pause until support has a look.

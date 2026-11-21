@@ -63,6 +63,10 @@ export interface ServerPolicy {
    * first on every reconnection. Off by default until a game build with that order is out.
    */
   lateReportRule: boolean;
+  /** Beast Mode OPS-09: PRODUCTS_OFF, game product ids not sold right now (a mis-priced offer, a broken delivery). */
+  productsOff: string[];
+  /** OPS-09: FEATURES_OFF, hello features switched off during an incident (chat, referrals, shared-replays, duels, gangs). */
+  featuresOff: string[];
 }
 
 export const DEFAULT_POLICY: ServerPolicy = {
@@ -79,7 +83,12 @@ export const DEFAULT_POLICY: ServerPolicy = {
   requireServerVillage: false,
   uploadAccountAge: true,
   lateReportRule: false,
+  productsOff: [],
+  featuresOff: [],
 };
+
+/** Beast Mode OPS-09: the features the operators may switch off without an app update. */
+export const SWITCHABLE_FEATURES = ['chat', 'referrals', 'shared-replays', 'duels', 'gangs'] as const;
 
 export interface ServerContext {
   repo: Repo;

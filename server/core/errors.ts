@@ -86,3 +86,8 @@ const BUSY: Record<string, MessageCode> = {
 export function busyCode(message: string): MessageCode {
   return BUSY[message] ?? 'busy.village';
 }
+
+/** Beast Mode OPS-09: refuse while the operators have this feature switched off (FEATURES_OFF). */
+export function requireFeature(ctx: { policy: { featuresOff: string[] } }, feature: string): void {
+  if (ctx.policy.featuresOff.includes(feature)) throw fail(403, 'feature_paused', 'feature.paused');
+}
