@@ -167,6 +167,8 @@ export interface PurchaseStore {
   // purchases (roadmap Phase 4)
   /** False (nothing stored) if that store transaction is already recorded. */
   addPurchase(p: PurchaseRow): Promise<boolean>;
+  /** Beast Mode ECO-02: the purchase is now in (or accounted for by) the player's server-held village. */
+  markPurchaseHeld(store: string, transactionId: string): Promise<void>;
   getPurchase(store: string, transactionId: string): Promise<PurchaseRow | null>;
   purchaseByRef(store: string, ref: string): Promise<PurchaseRow | null>;
   /** Newest first. */

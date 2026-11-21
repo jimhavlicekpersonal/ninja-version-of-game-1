@@ -2083,6 +2083,7 @@
   "srv.purchase.not_set_up": { "en": "Purchases are not set up on this server yet. Nothing was charged.", "text": "Ostoja ei ole vielä otettu käyttöön tällä palvelimella. Mitään ei veloitettu." },
   "srv.purchase.unavailable": { "en": "That item is not available.", "text": "Tuote ei ole saatavilla." },
   "srv.purchase.already_in_progress": { "en": "A purchase of this item is already in progress. Nothing more was charged.", "text": "Tämän tuotteen osto on jo käynnissä. Mitään lisää ei veloitettu." },
+  "srv.purchase.needs_support": { "en": "This purchase needs a check by support before it can be delivered here. Contact support from Settings; nothing is lost.", "text": "Tuen on tarkistettava tämä osto ennen kuin se voidaan toimittaa tänne. Ota yhteyttä tukeen Asetuksista; mitään ei menetetä." },
   "srv.purchase.already_owned": { "en": "You already own this. This second purchase was not delivered: contact support from Settings for a refund.", "text": "Omistat tämän jo. Tätä toista ostoa ei toimitettu: pyydä hyvitystä ottamalla yhteyttä tukeen Asetuksista." },
   "srv.purchase.age_first": { "en": "Please tell us your age group first.", "text": "Kerro ensin ikäryhmäsi." },
   "srv.purchase.paused_refunds": { "en": "Purchases are paused on this account after several refunds. Contact support from Settings. Nothing was charged.", "text": "Ostot on keskeytetty tällä tilillä useiden hyvitysten jälkeen. Ota yhteyttä tukeen Asetuksista. Mitään ei veloitettu." },

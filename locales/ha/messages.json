@@ -2083,6 +2083,7 @@
   "srv.purchase.not_set_up": { "en": "Purchases are not set up on this server yet. Nothing was charged.", "text": "Ba a saita sayayya a wannan sabar ba tukuna. Ba a cire kuɗi ba." },
   "srv.purchase.unavailable": { "en": "That item is not available.", "text": "Wannan abu babu shi." },
   "srv.purchase.already_in_progress": { "en": "A purchase of this item is already in progress. Nothing more was charged.", "text": "Akwai sayayyar wannan abu da ke gudana tuni. Ba a ƙara cire kuɗi ba." },
+  "srv.purchase.needs_support": { "en": "This purchase needs a check by support before it can be delivered here. Contact support from Settings; nothing is lost.", "text": "Wannan sayayya tana buƙatar taimako su duba ta kafin a isar da ita nan. Ku tuntuɓi taimako daga Saituna; babu abin da zai ɓace." },
   "srv.purchase.already_owned": { "en": "You already own this. This second purchase was not delivered: contact support from Settings for a refund.", "text": "Kuna da wannan tuni. Ba a isar da wannan sayayya ta biyu ba: ku tuntuɓi taimako daga Saituna don a mayar muku da kuɗi." },
   "srv.purchase.age_first": { "en": "Please tell us your age group first.", "text": "Don Allah ku fara gaya mana rukunin shekarunku." },
   "srv.purchase.paused_refunds": { "en": "Purchases are paused on this account after several refunds. Contact support from Settings. Nothing was charged.", "text": "An dakatar da sayayya a wannan asusu bayan mayar da kuɗi da yawa. Ku tuntuɓi taimako daga Saituna. Ba a cire kuɗi ba." },

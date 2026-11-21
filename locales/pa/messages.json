@@ -2083,6 +2083,7 @@
   "srv.purchase.not_set_up": { "en": "Purchases are not set up on this server yet. Nothing was charged.", "text": "ਇਸ ਸਰਵਰ 'ਤੇ ਅਜੇ ਖ਼ਰੀਦਾਂ ਸੈੱਟ ਨਹੀਂ ਹਨ। ਕੋਈ ਪੈਸਾ ਨਹੀਂ ਕੱਟਿਆ ਗਿਆ।" },
   "srv.purchase.unavailable": { "en": "That item is not available.", "text": "ਉਹ ਚੀਜ਼ ਉਪਲਬਧ ਨਹੀਂ।" },
   "srv.purchase.already_in_progress": { "en": "A purchase of this item is already in progress. Nothing more was charged.", "text": "ਇਸ ਚੀਜ਼ ਦੀ ਇੱਕ ਖ਼ਰੀਦ ਪਹਿਲਾਂ ਹੀ ਜਾਰੀ ਹੈ। ਹੋਰ ਕੋਈ ਪੈਸਾ ਨਹੀਂ ਕੱਟਿਆ ਗਿਆ।" },
+  "srv.purchase.needs_support": { "en": "This purchase needs a check by support before it can be delivered here. Contact support from Settings; nothing is lost.", "text": "ਇਹ ਖ਼ਰੀਦ ਇੱਥੇ ਦੇਣ ਤੋਂ ਪਹਿਲਾਂ ਸਹਾਇਤਾ ਨੂੰ ਜਾਂਚਣੀ ਪਵੇਗੀ। ਸੈਟਿੰਗਾਂ ਤੋਂ ਸਹਾਇਤਾ ਨਾਲ ਸੰਪਰਕ ਕਰੋ; ਕੁਝ ਵੀ ਨਹੀਂ ਗੁਆਚੇਗਾ।" },
   "srv.purchase.already_owned": { "en": "You already own this. This second purchase was not delivered: contact support from Settings for a refund.", "text": "ਇਹ ਤੁਹਾਡੇ ਕੋਲ ਪਹਿਲਾਂ ਹੀ ਹੈ। ਇਹ ਦੂਜੀ ਖ਼ਰੀਦ ਨਹੀਂ ਦਿੱਤੀ ਗਈ: ਰਿਫ਼ੰਡ ਲਈ ਸੈਟਿੰਗਾਂ ਤੋਂ ਸਹਾਇਤਾ ਨਾਲ ਸੰਪਰਕ ਕਰੋ।" },
   "srv.purchase.age_first": { "en": "Please tell us your age group first.", "text": "ਕਿਰਪਾ ਕਰਕੇ ਪਹਿਲਾਂ ਆਪਣਾ ਉਮਰ ਵਰਗ ਦੱਸੋ।" },
   "srv.purchase.paused_refunds": { "en": "Purchases are paused on this account after several refunds. Contact support from Settings. Nothing was charged.", "text": "ਕਈ ਰਿਫ਼ੰਡਾਂ ਮਗਰੋਂ ਇਸ ਖਾਤੇ 'ਤੇ ਖ਼ਰੀਦਾਂ ਰੋਕੀਆਂ ਗਈਆਂ ਹਨ। ਸੈਟਿੰਗਾਂ ਤੋਂ ਸਹਾਇਤਾ ਨਾਲ ਸੰਪਰਕ ਕਰੋ। ਕੋਈ ਪੈਸਾ ਨਹੀਂ ਕੱਟਿਆ ਗਿਆ।" },

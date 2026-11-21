@@ -41,6 +41,7 @@ import { seasonOf } from '../../src/gameplay/sim/ranks';
 import { achievementValue } from '../../src/gameplay/sim/achievements';
 import type { VillageResponse } from '../../src/backend/net/protocol';
 import type { ImportHold, Player, PurchaseRow, VillageRow } from '../repo';
+import { settleNotCarried } from './purchases';
 import { HOUR, type ServerContext } from './context';
 import { maxReinforcementAt, normalizeBase } from './pvp';
 import { getVillage } from './village';
@@ -403,6 +404,8 @@ export async function importVillage(ctx: ServerContext, me: Player, body: { file
     const wait = Math.max(1, Math.ceil(needDays - ageDays));
     throw fail(403, 'cooldown', 'import.too_new', { keep, days: Math.ceil(needDays), wait });
   }
+  // Beast Mode ECO-02: when the file was last saved on the device (its own clock, bounded by now).
+  const fileAt = Math.min(Number.isFinite(state.lastSeenAt) ? state.lastSeenAt : 0, t);
   const checked = checkProvenance(state, t, ctx.data, await ctx.repo.purchasesOf(me.id, 1000));
   state = checked.state;
   const held: ImportHold | null = checked.held ? { id: ctx.uuid(), playerId: me.id, at: t, ...checked.held, status: 'held' } : null;
@@ -422,6 +425,7 @@ export async function importVillage(ctx: ServerContext, me: Player, body: { file
     const opening = (Object.entries(state.resources) as [string, number][]).filter(([, v]) => v).map(([k, v]) => ({ playerId: me.id, at: t, resource: k, delta: Math.round(v), balance: Math.round(v), reason: 'import', ref: null }));
     await tx.saveVillage({ ...row, revision: 2 }, 1, opening, []);
     if (held) await tx.addImportHold(held);
+    await settleNotCarried(tx, ctx, me, state, fileAt);
   });
   const out = await getVillage(ctx, me);
   return held ? { ...out, importHeld: { jade: held.jade, premium: held.premium, purchases: held.purchases.length } } : out;

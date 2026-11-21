@@ -2083,6 +2083,7 @@
   "srv.purchase.not_set_up": { "en": "Purchases are not set up on this server yet. Nothing was charged.", "text": "Máy chủ này chưa thiết lập mua hàng. Không bị trừ tiền." },
   "srv.purchase.unavailable": { "en": "That item is not available.", "text": "Vật phẩm đó không có sẵn." },
   "srv.purchase.already_in_progress": { "en": "A purchase of this item is already in progress. Nothing more was charged.", "text": "Đã có một giao dịch mua vật phẩm này đang diễn ra. Không bị trừ thêm tiền." },
+  "srv.purchase.needs_support": { "en": "This purchase needs a check by support before it can be delivered here. Contact support from Settings; nothing is lost.", "text": "Giao dịch mua này cần bộ phận hỗ trợ kiểm tra trước khi được giao ở đây. Hãy liên hệ hỗ trợ từ Cài đặt; không có gì bị mất." },
   "srv.purchase.already_owned": { "en": "You already own this. This second purchase was not delivered: contact support from Settings for a refund.", "text": "Bạn đã sở hữu vật phẩm này. Lần mua thứ hai này không được giao: hãy liên hệ hỗ trợ từ Cài đặt để được hoàn tiền." },
   "srv.purchase.age_first": { "en": "Please tell us your age group first.", "text": "Vui lòng cho chúng tôi biết nhóm tuổi của bạn trước." },
   "srv.purchase.paused_refunds": { "en": "Purchases are paused on this account after several refunds. Contact support from Settings. Nothing was charged.", "text": "Mua hàng đã tạm dừng trên tài khoản này sau nhiều lần hoàn tiền. Hãy liên hệ hỗ trợ từ Cài đặt. Không bị trừ tiền." },

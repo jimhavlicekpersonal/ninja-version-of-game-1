@@ -10,6 +10,10 @@ export class MemoryPurchases extends MemoryBase implements PurchaseStore {
     this.purchaseRows.push(clone(p));
     return true;
   }
+  async markPurchaseHeld(store: string, transactionId: string): Promise<void> {
+    const p = this.purchaseRows.find((x) => x.store === store && x.transactionId === transactionId);
+    if (p) p.heldOnServer = true;
+  }
   async getPurchase(store: string, transactionId: string): Promise<PurchaseRow | null> {
     const p = this.purchaseRows.find((x) => x.store === store && x.transactionId === transactionId);
     return p ? clone(p) : null;

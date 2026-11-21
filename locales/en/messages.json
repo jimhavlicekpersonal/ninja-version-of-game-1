@@ -2083,6 +2083,7 @@
   "srv.purchase.not_set_up": "Purchases are not set up on this server yet. Nothing was charged.",
   "srv.purchase.unavailable": "That item is not available.",
   "srv.purchase.already_in_progress": "A purchase of this item is already in progress. Nothing more was charged.",
+  "srv.purchase.needs_support": "This purchase needs a check by support before it can be delivered here. Contact support from Settings; nothing is lost.",
   "srv.purchase.already_owned": "You already own this. This second purchase was not delivered: contact support from Settings for a refund.",
   "srv.purchase.age_first": "Please tell us your age group first.",
   "srv.purchase.paused_refunds": "Purchases are paused on this account after several refunds. Contact support from Settings. Nothing was charged.",

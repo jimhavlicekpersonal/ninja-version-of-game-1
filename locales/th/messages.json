@@ -2083,6 +2083,7 @@
   "srv.purchase.not_set_up": { "en": "Purchases are not set up on this server yet. Nothing was charged.", "text": "เซิร์ฟเวอร์นี้ยังไม่ได้ตั้งค่าการซื้อ ไม่มีการเรียกเก็บเงิน" },
   "srv.purchase.unavailable": { "en": "That item is not available.", "text": "สินค้านี้ไม่พร้อมจำหน่าย" },
   "srv.purchase.already_in_progress": { "en": "A purchase of this item is already in progress. Nothing more was charged.", "text": "มีการซื้อไอเท็มนี้ที่กำลังดำเนินการอยู่แล้ว ไม่มีการเรียกเก็บเงินเพิ่ม" },
+  "srv.purchase.needs_support": { "en": "This purchase needs a check by support before it can be delivered here. Contact support from Settings; nothing is lost.", "text": "การซื้อนี้ต้องให้ฝ่ายสนับสนุนตรวจสอบก่อนจึงจะส่งมอบที่นี่ได้ ติดต่อฝ่ายสนับสนุนจากหน้าตั้งค่า ไม่มีอะไรสูญหาย" },
   "srv.purchase.already_owned": { "en": "You already own this. This second purchase was not delivered: contact support from Settings for a refund.", "text": "คุณมีไอเท็มนี้อยู่แล้ว การซื้อครั้งที่สองนี้ไม่ได้ส่งมอบ ติดต่อฝ่ายสนับสนุนจากหน้าตั้งค่าเพื่อขอคืนเงิน" },
   "srv.purchase.age_first": { "en": "Please tell us your age group first.", "text": "โปรดบอกช่วงอายุของคุณก่อน" },
   "srv.purchase.paused_refunds": { "en": "Purchases are paused on this account after several refunds. Contact support from Settings. Nothing was charged.", "text": "การซื้อในบัญชีนี้ถูกพักไว้หลังมีการคืนเงินหลายครั้ง ติดต่อฝ่ายสนับสนุนจากหน้าตั้งค่า ไม่มีการเรียกเก็บเงิน" },

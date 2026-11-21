@@ -2083,6 +2083,7 @@
   "srv.purchase.not_set_up": { "en": "Purchases are not set up on this server yet. Nothing was charged.", "text": "ఈ సర్వర్‌లో కొనుగోళ్లు ఇంకా సెటప్ కాలేదు. ఏమీ వసూలు కాలేదు." },
   "srv.purchase.unavailable": { "en": "That item is not available.", "text": "ఆ వస్తువు అందుబాటులో లేదు." },
   "srv.purchase.already_in_progress": { "en": "A purchase of this item is already in progress. Nothing more was charged.", "text": "ఈ వస్తువు కొనుగోలు ఇప్పటికే జరుగుతోంది. అదనంగా ఏమీ వసూలు కాలేదు." },
+  "srv.purchase.needs_support": { "en": "This purchase needs a check by support before it can be delivered here. Contact support from Settings; nothing is lost.", "text": "ఈ కొనుగోలును ఇక్కడ అందించే ముందు సహాయ బృందం తనిఖీ చేయాలి. సెట్టింగ్‌ల నుంచి సహాయ బృందాన్ని సంప్రదించండి; ఏదీ కోల్పోరు." },
   "srv.purchase.already_owned": { "en": "You already own this. This second purchase was not delivered: contact support from Settings for a refund.", "text": "ఇది ఇప్పటికే మీ దగ్గర ఉంది. ఈ రెండో కొనుగోలు అందించబడలేదు: వాపసు కోసం సెట్టింగ్‌ల నుంచి సహాయ బృందాన్ని సంప్రదించండి." },
   "srv.purchase.age_first": { "en": "Please tell us your age group first.", "text": "దయచేసి ముందు మీ వయో వర్గం చెప్పండి." },
   "srv.purchase.paused_refunds": { "en": "Purchases are paused on this account after several refunds. Contact support from Settings. Nothing was charged.", "text": "పలు వాపసుల తర్వాత ఈ ఖాతాలో కొనుగోళ్లు నిలిపివేయబడ్డాయి. సెట్టింగ్‌ల నుంచి సహాయ బృందాన్ని సంప్రదించండి. ఏమీ వసూలు కాలేదు." },

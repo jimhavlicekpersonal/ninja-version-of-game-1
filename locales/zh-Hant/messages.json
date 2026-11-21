@@ -2083,6 +2083,7 @@
   "srv.purchase.not_set_up": { "en": "Purchases are not set up on this server yet. Nothing was charged.", "text": "這台伺服器還沒有設定購買。沒有收取任何費用。" },
   "srv.purchase.unavailable": { "en": "That item is not available.", "text": "那個項目無法使用。" },
   "srv.purchase.already_in_progress": { "en": "A purchase of this item is already in progress. Nothing more was charged.", "text": "這個項目已有一筆購買正在進行。沒有額外收取任何費用。" },
+  "srv.purchase.needs_support": { "en": "This purchase needs a check by support before it can be delivered here. Contact support from Settings; nothing is lost.", "text": "這筆購買需要客服確認後才能在這裡發放。請從設定聯絡客服；不會有任何損失。" },
   "srv.purchase.already_owned": { "en": "You already own this. This second purchase was not delivered: contact support from Settings for a refund.", "text": "你已經擁有這個項目。這第二筆購買沒有發放：請從設定聯絡客服退款。" },
   "srv.purchase.age_first": { "en": "Please tell us your age group first.", "text": "請先告訴我們你的年齡層。" },
   "srv.purchase.paused_refunds": { "en": "Purchases are paused on this account after several refunds. Contact support from Settings. Nothing was charged.", "text": "這個帳號在多次退款後已暫停購買。請從設定聯絡客服。沒有收取任何費用。" },

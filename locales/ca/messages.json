@@ -2083,6 +2083,7 @@
   "srv.purchase.not_set_up": { "en": "Purchases are not set up on this server yet. Nothing was charged.", "text": "Les compres encara no estan configurades en aquest servidor. No s'ha cobrat res." },
   "srv.purchase.unavailable": { "en": "That item is not available.", "text": "Aquest article no està disponible." },
   "srv.purchase.already_in_progress": { "en": "A purchase of this item is already in progress. Nothing more was charged.", "text": "Ja hi ha una compra d'aquest article en curs. No s'ha cobrat res més." },
+  "srv.purchase.needs_support": { "en": "This purchase needs a check by support before it can be delivered here. Contact support from Settings; nothing is lost.", "text": "Aquesta compra l'ha de revisar l'assistència abans que es pugui lliurar aquí. Contacta amb l'assistència des de Configuració; no es perd res." },
   "srv.purchase.already_owned": { "en": "You already own this. This second purchase was not delivered: contact support from Settings for a refund.", "text": "Ja ho tens. Aquesta segona compra no s'ha lliurat: contacta amb l'assistència des de Configuració per a un reemborsament." },
   "srv.purchase.age_first": { "en": "Please tell us your age group first.", "text": "Primer digues-nos el teu grup d'edat." },
   "srv.purchase.paused_refunds": { "en": "Purchases are paused on this account after several refunds. Contact support from Settings. Nothing was charged.", "text": "Les compres estan en pausa en aquest compte després de diversos reemborsaments. Contacta amb l'assistència des de Configuració. No s'ha cobrat res." },

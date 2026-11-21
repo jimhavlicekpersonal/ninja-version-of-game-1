@@ -2083,6 +2083,7 @@
   "srv.purchase.not_set_up": { "en": "Purchases are not set up on this server yet. Nothing was charged.", "text": "이 서버에는 아직 구매가 설정되어 있지 않아요. 결제된 금액은 없어요." },
   "srv.purchase.unavailable": { "en": "That item is not available.", "text": "그 상품은 이용할 수 없어요." },
   "srv.purchase.already_in_progress": { "en": "A purchase of this item is already in progress. Nothing more was charged.", "text": "이 항목의 구매가 이미 진행 중이에요. 추가로 결제된 금액은 없어요." },
+  "srv.purchase.needs_support": { "en": "This purchase needs a check by support before it can be delivered here. Contact support from Settings; nothing is lost.", "text": "이 구매는 여기서 지급되기 전에 지원팀의 확인이 필요해요. 설정에서 지원팀에 연락하세요. 잃는 것은 없어요." },
   "srv.purchase.already_owned": { "en": "You already own this. This second purchase was not delivered: contact support from Settings for a refund.", "text": "이미 가지고 있어요. 두 번째 구매는 지급되지 않았어요. 환불은 설정에서 지원팀에 연락하세요." },
   "srv.purchase.age_first": { "en": "Please tell us your age group first.", "text": "먼저 연령대를 알려 주세요." },
   "srv.purchase.paused_refunds": { "en": "Purchases are paused on this account after several refunds. Contact support from Settings. Nothing was charged.", "text": "여러 번 환불되어 이 계정의 구매가 일시 중지되었어요. 설정에서 지원팀에 연락하세요. 결제된 금액은 없어요." },

@@ -15,6 +15,10 @@ export class PgPurchases extends PgBase implements PurchaseStore {
     return (r.rowCount ?? 0) > 0;
   }
 
+  async markPurchaseHeld(store: string, transactionId: string): Promise<void> {
+    await this.db.query('update purchases set held_on_server = true where store = $1 and transaction_id = $2', [store, transactionId]);
+  }
+
   async getPurchase(store: string, transactionId: string): Promise<PurchaseRow | null> {
     const r = await this.rows('select * from purchases where store = $1 and transaction_id = $2', [store, transactionId]);
     return r[0] ? toPurchase(r[0]) : null;

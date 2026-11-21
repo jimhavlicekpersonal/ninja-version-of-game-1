@@ -2083,6 +2083,7 @@
   "srv.purchase.not_set_up": { "en": "Purchases are not set up on this server yet. Nothing was charged.", "text": "ഈ സെർവറിൽ വാങ്ങലുകൾ ഇതുവരെ സജ്ജീകരിച്ചിട്ടില്ല. പണമൊന്നും ഈടാക്കിയില്ല." },
   "srv.purchase.unavailable": { "en": "That item is not available.", "text": "ആ ഇനം ലഭ്യമല്ല." },
   "srv.purchase.already_in_progress": { "en": "A purchase of this item is already in progress. Nothing more was charged.", "text": "ഈ ഇനത്തിന്റെ ഒരു വാങ്ങൽ ഇതിനകം നടക്കുന്നു. കൂടുതൽ പണമൊന്നും ഈടാക്കിയില്ല." },
+  "srv.purchase.needs_support": { "en": "This purchase needs a check by support before it can be delivered here. Contact support from Settings; nothing is lost.", "text": "ഈ വാങ്ങൽ ഇവിടെ നൽകുന്നതിന് മുമ്പ് സപ്പോർട്ട് പരിശോധിക്കണം. ക്രമീകരണങ്ങളിൽ നിന്ന് സപ്പോർട്ടുമായി ബന്ധപ്പെടുക; ഒന്നും നഷ്ടപ്പെടില്ല." },
   "srv.purchase.already_owned": { "en": "You already own this. This second purchase was not delivered: contact support from Settings for a refund.", "text": "ഇത് ഇതിനകം നിങ്ങൾക്കുണ്ട്. ഈ രണ്ടാമത്തെ വാങ്ങൽ നൽകിയിട്ടില്ല: റീഫണ്ടിനായി ക്രമീകരണങ്ങളിൽ നിന്ന് സപ്പോർട്ടുമായി ബന്ധപ്പെടുക." },
   "srv.purchase.age_first": { "en": "Please tell us your age group first.", "text": "ദയവായി ആദ്യം നിങ്ങളുടെ പ്രായവിഭാഗം അറിയിക്കുക." },
   "srv.purchase.paused_refunds": { "en": "Purchases are paused on this account after several refunds. Contact support from Settings. Nothing was charged.", "text": "പലതവണ റീഫണ്ട് ചെയ്തതിനാൽ ഈ അക്കൗണ്ടിൽ വാങ്ങലുകൾ നിർത്തിവച്ചിരിക്കുന്നു. ക്രമീകരണങ്ങളിൽ നിന്ന് സപ്പോർട്ടുമായി ബന്ധപ്പെടുക. പണമൊന്നും ഈടാക്കിയില്ല." },

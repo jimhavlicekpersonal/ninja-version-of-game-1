@@ -2083,6 +2083,7 @@
   "srv.purchase.not_set_up": { "en": "Purchases are not set up on this server yet. Nothing was charged.", "text": "Покупки на этом сервере пока не настроены. Деньги не списаны." },
   "srv.purchase.unavailable": { "en": "That item is not available.", "text": "Этот товар недоступен." },
   "srv.purchase.already_in_progress": { "en": "A purchase of this item is already in progress. Nothing more was charged.", "text": "Покупка этого товара уже идёт. Больше ничего не списано." },
+  "srv.purchase.needs_support": { "en": "This purchase needs a check by support before it can be delivered here. Contact support from Settings; nothing is lost.", "text": "Эту покупку должна проверить поддержка, прежде чем её можно будет выдать здесь. Свяжись с поддержкой через Настройки; ничего не потеряно." },
   "srv.purchase.already_owned": { "en": "You already own this. This second purchase was not delivered: contact support from Settings for a refund.", "text": "Это у тебя уже есть. Вторая покупка не выдана: для возврата свяжись с поддержкой через Настройки." },
   "srv.purchase.age_first": { "en": "Please tell us your age group first.", "text": "Сначала укажи свою возрастную группу." },
   "srv.purchase.paused_refunds": { "en": "Purchases are paused on this account after several refunds. Contact support from Settings. Nothing was charged.", "text": "Покупки на этом аккаунте приостановлены после нескольких возвратов. Свяжись с поддержкой через Настройки. Деньги не списаны." },

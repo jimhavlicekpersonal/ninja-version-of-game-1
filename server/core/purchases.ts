@@ -121,6 +121,44 @@ export function countedCents(ctx: ServerContext, catalogUsd: number, currency: s
   return cents(catalogUsd);
 }
 
+/** Beast Mode ECO-02: a purchase the server cannot safely deliver again goes to staff (an import hold), once. */
+async function needsSupport(tx: Repo, ctx: ServerContext, me: Player, store: PurchaseStore, transactionId: string): Promise<void> {
+  const id = `${store}:${transactionId}`;
+  ctx.metrics.count('tk_refused_total', { reason: 'replay_needs_support' });
+  if ((await tx.importHoldsOf(me.id)).some((h) => h.status === 'held' && h.purchases.includes(id))) return;
+  await tx.addImportHold({ id: ctx.uuid(), playerId: me.id, at: ctx.now(), jade: 0, premium: false, purchases: [id], status: 'held' });
+  ctx.log('warn', 'purchase replay held for support', { player: me.id, store, transactionId });
+}
+
+/**
+ * Beast Mode ECO-02 (import): credited purchases of this player that were delivered on the device (not held by the
+ * server) and that the moved file does not carry. One credited after the file was last saved cannot be in it (the
+ * answer was lost): it is delivered into the new village now, once. One credited before it was in the device's
+ * village and was removed from the file: staff decide (an import hold). Either way the row now counts as held, so
+ * replaying its receipt later delivers nothing again.
+ */
+export async function settleNotCarried(tx: Repo, ctx: ServerContext, me: Player, state: VillageState, fileAt: number): Promise<number> {
+  const carried = new Set(state.purchases.map((p) => p.id));
+  const rows = (await tx.purchasesOf(me.id, 1000)).filter((p) => p.status === 'credited' && !p.heldOnServer && !carried.has(villageId(p.store, p.transactionId)));
+  const support: string[] = [];
+  let delivered = 0;
+  for (const p of rows) {
+    if (p.at > fileAt) {
+      const id = villageId(p.store, p.transactionId);
+      const r = await applyServerResult(tx, ctx, me, [{ cmd: { type: 'grantPurchase', productId: p.productId, transactionId: id, verified: true }, reason: `purchase:${p.store}` }], id);
+      if (r && !r.ok) ctx.log('info', 'purchase already in the village', { store: p.store, transactionId: p.transactionId });
+      else delivered++;
+    } else support.push(`${p.store}:${p.transactionId}`);
+    await tx.markPurchaseHeld(p.store, p.transactionId);
+  }
+  if (support.length) {
+    ctx.metrics.count('tk_refused_total', { reason: 'import_purchase_not_carried' });
+    await tx.addImportHold({ id: ctx.uuid(), playerId: me.id, at: ctx.now(), jade: 0, premium: false, purchases: support, status: 'held' });
+    ctx.log('warn', 'import dropped credited purchases: held for support', { player: me.id, purchases: support.length });
+  }
+  return delivered;
+}
+
 /** Beast Mode ECO-01: the village already owns this one-time product (this season's Scroll, a once-per-account offer). */
 function alreadyOwned(state: VillageState, productId: string, _now: number, ctx: ServerContext): boolean {
   const product = productInfo(ctx.data, productId);
@@ -227,6 +265,8 @@ interface Checked {
    * device still sees it until its own save has landed and it consumes it (remnant audit 2026-11-06).
    */
   finish: ((held: boolean) => Promise<void>) | null;
+  /** Google: the token was consumed, which only the device does once its own save holds the purchase (ECO-02). */
+  consumed: boolean;
 }
 
 async function check(ctx: ServerContext, store: PurchaseStore, storeProductId: string, receipt: unknown): Promise<Checked> {
@@ -234,7 +274,7 @@ async function check(ctx: ServerContext, store: PurchaseStore, storeProductId: s
     if (store === 'apple') {
       const t = ctx.payments.apple!.transaction(receipt);
       if (t.revocationDate !== null) throw new PurchaseError('This purchase was refunded.');
-      return { store, transactionId: t.transactionId, storeProductId: t.productId, environment: t.environment, accountToken: t.appAccountToken, ref: t.originalTransactionId, storefront: t.storefront, currency: t.currency, priceMicros: t.priceMicros, finish: null };
+      return { store, transactionId: t.transactionId, storeProductId: t.productId, environment: t.environment, accountToken: t.appAccountToken, ref: t.originalTransactionId, storefront: t.storefront, currency: t.currency, priceMicros: t.priceMicros, finish: null, consumed: false };
     }
     const google = ctx.payments.google!;
     const p = await google.purchase(storeProductId, receipt);
@@ -248,6 +288,7 @@ async function check(ctx: ServerContext, store: PurchaseStore, storeProductId: s
       storefront: p.regionCode,
       currency: null,
       priceMicros: null,
+      consumed: Boolean(p.consumed),
       finish: p.consumed ? null : (held) => (held ? google.consume(p.productId, p.purchaseToken) : p.acknowledged ? Promise.resolve() : google.acknowledge(p.productId, p.purchaseToken)),
     };
   } catch (e) {
@@ -309,15 +350,31 @@ export async function redeem(ctx: ServerContext, me: Player, body: { store?: unk
     // delivered it (a lost answer, a failed save), so the server's village gets it now unless the move
     // brought it along (remnant audit 2026-11-06).
     let held = known.heldOnServer;
+    // Beast Mode ECO-02: a consumed Google token was delivered on the device (only the device consumes one the
+    // server's village does not hold), so it is never delivered again into a later server village.
+    if (!held && c.consumed) return { ...out, heldOnServer: false };
     if (!held) {
-      held = await ctx.repo.transaction(async (tx) => {
+      const got = await ctx.repo.transaction(async (tx): Promise<boolean | null> => {
         await tx.lockPurchases(me.id);
-        if (!(await tx.getVillage(me.id))) return false;
+        const vrow = await tx.getVillage(me.id);
+        if (!vrow) return false;
+        // ECO-02 (Apple has no finished signal): a server village started after the purchase was credited on the
+        // device cannot be told apart from a replayed receipt (an old JWS re-sent into each new village), so it is
+        // not granted; staff decide (an import hold, srv.purchase.needs_support). The village a move brought here
+        // was settled at the import (`settleNotCarried`). A Google token not consumed yet still delivers here:
+        // the device never finished it (the lost-answer case).
+        if (store === 'apple' && vrow.createdAt > known.at) {
+          await needsSupport(tx, ctx, me, store, known.transactionId);
+          return null;
+        }
         const id = villageId(store, known.transactionId);
         const r = await applyServerResult(tx, ctx, me, [{ cmd: { type: 'grantPurchase', productId: known.productId, transactionId: id, verified: true }, reason: `purchase:${store}` }], id);
         if (r && !r.ok) ctx.log('info', 'purchase already in the village', { store, transactionId: known.transactionId });
+        await tx.markPurchaseHeld(store, known.transactionId);
         return true;
       });
+      if (got === null) throw fail(409, 'conflict', 'purchase.needs_support');
+      held = got;
     }
     await finish(ctx, c, held);
     return { ...out, heldOnServer: held };

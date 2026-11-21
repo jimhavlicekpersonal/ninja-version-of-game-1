@@ -14,7 +14,8 @@ import { GoogleVerifier, type Fetch } from '../../../server/payments/google';
 import { ServerError } from '../../../src/backend/net/ports';
 import { defaultData as data } from '../../../src/gameplay/sim/data';
 import { productForStoreId, storeProductId } from '../../../src/gameplay/sim/monetization';
-import { deserialize } from '../../../src/gameplay/sim/save';
+import { deserialize, serialize } from '../../../src/gameplay/sim/save';
+import { createNewVillage } from '../../../src/gameplay/sim/village';
 import { world } from './harness';
 import { repoFactories } from './pg';
 
@@ -310,6 +311,74 @@ for (const [label, makeRepo] of repoFactories) {
       expect(g.consumed).toEqual(['token-dev-123456']);
       expect(await ann.redeem({ store: 'google', storeProductId: 'jade_box', receipt: 'token-dev-123456' })).toMatchObject({ heldOnServer: true, already: true });
       expect(deserialize((await ann.getVillage())!.file, data).resources.moonstones - before).toBe(600);
+    });
+
+    it('ECO-02: a consumed Google purchase delivered on the device is not delivered again into a new server village', async () => {
+      const { w, g } = await setup();
+      const ann = await w.player('Ann');
+      const intent = await ann.purchaseIntent({ store: 'google', productId: 'moonstones_3', under18: false });
+      g.tokens.set('token-dev-eco02a', { purchaseState: 0, consumptionState: 0, acknowledgementState: 0, orderId: 'GPA.4444', purchaseTimeMillis: String(w.now()), obfuscatedExternalAccountId: intent.accountToken, purchaseType: 0 });
+      expect(await ann.redeem({ store: 'google', storeProductId: 'jade_box', receipt: 'token-dev-eco02a' })).toMatchObject({ heldOnServer: false, already: false });
+      // The device delivered it and consumed the token after its own save.
+      g.tokens.get('token-dev-eco02a')!.consumptionState = 1;
+      w.advance(60_000);
+      await ann.startVillage();
+      const before = deserialize((await ann.getVillage())!.file, data).resources.moonstones;
+      expect(await ann.redeem({ store: 'google', storeProductId: 'jade_box', receipt: 'token-dev-eco02a' })).toMatchObject({ heldOnServer: false, already: true });
+      expect(deserialize((await ann.getVillage())!.file, data).resources.moonstones).toBe(before);
+    });
+
+    it('ECO-02: an App Store JWS replayed after startVillage is not granted again; staff see it', async () => {
+      const { w } = await setup();
+      const ann = await w.player('Ann');
+      const intent = await ann.purchaseIntent({ store: 'apple', productId: 'moonstones_2', under18: false });
+      const receipt = appleTxn('jade_bag', intent.accountToken);
+      expect(await ann.redeem({ store: 'apple', storeProductId: 'jade_bag', receipt })).toMatchObject({ heldOnServer: false });
+      w.advance(60_000);
+      await ann.startVillage();
+      const before = deserialize((await ann.getVillage())!.file, data).resources.moonstones;
+      await expect(ann.redeem({ store: 'apple', storeProductId: 'jade_bag', receipt })).rejects.toMatchObject({ code: 'conflict', message: expect.stringContaining('support') });
+      await expect(ann.redeem({ store: 'apple', storeProductId: 'jade_bag', receipt })).rejects.toMatchObject({ code: 'conflict' });
+      expect(deserialize((await ann.getVillage())!.file, data).resources.moonstones).toBe(before);
+      const holds = await w.repo.importHoldsOf(ann.id);
+      expect(holds).toHaveLength(1);
+      expect(holds[0].purchases).toEqual([expect.stringMatching(/^apple:/)]);
+    });
+
+    it('ECO-02: an import that drops a credited purchase record cannot be topped up by replaying its receipt', async () => {
+      const { w } = await setup();
+      const ann = await w.player('Ann');
+      const intent = await ann.purchaseIntent({ store: 'apple', productId: 'moonstones_2', under18: false });
+      const receipt = appleTxn('jade_bag', intent.accountToken);
+      expect(await ann.redeem({ store: 'apple', storeProductId: 'jade_bag', receipt })).toMatchObject({ heldOnServer: false });
+      w.advance(60_000);
+      // Saved on the device after the purchase, with its record stripped.
+      const file = serialize(createNewVillage(w.now(), data), w.now());
+      await ann.importVillage(file);
+      const before = deserialize((await ann.getVillage())!.file, data).resources.moonstones;
+      expect(await ann.redeem({ store: 'apple', storeProductId: 'jade_bag', receipt })).toMatchObject({ already: true, heldOnServer: true });
+      expect(deserialize((await ann.getVillage())!.file, data).resources.moonstones).toBe(before);
+      expect((await w.repo.importHoldsOf(ann.id)).flatMap((h) => h.purchases)).toEqual([expect.stringMatching(/^apple:/)]);
+    });
+
+    it('ECO-02: a purchase credited after the moved file was saved (a lost answer) is delivered at the import, once', async () => {
+      const { w } = await setup();
+      const ann = await w.player('Ann');
+      const saved = w.now();
+      const file = serialize(createNewVillage(saved, data), saved);
+      w.advance(60_000);
+      const intent = await ann.purchaseIntent({ store: 'apple', productId: 'moonstones_2', under18: false });
+      const receipt = appleTxn('jade_bag', intent.accountToken);
+      expect(await ann.redeem({ store: 'apple', storeProductId: 'jade_bag', receipt })).toMatchObject({ heldOnServer: false });
+      w.advance(60_000);
+      const plain = deserialize(file, data).resources.moonstones;
+      await ann.importVillage(file);
+      const after = deserialize((await ann.getVillage())!.file, data);
+      expect(after.resources.moonstones - plain).toBe(280);
+      expect(after.purchases.map((p) => p.productId)).toEqual(['moonstones_2']);
+      expect(await ann.redeem({ store: 'apple', storeProductId: 'jade_bag', receipt })).toMatchObject({ already: true });
+      expect(deserialize((await ann.getVillage())!.file, data).resources.moonstones - plain).toBe(280);
+      expect(await w.repo.importHoldsOf(ann.id)).toHaveLength(0);
     });
 
     it('refuses a receipt sent again after its refund, and gives a refunded Clan Stipend back when the refund is reversed', async () => {
