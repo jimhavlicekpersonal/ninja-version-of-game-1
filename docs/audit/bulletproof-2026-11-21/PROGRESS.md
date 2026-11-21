@@ -27,7 +27,7 @@ New player-visible strings are translated into all 49 other ready languages in t
 | ECO-04 | MEDIUM | 7 | DESIGN | open | | | |
 | ECO-05 | HIGH | Owner/device | DEVICE | open | | | |
 | ECO-06 | LOW | 1 | OWNER | partial |  | tests/backend/server/purchases.test.ts 'ECO-06: …' | Code: Google purchaseType 1 → environment 'Promo', 0 counted cents, outside the sandbox cap; quantity > 1 logged + tk_refused_total{multi_quantity} (one unit delivered); checkConfig warns in production when App Store is on and USD_RATES has only USD; SHIPPING 3b: never enable multi-quantity. Open (OWNER, D6): set USD_RATES monthly or decide on local-money counting. |
-| ECO-07 | LOW | 2 | OWNER | open | | | |
+| ECO-07 | LOW | 2 | OWNER | partial |  | same as SEC-12 | Folded into SEC-12 (same commit). Owner sets the cap. |
 | ECO-08 | LOW | 1 | DESIGN | done |  | tests/presentation/dom/keep-rush.dom.test.ts | The Keep's Jade 'Finish now' and resource top-up confirms carry keep.armyBehind (existing text) as a note under the spend when armyBehindKeep (no hard gate; no real-money figure). spendMoonstones(…, note?). |
 | ECO-09 | LOW | 1 | CODE | partial |  | tests/backend/server/purchases.test.ts 'ECO-09: …' | Code done: certificate dates checked at payload.signedDate (bounded: ≤ now+5 min, ≥ now−3 years), else now; chain/OID/P-256 checks unchanged. Open (DEVICE): whether StoreKit re-signs jwsRepresentation for Transaction.unfinished was not checked on a device. |
 | ECO-10 | LOW | 1 | CODE | done |  | tests/presentation/dom/store-prices.dom.test.ts | loadPrices skips retired offers (offer_rebuild); one ask per session once complete. |
@@ -89,7 +89,7 @@ New player-visible strings are translated into all 49 other ready languages in t
 | SEC-09 | MEDIUM | 5 | OWNER | open | | | |
 | SEC-10 | LOW | 2 | CODE | open | | | |
 | SEC-11 | LOW | Owner/device | CODE | open | | | |
-| SEC-12 | LOW | 2 | OWNER | open | | | |
+| SEC-12 | LOW | 2 | OWNER | partial |  | tests/backend/server/beast-mode-2026-11-21-config.test.ts SEC-12 | Code: production checkConfig errors when store checks are configured and SANDBOX_CREDIT_DAILY_CAP_USD is unset (explicit 0 allowed); SHIPPING 3h updated. Open (OWNER): set the value in production. |
 | SEC-13 | LOW | 2 | CODE | open | | | |
 | SEC-14 | LOW | 2 | CODE | open | | | |
 | SEC-15 | LOW | 2 | CODE | open | | | |

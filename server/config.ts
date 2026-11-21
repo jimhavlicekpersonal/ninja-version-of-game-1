@@ -183,6 +183,9 @@ export function checkConfig(env: Record<string, string | undefined>): { deploy: 
     if (list(env.APPLE_ENVIRONMENTS).includes('Xcode')) errors.push('Xcode-signed purchases are for local testing, not production.');
     if (env.GOOGLE_PLAY_ALLOW_TEST === '1') warnings.push('GOOGLE_PLAY_ALLOW_TEST=1: license-tester purchases are credited in production.');
     if (env.MIGRATE_ON_BOOT === '1') warnings.push('MIGRATE_ON_BOOT=1 in production: run "npm run server:migrate" as a release step instead when there is more than one instance.');
+    // Beast Mode SEC-12 / ECO-07 (P4): with store checks on, Sandbox/TestFlight purchases need a server-wide daily cap
+    // (an explicit 0 credits none); otherwise each fresh sandbox account gets the per-buyer test credit on production.
+    if ((env.APPLE_BUNDLE_IDS || env.GAMECENTER_BUNDLE_IDS || env.GOOGLE_PLAY_PACKAGE) && (env.SANDBOX_CREDIT_DAILY_CAP_USD === undefined || env.SANDBOX_CREDIT_DAILY_CAP_USD.trim() === '')) errors.push('SANDBOX_CREDIT_DAILY_CAP_USD must be set in production when store purchases are checked (e.g. 50; 0 credits no Sandbox or TestFlight purchase at all). App Review buys in the Sandbox against production, so 0 makes its purchases fail.');
     // Beast Mode SEC-01: device-held villages are trusted in ranked play until this is on (owner decision D8).
     if (env.REQUIRE_SERVER_VILLAGE === undefined || env.REQUIRE_SERVER_VILLAGE === '') warnings.push('REQUIRE_SERVER_VILLAGE is not set: villages kept on the device take part in ranked play (honor, loot, wars, both leaderboards) on trust. Set it to 1 after a release where the game has moved villages to the server, or to 0 to accept this knowingly.');
     if (env.UPLOAD_ACCOUNT_AGE === '0') warnings.push('UPLOAD_ACCOUNT_AGE=0 in production: a new account can upload a Keep 15 base and be ranked and matched there at once. Keep it for staging contract runs only.');
