@@ -207,6 +207,23 @@ export class MemoryPlayers extends MemoryBase implements PlayerStore {
     this.tokenRows = this.tokenRows.filter((t) => !(t.playerId === playerId && t.provider === provider && t.tokenHash !== except));
     return before - this.tokenRows.length;
   }
+  async revokeAllTokens(playerId: string, revokedHash: string): Promise<number> {
+    const before = this.tokenRows.length;
+    this.tokenRows = this.tokenRows.filter((t) => t.playerId !== playerId);
+    this.rotationRows = this.rotationRows.filter((r) => r.playerId !== playerId);
+    let n = before - this.tokenRows.length;
+    const p = this.players.get(playerId);
+    if (p && !p.tokenHash.startsWith(REVOKED_TOKEN_PREFIX)) {
+      p.tokenHash = revokedHash;
+      n++;
+    }
+    return n;
+  }
+
+  async sessionsOf(playerId: string): Promise<{ provider: string | null; label: string; createdAt: number; lastUsedAt: number | null }[]> {
+    return this.tokenRows.filter((t) => t.playerId === playerId).map((t) => ({ provider: t.provider ?? null, label: t.label, createdAt: t.createdAt, lastUsedAt: t.lastUsedAt ?? null }));
+  }
+
   async revokeOtherTokens(playerId: string, keepHash: string): Promise<number> {
     const p = this.players.get(playerId);
     if (!p) return 0;

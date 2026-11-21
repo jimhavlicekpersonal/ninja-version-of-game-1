@@ -47,8 +47,71 @@ export async function search(ctx: ServerContext, q: unknown) {
   return { players: (await ctx.repo.searchPlayers(query, 25)).map((p) => summary(p, ctx.now())) };
 }
 
-export async function detail(ctx: ServerContext, id: string) {
+/** Beast Mode SEC-07: a staff read of one player is logged too, at most once per staff member, player and hour. */
+const lastViews = new Map<string, number>();
+async function auditView(ctx: ServerContext, actor: string, playerId: string): Promise<void> {
+  const k = `${actor}\u0000${playerId}`;
+  const t = ctx.now();
+  if ((lastViews.get(k) ?? -Infinity) > t - HOUR) return;
+  if (lastViews.size > 10_000) lastViews.clear();
+  lastViews.set(k, t);
+  await audit(ctx, actor, 'view', playerId, {});
+}
+
+/** SEC-07: GET /admin/v1/players/:id/sessions: provider, device label, created and last used (never a hash). */
+export async function sessions(ctx: ServerContext, actor: string, id: string) {
   const p = await playerOr404(ctx, id);
+  await auditView(ctx, actor, p.id);
+  const keys = await ctx.repo.keysOf(p.id);
+  return { firstToken: keys.main ? 'active' : 'signed out', links: (await ctx.repo.linksOf(p.id)).map((l) => l.provider), devices: await ctx.repo.sessionsOf(p.id) };
+}
+
+/** SEC-07: POST /admin/v1/players/:id/revoke-sessions { note }: every device signed out; the player signs in again with a linked sign-in. */
+export async function revokeSessions(ctx: ServerContext, actor: string, id: string, body: { note?: unknown } | undefined) {
+  const p = await playerOr404(ctx, id);
+  const note = text(body?.note, 500);
+  if (!note) throw staffError(400, 'bad_request', 'Say why (a note for the staff log).');
+  const revoked = await ctx.repo.revokeAllTokens(p.id, `revoked:${ctx.uuid()}`);
+  await audit(ctx, actor, 'revoke-sessions', p.id, { note, revoked });
+  return { revoked };
+}
+
+/** SEC-07: POST /admin/v1/players/:id/reset-honor { to, note }: honor set (default 0) and the leaderboard moved with it. */
+export async function resetHonor(ctx: ServerContext, actor: string, id: string, body: { to?: unknown; note?: unknown } | undefined) {
+  const p = await playerOr404(ctx, id);
+  const note = text(body?.note, 500);
+  if (!note) throw staffError(400, 'bad_request', 'Say why (a note for the staff log).');
+  const to = body?.to === undefined ? 0 : Math.floor(Number(body.to));
+  if (!Number.isFinite(to) || to < 0 || to > p.trophies) throw staffError(400, 'bad_request', 'Honor can only be lowered (to a whole number from 0 to the current honor).');
+  await ctx.repo.updatePlayer(p.id, { trophies: to });
+  if (p.base && !p.bannedUntil) await ctx.board.set(p.id, to, p.createdAt);
+  await audit(ctx, actor, 'reset-honor', p.id, { note, from: p.trophies, to });
+  return { honor: to };
+}
+
+/**
+ * SEC-07: GET /admin/v1/suspects?days=N: the players whose recorded raids gained the most honor in the last N days
+ * (default 3, at most 14), with wins per active hour, late reports and whether the server holds their village.
+ */
+export async function suspects(ctx: ServerContext, actor: string, days: unknown) {
+  const d = Math.max(1, Math.min(14, Math.floor(Number(days)) || 3));
+  const since = ctx.now() - d * 24 * HOUR;
+  const top = await ctx.repo.topPlayers(200);
+  const rows = [];
+  for (const p of top) {
+    const raids = await ctx.repo.attacksBy(p.id, since, 500);
+    const gained = raids.reduce((s, a) => s + Math.max(0, a.attackerTrophies ?? 0), 0);
+    if (!raids.length) continue;
+    const hours = new Set(raids.map((a) => Math.floor(a.at / HOUR))).size;
+    rows.push({ ...summary(p, ctx.now()), honorGained: gained, perDay: Math.round(gained / d), raids: raids.length, winsPerActiveHour: Math.round((raids.filter((a) => a.result.stars > 0).length / Math.max(1, hours)) * 10) / 10, lateReports: p.lateReports ?? 0, heldOnServer: Boolean(await ctx.repo.getVillage(p.id)) });
+  }
+  await audit(ctx, actor, 'view-suspects', null, { days: d });
+  return { days: d, players: rows.sort((a, b) => b.honorGained - a.honorGained).slice(0, 100) };
+}
+
+export async function detail(ctx: ServerContext, id: string, actor = '') {
+  const p = await playerOr404(ctx, id);
+  if (actor) await auditView(ctx, actor, p.id);
   const now = ctx.now();
   const row = await ctx.repo.getVillage(p.id);
   const village = row

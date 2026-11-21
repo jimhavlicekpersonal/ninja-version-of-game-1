@@ -35,7 +35,7 @@ table{border-collapse:collapse;width:100%}td,th{border-bottom:1px solid #eee;pad
 <span id="status" class="muted"></span></header>
 <main>
 <section><div class="row"><input id="q" placeholder="Player name or id"><button id="find" class="primary">Find</button>
-<button id="queues">Reports and deletion requests</button><button id="log">Staff log</button></div>
+<button id="queues">Reports and deletion requests</button><button id="log">Staff log</button><button id="suspects">Top honor gainers</button></div>
 <div id="results"></div></section>
 <div id="detail"></div>
 </main>
@@ -98,6 +98,9 @@ function render(d) {
   const ageNote = el('input', { placeholder: 'What support checked' });
   const newName = el('input', { placeholder: 'New name (empty: a generated one)' });
   const renameReason = el('input', { placeholder: 'Reason (the player sees it)' });
+  const honorTo = el('input', { type: 'number', value: '0', style: 'width:6em' });
+  const honorNote = el('input', { placeholder: 'Why (staff log)' });
+  const sessionNote = el('input', { placeholder: 'Why sign out every device (staff log)' });
   const which = el('select', {}, el('option', { value: 'both' }, 'both'), el('option', { value: 'attack' }, 'attack'), el('option', { value: 'base' }, 'base'));
   const act = (path, body) => async () => { try { render(await api('POST', '/admin/v1/players/' + encodeURIComponent(p.id) + path, body())); status('Done.', true); } catch (e) { status(e.message); } };
   box.append(el('section', {}, el('h3', {}, 'Actions'),
@@ -105,7 +108,10 @@ function render(d) {
     el('div', { class: 'row' }, 'Give (or take, with a minus)', amount, resKind, note, el('button', { onclick: act('/adjust', () => ({ resources: { [resKind.value]: Number(amount.value) }, note: note.value })) }, 'Apply'), el('span', { class: 'muted' }, d.village ? '' : 'Village on the device: cannot be changed here.')),
     el('div', { class: 'row' }, 'Offending name', newName, renameReason, el('button', { onclick: act('/rename', () => ({ name: newName.value, reason: renameReason.value })) }, 'Replace name')),
     el('div', { class: 'row' }, 'Reset ratings', which, el('button', { onclick: act('/reset-rating', () => ({ which: which.value })) }, 'Reset')),
-    el('div', { class: 'row' }, 'Age group: ' + (d.ageGroup ? (d.ageGroup.under18 ? 'under 18' : '18 or older') + ' since ' + when(d.ageGroup.at) : 'not stated'), ageNote, el('button', { onclick: act('/reset-age', () => ({ note: ageNote.value })) }, 'Clear (after a support check)'))));
+    el('div', { class: 'row' }, 'Age group: ' + (d.ageGroup ? (d.ageGroup.under18 ? 'under 18' : '18 or older') + ' since ' + when(d.ageGroup.at) : 'not stated'), ageNote, el('button', { onclick: act('/reset-age', () => ({ note: ageNote.value })) }, 'Clear (after a support check)')),
+    // Beast Mode SEC-07: honor reset, every device signed out, and the device list.
+    el('div', { class: 'row' }, 'Honor ' + d.player.honor + ', late reports ' + (d.player.lateReports || 0) + ': lower to', honorTo, honorNote, el('button', { onclick: act('/reset-honor', () => ({ to: Number(honorTo.value), note: honorNote.value })) }, 'Set honor')),
+    el('div', { class: 'row' }, sessionNote, el('button', { onclick: act('/revoke-sessions', () => ({ note: sessionNote.value })) }, 'Sign out every device'), el('button', { onclick: async () => { try { const s = await api('GET', '/admin/v1/players/' + encodeURIComponent(p.id) + '/sessions'); status('First token ' + s.firstToken + '; links: ' + (s.links.join(', ') || 'none') + '; devices: ' + s.devices.map((x) => (x.provider || 'registration') + ' ' + when(x.lastUsedAt || x.createdAt)).join(' · '), true); } catch (e) { status(e.message); } } }, 'Show devices'))));
   const holds = (d.importHolds || []).filter((h) => h.status === 'held');
   if (holds.length) {
     const holdNote = el('input', { placeholder: 'What support confirmed' });
@@ -128,6 +134,9 @@ $('queues').onclick = async () => {
       el('section', {}, el('h3', {}, 'Open reports'), table(reports.reports, [['When', (r) => when(r.at)], ['About', (r) => el('a', { href: '#', onclick: (e) => { e.preventDefault(); show(r.targetId); } }, r.targetName || r.targetId)], ['Reason', (r) => r.reason], ['Text', (r) => r.text || ''], ['Id', (r) => r.id]]), el('p', { class: 'muted' }, 'Resolve with POST /admin/v1/reports/:id (dismiss, remove_message, mute).')),
       el('section', {}, el('h3', {}, 'Deletion requests'), table(deletions.requests, [['When', (r) => when(r.at)], ['Player', (r) => r.playerId || r.name], ['Verified', (r) => (r.verified ? 'yes (code)' : 'NO: check ownership')], ['Note', (r) => r.note], ['Id', (r) => r.id]]), el('p', { class: 'muted' }, 'Carry out with POST /admin/v1/deletion-requests/:id: delete (verified only), reject, or override with a note saying how ownership was checked.')));
   } catch (e) { status(e.message); }
+};
+$('suspects').onclick = async () => {
+  try { const r = await api('GET', '/admin/v1/suspects?days=3'); $('detail').replaceChildren(el('section', {}, el('h3', {}, 'Top honor gainers (last ' + r.days + ' days)'), table(r.players, [['Player', (x) => x.name + ' (' + x.id + ')'], ['Honor', (x) => x.honor], ['Gained', (x) => x.honorGained], ['Per day', (x) => x.perDay], ['Raids', (x) => x.raids], ['Wins per active hour', (x) => x.winsPerActiveHour], ['Late reports', (x) => x.lateReports], ['Village', (x) => (x.heldOnServer ? 'server' : 'device')]]))); } catch (e) { status(e.message); }
 };
 $('log').onclick = async () => {
   try { const r = await api('GET', '/admin/v1/actions'); $('detail').replaceChildren(el('section', {}, el('h3', {}, 'Staff log'), table(r.actions, [['When', (x) => when(x.at)], ['Who', (x) => x.actor], ['What', (x) => x.action], ['Player', (x) => x.playerId || ''], ['Detail', (x) => JSON.stringify(x.detail)]]))); } catch (e) { status(e.message); }

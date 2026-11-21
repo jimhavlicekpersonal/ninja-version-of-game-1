@@ -56,8 +56,9 @@ for (const [label, makeRepo] of repoFactories) {
       expect(ok.body.ledger[0]).toMatchObject({ resource: 'moonstones', delta: 50, reason: 'staff:Lost purchase' });
       const village = (await s.call('GET', Routes.village, ann.token)).body;
       expect(deserialize(village.file, data).resources.moonstones).toBe(before + 50);
-      expect(ok.body.staffActions[0]).toMatchObject({ actor: 'Sam', action: 'adjust', detail: { resources: { moonstones: 50 }, note: 'Lost purchase' } });
-      expect((await s.call('GET', '/admin/v1/actions', ADMIN)).body.actions).toHaveLength(1);
+      expect(ok.body.staffActions.filter((x: { action: string }) => x.action !== 'view')[0]).toMatchObject({ actor: 'Sam', action: 'adjust', detail: { resources: { moonstones: 50 }, note: 'Lost purchase' } });
+      // Beast Mode SEC-07: the staff read of this player is logged too (once an hour).
+      expect((await s.call('GET', '/admin/v1/actions', ADMIN)).body.actions.map((x: { action: string }) => x.action).sort()).toEqual(['adjust', 'view']);
     });
 
     it('suspends a player: refused online, off the leaderboard, not matched; lifted by staff or by time', async () => {

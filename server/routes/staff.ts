@@ -20,7 +20,12 @@ export function staffRoutes(staff: StaffRoute, core: ServerCore, ip: (input: Rou
   staff('POST', '/admin/v1/reports/:id', { params: id, body: body(fields<{ action: string; hours: number; note: string }>()({ action: string(), hours: number(), note: string() })) }, async (_a, { params, body }) => core.admin.resolveReport(params.id, body));
   // The admin tool (roadmap step 48): player lookup, give/take, suspend, rating reset, staff log.
   staff('GET', '/admin/v1/players', { query: query('q') }, async (_a, { query }) => core.admin.search(query.q));
-  staff('GET', '/admin/v1/players/:id', { params: id }, async (_a, { params }) => core.admin.player(params.id));
+  staff('GET', '/admin/v1/players/:id', { params: id }, async (actor, { params }) => core.admin.player(params.id, actor));
+  // Beast Mode SEC-07: sessions (see and sign out every device), honor reset, the suspects view.
+  staff('GET', '/admin/v1/players/:id/sessions', { params: id }, async (actor, { params }) => core.admin.sessions(actor, params.id));
+  staff('POST', '/admin/v1/players/:id/revoke-sessions', { params: id, body: note }, async (actor, { params, body }) => core.admin.revokeSessions(actor, params.id, body));
+  staff('POST', '/admin/v1/players/:id/reset-honor', { params: id, body: body(fields<{ to: number; note: string }>()({ to: number(), note: string() })) }, async (actor, { params, body }) => core.admin.resetHonor(actor, params.id, body));
+  staff('GET', '/admin/v1/suspects', { query: query('days') }, async (actor, { query }) => core.admin.suspects(actor, query.days));
   // Japan C17: the unused paid Jade balance on a 資金決済法 base date (?date=YYYY-03-31|YYYY-09-30; default the latest).
   staff('GET', '/admin/v1/reports/jp-unused-balance', { query: query('date') }, async (actor, { query }) => core.admin.japanBalance(actor, query.date));
   staff('POST', '/admin/v1/players/:id/adjust', { params: id, body: body(fields<{ resources: object; note: string }>()({ resources: object(), note: string() })) }, async (actor, { params, body }) => core.admin.adjust(actor, params.id, body));

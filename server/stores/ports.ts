@@ -115,6 +115,10 @@ export interface PlayerStore {
   touchToken(tokenHash: string, at: number): Promise<void>;
   /** Sign out the devices a provider's sign-in made (unlink), except `except`; how many. */
   revokeTokens(playerId: string, provider: string, except?: string): Promise<number>;
+  /** Beast Mode SEC-07 (staff): sign out every device of the player, the first token too, and drop waiting rotations; how many. */
+  revokeAllTokens(playerId: string, revokedHash: string): Promise<number>;
+  /** SEC-07 (staff): the player's device tokens without their hashes. */
+  sessionsOf(playerId: string): Promise<{ provider: string | null; label: string; createdAt: number; lastUsedAt: number | null }[]>;
   /** Sign out every device but `keepHash` (which becomes the player's main token); how many. */
   revokeOtherTokens(playerId: string, keepHash: string): Promise<number>;
   /**
@@ -283,6 +287,8 @@ export interface BattleStore {
   refundNotice(store: string, key: string): Promise<{ at: number; why: string } | null>;
   addAttack(a: AttackRecord): Promise<void>;
   defensesFor(defenderId: string, since: number, limit: number): Promise<AttackRecord[]>;
+  /** Beast Mode SEC-07 (staff suspects view): raids this player made since a time, oldest first. */
+  attacksBy(attackerId: string, since: number, limit: number): Promise<AttackRecord[]>;
   /** Third verification fixes 2026-11-14 (8c): the defender of this attacker's raid played with `seed` after `since`, if recorded. */
   attackDefenderBySeed(attackerId: string, seed: number, since: number): Promise<string | null>;
   /** Last gaps 2026-11-14: whether a recorded raid on this defender since `since` had this seed (a shared defense replay). */

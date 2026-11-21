@@ -75,6 +75,12 @@ export class MemoryBattles extends MemoryBase implements BattleStore {
   async defendedBySeed(defenderId: string, seed: number, since: number): Promise<boolean> {
     return this.attacks.some((x) => x.defenderId === defenderId && x.seed === seed && x.at > since);
   }
+  async attacksBy(attackerId: string, since: number, limit: number): Promise<AttackRecord[]> {
+    return this.attacks
+      .filter((a) => a.attackerId === attackerId && a.at > since)
+      .slice(-limit)
+      .map((a) => this.withBase(a));
+  }
   async defensesFor(defenderId: string, since: number, limit: number): Promise<AttackRecord[]> {
     return this.attacks
       .filter((a) => a.defenderId === defenderId && a.at > since)

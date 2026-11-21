@@ -340,6 +340,17 @@ export class PgPlayers extends PgBase implements PlayerStore {
     return r.rowCount ?? 0;
   }
 
+  async revokeAllTokens(playerId: string, revokedHash: string): Promise<number> {
+    const d = await this.db.query('delete from player_tokens where player_id = $1', [playerId]);
+    await this.db.query('delete from token_rotations where player_id = $1', [playerId]);
+    const u = await this.db.query('update players set token_hash = $2 where id = $1 and token_hash not like $3', [playerId, revokedHash, 'revoked:%']);
+    return (d.rowCount ?? 0) + (u.rowCount ?? 0);
+  }
+
+  async sessionsOf(playerId: string): Promise<{ provider: string | null; label: string; createdAt: number; lastUsedAt: number | null }[]> {
+    return (await this.rows('select provider, label, created_at, last_used_at from player_tokens where player_id = $1 order by created_at', [playerId])).map((r) => ({ provider: strOrNull(r.provider), label: String(r.label ?? ''), createdAt: num(r.created_at), lastUsedAt: r.last_used_at == null ? null : num(r.last_used_at) }));
+  }
+
   async revokeOtherTokens(playerId: string, keepHash: string): Promise<number> {
     // One statement: the kept token becomes the main one (if it was another device's) and every other token goes.
     const r = await this.rows(
