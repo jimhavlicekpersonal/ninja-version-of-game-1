@@ -920,6 +920,8 @@ export class Hud {
       const env = conn.server?.environment;
       if (env && env !== 'production') wrap.append(h('p', { class: 'muted small' }, i18nText("ui.this_is_a_server_for_testing_villages__7c82ee8a8b", { arg1: env })));
       if (conn.server?.notice) wrap.append(h('p', { class: 'store-note' }, conn.server.notice));
+      // Beast Mode SAV-13: a device clock far from the server's (online timers and war phases follow the server).
+      if (conn.clockWarning !== null) wrap.append(h('p', { class: 'note clock-warning' }, t('net.clockOff', { minutes: Math.abs(conn.clockWarning) })));
       if (!conn.enabled) {
         wrap.append(h('p', { class: 'muted' }, i18nText("ui.you_are_playing_on_your_own_opponents__186479dcf6")));
         // Re-audit: "Play offline" keeps the online account; it can still be deleted from here.

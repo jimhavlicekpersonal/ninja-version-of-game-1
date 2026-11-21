@@ -165,7 +165,9 @@ function platformName(): string {
  * Why the server refused a raid report, as a sentence in the player's language (remnant audit
  * 2026-11-06: the toast showed the code, e.g. "account_deleted"); empty for a code with no words yet.
  */
-function rejectedWhy(code: string | undefined): string {
+function rejectedWhy(code: string | undefined, at?: number): string {
+  // Beast Mode SAV-11: a raid that became practice because its report came too late says when it was and the limit.
+  if (code === 'expired' && typeof at === 'number' && Number.isFinite(at)) return ` ${t('raid.rejected.expiredAt', { date: i18nDate(at) })}`;
   const known = ['expired', 'defender_protected', 'no_warriors', 'account_deleted', 'conflict', 'version_mismatch', 'banned'];
   return code && known.includes(code) ? ` ${t(`raid.rejected.${code}`)}` : '';
 }
@@ -899,7 +901,7 @@ function wireSound(controller: GameController, hud: Hud): void {
         // The server's answer to an online attack.
         const r = e.record;
         if (e.outcome === 'confirmed') hud.toast(i18nText("ui.raid_on_confirmed_by_the_server_62aee4a29d", { arg1: r.opponentName, arg2: Object.values(r.banked ?? {}).some((v) => (v ?? 0) > 0) ? i18nText("ui.loot_banked_c1d50f49bf") : '' }), 'success');
-        else hud.toast(i18nText("ui.the_server_did_not_accept_your_raid_on_844fc2eef5", { arg1: r.opponentName, arg2: rejectedWhy(r.rejected) }), 'error');
+        else hud.toast(i18nText("ui.the_server_did_not_accept_your_raid_on_844fc2eef5", { arg1: r.opponentName, arg2: rejectedWhy(r.rejected, r.at) }), 'error');
       } else if (e.kind === 'reward' && e.source.startsWith('season:')) hud.toast(i18nText("ui.the_league_season_ended_your_chest_was_ed31b9f094"), 'success');
       else if (e.kind === 'reward' && e.source.startsWith('pass_end:')) {
         // Review SCR-04: a Season Scroll season ended while the game was open; say what its unclaimed tiers added

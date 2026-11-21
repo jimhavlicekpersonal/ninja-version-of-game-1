@@ -1066,6 +1066,24 @@ export class Connection {
   /** SAV-07: the last base uploaded, so an unchanged one is not sent again every 2 minutes. */
   private lastBaseJson = '';
 
+  /**
+   * Beast Mode SAV-13: how far this device's clock is from the server's (positive: the server is ahead), the median
+   * of the last three hellos, each corrected by half its round trip. Shown to the player when it is more than five
+   * minutes; the game's own clock is untouched (battles and the simulation never see it).
+   */
+  clockOffsetMs = 0;
+  private offsets: number[] = [];
+  noteServerTime(serverTime: unknown, sentAt: number, receivedAt: number): void {
+    if (typeof serverTime !== 'number' || !Number.isFinite(serverTime) || receivedAt < sentAt || receivedAt - sentAt > 30_000) return;
+    this.offsets = [...this.offsets.slice(-2), serverTime - (sentAt + receivedAt) / 2];
+    const sorted = [...this.offsets].sort((a, b) => a - b);
+    this.clockOffsetMs = Math.round(sorted[Math.floor(sorted.length / 2)]);
+  }
+  /** SAV-13: the device clock is off by more than five minutes (minutes, signed), or null. */
+  get clockWarning(): number | null {
+    return Math.abs(this.clockOffsetMs) > 5 * 60_000 ? Math.round(this.clockOffsetMs / 60_000) : null;
+  }
+
   private hidden(): boolean {
     return typeof document !== 'undefined' && document.visibilityState === 'hidden';
   }
@@ -1109,7 +1127,9 @@ export class Connection {
     try {
       if (!this.online) {
         if (this.status !== 'connecting') this.setStatus('connecting');
+        const sent = Date.now();
         this.server = await port.hello();
+        this.noteServerTime(this.server.serverTime, sent, Date.now());
         // Step 75: a game the server can no longer check pauses online play (the village keeps working offline).
         const update = updateNeeded(this.server, SIM_RULES, this.o.build);
         if (update) {

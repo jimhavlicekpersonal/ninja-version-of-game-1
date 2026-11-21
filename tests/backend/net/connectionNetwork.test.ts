@@ -147,3 +147,16 @@ describe('Beast Mode SAV-07: backoff, breaker and background pause', () => {
     expect(uploads).toBe(after);
   });
 });
+
+describe('Beast Mode SAV-13: device clock offset', () => {
+  it('a server 10 minutes ahead sets clockOffsetMs ≈ 600000 and the warning; a small offset does not warn', async () => {
+    const w = world();
+    const conn = new Connection({ game: game(w), builtInUrl: 'test.server', kv: memoryKv(), makePort: () => new InProcessServerAdapter(w.core), log: () => undefined });
+    conn.noteServerTime(1_000_000 + 600_000 + 50, 1_000_000, 1_000_100);
+    expect(Math.abs(conn.clockOffsetMs - 600_000)).toBeLessThan(1000);
+    expect(conn.clockWarning).toBe(10);
+    const near = new Connection({ game: game(w), builtInUrl: 'test.server', kv: memoryKv(), makePort: () => new InProcessServerAdapter(w.core), log: () => undefined });
+    near.noteServerTime(1_000_000 + 60_000, 1_000_000, 1_000_000);
+    expect(near.clockWarning).toBeNull();
+  });
+});
