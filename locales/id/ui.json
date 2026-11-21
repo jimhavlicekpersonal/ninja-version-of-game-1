@@ -155,6 +155,8 @@
   "net.clockOff": { "en": "This device's clock is off by about {minutes} min. Online timers and war phases follow the server: set the clock to automatic in the device settings.", "text": "Jam perangkat ini meleset sekitar {minutes} menit. Pengatur waktu online dan fase perang mengikuti server: atur jam ke otomatis di pengaturan perangkat." },
   "raid.reportPending": { "en": "Your last raid is still being sent to the server. Try again in a moment; Practice and Trials still work.", "text": "Serangan terakhirmu masih dikirim ke server. Coba lagi sebentar lagi; Latihan dan Ujian tetap bisa dimainkan." },
   "save.restoredPrevious": { "en": "Your latest save could not be read, so an earlier copy ({when}) was loaded.", "text": "Simpanan terbarumu tidak bisa dibaca, jadi salinan sebelumnya ({when}) dimuat." },
+  "frame.failed.title": { "en": "Something went wrong drawing the village", "text": "Terjadi masalah saat menggambar desa" },
+  "frame.failed.body": { "en": "Your village is saved. Reload to keep playing.", "text": "Desamu sudah tersimpan. Muat ulang untuk terus bermain." },
   "save.openFailed.title": { "en": "Your village couldn't be opened", "text": "Desamu tidak bisa dibuka" },
   "save.openFailed.body": { "en": "This device didn't open its saved village in time. Try again, or play a temporary village for now: it is not saved and stays offline.", "text": "Perangkat ini tidak membuka desa tersimpanmu tepat waktu. Coba lagi, atau mainkan desa sementara untuk saat ini: desa itu tidak disimpan dan tetap offline." },
   "save.openFailed.temporary": { "en": "Play a temporary village", "text": "Mainkan desa sementara" },

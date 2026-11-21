@@ -155,6 +155,8 @@
   "net.clockOff": { "en": "This device's clock is off by about {minutes} min. Online timers and war phases follow the server: set the clock to automatic in the device settings.", "text": "El reloj de este dispositivo va desfasado unos {minutes} min. Los temporizadores en línea y las fases de guerra siguen al servidor: pon la hora automática en los ajustes del dispositivo." },
   "raid.reportPending": { "en": "Your last raid is still being sent to the server. Try again in a moment; Practice and Trials still work.", "text": "Tu última incursión aún se está enviando al servidor. Vuelve a intentarlo en un momento; la práctica y las Pruebas siguen disponibles." },
   "save.restoredPrevious": { "en": "Your latest save could not be read, so an earlier copy ({when}) was loaded.", "text": "No se pudo leer tu último guardado, así que se cargó una copia anterior ({when})." },
+  "frame.failed.title": { "en": "Something went wrong drawing the village", "text": "Algo falló al dibujar la aldea" },
+  "frame.failed.body": { "en": "Your village is saved. Reload to keep playing.", "text": "Tu aldea está guardada. Recarga para seguir jugando." },
   "save.openFailed.title": { "en": "Your village couldn't be opened", "text": "No se pudo abrir tu aldea" },
   "save.openFailed.body": { "en": "This device didn't open its saved village in time. Try again, or play a temporary village for now: it is not saved and stays offline.", "text": "Este dispositivo no abrió tu aldea guardada a tiempo. Vuelve a intentarlo o juega por ahora en una aldea temporal: no se guarda y queda sin conexión." },
   "save.openFailed.temporary": { "en": "Play a temporary village", "text": "Jugar en una aldea temporal" },

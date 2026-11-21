@@ -25,6 +25,7 @@ import { quality, renderScaleFor } from './presentation/render/quality';
 import { frames, limitFor, measureRefreshHz, pacing, setActiveLimit } from './presentation/render/frameRate';
 import { App } from './app';
 import { installWebBack } from './presentation/ui/webBack';
+import { guardLoop, type GuardableLoop } from './presentation/render/frameGuard';
 import { browserKeyValue, Connection, forgetChosenServer, resolveServerUrl, serverChoiceAllowed } from './backend/net/connection';
 import { BalanceLoader } from './backend/net/balance';
 import { EventScheduleLoader } from './backend/net/eventScheduleLoader';
@@ -190,6 +191,33 @@ async function openStorage(sandbox: boolean, timeoutMs?: number): Promise<{ stor
 }
 
 type StorageFailure = 'unavailable' | 'failed';
+
+/** Beast Mode STB-03: the map stopped drawing after repeated errors; the village is saved; reload. */
+function showFrameFailure(): void {
+  if (document.querySelector('.tk-frame-failed')) return;
+  const card = document.createElement('div');
+  card.className = 'tk-frame-failed';
+  card.setAttribute('role', 'alertdialog');
+  card.setAttribute('aria-modal', 'true');
+  card.style.cssText = 'position:fixed;inset:0;z-index:100000;display:flex;align-items:center;justify-content:center;background:rgba(15,20,30,.72);padding:16px';
+  const box = document.createElement('div');
+  box.style.cssText = 'max-width:420px;background:#fffaf0;color:#26303d;border-radius:16px;padding:18px 20px;font:16px/1.4 system-ui,sans-serif';
+  const h = document.createElement('h2');
+  h.style.cssText = 'margin:0 0 8px;font-size:1.15rem';
+  h.textContent = t('frame.failed.title');
+  const p = document.createElement('p');
+  p.style.cssText = 'margin:0 0 14px';
+  p.textContent = t('frame.failed.body');
+  const b = document.createElement('button');
+  b.type = 'button';
+  b.textContent = i18nText("ui.reload_bdc090ec61");
+  b.style.cssText = 'min-height:44px;padding:8px 14px;border-radius:12px;border:0;font:inherit;font-weight:700;background:#2f6f4f;color:#fff';
+  b.addEventListener('click', () => location.reload());
+  box.append(h, p, b);
+  card.append(box);
+  document.body.append(card);
+  b.focus();
+}
 
 /** Beast Mode SAV-01: this device has played before (any of the game's own local keys), so a save is expected. */
 function returningPlayer(): boolean {
@@ -582,6 +610,21 @@ async function boot(): Promise<void> {
   };
   let app: App | null = null;
   let tutorial: Tutorial | null = null;
+  // Beast Mode STB-03: one throw in a scene's update or render no longer freezes the map for good: it is reported
+  // (when the player allowed crash reports) and the loop restarts; repeated throws save and offer a reload.
+  // Installed once the loop runs: Phaser's TimeStep.start sets its own callback when the game starts.
+  const installGuard = () => guardLoop(game.loop as unknown as GuardableLoop, {
+    onError: (e, count) => {
+      console.error('Frame error', e);
+      crashReporter?.report(e, { kind: 'frame', scene: game.scene.getScenes(true).map((s) => s.scene.key).join(',') || 'none', battle: String(app?.inBattle ?? false), count: String(count) });
+    },
+    onFatal: () => {
+      app?.flushBattle();
+      void controller.save().finally(() => showFrameFailure());
+    },
+  });
+  // READY comes before TimeStep.start; the first step comes after it (from the next frame on, the guard runs).
+  game.events.once(Phaser.Core.Events.STEP, () => void installGuard());
   const reminders: ReminderService = isNative() ? new NativeReminders() : new WebReminders();
   // Art the HUD may not import itself (only art contract files are open to GUI): the Sensei portrait and the chest.
   provideUiArt({ senseiPortrait, chestSvg, revealChest });

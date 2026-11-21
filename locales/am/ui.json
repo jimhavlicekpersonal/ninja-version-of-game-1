@@ -155,6 +155,8 @@
   "net.clockOff": { "en": "This device's clock is off by about {minutes} min. Online timers and war phases follow the server: set the clock to automatic in the device settings.", "text": "የዚህ መሣሪያ ሰዓት በግምት በ{minutes} ደቂቃ ተዛብቷል። የመስመር ላይ ሰዓት ቆጣሪዎች እና የጦርነት ደረጃዎች አገልጋዩን ይከተላሉ፦ በመሣሪያው ቅንብሮች ሰዓቱን ወደ ራስ-ሰር ያድርጉ።" },
   "raid.reportPending": { "en": "Your last raid is still being sent to the server. Try again in a moment; Practice and Trials still work.", "text": "የመጨረሻው ወረራዎ አሁንም ወደ አገልጋዩ እየተላከ ነው። ትንሽ ቆይተው እንደገና ይሞክሩ፤ ልምምድ እና ፈተናዎች አሁንም ይገኛሉ።" },
   "save.restoredPrevious": { "en": "Your latest save could not be read, so an earlier copy ({when}) was loaded.", "text": "የመጨረሻውን ቁጠባዎን ማንበብ አልተቻለም፣ ስለዚህ ቀደም ያለ ቅጂ ({when}) ተጭኗል።" },
+  "frame.failed.title": { "en": "Something went wrong drawing the village", "text": "መንደሩን በመሳል ላይ ችግር ተፈጥሯል" },
+  "frame.failed.body": { "en": "Your village is saved. Reload to keep playing.", "text": "መንደርዎ ተቀምጧል። መጫወት ለመቀጠል እንደገና ይጫኑ።" },
   "save.openFailed.title": { "en": "Your village couldn't be opened", "text": "መንደርዎን መክፈት አልተቻለም" },
   "save.openFailed.body": { "en": "This device didn't open its saved village in time. Try again, or play a temporary village for now: it is not saved and stays offline.", "text": "ይህ መሣሪያ የተቀመጠ መንደርዎን በጊዜ መክፈት አልቻለም። እንደገና ይሞክሩ፣ ወይም ለአሁን ጊዜያዊ መንደር ይጫወቱ፦ አይቀመጥም እና ከመስመር ውጭ ይቆያል።" },
   "save.openFailed.temporary": { "en": "Play a temporary village", "text": "ጊዜያዊ መንደር ይጫወቱ" },

@@ -155,6 +155,8 @@
   "net.clockOff": { "en": "This device's clock is off by about {minutes} min. Online timers and war phases follow the server: set the clock to automatic in the device settings.", "text": "L'orologio di questo dispositivo è sfasato di circa {minutes} min. I timer online e le fasi di guerra seguono il server: imposta l'ora automatica nelle impostazioni del dispositivo." },
   "raid.reportPending": { "en": "Your last raid is still being sent to the server. Try again in a moment; Practice and Trials still work.", "text": "La tua ultima incursione è ancora in invio al server. Riprova tra un attimo; l'allenamento e le Prove restano disponibili." },
   "save.restoredPrevious": { "en": "Your latest save could not be read, so an earlier copy ({when}) was loaded.", "text": "Non è stato possibile leggere l'ultimo salvataggio, quindi è stata caricata una copia precedente ({when})." },
+  "frame.failed.title": { "en": "Something went wrong drawing the village", "text": "Qualcosa è andato storto nel disegnare il villaggio" },
+  "frame.failed.body": { "en": "Your village is saved. Reload to keep playing.", "text": "Il tuo villaggio è salvato. Ricarica per continuare a giocare." },
   "save.openFailed.title": { "en": "Your village couldn't be opened", "text": "Impossibile aprire il tuo villaggio" },
   "save.openFailed.body": { "en": "This device didn't open its saved village in time. Try again, or play a temporary village for now: it is not saved and stays offline.", "text": "Questo dispositivo non ha aperto in tempo il villaggio salvato. Riprova, oppure gioca per ora in un villaggio temporaneo: non viene salvato e resta offline." },
   "save.openFailed.temporary": { "en": "Play a temporary village", "text": "Gioca in un villaggio temporaneo" },

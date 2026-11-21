@@ -30,8 +30,17 @@ describe('STB-01: push platforms', () => {
     try {
       const repo = new MemoryRepo();
       const w = world({ repo, shared: { push: apnsOnly(repo) } as never });
-      const g = { data: w.data, state: createNewVillage(w.now(), w.data), now: () => w.now(), dispatch(cmd: Command) { const r = applyCommand(g.state, cmd, g.now(), w.data); if (r.ok) g.state = r.state; return r; } } as unknown as GameLink;
-      const conn = new Connection({ game: g, builtInUrl: 'test.server', kv: memoryKv(), makePort: () => new InProcessServerAdapter(w.core), log: () => undefined });
+      const g: { data: typeof w.data; state: ReturnType<typeof createNewVillage>; now: () => number; dispatch(cmd: Command): ReturnType<typeof applyCommand> } = {
+        data: w.data,
+        state: createNewVillage(w.now(), w.data),
+        now: () => w.now(),
+        dispatch(cmd: Command) {
+          const r = applyCommand(g.state, cmd, g.now(), w.data);
+          if (r.ok) g.state = r.state;
+          return r;
+        },
+      };
+      const conn = new Connection({ game: g as unknown as GameLink, builtInUrl: 'test.server', kv: memoryKv(), makePort: () => new InProcessServerAdapter(w.core), log: () => undefined } as never);
       await conn.sync();
       const device = vi.fn(async () => ({ token: 't', platform: 'android' as const }));
       await conn.syncPush(['raided'], 0, device);

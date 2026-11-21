@@ -155,6 +155,8 @@
   "net.clockOff": { "en": "This device's clock is off by about {minutes} min. Online timers and war phases follow the server: set the clock to automatic in the device settings.", "text": "El rellotge d'aquest dispositiu està desfasat uns {minutes} min. Els temporitzadors en línia i les fases de guerra segueixen el servidor: posa l'hora automàtica a la configuració del dispositiu." },
   "raid.reportPending": { "en": "Your last raid is still being sent to the server. Try again in a moment; Practice and Trials still work.", "text": "La teva última incursió encara s'està enviant al servidor. Torna-ho a provar d'aquí a un moment; l'entrenament i les Proves continuen disponibles." },
   "save.restoredPrevious": { "en": "Your latest save could not be read, so an earlier copy ({when}) was loaded.", "text": "No s'ha pogut llegir la teva última partida desada, així que s'ha carregat una còpia anterior ({when})." },
+  "frame.failed.title": { "en": "Something went wrong drawing the village", "text": "Alguna cosa ha fallat en dibuixar el poble" },
+  "frame.failed.body": { "en": "Your village is saved. Reload to keep playing.", "text": "El teu poble està desat. Torna a carregar per continuar jugant." },
   "save.openFailed.title": { "en": "Your village couldn't be opened", "text": "No s'ha pogut obrir el teu poble" },
   "save.openFailed.body": { "en": "This device didn't open its saved village in time. Try again, or play a temporary village for now: it is not saved and stays offline.", "text": "Aquest dispositiu no ha obert a temps el poble desat. Torna-ho a provar, o juga de moment en un poble temporal: no es desa i es manté sense connexió." },
   "save.openFailed.temporary": { "en": "Play a temporary village", "text": "Juga en un poble temporal" },

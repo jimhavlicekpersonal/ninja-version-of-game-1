@@ -155,6 +155,8 @@
   "net.clockOff": { "en": "This device's clock is off by about {minutes} min. Online timers and war phases follow the server: set the clock to automatic in the device settings.", "text": "اس آلے کی گھڑی تقریباً {minutes} منٹ آگے یا پیچھے ہے۔ آن لائن ٹائمر اور جنگ کے مراحل سرور کے مطابق چلتے ہیں: آلے کی ترتیبات میں وقت خودکار کریں۔" },
   "raid.reportPending": { "en": "Your last raid is still being sent to the server. Try again in a moment; Practice and Trials still work.", "text": "آپ کا پچھلا چھاپہ ابھی سرور کو بھیجا جا رہا ہے۔ تھوڑی دیر میں دوبارہ کوشش کریں؛ مشق اور آزمائشیں چلتی رہیں گی۔" },
   "save.restoredPrevious": { "en": "Your latest save could not be read, so an earlier copy ({when}) was loaded.", "text": "آپ کا تازہ ترین سیو نہیں پڑھا جا سکا، اس لیے پہلے کی ایک کاپی ({when}) لوڈ کی گئی۔" },
+  "frame.failed.title": { "en": "Something went wrong drawing the village", "text": "گاؤں بناتے وقت کچھ گڑبڑ ہو گئی" },
+  "frame.failed.body": { "en": "Your village is saved. Reload to keep playing.", "text": "آپ کا گاؤں محفوظ ہے۔ کھیلتے رہنے کے لیے دوبارہ لوڈ کریں۔" },
   "save.openFailed.title": { "en": "Your village couldn't be opened", "text": "آپ کا گاؤں نہیں کھل سکا" },
   "save.openFailed.body": { "en": "This device didn't open its saved village in time. Try again, or play a temporary village for now: it is not saved and stays offline.", "text": "یہ آلہ آپ کا محفوظ گاؤں وقت پر نہیں کھول سکا۔ دوبارہ کوشش کریں، یا فی الحال ایک عارضی گاؤں میں کھیلیں: یہ محفوظ نہیں ہوتا اور آف لائن رہتا ہے۔" },
   "save.openFailed.temporary": { "en": "Play a temporary village", "text": "عارضی گاؤں میں کھیلیں" },
