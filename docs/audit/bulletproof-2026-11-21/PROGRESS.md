@@ -115,6 +115,6 @@ New player-visible strings are translated into all 49 other ready languages in t
 | UX-06 | MEDIUM | 6 | CODE | open | | | |
 | UX-07 | MEDIUM | 6 | CODE | open | | | |
 | UX-08 | MEDIUM | 6 | CODE | open | | | |
-| UX-09 | LOW | 1 | CODE | open | | | |
+| UX-09 | LOW | 1 | CODE | done |  | tests/presentation/dom/army-preset-delete.dom.test.ts | A danger confirm (existing strings: 'Delete saved army {name}', the army's contents, Remove / Cancel) instead of the 5 s undo toast: the toast has no action buttons, and a confirm needs no new text in 49 languages. The preset is found again by name+army when confirmed. |
 | UX-10 | LOW | 6 | CODE | open | | | |
 | UX-11 | LOW | 6 | DEVICE | open | | | |

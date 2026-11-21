@@ -433,13 +433,19 @@ export class ArmyUi {
     wrap.append(h('h3', {}, i18nText("ui.refill_in_one_tap_25afd91239")));
     const lastArmy = lastAttackArmy(s);
     if (lastArmy) wrap.append(this.refillRow(i18nText("ui.last_raid_64f8c08b89"), lastArmy, redraw));
-    s.armyPresets.forEach((p, i) => {
+    s.armyPresets.forEach((p) => {
       // The game creates these canonical default titles; custom titles stay literal.
       const name = /^Army [1-9]\d*$/.test(p.name) ? i18nMessage(p.name) : p.name;
       const del = h('button', { class: 'btn ghost', type: 'button', 'aria-label': i18nText("ui.delete_saved_army_8b557a5dd8", { arg1: name }) }, '×');
+      // Beast Mode UX-09: a stray tap beside the refill button used to lose a composed army; now it asks first.
       del.addEventListener('click', () => {
-        c.dispatch({ type: 'deleteArmyPreset', index: i });
-        redraw();
+        void this.d.kit.confirm(i18nText("ui.delete_saved_army_8b557a5dd8", { arg1: name }), this.armyText(p.army), i18nText("ui.remove_c3812fc4ac"), true, i18nText("ui.cancel_19766ed6cc")).then((yes) => {
+          if (!yes) return;
+          // The list may have changed while the dialog was open: delete this preset, found again by identity.
+          const at = c.state.armyPresets.findIndex((x) => x.name === p.name && JSON.stringify(x.army) === JSON.stringify(p.army));
+          if (at >= 0) c.dispatch({ type: 'deleteArmyPreset', index: at });
+          redraw();
+        });
       });
       wrap.append(this.refillRow(name, p.army, redraw, del));
     });
