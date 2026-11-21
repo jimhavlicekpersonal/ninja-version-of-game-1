@@ -24,6 +24,7 @@ import { BattleScene } from './presentation/render/BattleScene';
 import { quality, renderScaleFor } from './presentation/render/quality';
 import { frames, limitFor, measureRefreshHz, pacing, setActiveLimit } from './presentation/render/frameRate';
 import { App } from './app';
+import { installWebBack } from './presentation/ui/webBack';
 import { browserKeyValue, Connection, forgetChosenServer, resolveServerUrl, serverChoiceAllowed } from './backend/net/connection';
 import { BalanceLoader } from './backend/net/balance';
 import { EventScheduleLoader } from './backend/net/eventScheduleLoader';
@@ -978,6 +979,15 @@ function installBackButton(controller: GameController, hud: Hud, currentApp: () 
         }),
       )
       .catch((e) => console.warn(i18nText("ui.back_button_unavailable_922733130d"), e));
+  } else if (!isNative()) {
+    // Beast Mode UX-03: Back in a browser tab or an installed web app, through one guard history entry.
+    installWebBack(window, {
+      inBattle: () => Boolean(currentApp()?.inBattle),
+      battleBack,
+      closeTop: () => hud.closeTop(),
+      confirmLeave: () => hud.confirm(i18nText("ui.leave_kagemura_0b798fad93"), i18nText("ui.your_village_is_saved_and_your_artisan_85332ff544"), i18nText("ui.leave_fc6e4a408d"), false, i18nText("ui.stay_08fd1de4b0")),
+      save: () => controller.save(),
+    });
   }
 }
 

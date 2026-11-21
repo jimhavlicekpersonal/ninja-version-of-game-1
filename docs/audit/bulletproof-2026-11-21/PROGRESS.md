@@ -109,7 +109,7 @@ New player-visible strings are translated into all 49 other ready languages in t
 | STB-12 | MEDIUM | Owner/device | OWNER | open | | | |
 | UX-01 | HIGH | 1 | CODE | done |  | tests/presentation/dom/purchase-guard.dom.test.ts | Folded into ECO-01 (same commit). |
 | UX-02 | HIGH | 1 | CODE | open | | | |
-| UX-03 | HIGH | 1 | CODE | open | | | |
+| UX-03 | HIGH | 1 | CODE | done |  | tests/presentation/dom/web-back.dom.test.ts; Playwright 360×640 Chromium (store open → Back closes it, game stays; Back again → 'Leave Kagemura?') | src/presentation/ui/webBack.ts: one guard history entry, re-armed after each Back; battle → battleBack, else closeTop, else the Leave confirm (save, then history.go(-2)). Wired in main.ts installBackButton for !isNative(). Limits: battle Back and iOS Safari swipe-back not run in a browser here (unit test only; iOS NEEDS-DEVICE); installed standalone PWA not tested. |
 | UX-04 | MEDIUM | 6 | CODE | open | | | |
 | UX-05 | MEDIUM | 6 | CODE | open | | | |
 | UX-06 | MEDIUM | 6 | CODE | open | | | |
