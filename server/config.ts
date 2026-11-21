@@ -18,6 +18,7 @@ import { AppleVerifier } from './payments/apple';
 import { parseCidrs } from './rateLimit';
 import { GoogleVerifier, type Fetch, type ServiceAccount } from './payments/google';
 import { parseUnder13Mode } from '../src/backend/net/compliance';
+import { DEFAULT_POLICY as DEFAULT_POLICY_FOR_LOG } from './core/context';
 
 export type DeployEnv = 'development' | 'staging' | 'production';
 
@@ -183,6 +184,8 @@ export function checkConfig(env: Record<string, string | undefined>): { deploy: 
     if (list(env.APPLE_ENVIRONMENTS).includes('Xcode')) errors.push('Xcode-signed purchases are for local testing, not production.');
     if (env.GOOGLE_PLAY_ALLOW_TEST === '1') warnings.push('GOOGLE_PLAY_ALLOW_TEST=1: license-tester purchases are credited in production.');
     if (env.MIGRATE_ON_BOOT === '1') warnings.push('MIGRATE_ON_BOOT=1 in production: run "npm run server:migrate" as a release step instead when there is more than one instance.');
+    // Beast Mode SEC-17: Redis counts limits for every instance together, but memory fallback counters are per instance.
+    if (env.REDIS_URL && !env.RATE_LIMIT_INSTANCES) warnings.push('REDIS_URL is set without RATE_LIMIT_INSTANCES: when Redis is unreachable each instance falls back to its own counters at the full limit. Set RATE_LIMIT_INSTANCES to the number of API instances.');
     // Beast Mode SEC-12 / ECO-07 (P4): with store checks on, Sandbox/TestFlight purchases need a server-wide daily cap
     // (an explicit 0 credits none); otherwise each fresh sandbox account gets the per-buyer test credit on production.
     if ((env.APPLE_BUNDLE_IDS || env.GAMECENTER_BUNDLE_IDS || env.GOOGLE_PLAY_PACKAGE) && (env.SANDBOX_CREDIT_DAILY_CAP_USD === undefined || env.SANDBOX_CREDIT_DAILY_CAP_USD.trim() === '')) errors.push('SANDBOX_CREDIT_DAILY_CAP_USD must be set in production when store purchases are checked (e.g. 50; 0 credits no Sandbox or TestFlight purchase at all). App Review buys in the Sandbox against production, so 0 makes its purchases fail.');
@@ -213,6 +216,28 @@ export function checkConfig(env: Record<string, string | undefined>): { deploy: 
   if (deploy !== 'development' && !env.RELEASE) warnings.push('RELEASE is not set: /healthz and Sentry show the package version instead of the build.');
   if (env.SENTRY_ENVIRONMENT && env.SENTRY_ENVIRONMENT !== deploy) warnings.push(`SENTRY_ENVIRONMENT (${env.SENTRY_ENVIRONMENT}) differs from DEPLOY_ENV (${deploy}).`);
   return { deploy, errors, warnings };
+}
+
+/**
+ * Beast Mode SEC-17: the security switches as one boot log line (values only; no secrets, no tokens, no URLs).
+ */
+export function securitySwitches(env: Record<string, string | undefined>): Record<string, string | number | boolean | null> {
+  const p = { ...DEFAULT_POLICY_FOR_LOG, ...policyFromEnv(env) };
+  return {
+    deploy: deployEnv(env),
+    requireServerVillage: p.requireServerVillage,
+    signInNonceRequired: p.signInNonceRequired,
+    sandboxDailyCapUsd: p.sandboxDailyCapUsd,
+    lateReportRule: p.lateReportRule,
+    uploadAccountAge: p.uploadAccountAge,
+    under13Mode: p.under13Mode,
+    rateLimitInstances: env.RATE_LIMIT_INSTANCES ? Number(env.RATE_LIMIT_INSTANCES) : 1,
+    redis: Boolean(env.REDIS_URL),
+    trustProxy: env.TRUST_PROXY ?? null,
+    adminAllowIps: Boolean(env.ADMIN_ALLOW_IPS),
+    metricsToken: Boolean(env.METRICS_TOKEN),
+    sentry: Boolean(env.SENTRY_DSN),
+  };
 }
 
 /**

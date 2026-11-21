@@ -113,7 +113,7 @@ import { SIM_RULES } from '../src/gameplay/sim/battle/battle';
 import type { GameData } from '../src/gameplay/sim/types';
 import { verifierFromEnv } from './identity/verify';
 import { accountFromEnv } from './identity/appleTokens';
-import { checkConfig, paymentsFromEnv, parseAdminTokens, parseTrustProxy, pgPoolSettings, policyFromEnv } from './config';
+import { checkConfig, securitySwitches, paymentsFromEnv, parseAdminTokens, parseTrustProxy, pgPoolSettings, policyFromEnv } from './config';
 import { pushTransportFromEnv, ServerPush } from './push/push';
 import type { Fetch } from './payments/google';
 
@@ -149,6 +149,8 @@ process.on('uncaughtException', (e) => {
 async function main(): Promise<void> {
   const config = checkConfig(process.env);
   for (const w of config.warnings) console.warn(w);
+  // Beast Mode SEC-17: every security switch's effective value, once, at boot (no secrets).
+  console.info(`security switches ${JSON.stringify(securitySwitches(process.env))}`);
   if (config.errors.length) {
     for (const e of config.errors) console.error(e);
     process.exit(1);

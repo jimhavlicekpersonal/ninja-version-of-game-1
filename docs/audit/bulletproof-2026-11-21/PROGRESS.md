@@ -94,7 +94,7 @@ New player-visible strings are translated into all 49 other ready languages in t
 | SEC-14 | LOW | 2 | CODE | open | | | |
 | SEC-15 | LOW | 2 | CODE | open | | | |
 | SEC-16 | LOW | 2 | DOCS | open | | | |
-| SEC-17 | LOW | 2 | CODE | open | | | |
+| SEC-17 | LOW | 2 | CODE | done |  | tests/backend/server/beast-mode-2026-11-21-config.test.ts SEC-17 | Production warnings: SIGNIN_NONCE_REQUIRED (SEC-03 commit), REQUIRE_SERVER_VILLAGE (SEC-01 commit), REDIS_URL without RATE_LIMIT_INSTANCES (here), SANDBOX_CREDIT_DAILY_CAP_USD (error, SEC-12). Boot logs 'security switches {…}' (securitySwitches: values only, no secrets/URLs). |
 | STB-01 | HIGH | 4 | CODE | open | | | |
 | STB-02 | HIGH | 4 | CODE | open | | | |
 | STB-03 | HIGH | 4 | CODE | open | | | |
