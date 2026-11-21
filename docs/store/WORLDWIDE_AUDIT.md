@@ -1345,3 +1345,20 @@ Six independent audits, each told to attack one lane the earlier exploit passes 
 Checked and found sound by the auditors (no finding): Apple and Google sign-in tokens (algorithms pinned, issuer, audience, expiry), Game Center key URL pinning, session tokens (192-bit, hashed), deletion codes, IDOR on friend requests, push tokens, notices, squad invites, shared-replay delete, raid and gang claims; HTML escaping on every server page and no `innerHTML` in `server/`; bearer-only auth (no CSRF); CORS `*` refused in production; `TRUST_PROXY` hop counts; SQL fully parameterised; the hand-written Redis client (length-prefixed, no CRLF injection); no server-side fetch of a client URL (no SSRF); Fastify refuses `__proto__` bodies; 23,156 hostile variants of every player command produced no non-finite resource, no gain and no unloadable save; Google Play purchase checks, RTDN authentication, App Store notification binding, receipt replay (`(store, transactionId)` unique), refunds and debt; production dependencies have no known advisory (`npm audit --omit=dev`; the one high advisory is `happy-dom`, a test-only dev dependency); CI actions are pinned by commit and secrets reach only `main` and manual jobs. Earlier fixes re-checked and holding: exploit audit 2026-11-20 #8, #10, #11, #12, backend A6, A7, A13, A14, GLOBAL-004 and GLOBAL-005.
 
 Not run: the Postgres and Redis adapter tests (no `TEST_DATABASE_URL`/`TEST_REDIS_URL` here: every probe ran on the memory stores, and the Postgres paths of S1, P1 and P2 share the core logic but are untested), the worker-thread timeout path with real workers, a multi-instance run, CI, a device, a store sandbox. No person played any of it; passing tests here do not establish release readiness.
+
+### 2026-11-21 release bulletproofing audit (audited commit `560ce7a`): findings recorded, none fixed yet
+
+Seven auditors, one lane each, checked the *Game Release Bulletproofing Checklist* (17 sections) and *Masterclass* (27 chapters, the Go/No-Go gate) against the code. They also checked the labels on page 15 of an earlier bulletproofing audit of the same day. The result is a beast-mode agent prompt, [`docs/prompts/BEAST_MODE_2026-11-21.md`](../prompts/BEAST_MODE_2026-11-21.md), with its PDF and lane reports in [`docs/audit/bulletproof-2026-11-21/`](../audit/bulletproof-2026-11-21/README.md). It has 97 work items: 1 BLOCKER, 22 HIGH, 41 MEDIUM, 33 LOW, or 85 after folding duplicates. It also has 35 owner and device steps and the ledger `PROGRESS.md`.
+
+The highest items, each re-read in code by the integrating session:
+
+- **SEC-01, BLOCKER.** Device-held villages are trusted in ranked play, and no `REQUIRE_SERVER_VILLAGE` policy exists.
+- **ECO-01/UX-01.** One purchase can be charged twice. This was reproduced in Chromium: the purchase count went from 0 to 2. A verified receipt re-grants a Season Scroll.
+- **SEC-03.** The server-address field is in store builds.
+- **SAV-01.** If IndexedDB fails to open, a throwaway village can replace the real one through the server.
+- **STB-01.** The Android app can crash-loop in push registration when Firebase is not configured.
+- **OPS-01/02/03.** The version is frozen at 0.1.0, there are no source maps, and an Android renderer death is not handled.
+- **GT-01.** Honor is not zero-sum.
+- **GT-03/04.** Air is dominated, and newer warrior tiers score below older ones.
+
+The open items of the 2026-11-20 security audit are carried as SAV-12/SEC-05 (X1), SEC-12/ECO-07 (P4), SEC-10 (F2), SEC-11 (F3), SEC-13 (L1) and SEC-06 (S5). Nothing was run on a device, in a store sandbox, against Postgres or Redis, or by a player (Appendix C of the prompt). Each item closes with its fixing commit and proving test, recorded in a later closure record.
