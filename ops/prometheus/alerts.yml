@@ -8,8 +8,9 @@ groups:
       - alert: ServerDown
         expr: up{job="kagemura"} == 0
         for: 3m
-        labels: { severity: page }
+        labels: { severity: page, team: server }
         annotations:
+          runbook_url: 'https://github.com/jimhavlicekpersonal/ninja-version-of-game-1/blob/main/docs/ops/RUNBOOK.md#serverdown'
           summary: 'A Kagemura server instance is not answering /metrics.'
 
       - alert: HighErrorRate
@@ -17,53 +18,60 @@ groups:
           sum(rate(tk_http_requests_total{status=~"5.."}[5m]))
             / clamp_min(sum(rate(tk_http_requests_total[5m])), 1e-9) > 0.02
         for: 10m
-        labels: { severity: page }
+        labels: { severity: page, team: server }
         annotations:
+          runbook_url: 'https://github.com/jimhavlicekpersonal/ninja-version-of-game-1/blob/main/docs/ops/RUNBOOK.md#higherrorrate'
           summary: 'More than 2% of requests fail with a server error.'
 
       - alert: SlowResponses
         expr: |
           histogram_quantile(0.95, sum by (le) (rate(tk_http_request_duration_ms_bucket[5m]))) > 1000
         for: 10m
-        labels: { severity: warn }
+        labels: { severity: warn, team: server }
         annotations:
+          runbook_url: 'https://github.com/jimhavlicekpersonal/ninja-version-of-game-1/blob/main/docs/ops/RUNBOOK.md#slowresponses'
           summary: '95% of requests take longer than 1 s (re-simulation or the database).'
 
       - alert: EventLoopBlocked
         expr: max(tk_event_loop_delay_ms{quantile="0.99"}) > 250
         for: 10m
-        labels: { severity: warn }
+        labels: { severity: warn, team: server }
         annotations:
+          runbook_url: 'https://github.com/jimhavlicekpersonal/ninja-version-of-game-1/blob/main/docs/ops/RUNBOOK.md#eventloopblocked'
           summary: 'The event loop is blocked for >250 ms at p99: battle re-simulation needs the worker pool (roadmap step 57) or more instances.'
 
       - alert: RedisDown
         expr: min(tk_redis_up) == 0
         for: 5m
-        labels: { severity: warn }
+        labels: { severity: warn, team: server }
         annotations:
+          runbook_url: 'https://github.com/jimhavlicekpersonal/ninja-version-of-game-1/blob/main/docs/ops/RUNBOOK.md#redisdown'
           summary: 'Redis is unreachable: rate limits fail open, the leaderboard reads the database and match locks fall back to tickets (re-audit). Fix it before load grows.'
 
       - alert: DatabasePoolSaturated
         expr: max(tk_db_pool_connections{state="waiting"}) > 0
         for: 5m
-        labels: { severity: warn }
+        labels: { severity: warn, team: server }
         annotations:
+          runbook_url: 'https://github.com/jimhavlicekpersonal/ninja-version-of-game-1/blob/main/docs/ops/RUNBOOK.md#databasepoolsaturated'
           summary: 'Requests are waiting for a database connection.'
 
       - alert: RefundSpike
         expr: |
           sum(increase(tk_refunds_total[24h])) > 5
             and sum(increase(tk_refunds_total[24h])) / clamp_min(sum(increase(tk_purchases_total[24h])), 1) > 0.1
-        labels: { severity: warn }
+        labels: { severity: warn, team: server }
         annotations:
+          runbook_url: 'https://github.com/jimhavlicekpersonal/ninja-version-of-game-1/blob/main/docs/ops/RUNBOOK.md#refundspike'
           summary: 'More than 10% of purchases were refunded in the last day (abuse, or a delivery bug).'
 
       - alert: DesyncsRising
         expr: |
           sum(rate(tk_desyncs_total[30m])) / clamp_min(sum(rate(tk_battles_total[30m])), 1e-9) > 0.01
         for: 15m
-        labels: { severity: warn }
+        labels: { severity: warn, team: server }
         annotations:
+          runbook_url: 'https://github.com/jimhavlicekpersonal/ninja-version-of-game-1/blob/main/docs/ops/RUNBOOK.md#desyncsrising'
           summary: 'More than 1% of battles desync between game and server (a release with different rules?).'
 
       # Game versions (roadmap step 78): one rules version desyncing points at a release.
@@ -72,50 +80,75 @@ groups:
           sum by (rules) (rate(tk_desyncs_total[30m])) / clamp_min(sum by (rules) (rate(tk_battles_total[30m])), 1e-9) > 0.02
             and sum by (rules) (rate(tk_battles_total[30m])) > 0.01
         for: 15m
-        labels: { severity: warn }
+        labels: { severity: warn, team: server }
         annotations:
+          runbook_url: 'https://github.com/jimhavlicekpersonal/ninja-version-of-game-1/blob/main/docs/ops/RUNBOOK.md#desyncsrisingforoneversion'
           summary: 'Battles under rules {{ $labels.rules }} desync more than 2% (the game and the server disagree on that version: check the latest release and server/rules/).'
 
       - alert: GamesRefusedForVersion
         expr: sum by (reason) (rate(tk_refused_total[15m])) > 0.2
         for: 15m
-        labels: { severity: info }
+        labels: { severity: info, team: server }
         annotations:
+          runbook_url: 'https://github.com/jimhavlicekpersonal/ninja-version-of-game-1/blob/main/docs/ops/RUNBOOK.md#gamesrefusedforversion'
           summary: 'Many requests refused for the game version ({{ $labels.reason }}): players need an update, or a version was retired too early.'
 
       - alert: RateLimitStorm
         expr: sum(rate(tk_rate_limited_total[5m])) > 5
         for: 10m
-        labels: { severity: info }
+        labels: { severity: info, team: server }
         annotations:
+          runbook_url: 'https://github.com/jimhavlicekpersonal/ninja-version-of-game-1/blob/main/docs/ops/RUNBOOK.md#ratelimitstorm'
           summary: 'Many requests are rate limited (abuse, or limits too tight for real traffic).'
 
       # Backend A28: wrong staff tokens (guessing, or a revoked token still in someone's tool).
       - alert: StaffAuthFailures
         expr: sum(increase(tk_staff_auth_failures_total[15m])) > 10
-        labels: { severity: warn }
+        labels: { severity: warn, team: server }
         annotations:
+          runbook_url: 'https://github.com/jimhavlicekpersonal/ninja-version-of-game-1/blob/main/docs/ops/RUNBOOK.md#staffauthfailures'
           summary: 'More than 10 wrong staff tokens in 15 minutes: someone is guessing at /admin (check ADMIN_ALLOW_IPS and the request logs).'
 
       # Backend A18: retention stopped (every run failing, or no instance holding the job).
       - alert: RetentionStalled
         expr: sum(increase(tk_retention_runs_total[26h])) == 0
         for: 2h
-        labels: { severity: warn }
+        labels: { severity: warn, team: server }
         annotations:
+          runbook_url: 'https://github.com/jimhavlicekpersonal/ninja-version-of-game-1/blob/main/docs/ops/RUNBOOK.md#retentionstalled'
           summary: 'No retention run has finished for a day: replays, command logs and idempotency rows are piling up (check the retention job log lines).'
 
       # Beast Mode SEC-02: a metric reached MAX_SERIES_PER_METRIC label sets (a client sending made-up label values, or a new label that needs a normaliser).
       - alert: MetricsSeriesOverflow
         expr: sum(increase(tk_metrics_series_dropped_total[1h])) > 0
-        labels: { severity: warn }
+        labels: { severity: warn, team: server }
         annotations:
+          runbook_url: 'https://github.com/jimhavlicekpersonal/ninja-version-of-game-1/blob/main/docs/ops/RUNBOOK.md#metricsseriesoverflow'
           summary: 'A metric is counting into its overflow="1" series: some label takes values it should not (see the metric label of tk_metrics_series_dropped_total).'
 
       # Beast Mode SEC-04: battle reports held back (more than 2% sent later than 8 minutes after Attack, for an hour).
       - alert: LateReportsRising
         expr: sum(increase(tk_late_reports_total{kind="pvp"}[1h])) / clamp_min(sum(increase(tk_reports_total{kind="pvp"}[1h])), 1) > 0.02
         for: 1h
-        labels: { severity: warn }
+        labels: { severity: warn, team: server }
         annotations:
+          runbook_url: 'https://github.com/jimhavlicekpersonal/ninja-version-of-game-1/blob/main/docs/ops/RUNBOOK.md#latereportsrising'
           summary: 'More than 2% of raid reports arrive later than 8 minutes after Attack: players may be holding reports to search deployment plans (see players.late_reports in the staff tool; LATE_REPORT_RULE).'
+
+      # Beast Mode OPS-07: purchases stopped while players are active (a store key expired, a verifier failing).
+      - alert: PurchasesStalled
+        expr: sum(increase(tk_purchases_total{environment="Production"}[6h])) == 0 and sum(rate(tk_http_requests_total[30m])) > 5
+        for: 1h
+        labels: { severity: page, team: server }
+        annotations:
+          runbook_url: 'https://github.com/jimhavlicekpersonal/ninja-version-of-game-1/blob/main/docs/ops/RUNBOOK.md#purchasesstalled'
+          summary: 'No production purchase has been credited for 6 hours while the game is busy: check the store keys, the verifier errors and /v1/hello purchase features.'
+
+      # Beast Mode OPS-07: battle reports refused because re-simulation is saturated (launch day, or a slow build).
+      - alert: ResimBusy
+        expr: sum(rate(tk_resim_busy_total[10m])) > 0.05
+        for: 10m
+        labels: { severity: page, team: server }
+        annotations:
+          runbook_url: 'https://github.com/jimhavlicekpersonal/ninja-version-of-game-1/blob/main/docs/ops/RUNBOOK.md#resimbusy'
+          summary: 'Battle reports are refused with 503 busy: the re-simulation workers are saturated (scale instances or RESIM_WORKERS).'

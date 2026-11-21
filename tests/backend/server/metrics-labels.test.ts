@@ -45,3 +45,22 @@ describe('SEC-02: bounded metric labels', () => {
     expect(rulesLabel(undefined, [8])).toBe('?');
   });
 });
+
+describe('Beast Mode OPS-07: every alert has a runbook', () => {
+  it('every rule has a severity, team: server and a runbook_url to an existing RUNBOOK.md heading', async () => {
+    const { readFileSync } = await import('node:fs');
+    const { resolve } = await import('node:path');
+    const alerts = readFileSync(resolve(__dirname, '../../../ops/prometheus/alerts.yml'), 'utf8');
+    const runbook = readFileSync(resolve(__dirname, '../../../docs/ops/RUNBOOK.md'), 'utf8');
+    const headings = new Set([...runbook.matchAll(/^## (\S+)$/gm)].map((m) => m[1]));
+    const rules = alerts.split(/\n\s*- alert: /).slice(1);
+    expect(rules.length).toBeGreaterThanOrEqual(17);
+    for (const r of rules) {
+      const name = r.split('\n')[0].trim();
+      expect(r, name).toMatch(/labels: \{ severity: (page|warn|info), team: server \}/);
+      const url = /runbook_url: '([^']+)'/.exec(r)?.[1] ?? '';
+      expect(url, name).toMatch(/docs\/ops\/RUNBOOK\.md#/);
+      expect(headings.has(url.split('#')[1]), `${name}: no "## ${name.toLowerCase()}" in RUNBOOK.md`).toBe(true);
+    }
+  });
+});

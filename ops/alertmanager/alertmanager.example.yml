@@ -1,0 +1,32 @@
+# Beast Mode 2026-11-21 OPS-07: an example Alertmanager routing for ops/prometheus/alerts.yml. The owner fills the
+# placeholders (no secrets in the repository) and keeps the real file with the monitoring host.
+route:
+  receiver: team-chat
+  group_by: [alertname]
+  group_wait: 30s
+  group_interval: 5m
+  repeat_interval: 4h
+  routes:
+    - matchers: [severity="page"]
+      receiver: pager
+      repeat_interval: 1h
+    - matchers: [severity="warn"]
+      receiver: team-chat
+    - matchers: [severity="info"]
+      receiver: email
+
+receivers:
+  - name: pager
+    # e.g. PagerDuty or Opsgenie: the routing key comes from the monitoring host's secret store.
+    pagerduty_configs:
+      - routing_key: <PAGERDUTY_ROUTING_KEY>
+  - name: team-chat
+    slack_configs:
+      - api_url: <SLACK_WEBHOOK_URL>
+        channel: '#kagemura-ops'
+        send_resolved: true
+  - name: email
+    email_configs:
+      - to: <ON_CALL_EMAIL>
+        from: <ALERT_FROM_ADDRESS>
+        smarthost: <SMTP_HOST:PORT>
