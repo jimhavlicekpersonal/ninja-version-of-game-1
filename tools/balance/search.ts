@@ -28,15 +28,18 @@ export interface SearchResult {
   tried: number;
 }
 
-/** The best (stars, then destruction) over every point × formation × order × seed. Deterministic. */
-export function searchAttack(setup: BattleSetup, data: GameData = defaultData, seeds: number[] = [setup.seed, setup.seed + 1]): SearchResult {
+/**
+ * The best (stars, then destruction) over every point × formation × order × seed. Deterministic. `formations` defaults
+ * to all three; the slow gate passes one to stay within its time (each try is a full real-time battle session).
+ */
+export function searchAttack(setup: BattleSetup, data: GameData = defaultData, seeds: number[] = [setup.seed, setup.seed + 1], formations: Formation[] = FORMATIONS): SearchResult {
   let best: SearchResult | null = null;
   let tried = 0;
   for (const seed of seeds) {
     const base = { ...setup, seed };
     const points = new BattleSession(structuredClone(base), data, 'live').sim.entry?.points.length ?? 1;
     for (let point = 0; point < points; point++) {
-      for (const formation of FORMATIONS) {
+      for (const formation of formations) {
         for (const order of ORDERS) {
           const s = new BattleSession(structuredClone(base), data, 'live');
           s.orderSquad({ point, formation, order });
