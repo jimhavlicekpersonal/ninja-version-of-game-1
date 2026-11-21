@@ -38,6 +38,7 @@ export function parseDsn(dsn: string | undefined | null): SentryDsn | null {
 interface StackFrame {
   function?: string;
   filename?: string;
+  abs_path?: string;
   lineno?: number;
   colno?: number;
   in_app?: boolean;
@@ -61,7 +62,8 @@ export function parseStack(stack: string | undefined): StackFrame[] {
     if (!m) m = /^(.*?)@(.+?):(\d+):(\d+)$/.exec(line);
     if (!m) continue;
     const filename = scrubUrl(m[2]);
-    frames.push({ function: m[1] || '?', filename, lineno: Number(m[3]), colno: Number(m[4]), in_app: !/node_modules|^node:|^internal\//.test(filename) });
+    // Beast Mode OPS-02: abs_path is what Sentry matches uploaded source maps on (`~/assets/…`).
+    frames.push({ function: m[1] || '?', filename, abs_path: filename, lineno: Number(m[3]), colno: Number(m[4]), in_app: !/node_modules|^node:|^internal\//.test(filename) });
   }
   return frames.reverse();
 }
@@ -70,6 +72,8 @@ export interface SentryEventInput {
   error: unknown;
   platform: 'node' | 'javascript';
   release: string;
+  /** Beast Mode STB-02: the build's platform (web, ios, android), so maps uploaded per platform match. */
+  dist?: string;
   environment: string;
   level?: 'fatal' | 'error' | 'warning';
   tags?: Record<string, string>;
@@ -107,6 +111,7 @@ export function buildEnvelope(dsn: SentryDsn, input: SentryEventInput, id: strin
     platform: input.platform,
     level: input.level ?? 'error',
     release: input.release,
+    ...(input.dist ? { dist: input.dist } : {}),
     environment: input.environment,
     tags: input.tags ?? {},
     extra: input.extra ?? {},

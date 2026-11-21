@@ -11,6 +11,8 @@ import { buildEnvelope, envelopeEndpoint, eventId, parseDsn, ReportThrottle, typ
 interface CrashReporterOptions {
   dsn: string | undefined;
   release: string;
+  /** Beast Mode STB-02: the build's platform as Sentry's `dist`. */
+  dist?: string;
   /** 'web' | 'ios' | 'android'. */
   environment: string;
   /** The player's choice, read at the moment of each report. */
@@ -49,7 +51,7 @@ export class CrashReporter {
     const msg = error instanceof Error ? `${error.name}:${error.message}` : String(error);
     if (!this.throttle.allow(msg, now)) return;
     const random = typeof crypto !== 'undefined' && crypto.getRandomValues ? () => crypto.getRandomValues(new Uint8Array(1))[0] / 256 : Math.random;
-    const body = buildEnvelope(this.dsn, { error, platform: 'javascript', release: this.o.release, environment: this.o.environment, tags: { side: 'client', ...this.o.tags, ...tags } }, eventId(random), now);
+    const body = buildEnvelope(this.dsn, { error, platform: 'javascript', release: this.o.release, ...(this.o.dist ? { dist: this.o.dist } : {}), environment: this.o.environment, tags: { side: 'client', ...this.o.tags, ...tags } }, eventId(random), now);
     this.sent++;
     const url = envelopeEndpoint(this.dsn, 'kagemura-web/1');
     if (this.o.post) this.o.post(url, body);

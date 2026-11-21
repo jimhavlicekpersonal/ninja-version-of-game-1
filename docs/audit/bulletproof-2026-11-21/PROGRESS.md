@@ -49,7 +49,7 @@ New player-visible strings are translated into all 49 other ready languages in t
 | GT-16 | LOW | 7 | DESIGN | open | | | |
 | GT-17 | LOW | 7 | DESIGN | open | | | |
 | OPS-01 | HIGH | 5 | CODE | open | | | |
-| OPS-02 | HIGH | 4 | CODE | open | | | |
+| OPS-02 | HIGH | 4 | CODE | partial |  | tests/backend/source-maps.test.ts (hidden maps + build id; every shipping workflow deletes *.map after the build and before Pages / cap sync; abs_path and dist); npm run build: 18 .map files, no sourceMappingURL | build.sourcemap 'hidden'; deploy.yml, android.yml (both builds) and ios-testflight.yml upload maps with @sentry/cli 2.39.1 when SENTRY_AUTH_TOKEN/SENTRY_ORG/SENTRY_PROJECT exist (deploy: main only), then always delete them and fail if any remain; frames carry abs_path; SHIPPING documents the secrets. Open (OWNER/staging): a forced staging error showing TypeScript lines in Sentry, the live Pages .map 404 and an AAB listing. |
 | OPS-03 | HIGH | 4 | CODE | open | | | |
 | OPS-04 | MEDIUM | 5 | CODE | open | | | |
 | OPS-05 | MEDIUM | 5 | CODE | open | | | |
@@ -96,7 +96,7 @@ New player-visible strings are translated into all 49 other ready languages in t
 | SEC-16 | LOW | 2 | DOCS | done | f40a629 | — (docs) | docs/DECISIONS.md 'Transport': no certificate pinning, with the reasons and the revisit trigger. The owner may still overrule (D5); recorded as the default. |
 | SEC-17 | LOW | 2 | CODE | done | 0488ba4 | tests/backend/server/beast-mode-2026-11-21-config.test.ts SEC-17 | Production warnings: SIGNIN_NONCE_REQUIRED (SEC-03 commit), REQUIRE_SERVER_VILLAGE (SEC-01 commit), REDIS_URL without RATE_LIMIT_INSTANCES (here), SANDBOX_CREDIT_DAILY_CAP_USD (error, SEC-12). Boot logs 'security switches {…}' (securitySwitches: values only, no secrets/URLs). |
 | STB-01 | HIGH | 4 | CODE | partial |  | tests/backend/platform-push.test.ts (no register on Android without VITE_ANDROID_PUSH; workflow wiring), tests/backend/server/push-platforms.test.ts (hello push-apns only; an Android game does not start registration) | pushDevice returns null on Android unless VITE_ANDROID_PUSH=1; register wrapped; hello lists push-apns/push-fcm from the transports; Connection.syncPush asks only for a listed platform; android.yml writes google-services.json from the GOOGLE_SERVICES_JSON secret and only then sets VITE_ANDROID_PUSH; preflight blocks VITE_ANDROID_PUSH=1 without the file. Open (DEVICE): 10 launches of a debug APK without Firebase against an APNs server. |
-| STB-02 | HIGH | 4 | CODE | open | | | |
+| STB-02 | HIGH | 4 | CODE | partial |  | same as OPS-02 | Folded into OPS-02 (same commit): release kagemura@<version>+<GITHUB_SHA[0:12]> (__BUILD_ID__, 'local' outside CI) and dist web/ios/android on every crash report. |
 | STB-03 | HIGH | 4 | CODE | done |  | tests/presentation/render/frameGuard.test.ts (2); Chromium ?debug: one throw in the village's update → the map kept drawing (89 frames in 2 s); a throw every frame → the reload card | src/presentation/render/frameGuard.ts guardLoop wraps the TimeStep callback (installed on the first STEP: READY comes before TimeStep.start overwrites it): an error is reported (crash reports, opt-in, with scene, battle and count) and the loop restarted (sleep + wake); more than 3 within 10 s: the loop stops, the battle is flushed, the village saved, and a reload card shows (frame.failed.*, translated). |
 | STB-04 | HIGH | 4 | CODE | open | | | |
 | STB-05 | MEDIUM | 4 | CODE | open | | | |

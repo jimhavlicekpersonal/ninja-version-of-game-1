@@ -25,11 +25,12 @@ describe('Sentry envelopes without the SDK', () => {
   it('parses V8 and Safari stacks oldest call first, without query strings', () => {
     const v8 = 'Error: boom\n    at inner (https://game.example/assets/main.js?v=3:10:5)\n    at outer (/srv/dist-server/main.js:20:7)\n    at node:internal/process:1:1';
     expect(parseStack(v8)).toEqual([
-      { function: '?', filename: 'node:internal/process', lineno: 1, colno: 1, in_app: false },
-      { function: 'outer', filename: '/srv/dist-server/main.js', lineno: 20, colno: 7, in_app: true },
-      { function: 'inner', filename: 'https://game.example/assets/main.js', lineno: 10, colno: 5, in_app: true },
+      // Beast Mode OPS-02: abs_path (what Sentry matches source maps on) is the scrubbed filename.
+      { function: '?', filename: 'node:internal/process', abs_path: 'node:internal/process', lineno: 1, colno: 1, in_app: false },
+      { function: 'outer', filename: '/srv/dist-server/main.js', abs_path: '/srv/dist-server/main.js', lineno: 20, colno: 7, in_app: true },
+      { function: 'inner', filename: 'https://game.example/assets/main.js', abs_path: 'https://game.example/assets/main.js', lineno: 10, colno: 5, in_app: true },
     ]);
-    expect(parseStack('tick@https://x/app.js#frag:3:9')).toEqual([{ function: 'tick', filename: 'https://x/app.js', lineno: 3, colno: 9, in_app: true }]);
+    expect(parseStack('tick@https://x/app.js#frag:3:9')).toEqual([{ function: 'tick', filename: 'https://x/app.js', abs_path: 'https://x/app.js', lineno: 3, colno: 9, in_app: true }]);
     expect(scrubUrl('/v1/defenses?since=5&token=x')).toBe('/v1/defenses');
   });
 

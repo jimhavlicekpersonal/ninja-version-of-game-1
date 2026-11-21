@@ -181,12 +181,17 @@ export default defineConfig(({ command, mode }) => ({
   define: {
     __APP_VERSION__: JSON.stringify(pkg.version),
     __BUILD_TIME__: JSON.stringify(buildTime),
+    // Beast Mode STB-02/OPS-01: one release per build (Sentry matches source maps and regressions by it).
+    __BUILD_ID__: JSON.stringify((process.env.GITHUB_SHA ?? '').slice(0, 12) || 'local'),
     __TERMS_EFFECTIVE__: JSON.stringify(termsEffective()),
   },
   server: { port: 5173 },
   preview: { port: 4173 },
   build: {
     target: 'es2020',
+    // Beast Mode OPS-02/STB-02: maps are written (for a private upload to Sentry) but the bundles do not point at
+    // them, and every workflow deletes them before Pages, the APK/AAB or the IPA get the files.
+    sourcemap: 'hidden',
     // Phaser changes only on a dependency update, so it sits in its own chunk that stays cached
     // across game releases (state-of-the-game quality 17); the game code is the small, changing part.
     chunkSizeWarningLimit: 1200,

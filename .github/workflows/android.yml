@@ -59,6 +59,21 @@ jobs:
           VITE_APPLE_SERVICES_ID: ${{ vars.VITE_APPLE_SERVICES_ID }}
           # P7-11 (PUB-14): local-day statistics; the owner's switch (repository variable VITE_STATS_TZ=1), off by default.
           VITE_STATS_TZ: ${{ vars.VITE_STATS_TZ || '0' }}
+      # Beast Mode OPS-02/STB-02: source maps go privately to Sentry (when configured) and never ship.
+      - name: Source maps (private upload, then removed)
+        run: |
+          if [ -n "$SENTRY_AUTH_TOKEN" ] && [ -n "$SENTRY_ORG" ] && [ -n "$SENTRY_PROJECT" ]; then
+            RELEASE="kagemura@$(node -p "require('./package.json').version")+${GITHUB_SHA::12}"
+            npx --yes @sentry/cli@2.39.1 sourcemaps upload --release "$RELEASE" --dist android --url-prefix '~/assets' dist/assets
+          else
+            echo "::notice::No SENTRY_AUTH_TOKEN / SENTRY_ORG / SENTRY_PROJECT: source maps not uploaded (crash reports stay minified)."
+          fi
+          find dist -name '*.map' -delete
+          if find dist -name '*.map' | grep -q .; then echo "::error::source maps left in dist"; exit 1; fi
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_ORG: ${{ vars.SENTRY_ORG }}
+          SENTRY_PROJECT: ${{ vars.SENTRY_PROJECT }}
       - run: npx cap sync android
       - name: Build debug APK
         working-directory: android
@@ -156,6 +171,22 @@ jobs:
           VITE_APPLE_SERVICES_ID: ${{ vars.VITE_APPLE_SERVICES_ID }}
           # P7-11 (PUB-14): local-day statistics; the owner's switch (repository variable VITE_STATS_TZ=1), off by default.
           VITE_STATS_TZ: ${{ vars.VITE_STATS_TZ || '0' }}
+      # Beast Mode OPS-02/STB-02: source maps go privately to Sentry (when configured) and never ship.
+      - name: Source maps (private upload, then removed)
+        if: steps.key.outputs.ready == 'true'
+        run: |
+          if [ -n "$SENTRY_AUTH_TOKEN" ] && [ -n "$SENTRY_ORG" ] && [ -n "$SENTRY_PROJECT" ]; then
+            RELEASE="kagemura@$(node -p "require('./package.json').version")+${GITHUB_SHA::12}"
+            npx --yes @sentry/cli@2.39.1 sourcemaps upload --release "$RELEASE" --dist android --url-prefix '~/assets' dist/assets
+          else
+            echo "::notice::No SENTRY_AUTH_TOKEN / SENTRY_ORG / SENTRY_PROJECT: source maps not uploaded (crash reports stay minified)."
+          fi
+          find dist -name '*.map' -delete
+          if find dist -name '*.map' | grep -q .; then echo "::error::source maps left in dist"; exit 1; fi
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_ORG: ${{ vars.SENTRY_ORG }}
+          SENTRY_PROJECT: ${{ vars.SENTRY_PROJECT }}
       - if: steps.key.outputs.ready == 'true'
         run: npx cap sync android
       - name: Install the upload key

@@ -63,6 +63,7 @@ import { acceptedRulesVersion, onCommunityRulesAccepted } from './presentation/u
 import { encodeExportCode, NewerSaveError, serialize, type SaveFile } from './gameplay/sim/save';
 
 declare const __APP_VERSION__: string;
+declare const __BUILD_ID__: string;
 declare const __BUILD_TIME__: string;
 /** public/legal-config.js `termsEffective`, read at build time (vite.config.ts); '' while the terms are a draft. */
 declare const __TERMS_EFFECTIVE__: string;
@@ -323,7 +324,9 @@ async function boot(): Promise<void> {
   let crashBand: () => string | null = () => null;
   crashReporter = new CrashReporter({
     dsn: sandbox ? undefined : (import.meta.env.VITE_SENTRY_DSN as string | undefined),
-    release: `kagemura@${__APP_VERSION__}`,
+    // Beast Mode STB-02: a release per build and the platform as its dist (source maps are uploaded per both).
+    release: `kagemura@${__APP_VERSION__}+${__BUILD_ID__}`,
+    dist: isNative() ? platform() : 'web',
     environment: isNative() ? platform() : 'web',
     enabled: () => crashReportsAllowed(prefs.get('crashReports'), crashBand()),
     tags: { device: platformName() },
