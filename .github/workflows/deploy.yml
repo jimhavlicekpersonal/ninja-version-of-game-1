@@ -82,6 +82,8 @@ jobs:
       - if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
         uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5
         with:
+          # Beast Mode OPS-05: kept 30 days so rollback-web.yml can redeploy it.
+          retention-days: 30
           path: dist
 
   # The multiplayer server on real Postgres: storage contract, server rules,

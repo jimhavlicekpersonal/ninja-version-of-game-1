@@ -1,0 +1,60 @@
+name: Roll back the web game
+
+# Beast Mode 2026-11-21 OPS-05: put an earlier build back on GitHub Pages in one step.
+# Input: the run id of an earlier "Deploy" workflow run on main (its Pages artifact is kept 30 days).
+# Refused when that build writes a different save version than the live one (saves never go backwards:
+# forward-fix instead) or has no version.json (built before rollbacks existed). docs/store/RELEASE.md,
+# "If something is wrong".
+
+on:
+  workflow_dispatch:
+    inputs:
+      run_id:
+        description: 'Run id of the earlier Deploy run whose build goes back live'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  actions: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  rollback:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
+        with:
+          node-version-file: .node-version
+      - name: Download that run's Pages build
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_ID: ${{ github.event.inputs.run_id }}
+        run: |
+          gh run download "$RUN_ID" --repo "$GITHUB_REPOSITORY" --name github-pages --dir target-artifact
+          mkdir -p target && tar -xf target-artifact/artifact.tar -C target
+      - name: Refuse a build that would move saves backwards
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          LIVE_URL=$(gh api "repos/$GITHUB_REPOSITORY/pages" --jq .html_url)
+          node tools/release/rollback-check.mjs web target/version.json "$LIVE_URL"
+      - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5
+        with:
+          path: target
+          retention-days: 30
+      - id: deployment
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5
+      - name: Verify the published game and language assets
+        run: node tools/release/check-published-game.mjs
+        env:
+          GAME_URL: ${{ steps.deployment.outputs.page_url }}

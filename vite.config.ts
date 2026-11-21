@@ -67,6 +67,9 @@ function serviceWorker(): Plugin {
         .replace('/*__LANGUAGE_FILES__*/ {}', JSON.stringify(languageFiles))
         .replace('/*__HASHES__*/ {}', JSON.stringify(hashes));
       this.emitFile({ type: 'asset', fileName: 'sw.js', source });
+      // Beast Mode OPS-05: what this build is, for rollbacks (tools/release/rollback-check.mjs).
+      const num = (f: string, re: RegExp) => Number(re.exec(readFileSync(f, 'utf8'))?.[1] ?? NaN);
+      this.emitFile({ type: 'asset', fileName: 'version.json', source: JSON.stringify({ version: pkg.version, sha: (process.env.GITHUB_SHA ?? '').slice(0, 12) || 'local', save: num('src/gameplay/sim/save.ts', /export const SAVE_VERSION = (\d+)/), rules: num('src/gameplay/sim/battle/battle.ts', /export const SIM_RULES = (\d+);/) }) });
     },
   };
 }

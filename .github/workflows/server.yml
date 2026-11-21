@@ -41,6 +41,10 @@ on:
         type: choice
         options: [staging, production]
         default: staging
+      image_tag:
+        description: 'Rollback (Beast Mode OPS-05): deploy this existing image tag (a 12-character commit) without building. Empty = build this commit.'
+        type: string
+        default: ''
 
 permissions:
   contents: read
@@ -55,6 +59,8 @@ env:
 
 jobs:
   test:
+    # A rollback deploys an image that already passed these when it was built.
+    if: github.event.inputs.image_tag == '' || github.event.inputs.image_tag == null
     runs-on: ubuntu-latest
     services:
       postgres:
@@ -93,6 +99,7 @@ jobs:
 
   image:
     needs: test
+    if: github.event.inputs.image_tag == '' || github.event.inputs.image_tag == null
     runs-on: ubuntu-latest
     outputs:
       tag: ${{ steps.tag.outputs.tag }}
@@ -110,7 +117,7 @@ jobs:
 
   staging:
     needs: image
-    if: github.event_name == 'push' || github.event.inputs.target == 'staging'
+    if: ${{ !cancelled() && (needs.image.result == 'success' || (needs.image.result == 'skipped' && github.event.inputs.image_tag != '')) && (github.event_name == 'push' || github.event.inputs.target == 'staging') }}
     runs-on: ubuntu-latest
     environment: staging
     steps:
@@ -122,11 +129,14 @@ jobs:
           node-version-file: .node-version
           cache: npm
       - run: npm ci
+      - name: Rollback check (the target image must check every battle-rules version the live server does)
+        if: github.event.inputs.image_tag != ''
+        run: node tools/release/rollback-check.mjs server "${{ github.event.inputs.image_tag }}" "${{ vars.SERVER_URL }}"
       - name: Deploy
         env:
           DEPLOY_HOOK: ${{ secrets.DEPLOY_HOOK }}
           SERVER_URL: ${{ vars.SERVER_URL }}
-          TAG: ${{ needs.image.outputs.tag }}
+          TAG: ${{ github.event.inputs.image_tag || needs.image.outputs.tag }}
           TARGET: staging
         run: node tools/release/deploy.mjs
       - name: Say that no contract tests ran (no staging server)
@@ -147,19 +157,24 @@ jobs:
 
   production:
     needs: image
-    if: github.event_name == 'workflow_dispatch' && github.event.inputs.target == 'production'
+    if: ${{ !cancelled() && (needs.image.result == 'success' || (needs.image.result == 'skipped' && github.event.inputs.image_tag != '')) && github.event_name == 'workflow_dispatch' && github.event.inputs.target == 'production' }}
     runs-on: ubuntu-latest
     environment: production
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with:
           node-version-file: .node-version
+      - name: Rollback check (the target image must check every battle-rules version the live server does)
+        if: github.event.inputs.image_tag != ''
+        run: node tools/release/rollback-check.mjs server "${{ github.event.inputs.image_tag }}" "${{ vars.SERVER_URL }}"
       - name: Deploy
         env:
           DEPLOY_HOOK: ${{ secrets.DEPLOY_HOOK }}
           SERVER_URL: ${{ vars.SERVER_URL }}
-          TAG: ${{ needs.image.outputs.tag }}
+          TAG: ${{ github.event.inputs.image_tag || needs.image.outputs.tag }}
           TARGET: production
         run: node tools/release/deploy.mjs
       - name: Say that production was not checked (no SERVER_URL)

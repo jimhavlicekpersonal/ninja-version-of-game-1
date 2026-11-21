@@ -41,4 +41,17 @@ Also:
 
 - Pause: App Store Connect → Phased release → Pause (up to 30 days); Play Console → Halt rollout.
 - Tell players: set `SERVER_NOTICE` on the server (shown in Settings → Online play) and redeploy.
-- Server problems: redeploy the previous image by hand (the release workflow with that commit). Never roll the database back by hand: restore a backup into a new database (`tools/ops/restore.mjs`) and switch to it only after `restore-check`.
+- **Roll back the web game (one command):** `gh workflow run rollback-web.yml -f run_id=<id of the earlier Deploy run>` (Actions → "Roll back the web game"). It redeploys that run's Pages build (kept 30 days) and checks the published game. It refuses a build that writes a different save version or has no `version.json` (builds before 2026-11-21).
+- **Roll back the server (one command):** `gh workflow run server.yml -f target=production -f image_tag=<12-character commit of the earlier image>`. It skips the tests and the image build and deploys that image. It refuses an image that does not check every battle-rules version the live server lists in `/v1/hello` `supportedRules`.
+- Turn a broken feature or product off first when that is enough: `FEATURES_OFF` / `PRODUCTS_OFF` on the server (OPS-09), `VILLAGE_PARTS` off for server-held villages.
+- Never roll the database back by hand: restore a backup into a new database (`tools/ops/restore.mjs`) and switch to it only after `restore-check`. Migrations only add, so the previous server image runs on the current database (check this before every migration that renames or drops).
+
+| What changed in the bad release | Web rollback | Server rollback |
+|---|---|---|
+| Nothing stored (UI, text, art) | yes | yes |
+| Save version (`SAVE_VERSION`) | **no**: forward-fix (players' saves are already newer; the old build would stop at "newer save") | yes |
+| Battle rules (`SIM_RULES`) | only once the server serves the old rules too (it keeps archived rules) | **no** if the target lacks a rules version the live server checks |
+| Database migration | yes | yes only if the previous build ran on the new schema (additive migrations) |
+| Protocol version | yes while the server still accepts the old client | no if live clients already need the new protocol |
+
+The owner rehearses both once on staging before launch (OWN-33): note the time each took here.
