@@ -1484,5 +1484,14 @@ No `SIM_RULES` bump (the combat items below are not started), no save or protoco
 | GT-05, GT-15 | late defense value; runway | **open** | — | — | Not started |
 | GT-01, GT-06 + ECO-04 | honor model; casual loss | **OWNER (D2, D3)** | — | — | Decisions first |
 
-Not run: real players (every number is a model player), 8-seed runs, Postgres. `campaign-gates.test.ts` has two failing gates (above), left failing rather than loosened.
+Final matchmaking data (`ranks.json`): `powerSlackByKeep` `[0.75, 0.75, 1, 1.25, 0.5, 0.75, 0, 0.5, 0.125, 0.25, 0.5, 0.5, 0.75, 0.5, 0.5]`, `topKeepMaxBias` 0.5 (a lower cap lifted Keep 15 for every policy but let a fully researched Keep 15 army three-star 50-58% of matched raids; the matched-raid ceiling won). With the committed 4-seed results, **five campaign gates fail, left failing rather than loosened** (the owner decides whether to accept them as known gaps):
+
+- casual_explorer and casual_hires, Keep 7: the 90% lower bound of wins is 0.48 and 0.42 (new GT-02 gate; Keeps 4-5 pass). Keep 7 slack above 0 makes the rusher and sandbagger farm Keep 7.
+- casual_explorer Keeps 8-9: 0.53 of 0.55 stars (long-standing gate; GT-04, the newest warriors are weaker).
+- regular_fortress Keep 15: 0.97 of 1.2 stars (new GT-08 gate).
+- regular Keep 15 day: the 95% interval's floor is 99.997 against 100 (GT-11 tightened this gate from the mean, which is 101+).
+
+Every number above moved by several points between runs of 4 seeds; `CAMPAIGN_REPS=8` would narrow them.
+
+Not run: real players (every number is a model player), 8-seed runs, Postgres.
 
