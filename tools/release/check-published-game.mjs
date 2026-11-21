@@ -26,6 +26,13 @@ async function verify() {
   const entry = /<script\b[^>]*\bsrc="([^"]+\.js)"/.exec(html)?.[1];
   assert.ok(entry, 'Published HTML must reference the built game module');
   assert.ok((await get(entry)).length > 1000, 'The published game module is empty');
+  // Beast Mode SEC-10: the page carries a Content-Security-Policy that allows exactly its inline scripts.
+  const csp = /<meta http-equiv="Content-Security-Policy" content="([^"]+)"/.exec(html)?.[1];
+  assert.ok(csp, 'Published HTML must carry a Content-Security-Policy meta tag');
+  for (const m of html.matchAll(/<script(?![^>]*\ssrc=)[^>]*>([\s\S]*?)<\/script>/g)) {
+    const hash = `'sha256-${createHash('sha256').update(m[1], 'utf8').digest('base64')}'`;
+    assert.ok(csp.includes(hash), `The Content-Security-Policy does not allow an inline script (${hash})`);
+  }
   const worker = await get('sw.js');
   for (const [code, meta] of ready) {
     assert.ok(html.includes(meta.path), `First-frame language table missing ${code}`);

@@ -6,6 +6,7 @@ import type { Plugin } from 'vite';
 import { configDefaults, defineConfig } from 'vitest/config';
 import { SLOW_TESTS } from './tests/slow';
 import { buildLanguageAssets, languageBootScript } from './tools/i18n/build.mjs';
+import { cspContent } from './tools/release/csp.mjs';
 
 buildLanguageAssets();
 
@@ -99,7 +100,33 @@ function nonBlockingStyles(): Plugin {
     transformIndexHtml: {
       order: 'post',
       handler(html) {
-        return html.replace(/<link rel="stylesheet"([^>]*?)href="(\.\/assets\/[^"]+\.css)"([^>]*)>/g, (_m, a: string, href: string, b: string) => `<link rel="stylesheet"${a}href="${href}"${b.replace(/\s*\/?$/, '')} media="print" onload="this.media='all'">`);
+        // Beast Mode SEC-10: no inline event handler (a Content-Security-Policy would block it); a hashed inline
+        // script right after the link switches it to `all` once it has loaded.
+        return html.replace(/<link rel="stylesheet"([^>]*?)href="(\.\/assets\/[^"]+\.css)"([^>]*)>/g, (_m, a: string, href: string, b: string) => `<link rel="stylesheet"${a}href="${href}"${b.replace(/\s*\/?$/, '')} media="print"><script>${CSS_SWITCH}</script>`);
+      },
+    },
+  };
+}
+
+/** SEC-10: switches the stylesheet before it to `all` once loaded (ES5, inline, hashed by `cspMeta`). */
+const CSS_SWITCH = "(function(l){function a(){l.media='all'}if(l.sheet)a();else{l.addEventListener('load',a);l.addEventListener('error',a)}})(document.currentScript.previousElementSibling);";
+
+/**
+ * Beast Mode SEC-10 (F2): a Content-Security-Policy as a <meta> (GitHub Pages sends no headers), built last: every
+ * inline script's SHA-256, the game's own origin, the server (VITE_SERVER_URL), Sentry (VITE_SENTRY_DSN's host) and
+ * the Google and Apple sign-in hosts. Not in dev (Vite's client injects scripts). `frame-ancestors` cannot be set
+ * from a meta tag.
+ */
+function cspMeta(): Plugin {
+  return {
+    name: 'tk-csp',
+    apply: 'build',
+    enforce: 'post',
+    transformIndexHtml: {
+      order: 'post',
+      handler(html) {
+        const content = cspContent(html, process.env);
+        return html.replace(/<head>/, `<head>\n    <meta http-equiv="Content-Security-Policy" content="${content}" />`);
       },
     },
   };
@@ -173,7 +200,7 @@ export default defineConfig(({ command, mode }) => ({
   },
   // Production ships a smaller Phaser (no physics, sound, tilemaps: phaserBuild.js); dev and tests use the full package.
   resolve: command === 'build' && !process.env.VITEST ? { alias: [{ find: /^phaser$/, replacement: fileURLToPath(new URL('./src/presentation/render/phaserBuild.js', import.meta.url)) }] } : {},
-  plugins: [bootGuard(), nonBlockingStyles(), serviceWorker(), phaserFlags(), absoluteLinkPreview(process.env.VITE_PUBLIC_URL)],
+  plugins: [bootGuard(), nonBlockingStyles(), serviceWorker(), phaserFlags(), absoluteLinkPreview(process.env.VITE_PUBLIC_URL), cspMeta()],
   // `npm test` leaves out the slow model-player and timing tests (tests/slow.ts); `npm run test:slow`
   // (`vitest run --mode slow`) runs only those. CI runs both.
   test: mode === 'slow'

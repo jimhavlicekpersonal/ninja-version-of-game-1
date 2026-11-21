@@ -87,7 +87,7 @@ New player-visible strings are translated into all 49 other ready languages in t
 | SEC-07 | MEDIUM | 2 | CODE | open | | | |
 | SEC-08 | MEDIUM | 5 | CODE | open | | | |
 | SEC-09 | MEDIUM | 5 | OWNER | open | | | |
-| SEC-10 | LOW | 2 | CODE | open | | | |
+| SEC-10 | LOW | 2 | CODE | partial |  | tests/backend/csp.test.ts; built dist served by vite preview in Chromium 390×844: no CSP violation, game started, stylesheet switched to all | vite.config.ts cspMeta (post, build only) writes a CSP meta from tools/release/csp.mjs: SHA-256 of every inline script, 'self', VITE_SERVER_URL and VITE_SENTRY_DSN origins, Google/Apple sign-in hosts; object-src/base-uri none. The stylesheet's inline onload became a hashed inline script. check-published-game.mjs verifies the deployed page's CSP covers its inline scripts. Open (DEVICE): Google and Apple sign-in on the web and the Capacitor WebViews (capacitor://localhost) were not exercised; frame-ancestors cannot be set from a meta tag. |
 | SEC-11 | LOW | Owner/device | CODE | open | | | |
 | SEC-12 | LOW | 2 | OWNER | partial |  | tests/backend/server/beast-mode-2026-11-21-config.test.ts SEC-12 | Code: production checkConfig errors when store checks are configured and SANDBOX_CREDIT_DAILY_CAP_USD is unset (explicit 0 allowed); SHIPPING 3h updated. Open (OWNER): set the value in production. |
 | SEC-13 | LOW | 2 | CODE | partial |  | tests/backend/server/l1-caps.test.ts (memory; fails before the fix: 10 parallel joins overfilled; the Postgres variant runs with TEST_DATABASE_URL, not run here) | Alliance join, Gang join and friendship cap re-counted inside the transaction under tx.lockPlayer('grove:'/'squad:' id, or both player ids sorted). Done-when needs the Postgres run (not available here). |
