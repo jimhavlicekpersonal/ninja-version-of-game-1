@@ -371,5 +371,6 @@
   "settings.reduceEffects": { "en": "Reduce screen shake and flashes", "text": "Mindre skærmrystelser og blink" },
   "store.buyNamed": { "en": "Buy {name} for {price}", "text": "Køb {name} for {price}" },
   "res.jadeOpenStore": { "en": "Jade: {n}. Open the Store", "text": "Jade: {n}. Åbn butikken" },
-  "settings.textSize": { "en": "Text size", "text": "Tekststørrelse" }
+  "settings.textSize": { "en": "Text size", "text": "Tekststørrelse" },
+  "stake.recentHits": { "en": "Your last {raids} raids: 2★ or more in {two}, 3★ in {three}.", "text": "Dine seneste {raids} raids: 2★ eller mere i {two}, 3★ i {three}." }
 }

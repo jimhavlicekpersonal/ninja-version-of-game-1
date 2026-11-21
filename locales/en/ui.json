@@ -371,5 +371,6 @@
   "settings.reduceEffects": "Reduce screen shake and flashes",
   "store.buyNamed": "Buy {name} for {price}",
   "res.jadeOpenStore": "Jade: {n}. Open the Store",
-  "settings.textSize": "Text size"
+  "settings.textSize": "Text size",
+  "stake.recentHits": "Your last {raids} raids: 2★ or more in {two}, 3★ in {three}."
 }

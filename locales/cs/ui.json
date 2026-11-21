@@ -371,5 +371,6 @@
   "settings.reduceEffects": { "en": "Reduce screen shake and flashes", "text": "Omezit otřesy obrazovky a záblesky" },
   "store.buyNamed": { "en": "Buy {name} for {price}", "text": "Koupit {name} za {price}" },
   "res.jadeOpenStore": { "en": "Jade: {n}. Open the Store", "text": "Nefrit: {n}. Otevřít obchod" },
-  "settings.textSize": { "en": "Text size", "text": "Velikost textu" }
+  "settings.textSize": { "en": "Text size", "text": "Velikost textu" },
+  "stake.recentHits": { "en": "Your last {raids} raids: 2★ or more in {two}, 3★ in {three}.", "text": "Tvých posledních {raids} nájezdů: 2★ a víc v {two}, 3★ v {three}." }
 }

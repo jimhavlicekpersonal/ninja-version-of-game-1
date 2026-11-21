@@ -371,5 +371,6 @@
   "settings.reduceEffects": { "en": "Reduce screen shake and flashes", "text": "ਸਕ੍ਰੀਨ ਦਾ ਹਿੱਲਣਾ ਅਤੇ ਚਮਕ ਘਟਾਓ" },
   "store.buyNamed": { "en": "Buy {name} for {price}", "text": "{name} {price} ਵਿੱਚ ਖਰੀਦੋ" },
   "res.jadeOpenStore": { "en": "Jade: {n}. Open the Store", "text": "ਜੇਡ: {n}। ਸਟੋਰ ਖੋਲ੍ਹੋ" },
-  "settings.textSize": { "en": "Text size", "text": "ਲਿਖਤ ਦਾ ਆਕਾਰ" }
+  "settings.textSize": { "en": "Text size", "text": "ਲਿਖਤ ਦਾ ਆਕਾਰ" },
+  "stake.recentHits": { "en": "Your last {raids} raids: 2★ or more in {two}, 3★ in {three}.", "text": "ਤੁਹਾਡੇ ਆਖਰੀ {raids} ਛਾਪੇ: {two} ਵਿੱਚ 2★ ਜਾਂ ਵੱਧ, {three} ਵਿੱਚ 3★।" }
 }

@@ -63,6 +63,8 @@ interface BattleHudDeps {
   onFinished(): { result: BattleResult; banked: Cost; trophies: number; bonus?: Cost; eventBonus?: Cost; overflow?: Cost; note?: string; pending?: boolean; stake?: number; /** The diversity share the raid carried (sim/carry.ts; absent = 1). */ diversity?: number; /** P5-03: the daily contract it met (its name). */ contract?: string; /** P6-07: what the battle moved. */ progress?: ProgressLine[] } | null;
   /** A raid that may declare a stake (sim/carry.ts): offline, or on a server with the `stakes` feature. */
   stakes?: boolean;
+  /** Beast Mode GT-10: the player's own recent raids reaching 2★ and 3★ (`recentStarHits`), shown with the stakes. */
+  recentHits?: { raids: number; two: number; three: number } | null;
   /** P6-13 (UIS-07): the share of the loot this army would carry (sim/carry.ts; raids only, absent or 1 = all). */
   carryShare?: number;
   onReplay(): void;
@@ -497,7 +499,10 @@ export class BattleHud {
     };
     // Always in view (one chip row); with a stake chosen, its downside is the line right under it.
     const row = h('div', { class: 'chips stake-row', role: 'group', 'aria-label': t('stake.label') }, h('span', { class: 'muted small' }, t('stake.label')), chip(undefined, t('stake.none')), ...opts.map((n) => chip(n, t('stake.option', { stars: n, mult: mult(gd.raids.stakes!.byStars[String(n)]) }))));
-    return this.s.stake !== undefined ? [row, h('p', { class: 'small stake-help', 'data-id': 'stake-help' }, t('stake.help'))] : [row];
+    // GT-10: the player's own hit rate beside the stakes (the battle has a little luck in it: a stake is a bet on it).
+    const hits = this.deps.recentHits;
+    const rate = hits ? h('p', { class: 'small muted stake-rate', 'data-id': 'stake-rate' }, t('stake.recentHits', { raids: hits.raids, two: hits.two, three: hits.three })) : null;
+    return [row, ...(rate ? [rate] : []), ...(this.s.stake !== undefined ? [h('p', { class: 'small stake-help', 'data-id': 'stake-help' }, t('stake.help'))] : [])];
   }
 
   /** One chip per Infiltration Point: letter and how many defenses cover its path (tap: highlight the path). */

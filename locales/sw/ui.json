@@ -371,5 +371,6 @@
   "settings.reduceEffects": { "en": "Reduce screen shake and flashes", "text": "Punguza mtikisiko wa skrini na mimweko" },
   "store.buyNamed": { "en": "Buy {name} for {price}", "text": "Nunua {name} kwa {price}" },
   "res.jadeOpenStore": { "en": "Jade: {n}. Open the Store", "text": "Jade: {n}. Fungua Duka" },
-  "settings.textSize": { "en": "Text size", "text": "Ukubwa wa maandishi" }
+  "settings.textSize": { "en": "Text size", "text": "Ukubwa wa maandishi" },
+  "stake.recentHits": { "en": "Your last {raids} raids: 2★ or more in {two}, 3★ in {three}.", "text": "Mashambulizi yako {raids} ya mwisho: 2★ au zaidi katika {two}, 3★ katika {three}." }
 }

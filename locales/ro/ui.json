@@ -371,5 +371,6 @@
   "settings.reduceEffects": { "en": "Reduce screen shake and flashes", "text": "Redu tremuratul ecranului și luminile intermitente" },
   "store.buyNamed": { "en": "Buy {name} for {price}", "text": "Cumpără {name} cu {price}" },
   "res.jadeOpenStore": { "en": "Jade: {n}. Open the Store", "text": "Jad: {n}. Deschide magazinul" },
-  "settings.textSize": { "en": "Text size", "text": "Dimensiunea textului" }
+  "settings.textSize": { "en": "Text size", "text": "Dimensiunea textului" },
+  "stake.recentHits": { "en": "Your last {raids} raids: 2★ or more in {two}, 3★ in {three}.", "text": "Ultimele tale {raids} raiduri: 2★ sau mai mult în {two}, 3★ în {three}." }
 }

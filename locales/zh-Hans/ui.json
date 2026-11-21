@@ -371,5 +371,6 @@
   "settings.reduceEffects": { "en": "Reduce screen shake and flashes", "text": "减少屏幕震动和闪光" },
   "store.buyNamed": { "en": "Buy {name} for {price}", "text": "以 {price} 购买{name}" },
   "res.jadeOpenStore": { "en": "Jade: {n}. Open the Store", "text": "翡翠：{n}。打开商店" },
-  "settings.textSize": { "en": "Text size", "text": "文字大小" }
+  "settings.textSize": { "en": "Text size", "text": "文字大小" },
+  "stake.recentHits": { "en": "Your last {raids} raids: 2★ or more in {two}, 3★ in {three}.", "text": "最近 {raids} 次突袭：{two} 次达到 2★ 或以上，{three} 次 3★。" }
 }

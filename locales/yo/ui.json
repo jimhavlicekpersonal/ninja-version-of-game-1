@@ -371,5 +371,6 @@
   "settings.reduceEffects": { "en": "Reduce screen shake and flashes", "text": "Dín mímì ojú iboju àti ìmọ́lẹ̀ tó ń tàn kù" },
   "store.buyNamed": { "en": "Buy {name} for {price}", "text": "Ra {name} ní {price}" },
   "res.jadeOpenStore": { "en": "Jade: {n}. Open the Store", "text": "Jéèdì: {n}. Ṣí Ilé ìtajà" },
-  "settings.textSize": { "en": "Text size", "text": "Ìwọ̀n ọ̀rọ̀" }
+  "settings.textSize": { "en": "Text size", "text": "Ìwọ̀n ọ̀rọ̀" },
+  "stake.recentHits": { "en": "Your last {raids} raids: 2★ or more in {two}, 3★ in {three}.", "text": "Ìkọlù {raids} rẹ tó kẹ́yìn: 2★ tàbí jù bẹ́ẹ̀ lọ nínú {two}, 3★ nínú {three}." }
 }

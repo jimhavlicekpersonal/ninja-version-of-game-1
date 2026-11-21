@@ -371,5 +371,6 @@
   "settings.reduceEffects": { "en": "Reduce screen shake and flashes", "text": "Giảm rung màn hình và chớp sáng" },
   "store.buyNamed": { "en": "Buy {name} for {price}", "text": "Mua {name} với giá {price}" },
   "res.jadeOpenStore": { "en": "Jade: {n}. Open the Store", "text": "Ngọc Bích: {n}. Mở Cửa hàng" },
-  "settings.textSize": { "en": "Text size", "text": "Cỡ chữ" }
+  "settings.textSize": { "en": "Text size", "text": "Cỡ chữ" },
+  "stake.recentHits": { "en": "Your last {raids} raids: 2★ or more in {two}, 3★ in {three}.", "text": "{raids} trận đột kích gần nhất: 2★ trở lên trong {two} trận, 3★ trong {three} trận." }
 }

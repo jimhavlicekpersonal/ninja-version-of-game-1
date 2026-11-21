@@ -371,5 +371,6 @@
   "settings.reduceEffects": { "en": "Reduce screen shake and flashes", "text": "画面の揺れとフラッシュを減らす" },
   "store.buyNamed": { "en": "Buy {name} for {price}", "text": "{name}を{price}で購入" },
   "res.jadeOpenStore": { "en": "Jade: {n}. Open the Store", "text": "翡翠：{n}。ストアを開く" },
-  "settings.textSize": { "en": "Text size", "text": "文字サイズ" }
+  "settings.textSize": { "en": "Text size", "text": "文字サイズ" },
+  "stake.recentHits": { "en": "Your last {raids} raids: 2★ or more in {two}, 3★ in {three}.", "text": "直近{raids}回の襲撃：2★以上が{two}回、3★が{three}回。" }
 }

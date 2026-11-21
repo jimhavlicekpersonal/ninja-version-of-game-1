@@ -371,5 +371,6 @@
   "settings.reduceEffects": { "en": "Reduce screen shake and flashes", "text": "Nciphisa ukunyakazisa kwesikrini nokukhanya okucwazimulayo" },
   "store.buyNamed": { "en": "Buy {name} for {price}", "text": "Thenga i-{name} nge-{price}" },
   "res.jadeOpenStore": { "en": "Jade: {n}. Open the Store", "text": "Ijeyidi: {n}. Vula Isitolo" },
-  "settings.textSize": { "en": "Text size", "text": "Usayizi wombhalo" }
+  "settings.textSize": { "en": "Text size", "text": "Usayizi wombhalo" },
+  "stake.recentHits": { "en": "Your last {raids} raids: 2★ or more in {two}, 3★ in {three}.", "text": "Ukuhlasela kwakho okungu-{raids} kokugcina: 2★ noma ngaphezulu ku-{two}, 3★ ku-{three}." }
 }

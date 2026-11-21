@@ -371,5 +371,6 @@
   "settings.reduceEffects": { "en": "Reduce screen shake and flashes", "text": "Μείωση κουνήματος οθόνης και λάμψεων" },
   "store.buyNamed": { "en": "Buy {name} for {price}", "text": "Αγορά {name} για {price}" },
   "res.jadeOpenStore": { "en": "Jade: {n}. Open the Store", "text": "Νεφρίτης: {n}. Άνοιγμα καταστήματος" },
-  "settings.textSize": { "en": "Text size", "text": "Μέγεθος κειμένου" }
+  "settings.textSize": { "en": "Text size", "text": "Μέγεθος κειμένου" },
+  "stake.recentHits": { "en": "Your last {raids} raids: 2★ or more in {two}, 3★ in {three}.", "text": "Οι τελευταίες {raids} επιδρομές σου: 2★ ή περισσότερα σε {two}, 3★ σε {three}." }
 }

@@ -371,5 +371,6 @@
   "settings.reduceEffects": { "en": "Reduce screen shake and flashes", "text": "Зменшити тремтіння екрана та спалахи" },
   "store.buyNamed": { "en": "Buy {name} for {price}", "text": "Купити «{name}» за {price}" },
   "res.jadeOpenStore": { "en": "Jade: {n}. Open the Store", "text": "Нефрит: {n}. Відкрити магазин" },
-  "settings.textSize": { "en": "Text size", "text": "Розмір тексту" }
+  "settings.textSize": { "en": "Text size", "text": "Розмір тексту" },
+  "stake.recentHits": { "en": "Your last {raids} raids: 2★ or more in {two}, 3★ in {three}.", "text": "Останні набіги ({raids}): 2★ і більше — {two}, 3★ — {three}." }
 }

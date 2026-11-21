@@ -371,5 +371,6 @@
   "settings.reduceEffects": { "en": "Reduce screen shake and flashes", "text": "സ്ക്രീൻ കുലുക്കവും മിന്നലുകളും കുറയ്ക്കുക" },
   "store.buyNamed": { "en": "Buy {name} for {price}", "text": "{name} {price}-ന് വാങ്ങുക" },
   "res.jadeOpenStore": { "en": "Jade: {n}. Open the Store", "text": "ജേഡ്: {n}. സ്റ്റോർ തുറക്കുക" },
-  "settings.textSize": { "en": "Text size", "text": "ടെക്സ്റ്റ് വലുപ്പം" }
+  "settings.textSize": { "en": "Text size", "text": "ടെക്സ്റ്റ് വലുപ്പം" },
+  "stake.recentHits": { "en": "Your last {raids} raids: 2★ or more in {two}, 3★ in {three}.", "text": "നിങ്ങളുടെ അവസാന {raids} റെയ്ഡുകൾ: {two} എണ്ണത്തിൽ 2★ അല്ലെങ്കിൽ കൂടുതൽ, {three} എണ്ണത്തിൽ 3★." }
 }

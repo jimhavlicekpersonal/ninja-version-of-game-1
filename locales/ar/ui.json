@@ -371,5 +371,6 @@
   "settings.reduceEffects": { "en": "Reduce screen shake and flashes", "text": "تقليل اهتزاز الشاشة والومضات" },
   "store.buyNamed": { "en": "Buy {name} for {price}", "text": "شراء {name} مقابل {price}" },
   "res.jadeOpenStore": { "en": "Jade: {n}. Open the Store", "text": "اليشم: {n}. افتح المتجر" },
-  "settings.textSize": { "en": "Text size", "text": "حجم النص" }
+  "settings.textSize": { "en": "Text size", "text": "حجم النص" },
+  "stake.recentHits": { "en": "Your last {raids} raids: 2★ or more in {two}, 3★ in {three}.", "text": "آخر {raids} غارات لك: 2★ أو أكثر في {two}، و3★ في {three}." }
 }

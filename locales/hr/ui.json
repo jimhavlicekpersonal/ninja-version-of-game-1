@@ -371,5 +371,6 @@
   "settings.reduceEffects": { "en": "Reduce screen shake and flashes", "text": "Smanji podrhtavanje zaslona i bljeskove" },
   "store.buyNamed": { "en": "Buy {name} for {price}", "text": "Kupi {name} za {price}" },
   "res.jadeOpenStore": { "en": "Jade: {n}. Open the Store", "text": "Žad: {n}. Otvori trgovinu" },
-  "settings.textSize": { "en": "Text size", "text": "Veličina teksta" }
+  "settings.textSize": { "en": "Text size", "text": "Veličina teksta" },
+  "stake.recentHits": { "en": "Your last {raids} raids: 2★ or more in {two}, 3★ in {three}.", "text": "Tvojih zadnjih {raids} napada: 2★ ili više u {two}, 3★ u {three}." }
 }

@@ -371,5 +371,6 @@
   "settings.reduceEffects": { "en": "Reduce screen shake and flashes", "text": "Kurangkan gegaran skrin dan kilatan" },
   "store.buyNamed": { "en": "Buy {name} for {price}", "text": "Beli {name} pada harga {price}" },
   "res.jadeOpenStore": { "en": "Jade: {n}. Open the Store", "text": "Jed: {n}. Buka Kedai" },
-  "settings.textSize": { "en": "Text size", "text": "Saiz teks" }
+  "settings.textSize": { "en": "Text size", "text": "Saiz teks" },
+  "stake.recentHits": { "en": "Your last {raids} raids: 2★ or more in {two}, 3★ in {three}.", "text": "{raids} serbuan terakhir anda: 2★ atau lebih dalam {two}, 3★ dalam {three}." }
 }

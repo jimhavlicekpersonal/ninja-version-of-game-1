@@ -371,5 +371,6 @@
   "settings.reduceEffects": { "en": "Reduce screen shake and flashes", "text": "Kevesebb képernyőrázkódás és villanás" },
   "store.buyNamed": { "en": "Buy {name} for {price}", "text": "{name} megvásárlása: {price}" },
   "res.jadeOpenStore": { "en": "Jade: {n}. Open the Store", "text": "Jáde: {n}. Bolt megnyitása" },
-  "settings.textSize": { "en": "Text size", "text": "Szövegméret" }
+  "settings.textSize": { "en": "Text size", "text": "Szövegméret" },
+  "stake.recentHits": { "en": "Your last {raids} raids: 2★ or more in {two}, 3★ in {three}.", "text": "Utolsó {raids} rajtaütésed: 2★ vagy több {two} alkalommal, 3★ {three} alkalommal." }
 }

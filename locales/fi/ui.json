@@ -371,5 +371,6 @@
   "settings.reduceEffects": { "en": "Reduce screen shake and flashes", "text": "Vähennä näytön tärinää ja välähdyksiä" },
   "store.buyNamed": { "en": "Buy {name} for {price}", "text": "Osta {name} hintaan {price}" },
   "res.jadeOpenStore": { "en": "Jade: {n}. Open the Store", "text": "Jade: {n}. Avaa kauppa" },
-  "settings.textSize": { "en": "Text size", "text": "Tekstin koko" }
+  "settings.textSize": { "en": "Text size", "text": "Tekstin koko" },
+  "stake.recentHits": { "en": "Your last {raids} raids: 2★ or more in {two}, 3★ in {three}.", "text": "Viimeiset {raids} ryöstöretkeäsi: 2★ tai enemmän {two} kertaa, 3★ {three} kertaa." }
 }

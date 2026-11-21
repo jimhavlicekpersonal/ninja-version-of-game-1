@@ -166,6 +166,20 @@ export function recentRaidRates(state: VillageState, data: GameData): { stars: n
   return { stars, wins, raids: raids.length };
 }
 
+/**
+ * Beast Mode 2026-11-21 GT-10: how often the player's own recent raids (as `recentRaidRates` counts them) reached two
+ * and three stars, shown on the stake picker so a declared stake is chosen against the player's real hit rate.
+ */
+export function recentStarHits(state: VillageState, data: GameData): { raids: number; two: number; three: number } | null {
+  const cfg = data.pass.adaptiveTasks;
+  if (!cfg) return null;
+  const raids = (state.battleLog ?? [])
+    .filter((r) => r.kind === 'attack' && !r.war && r.trial === undefined && !r.goalEvent && !r.rematch && !r.drill && r.settlement !== 'pending' && r.settlement !== 'rejected')
+    .slice(-cfg.recentRaids);
+  if (raids.length < cfg.minRecent) return null;
+  return { raids: raids.length, two: raids.filter((r) => r.result.stars >= 2).length, three: raids.filter((r) => r.result.stars >= 3).length };
+}
+
 /** P5-04: the share of recent raids (as `recentRaidRates` counts them) won with three stars; null without enough. */
 function recentThreeStarShare(state: VillageState, data: GameData): number | null {
   const cfg = data.pass.adaptiveTasks;

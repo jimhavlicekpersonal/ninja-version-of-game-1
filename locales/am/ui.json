@@ -371,5 +371,6 @@
   "settings.reduceEffects": { "en": "Reduce screen shake and flashes", "text": "የማያ ገጽ መንቀጥቀጥን እና ብልጭታዎችን ቀንስ" },
   "store.buyNamed": { "en": "Buy {name} for {price}", "text": "{name}ን በ{price} ግዛ" },
   "res.jadeOpenStore": { "en": "Jade: {n}. Open the Store", "text": "ጄድ፦ {n}። መደብሩን ክፈት" },
-  "settings.textSize": { "en": "Text size", "text": "የጽሑፍ መጠን" }
+  "settings.textSize": { "en": "Text size", "text": "የጽሑፍ መጠን" },
+  "stake.recentHits": { "en": "Your last {raids} raids: 2★ or more in {two}, 3★ in {three}.", "text": "የመጨረሻዎቹ {raids} ወረራዎችህ፦ 2★ ወይም ከዚያ በላይ በ{two}፣ 3★ በ{three}።" }
 }

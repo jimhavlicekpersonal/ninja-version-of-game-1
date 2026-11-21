@@ -371,5 +371,6 @@
   "settings.reduceEffects": { "en": "Reduce screen shake and flashes", "text": "திரை அதிர்வையும் ஒளிர்வுகளையும் குறைக்கவும்" },
   "store.buyNamed": { "en": "Buy {name} for {price}", "text": "{name} ஐ {price}க்கு வாங்கவும்" },
   "res.jadeOpenStore": { "en": "Jade: {n}. Open the Store", "text": "பச்சைக்கல்: {n}. கடையைத் திறக்கவும்" },
-  "settings.textSize": { "en": "Text size", "text": "உரை அளவு" }
+  "settings.textSize": { "en": "Text size", "text": "உரை அளவு" },
+  "stake.recentHits": { "en": "Your last {raids} raids: 2★ or more in {two}, 3★ in {three}.", "text": "உங்கள் கடைசி {raids} தாக்குதல்கள்: {two} இல் 2★ அல்லது அதற்கு மேல், {three} இல் 3★." }
 }

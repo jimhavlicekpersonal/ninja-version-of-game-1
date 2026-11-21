@@ -371,5 +371,6 @@
   "settings.reduceEffects": { "en": "Reduce screen shake and flashes", "text": "ลดการสั่นของหน้าจอและแสงวาบ" },
   "store.buyNamed": { "en": "Buy {name} for {price}", "text": "ซื้อ {name} ในราคา {price}" },
   "res.jadeOpenStore": { "en": "Jade: {n}. Open the Store", "text": "หยก: {n} เปิดร้านค้า" },
-  "settings.textSize": { "en": "Text size", "text": "ขนาดตัวอักษร" }
+  "settings.textSize": { "en": "Text size", "text": "ขนาดตัวอักษร" },
+  "stake.recentHits": { "en": "Your last {raids} raids: 2★ or more in {two}, 3★ in {three}.", "text": "การบุก {raids} ครั้งล่าสุด: 2★ ขึ้นไป {two} ครั้ง, 3★ {three} ครั้ง" }
 }

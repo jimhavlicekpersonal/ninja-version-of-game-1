@@ -371,5 +371,6 @@
   "settings.reduceEffects": { "en": "Reduce screen shake and flashes", "text": "화면 흔들림과 번쩍임 줄이기" },
   "store.buyNamed": { "en": "Buy {name} for {price}", "text": "{name} {price}에 구매" },
   "res.jadeOpenStore": { "en": "Jade: {n}. Open the Store", "text": "비취: {n}. 상점 열기" },
-  "settings.textSize": { "en": "Text size", "text": "글자 크기" }
+  "settings.textSize": { "en": "Text size", "text": "글자 크기" },
+  "stake.recentHits": { "en": "Your last {raids} raids: 2★ or more in {two}, 3★ in {three}.", "text": "최근 {raids}번의 습격: 2★ 이상 {two}번, 3★ {three}번." }
 }

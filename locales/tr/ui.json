@@ -371,5 +371,6 @@
   "settings.reduceEffects": { "en": "Reduce screen shake and flashes", "text": "Ekran sarsıntısını ve parlamaları azalt" },
   "store.buyNamed": { "en": "Buy {name} for {price}", "text": "{name} satın al: {price}" },
   "res.jadeOpenStore": { "en": "Jade: {n}. Open the Store", "text": "Yeşim: {n}. Mağazayı aç" },
-  "settings.textSize": { "en": "Text size", "text": "Metin boyutu" }
+  "settings.textSize": { "en": "Text size", "text": "Metin boyutu" },
+  "stake.recentHits": { "en": "Your last {raids} raids: 2★ or more in {two}, 3★ in {three}.", "text": "Son {raids} baskın: {two} tanesinde 2★ veya fazlası, {three} tanesinde 3★." }
 }

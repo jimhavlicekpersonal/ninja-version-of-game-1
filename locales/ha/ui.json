@@ -371,5 +371,6 @@
   "settings.reduceEffects": { "en": "Reduce screen shake and flashes", "text": "Rage girgizar allo da walƙiya" },
   "store.buyNamed": { "en": "Buy {name} for {price}", "text": "Saya {name} kan {price}" },
   "res.jadeOpenStore": { "en": "Jade: {n}. Open the Store", "text": "Jed: {n}. Buɗe Shago" },
-  "settings.textSize": { "en": "Text size", "text": "Girman rubutu" }
+  "settings.textSize": { "en": "Text size", "text": "Girman rubutu" },
+  "stake.recentHits": { "en": "Your last {raids} raids: 2★ or more in {two}, 3★ in {three}.", "text": "Hare-harenka {raids} na ƙarshe: 2★ ko fiye a {two}, 3★ a {three}." }
 }

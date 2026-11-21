@@ -1,5 +1,6 @@
 import { displayData as localizedData, listText as i18nList, t as i18nText } from './presentation/ui/i18n';
 import { rivalById, rivalFor, rivalOutpostName } from './gameplay/sim/rivals';
+import { recentStarHits } from './gameplay/sim/pass';
 import { isolateName } from './gameplay/sim/social/names';
 import type Phaser from 'phaser';
 import { BattleSession } from './gameplay/control/battleSession';
@@ -398,6 +399,7 @@ export class App {
       special: special ? { title: special.title } : undefined,
       // Declared stakes: raids only, offline or on a server that settles them (protocol 11).
       stakes: !replayOf && !grove && !duel && trialTier === undefined && !practice && !special && (!this.ticket || this.d.connection.canStakes),
+      recentHits: recentStarHits(c.state, c.data),
       // P6-13 (UIS-07): what this army would carry, shown at scouting when it is under 100%.
       carryShare: !replayOf && !grove && !duel && trialTier === undefined && !practice && !special ? diversityShare(armyDiversity(session.setup.army, session.setup, c.data), c.data, trainableRoles(c.state, c.data)) : undefined,
       trial:
