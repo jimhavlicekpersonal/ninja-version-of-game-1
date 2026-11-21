@@ -28,6 +28,8 @@ for (const [name, label] of [['ANDROID_KEYSTORE_BASE64', 'Android upload key'], 
   if (!process.env[name]) add(label, `${name} not given to this job`);
 }
 if (!process.env.VITE_SERVER_URL) add('Server URL', 'VITE_SERVER_URL not set: the build plays offline only');
+// Beast Mode STB-01: push on Android without the Firebase file crashes the app when it registers.
+if (process.env.VITE_ANDROID_PUSH === '1' && !existsSync('android/app/google-services.json')) add('Android push', 'VITE_ANDROID_PUSH=1 but android/app/google-services.json is missing: registering for push would crash the app', true);
 
 // Products: every store id the game asks for appears in the shipping table (docs/SHIPPING.md 3b).
 const ids = Object.values(JSON.parse(readFileSync('src/gameplay/data/store.json', 'utf8')).storeProductIds ?? {});

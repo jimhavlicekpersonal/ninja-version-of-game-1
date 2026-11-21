@@ -16,10 +16,18 @@ interface PushDevice {
 
 let pending: Promise<PushDevice | null> | null = null;
 
+/** STB-01: the Android build carries a Firebase configuration (VITE_ANDROID_PUSH=1, set by the workflow that writes it). */
+export function androidPushBuilt(env: Record<string, unknown> = import.meta.env as Record<string, unknown>): boolean {
+  return env.VITE_ANDROID_PUSH === '1';
+}
+
 /** This device's push token, asking permission the first time; null on the web, when refused, or when it fails. */
 export function pushDevice(): Promise<PushDevice | null> {
   const platform = Capacitor.getPlatform();
   if (platform !== 'ios' && platform !== 'android') return Promise.resolve(null);
+  // Beast Mode STB-01: on Android, PushNotifications.register() calls FirebaseMessaging.getInstance(), which throws
+  // natively (and crashes the app) when the build has no google-services.json. Only a build made with it says so.
+  if (platform === 'android' && !androidPushBuilt()) return Promise.resolve(null);
   if (!pending) {
     pending = (async () => {
       const perm = await PushNotifications.requestPermissions();
@@ -27,7 +35,12 @@ export function pushDevice(): Promise<PushDevice | null> {
       return new Promise<PushDevice | null>((resolve) => {
         void PushNotifications.addListener('registration', (t) => resolve({ token: t.value, platform }));
         void PushNotifications.addListener('registrationError', () => resolve(null));
-        void PushNotifications.register();
+        try {
+          void PushNotifications.register().catch(() => resolve(null));
+        } catch (e) {
+          console.warn('Push registration failed', e);
+          resolve(null);
+        }
         setTimeout(() => resolve(null), 15_000);
       });
     })().catch(() => null);

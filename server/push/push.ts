@@ -43,6 +43,8 @@ export interface PushTransport {
 export interface Pusher {
   /** True when at least one transport is set up (listed as the `push` feature). */
   readonly enabled: boolean;
+  /** Beast Mode STB-01: the platforms a transport is set up for (hello `push-apns`, `push-fcm`). */
+  readonly platforms?: readonly ('apns' | 'fcm')[];
   /** Fire and forget: never slows or fails the request that caused it. */
   notify(playerId: string, m: PushMessage): void;
 }
@@ -53,6 +55,12 @@ type Log = (level: 'info' | 'warn' | 'error', msg: string, fields?: Record<strin
 
 export class ServerPush implements Pusher {
   readonly enabled = true;
+  /** STB-01: from the transport (`pushTransportFromEnv`). */
+  get platforms(): readonly ('apns' | 'fcm')[] {
+    // An Android game never registers for push (which crashes natively without Firebase) against a server that
+    // only has APNs, and the other way round.
+    return this.o.transport.platforms.map((p) => (p === 'ios' ? 'apns' : 'fcm'));
+  }
   /** Deliveries still running (tests wait for them). */
   readonly pending = new Set<Promise<unknown>>();
 

@@ -124,10 +124,26 @@ jobs:
         run: node tools/release/check-server-rules.mjs
         env:
           SERVER_URL: ${{ vars.VITE_SERVER_URL }}
+      # Beast Mode STB-01: push needs the owner's Firebase file. Without it the game never registers for push on
+      # Android (registering without Firebase crashes the app natively); with it, VITE_ANDROID_PUSH=1 turns push on.
+      - name: Firebase configuration (push)
+        id: firebase
+        if: steps.key.outputs.ready == 'true'
+        run: |
+          if [ -n "$GOOGLE_SERVICES_JSON" ]; then
+            printf '%s' "$GOOGLE_SERVICES_JSON" > android/app/google-services.json
+            echo "push=1" >> "$GITHUB_OUTPUT"
+          else
+            echo "push=0" >> "$GITHUB_OUTPUT"
+            echo "::notice::No GOOGLE_SERVICES_JSON secret: this Android build has no server push."
+          fi
+        env:
+          GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
       - name: Build the game (commercial configuration)
         if: steps.key.outputs.ready == 'true'
         run: npm run build
         env:
+          VITE_ANDROID_PUSH: ${{ steps.firebase.outputs.push }}
           # Google Play Billing on (payments/select.ts); the server must check Google receipts.
           VITE_PLAY_BILLING: '1'
           VITE_SERVER_URL: ${{ vars.VITE_SERVER_URL }}

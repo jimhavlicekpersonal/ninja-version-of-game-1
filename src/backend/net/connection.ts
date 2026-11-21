@@ -111,6 +111,11 @@ export interface OutboxItem {
 }
 
 const SERVER_KEY = 'tk.net.server';
+
+/** Beast Mode STB-01: an Android device (the push platform is FCM there, APNs on an iPhone). */
+function isAndroidDevice(): boolean {
+  return typeof navigator !== 'undefined' && /android/i.test(navigator.userAgent ?? '');
+}
 /** Beast Mode SAV-07: network failures in a row after which the 15 s action flush pauses until a sync gets through. */
 const BREAKER_FAILURES = 3;
 const NAME_KEY = 'tk.net.name';
@@ -334,6 +339,10 @@ export class Connection {
       }
       return;
     }
+    // Beast Mode STB-01: a server that says which platforms it can push to (push-apns / push-fcm) is not asked for
+    // a platform it cannot reach: the native registration is not even started.
+    const named = this.server.features.filter((f) => f === 'push-apns' || f === 'push-fcm');
+    if (named.length && !named.includes(isAndroidDevice() ? 'push-fcm' : 'push-apns')) return;
     const d = await device();
     if (!d) return;
     const sig = JSON.stringify([d.platform, [...types].sort(), tzOffsetMinutes, deviceLocale()]);
