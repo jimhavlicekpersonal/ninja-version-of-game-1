@@ -75,7 +75,12 @@ export class App {
   private onlineMatch: { seed: number; battleSeed: number; ticket: string; base: BaseLayout; expiresAt: number; bot: boolean } | null = null;
 
   /** Look for an opponent. `paid` = pressing Next. */
+  /** OPS-06: the open battle is a scouted raid, and how many Next presses led to it. */
+  private scoutedRaid = false;
+  private scoutNexts = 0;
+
   async scout(paid = false): Promise<void> {
+    this.scoutNexts = paid ? this.scoutNexts + 1 : 0;
     const c = this.d.controller;
     // A village the server keeps raids only through the server (offline loot could not be checked).
     if (this.d.connection.serverVillage && !this.d.connection.online) {
@@ -132,6 +137,7 @@ export class App {
           }
           const setup: BattleSetup = { seed: this.onlineMatch.battleSeed, base, ...loadout, infiltration: true };
           this.open(new BattleSession(setup, c.data, 'scout'));
+          this.scoutedRaid = true;
           return;
         }
       } catch (e) {
@@ -154,6 +160,7 @@ export class App {
     base.practice = clan ? `${clan.name} outpost (computer rival, offline)` : 'Generated rival (offline)';
     const setup: BattleSetup = { seed: mixSeed(r.seed, 0xba771e), base, ...loadout, infiltration: true };
     this.open(new BattleSession(setup, c.data, 'scout'));
+    this.scoutedRaid = true;
   }
 
   /** A Gang War strike (step 67): solo, or a relay strike from the Gang's damage so far. */
@@ -359,6 +366,9 @@ export class App {
   }
 
   home(): void {
+    // Beast Mode OPS-06: leaving a scouted raid before the first deployment (the pre-battle quit).
+    if (this.scoutedRaid && this.session?.mode === 'scout' && this.session.deployments.length === 0) this.d.controller.noteScoutLeft(this.scoutNexts);
+    this.scoutedRaid = false;
     this.openSeq++;
     releaseBuildingTextures(this.d.game.textures, PREP_OWNER);
     this.flushTrack = null;

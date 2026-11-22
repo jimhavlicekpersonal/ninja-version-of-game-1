@@ -20,6 +20,8 @@ export type AnalyticsEventName =
   | 'donation'
   | 'grove_raid_end'
   | 'tutorial_step'
+  | 'scout_leave'
+  | 'webgl_lost'
   | 'session_reminder';
 
 export interface AnalyticsEvent {

@@ -641,6 +641,16 @@ export class GameController {
     return null;
   }
 
+  /** Beast Mode OPS-06: a scouted base was left without a deployment (the pre-battle quit), after `nexts` Next presses. */
+  noteScoutLeft(nexts: number): void {
+    this.deps.analytics.log('scout_leave', { keep: hallLevel(this.state, this.deps.data), nexts });
+  }
+
+  /** Beast Mode STB-06: the graphics context was lost (`stuck`: it stayed lost and the reload card showed). */
+  noteGraphicsLost(stuck: boolean): void {
+    this.deps.analytics.log('webgl_lost', { stuck });
+  }
+
   /** Bank a Shadow Trial attack (re-simulated against the tier's own base). */
   finishTrial(tier: number, setup: BattleSetup, deployments: Deployment[], endTick: number | undefined): { record: BattleRecord; cleared: boolean; firstClear: boolean; reward: Cost; skipped?: [number, number]; looks?: string[] } | null {
     const r = this.dispatch({ type: 'trialEnd', tier, record: { at: this.now(), opponentName: setup.base.name, setup, deployments, endTick } });

@@ -673,10 +673,14 @@ async function boot(): Promise<void> {
         onLost: () => {
           blockReviewThisSession('crash');
           crashReporter?.report(new Error('webgl_context_lost'), { kind: 'webgl' });
+          controller.noteGraphicsLost(false);
           trimTextureCaches(game.textures);
         },
         onRestored: () => console.info('WebGL context restored'),
-        onStuck: () => void controller.save().finally(() => showFrameFailure('frame.graphicsLost')),
+        onStuck: () => {
+          controller.noteGraphicsLost(true);
+          void controller.save().finally(() => showFrameFailure('frame.graphicsLost'));
+        },
       });
     }
   });

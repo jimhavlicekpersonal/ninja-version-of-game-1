@@ -25,6 +25,10 @@ export const STATS_EVENTS: Readonly<Record<string, Readonly<Record<string, Kind>
   // Beast Mode OPS-06: how a battle ended ('time', 'destroyed', 'no_troops', 'surrender'), its length and the Keep.
   raid_end: { kind: 'id', stars: 'number', destruction: 'number', endReason: 'id', ticks: 'number', keep: 'number' },
   trial_end: { tier: 'number', cleared: 'boolean', stars: 'number', destruction: 'number', endReason: 'id' },
+  // OPS-06: a scouted base left without a deployment, after this many Next presses.
+  scout_leave: { keep: 'number', nexts: 'number' },
+  // STB-06: the graphics context was lost; `stuck` when it stayed lost and the reload card showed.
+  webgl_lost: { stuck: 'boolean' },
   offer_shown: { offerId: 'id', trigger: 'id' },
   purchase: { productId: 'id', usd: 'number', kind: 'id' },
   skip_used: { what: 'id', moonstones: 'number' },
