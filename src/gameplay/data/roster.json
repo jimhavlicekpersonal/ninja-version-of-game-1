@@ -855,8 +855,8 @@
         "weapon": "black katana"
       },
       "liveTroop": "night_blade",
-      "hpScale": 1.08,
-      "dpsScale": 1.08
+      "hpScale": 1.02,
+      "dpsScale": 1.02
     },
     {
       "id": "void_walker",
@@ -874,8 +874,8 @@
         "weapon": "twin kama"
       },
       "liveTroop": "void_walker",
-      "hpScale": 1.04,
-      "dpsScale": 1.04
+      "hpScale": 1.03,
+      "dpsScale": 1.03
     },
     {
       "id": "eclipse_ninja",

@@ -70,8 +70,8 @@
 | 45 | **Tiger Lord** `tiger_lord` | Beast | 5 Legend | 15 | Pride: Arrives with two war tigers. Rider and tigers share one health and damage budget. | 3328 / 416 | 12 | 3328 / 416 | 17k | yes (`tiger_lord`) |
 | 46 | **Shadow Stalker** `shadow_stalker` | Shadow | 1 Initiate | 3 | Unseen: Cannot be targeted until it attacks for the first time. | 117 / 29 | 20 | 1691 / 423 | 5848 | yes (`shadow_stalker`) |
 | 47 | **Mirage Twin** `mirage_twin` | Shadow | 2 Adept | 6 | Decoy: Leaves a decoy that draws fire for 4 seconds. | 191 / 48 | 18 | 1760 / 440 | 6920 | yes (`mirage_twin`) |
-| 48 | **Night Blade** `night_blade` | Shadow | 3 Veteran | 9 | Smoke Hunter: Deals double damage to buildings inside smoke. | 449 / 112 | 16 | 1976 / 494 | 8190 | yes (`night_blade`) |
-| 49 | **Void Walker** `void_walker` | Shadow | 4 Master | 12 | Shadow Step: Steps through shadows straight onto its target. | 813 / 203 | 14 | 1981 / 495 | 9692 | yes (`void_walker`) |
+| 48 | **Night Blade** `night_blade` | Shadow | 3 Veteran | 9 | Smoke Hunter: Deals double damage to buildings inside smoke. | 424 / 106 | 16 | 1867 / 467 | 8190 | yes (`night_blade`) |
+| 49 | **Void Walker** `void_walker` | Shadow | 4 Master | 12 | Shadow Step: Steps through shadows straight onto its target. | 805 / 201 | 14 | 1962 / 490 | 9692 | yes (`void_walker`) |
 | 50 | **Eclipse Ninja** `eclipse_ninja` | Shadow | 5 Legend | 15 | Eclipse: Unseen until its first attack, immune to traps, and has a 25% chance of double damage on each hit. | 1927 / 535 | 12 | 1927 / 535 | 11k | yes (`eclipse_ninja`) |
 
 ## Heroes
