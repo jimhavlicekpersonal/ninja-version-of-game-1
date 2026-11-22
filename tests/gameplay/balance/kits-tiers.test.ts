@@ -26,8 +26,9 @@ const KIT_KNOWN_BELOW = new Set(['bear_warrior', 'blowgun_hunter', 'bomb_carrier
 /** Keep 15 scores where a newer tier is below the previous one in its role ("newer<older"). */
 // SIM_RULES 9: four pairs fixed (blowgun_hunter, volcano_cannoneer, night_blade and wall_climber now score above the tier
 // before them). The rest stay: boosting a Keep 13-15 tier also strengthens that Keep's bot army (matched Keep 15 farmed),
-// and crane_glider / bomb_carrier do not respond to stats.
-const TIER_KNOWN_BELOW = new Set(['boar_rider<hawk_tamer', 'oni_breaker<mountain_shield', 'thousand_needle<chain_sickle_reaper', 'bomb_carrier<fire_monk', 'crane_glider<owl_bomber', 'ghost_engineer<fuse_master', 'wind_step_assassin<twin_fang_dancer', 'storm_sovereign<moonblade_master']);
+// and crane_glider / bomb_carrier do not respond to stats. eclipse_ninja<void_walker (85.1 vs 86.4): at 1.12 a lone Eclipse
+// army flattened Keep 15, so it stops at 1.08; no Void Walker factor lands between Night Blade (81.7) and 85.1.
+const TIER_KNOWN_BELOW = new Set(['eclipse_ninja<void_walker', 'boar_rider<hawk_tamer', 'oni_breaker<mountain_shield', 'thousand_needle<chain_sickle_reaper', 'bomb_carrier<fire_monk', 'crane_glider<owl_bomber', 'ghost_engineer<fuse_master', 'wind_step_assassin<twin_fang_dancer', 'storm_sovereign<moonblade_master']);
 
 const ROLE: Record<string, string> = Object.fromEntries((roster.warriors as { role: string; liveTroop?: string }[]).filter((w) => w.liveTroop).map((w) => [w.liveTroop!, w.role]));
 const ids = Object.keys(data.troops).sort();
