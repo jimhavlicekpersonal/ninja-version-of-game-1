@@ -52,6 +52,9 @@ export const CAMPAIGNS: CampaignSpec[] = [
   // player who hires the third artisan with the starting Jade, and one who also queues the next army.
   { id: 'casual_hires', name: 'Casual who hires the third artisan with the starting Jade (one visit a day, suggested army, Trials and tasks)', opts: { raidsPerSession: 2, engaged: true, hireBuilders: true }, casual: true, maxDays: 400 },
   { id: 'casual_queues', name: 'Casual who hires the third artisan and queues the next army (one visit a day, suggested army, Trials and tasks)', opts: { raidsPerSession: 2, engaged: true, hireBuilders: true, queueArmy: true }, casual: true, maxDays: 400 },
+  // Beast Mode GT-05: the build that ships online (no simulated raids against the village: P2-12 is not built), so the
+  // gated pace describes the online game too.
+  { id: 'regular_online', name: 'Regular online (4 sessions a day, no simulated raids against the village: the online build)', opts: { raidsPerSession: 2, botRaids: false }, casual: false, maxDays: 220 },
   { id: 'regular_fortress', name: 'Regular fortress (4 sessions a day, counters within 2 levels of the caps before the Keep, walled generated layout)', opts: { raidsPerSession: 2, policy: 'fortress', fortressGap: 2 }, casual: false, maxDays: 220, labLayout: true },
 ];
 
@@ -110,6 +113,8 @@ export interface CampaignResult {
   totals: { looted: number; stolen: number; defenseRewards: number };
   /** GT-11 (ECO-03): Jade at the start, earned and spent by source over the campaign, and left at the end. */
   jade: { start: number; earned: Record<string, number>; spent: Record<string, number>; end: number };
+  /** GT-15: estimated hours of play (playerModel PLAY_TIME) to the top Keep and over the whole run, and minutes a day. */
+  play: { hoursToTop: number | null; hours: number; minutesPerDay: number };
   /** Pooled results only (GT-11): how many runs, and each Keep's day in every run with its mean and 95% interval. */
   reps?: number;
   reachedByRep?: Record<number, number[]>;
@@ -165,6 +170,7 @@ export function runCampaign(spec: CampaignSpec, live: GameData = defaultData, re
     defenses: p.defenseLog.length,
     totals: { looted: sum(p.raidLog, (r) => Math.max(0, r.loot)), stolen: sum(p.defenseLog, (d) => d.lost), defenseRewards: sum(p.defenseLog, (d) => d.reward) },
     jade: { start: jadeStart, earned: p.jadeEarned, spent: p.jadeSpent, end: p.state.resources.moonstones ?? 0 },
+    play: { hoursToTop: p.playSecondsAtTop === undefined ? null : +(p.playSecondsAtTop / 3600).toFixed(1), hours: +(p.playSeconds / 3600).toFixed(1), minutesPerDay: +(p.playSeconds / 60 / Math.max(1, p.elapsedHours() / 24)).toFixed(1) },
   };
 }
 
@@ -204,6 +210,7 @@ export function poolCampaign(runs: CampaignResult[]): CampaignResult {
     id: first.id, name: first.name, reached, days: Math.round(avg((r) => r.days)), byKeep, defenses: Math.round(avg((r) => r.defenses)),
     totals: { looted: avg((r) => r.totals.looted), stolen: avg((r) => r.totals.stolen), defenseRewards: avg((r) => r.totals.defenseRewards) },
     jade: { start: Math.round(avg((r) => r.jade.start)), earned: bySource((r) => r.jade.earned), spent: bySource((r) => r.jade.spent), end: Math.round(avg((r) => r.jade.end)) },
+    play: { hoursToTop: runs.every((r) => r.play.hoursToTop !== null) ? +avg((r) => r.play.hoursToTop ?? 0).toFixed(1) : null, hours: +avg((r) => r.play.hours).toFixed(1), minutesPerDay: +avg((r) => r.play.minutesPerDay).toFixed(1) },
     reps: runs.length, reachedByRep, reachedCi,
   };
 }
@@ -249,6 +256,7 @@ export function campaignMarkdown(results: CampaignResult[]): string {
     const ci = (k: string) => (r.reachedCi?.[Number(k)] ? ` [${r.reachedCi[Number(k)].lo.toFixed(1)}–${r.reachedCi[Number(k)].hi.toFixed(1)}]` : '');
     L.push(`Keep reached (day): ${Object.entries(r.reached).map(([k, v]) => `${k}: ${v}${ci(k)}`).join(' · ')}. Played ${r.days} days; ${r.defenses} raids against the village.`, '');
     L.push(`Totals: ${Math.round(r.totals.looted).toLocaleString('en-US')} looted, ${Math.round(r.totals.stolen).toLocaleString('en-US')} taken by raids against the village (${r.totals.looted ? Math.round((r.totals.stolen / r.totals.looted) * 100) : 0}% of the loot), ${Math.round(r.totals.defenseRewards).toLocaleString('en-US')} paid for held raids.`, '');
+    if (r.play) L.push(`Play time (GT-15 estimate, playerModel \`PLAY_TIME\`): ${r.play.hoursToTop === null ? 'top Keep not reached' : `${r.play.hoursToTop} h to Keep ${Math.max(...Object.keys(r.reached).map(Number))}`}, ${r.play.hours} h over the run, about ${r.play.minutesPerDay} minutes a day.`, '');
     L.push('| Keep | Raids | Avg stars | Won | 3★ rate | Destruction | Loot | Opponent Keep | Army strength | Honor | Raided | Held | Stolen | Honor lost |', '|---|---|---|---|---|---|---|---|---|---|---|---|---|---|');
     for (const k of r.byKeep) {
       const attack = k.raids ? `${k.raids} | ${k.stars.toFixed(2)} | ${Math.round(k.won * 100)}% | ${Math.round(k.threeStar * 100)}% | ${k.destruction.toFixed(0)}% | ${Math.round(k.loot).toLocaleString('en-US')} | ${k.opponentKeep.toFixed(1)} | ${k.strength.toFixed(2)} | ${Math.round(k.honor)}` : '0 | – | – | – | – | – | – | – | –';

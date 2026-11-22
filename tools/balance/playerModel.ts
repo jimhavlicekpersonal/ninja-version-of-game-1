@@ -70,6 +70,11 @@ export interface ModelOptions {
   sandbagMargin?: number;
   /** Also play Shadow Trials and claim tasks and pass tiers. */
   engaged?: boolean;
+  /**
+   * GT-05: false plays the online build, where no simulated raids reach the village while it is away (main.ts
+   * `botRaids: !serverUrl`; server bot raids, P2-12, are not built). Default: offline raids run.
+   */
+  botRaids?: boolean;
 }
 
 const COUNTER_BUILDINGS = ['paper_lantern_line', 'clockwork_repairer', 'bitter_incense_burner', 'kite_cutter_ballista', 'longbow_yagura'];
@@ -124,6 +129,13 @@ export class ModelPlayer {
   /** Every warrior type that fought in a raid. */
   fielded = new Set<string>();
   trialsTried = 0;
+  /**
+   * GT-15: estimated seconds of play (PLAY_TIME): each session's upkeep, each scout and each battle at its simulated
+   * length. A model estimate for the runway figure, not observed play time.
+   */
+  playSeconds = 0;
+  /** `playSeconds` when the top Keep was reached. */
+  playSecondsAtTop: number | undefined;
   private sessions = 0;
   tasksClaimed = 0;
   /** Raids against the village: stars, destruction, Coins + Provisions stolen, the honor change and a held raid's reward. */
@@ -150,12 +162,13 @@ export class ModelPlayer {
   private noteHall(): void {
     const hl = hallLevel(this.state, this.data);
     for (let l = 1; l <= hl; l++) if (this.hallReachedAt[l] === undefined) this.hallReachedAt[l] = this.elapsedHours();
+    if (this.playSecondsAtTop === undefined && hl >= this.data.hall.levels.length) this.playSecondsAtTop = this.playSeconds;
   }
 
   /** Let time pass with the game closed (offline raids apply). */
   away(ms: number): void {
     this.clock.advance(ms);
-    const r = computeOfflineProgress(this.state, this.clock.now(), this.data);
+    const r = computeOfflineProgress(this.state, this.clock.now(), this.data, { botRaids: this.opts.botRaids });
     this.from('offline', () => (this.state = r.state));
     for (const d of r.summary.raids) this.defenseLog.push({ hall: hallLevel(this.state, this.data), stars: d.result.stars, destruction: d.result.destruction, lost: (d.result.loot.acorns ?? 0) + (d.result.loot.dew ?? 0), trophies: d.trophies ?? 0, reward: (d.banked?.acorns ?? 0) + (d.banked?.dew ?? 0) });
     this.state.defenseLog = [];
@@ -175,6 +188,7 @@ export class ModelPlayer {
     const d = this.data;
     this.from('settle', () => (this.state = advance(this.state, this.clock.now(), d).state));
     this.noteHall();
+    this.playSeconds += PLAY_TIME.sessionSeconds;
     for (const b of this.state.buildings) if (d.buildings[b.type].produces) this.run({ type: 'collect', id: b.id });
     // The free daily chest (fails harmlessly once today's is open).
     this.run({ type: 'openDailyChest' });
@@ -378,6 +392,7 @@ export class ModelPlayer {
       if (!res.ok) throw new Error(`battleEnd failed: ${res.message}`);
       this.from('raid', () => (this.state = res.state));
       const rec = this.state.battleLog[this.state.battleLog.length - 1];
+      this.playSeconds += PLAY_TIME.battleSetupSeconds + rec.result.ticks / 10;
       this.raidLog.push({ hall: hl, opponentHall: base.hallLevel, stars: rec.result.stars, destruction: rec.result.destruction, loot: this.state.resources.acorns + this.state.resources.dew - before, trophies: this.state.trophies, strength });
       // Replays are not needed here, and cloning them on every command is slow; but the live rules read the latest
       // raids (P2-10's losing streak, Tempering's counters), so the last ten stay (`temper.offers.recentRaids`), as a real player's log keeps them.
@@ -399,7 +414,10 @@ export class ModelPlayer {
     const setup = { seed: trialBattleSeed(this.state.seed, this.state.nextSeed, tier), base, army, levels, infiltration: true };
     const probe = createBattle(setup, d);
     const deployments = botDeployments(probe.deployable, probe.grid.size, army, createRng(tier), d, levels, probe.entry);
-    if (this.run({ type: 'trialEnd', tier, record: { at: this.clock.now(), opponentName: base.name, setup, deployments } })) this.trialsTried++;
+    if (this.run({ type: 'trialEnd', tier, record: { at: this.clock.now(), opponentName: base.name, setup, deployments } })) {
+      this.trialsTried++;
+      this.playSeconds += PLAY_TIME.battleSetupSeconds + (this.state.battleLog[this.state.battleLog.length - 1]?.result.ticks ?? 0) / 10;
+    }
     // Stuck? Take an alternate fortress next time.
     this.run({ type: 'trialAlternate' });
     this.state.battleLog = [];
@@ -419,6 +437,7 @@ export class ModelPlayer {
   private scout(paid: boolean): number | null {
     const r = applyCommand(this.state, { type: 'scout', paid }, this.clock.now(), this.data);
     if (!r.ok) return null;
+    this.playSeconds += PLAY_TIME.scoutSeconds;
     this.from('scout', () => (this.state = r.state));
     const e = r.events.find((x) => x.kind === 'scout');
     return e && e.kind === 'scout' ? e.seed : null;
@@ -429,6 +448,13 @@ export class ModelPlayer {
     return this.state.buildings.reduce((s, b) => s + collectorAmount(b, this.clock.now(), this.data), 0);
   }
 }
+
+/**
+ * GT-15: the time a player spends per action, for the runway estimate. Assumptions, not measurements: a session's
+ * upkeep (collect, train, start upgrades and research) 90 s; reading a scouted base 20 s; placing an army 30 s before
+ * the battle runs at 1x for its simulated length. A playtest replaces these (docs/game-theory/PROGRESSION_MODEL.md).
+ */
+export const PLAY_TIME = { sessionSeconds: 90, scoutSeconds: 20, battleSetupSeconds: 30 };
 
 /** First hour: continuous play, a session every `stepMin` minutes. */
 export function activeHour(p: ModelPlayer, minutes = 60, stepMin = 2): void {

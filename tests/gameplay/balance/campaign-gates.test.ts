@@ -228,7 +228,8 @@ describe('upper bounds: no farming (audit F22)', () => {
 
 describe('defense is measured (E26)', () => {
   it('every campaign reports raids against the village, what they took and how many were held', () => {
-    for (const r of results) {
+    // GT-05: regular_online plays the online build, where no simulated raid reaches the village (gated below).
+    for (const r of results.filter((x) => x.id !== 'regular_online')) {
       const raided = r.byKeep.filter((k) => k.defenses > 0);
       expect(raided.length, r.id).toBeGreaterThanOrEqual(8);
       for (const k of raided) expect(k.stolen, `${r.id} Keep ${k.keep}`).toBeGreaterThanOrEqual(0);
@@ -274,3 +275,27 @@ describe('policy dominance margins (balance audit 2026-11-08 Change-12, PS-1)', 
   });
 });
 
+describe('late defense counts, and the online build is gated (Beast Mode GT-05)', () => {
+  const held = (id: string, from: number, to: number) => {
+    const ks = byId(id).byKeep.filter((k) => k.keep >= from && k.keep <= to && k.defenses);
+    const n = ks.reduce((a, k) => a + k.defenses, 0);
+    return { n, share: n ? ks.reduce((a, k) => a + k.held * k.defenses, 0) / n : 0 };
+  };
+  it('a defender who builds the counters first holds at least 15% of the raids at Keeps 12-15', () => {
+    const h = held('regular_defender', 12, 15);
+    expect(h.n).toBeGreaterThan(20);
+    expect(h.share).toBeGreaterThanOrEqual(0.15);
+  });
+
+  it('the fortress reaches Keep 15 within 1.2x the rusher\'s days', () => {
+    expect(byId('regular_fortress').reached[15] / byId('regular_rusher').reached[15]).toBeLessThanOrEqual(1.2);
+  });
+
+  it('the online build (no simulated raids against the village) reaches Keep 15 in 85-140 days and wins every Keep', () => {
+    const r = byId('regular_online');
+    expect(r.defenses).toBe(0);
+    expect(r.reached[15]).toBeGreaterThanOrEqual(85);
+    expect(r.reached[15]).toBeLessThanOrEqual(140);
+    for (const k of rows('regular_online')) expect(k.stars, `Keep ${k.keep}`).toBeGreaterThanOrEqual(0.9);
+  });
+});
