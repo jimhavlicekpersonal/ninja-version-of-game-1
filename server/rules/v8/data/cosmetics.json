@@ -1,0 +1,336 @@
+{
+  "hallSkins": [
+    {
+      "id": "classic",
+      "name": "Classic Slate",
+      "moonstones": 0,
+      "cap": "#3d4a5c",
+      "spots": "#c8402f"
+    },
+    {
+      "id": "royal_plum",
+      "name": "Royal Plum",
+      "moonstones": 200,
+      "cap": "#6e3f8f",
+      "spots": "#f1d48a"
+    },
+    {
+      "id": "sunny_meadow",
+      "name": "Golden Dawn",
+      "moonstones": 250,
+      "cap": "#d99a1e",
+      "spots": "#fff3d6"
+    },
+    {
+      "id": "frosty_cap",
+      "name": "Winter Snow",
+      "moonstones": 300,
+      "cap": "#3f6f93",
+      "spots": "#ffffff"
+    },
+    {
+      "id": "jade_pagoda",
+      "name": "Jade Pagoda",
+      "moonstones": 450,
+      "minKeep": 5,
+      "cap": "#2f7d62",
+      "spots": "#e8d9a8"
+    },
+    {
+      "id": "crimson_shogun",
+      "name": "Crimson Shogun",
+      "moonstones": 650,
+      "minKeep": 8,
+      "cap": "#9b1f2b",
+      "spots": "#f0c45a"
+    },
+    {
+      "id": "midnight_shadow",
+      "name": "Midnight Shadow",
+      "moonstones": 900,
+      "minKeep": 11,
+      "cap": "#1f2433",
+      "spots": "#9fb4ff"
+    },
+    {
+      "id": "cedar_dusk",
+      "name": "Cedar Dusk",
+      "moonstones": 450,
+      "minKeep": 6,
+      "cap": "#5b4636",
+      "spots": "#e9d3a6"
+    },
+    {
+      "id": "river_slate",
+      "name": "River Slate",
+      "moonstones": 450,
+      "minKeep": 7,
+      "cap": "#3e5c6b",
+      "spots": "#dbe8ef"
+    },
+    {
+      "id": "vermilion_gate",
+      "name": "Vermilion Gate",
+      "moonstones": 650,
+      "minKeep": 9,
+      "cap": "#b0362b",
+      "spots": "#1f1b18"
+    },
+    {
+      "id": "pine_shadow",
+      "name": "Pine Shadow",
+      "moonstones": 650,
+      "minKeep": 10,
+      "cap": "#1f3b2d",
+      "spots": "#c9b27c"
+    },
+    {
+      "id": "storm_iron",
+      "name": "Storm Iron",
+      "moonstones": 900,
+      "minKeep": 12,
+      "cap": "#4a4f57",
+      "spots": "#9fd3ff"
+    },
+    {
+      "id": "golden_crane",
+      "name": "Golden Crane",
+      "moonstones": 900,
+      "minKeep": 14,
+      "cap": "#f3efe4",
+      "spots": "#c4962c"
+    },
+    {
+      "id": "moonlit_shrine",
+      "name": "Moonlit Shrine",
+      "moonstones": 0,
+      "calendarOnly": true,
+      "cap": "#2b2f52",
+      "spots": "#e9e3c4"
+    },
+    {
+      "id": "lantern_elder",
+      "name": "Lantern Festival",
+      "moonstones": 0,
+      "passOnly": true,
+      "cap": "#d9632a",
+      "spots": "#ffe9a0"
+    },
+    {
+      "id": "crimson_maple",
+      "name": "Crimson Maple",
+      "moonstones": 0,
+      "passOnly": true,
+      "cap": "#9c2a22",
+      "spots": "#f2c14e"
+    },
+    {
+      "id": "snow_pine",
+      "name": "Snow Pine",
+      "moonstones": 0,
+      "passOnly": true,
+      "cap": "#e8eef2",
+      "spots": "#2f5d50"
+    },
+    {
+      "id": "indigo_tide",
+      "name": "Indigo Tide",
+      "moonstones": 0,
+      "passOnly": true,
+      "cap": "#2a3b78",
+      "spots": "#bfe3f0"
+    },
+    {
+      "id": "jade_bamboo",
+      "name": "Jade Bamboo",
+      "moonstones": 0,
+      "passOnly": true,
+      "cap": "#3d7a4f",
+      "spots": "#d9e8a6"
+    },
+    {
+      "id": "plum_blossom",
+      "name": "Plum Blossom",
+      "moonstones": 0,
+      "passOnly": true,
+      "cap": "#7a2f5a",
+      "spots": "#f5c6d8"
+    },
+    {
+      "id": "golden_harvest",
+      "name": "Golden Harvest",
+      "moonstones": 0,
+      "passOnly": true,
+      "cap": "#b07a1c",
+      "spots": "#fff2b8"
+    },
+    {
+      "id": "storm_cloud",
+      "name": "Storm Cloud",
+      "moonstones": 0,
+      "passOnly": true,
+      "cap": "#4a5160",
+      "spots": "#e4e7ee"
+    },
+    {
+      "id": "fest_new_year",
+      "name": "New Year Gold",
+      "moonstones": 0,
+      "earned": true,
+      "cap": "#b8862b",
+      "spots": "#fff6d8"
+    },
+    {
+      "id": "fest_blossom",
+      "name": "Blossom Wind",
+      "moonstones": 0,
+      "earned": true,
+      "cap": "#d98aa5",
+      "spots": "#fff5f8"
+    },
+    {
+      "id": "fest_lanterns",
+      "name": "Midsummer Lantern",
+      "moonstones": 0,
+      "earned": true,
+      "cap": "#c8552d",
+      "spots": "#ffd27a"
+    },
+    {
+      "id": "fest_moon",
+      "name": "Moon Viewing",
+      "moonstones": 0,
+      "earned": true,
+      "cap": "#2d3561",
+      "spots": "#f3e9c6"
+    },
+    {
+      "id": "fest_snow",
+      "name": "First Snow",
+      "moonstones": 0,
+      "earned": true,
+      "cap": "#9fb6c8",
+      "spots": "#ffffff"
+    },
+    {
+      "id": "league_obsidian",
+      "name": "Obsidian Crown",
+      "moonstones": 0,
+      "earned": true,
+      "cap": "#1d1b22",
+      "spots": "#9b8cff"
+    },
+    {
+      "id": "league_storm",
+      "name": "Storm Banner",
+      "moonstones": 0,
+      "earned": true,
+      "cap": "#2c4a6e",
+      "spots": "#cfe8ff"
+    },
+    {
+      "id": "league_kage",
+      "name": "Kage Mantle",
+      "moonstones": 0,
+      "earned": true,
+      "cap": "#111111",
+      "spots": "#d4af37"
+    },
+    {
+      "id": "trial_20",
+      "name": "Trial Walker's Red",
+      "moonstones": 0,
+      "earned": true,
+      "cap": "#7a1f2b",
+      "spots": "#f3c9a8"
+    },
+    {
+      "id": "trial_40",
+      "name": "Trial Master's Iron",
+      "moonstones": 0,
+      "earned": true,
+      "cap": "#3b3f45",
+      "spots": "#e07a3a"
+    },
+    {
+      "id": "trial_55",
+      "name": "Endless Trial Ash",
+      "moonstones": 0,
+      "earned": true,
+      "cap": "#5d5650",
+      "spots": "#f5f1e6"
+    },
+    {
+      "id": "cycle_2",
+      "name": "Second Moon",
+      "moonstones": 0,
+      "earned": true,
+      "cap": "#46557a",
+      "spots": "#e8e3d0"
+    },
+    {
+      "id": "cycle_3",
+      "name": "Cedar Shade",
+      "moonstones": 0,
+      "earned": true,
+      "cap": "#2f4a36",
+      "spots": "#d8c79a"
+    },
+    {
+      "id": "cycle_4",
+      "name": "Ember Roof",
+      "moonstones": 0,
+      "earned": true,
+      "cap": "#8c3b1c",
+      "spots": "#ffd9a0"
+    },
+    {
+      "id": "cycle_5",
+      "name": "Mist Grey",
+      "moonstones": 0,
+      "earned": true,
+      "cap": "#7d8790",
+      "spots": "#f0f4f7"
+    },
+    {
+      "id": "cycle_6",
+      "name": "Night Lotus",
+      "moonstones": 0,
+      "earned": true,
+      "cap": "#3a2346",
+      "spots": "#f2b8d0"
+    },
+    {
+      "id": "chest_30",
+      "name": "Chest Keeper's Teal",
+      "moonstones": 0,
+      "earned": true,
+      "cap": "#1f6f6b",
+      "spots": "#f6e7b0"
+    },
+    {
+      "id": "chest_100",
+      "name": "Hundred Chests Bronze",
+      "moonstones": 0,
+      "earned": true,
+      "cap": "#8a5a2b",
+      "spots": "#fbe6c2"
+    },
+    {
+      "id": "chest_200",
+      "name": "Two Hundred Plum",
+      "moonstones": 0,
+      "earned": true,
+      "cap": "#5b2a4f",
+      "spots": "#f7d6e8"
+    },
+    {
+      "id": "chest_365",
+      "name": "Year of Chests Gold",
+      "moonstones": 0,
+      "earned": true,
+      "cap": "#9c7a1b",
+      "spots": "#fff8dc"
+    }
+  ]
+}

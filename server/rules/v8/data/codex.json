@@ -1,0 +1,7 @@
+{
+  "$comment": "P6-18: the counter pairs the Warrior Codex may state, for live buildings only: the catalog's `counters` lists (progression.json buildingCatalog) confirmed in battle by tools/balance/run-counter-check.mjs (docs/audit/understand-2026-11-16/phase6/p6-18-counters.md). Re-run it and update this list when a counter's numbers change; a pair not confirmed is never shown.",
+  "confirmedCounters": {
+    "clockwork_repairer": ["saboteur", "gearbreaker"],
+    "kite_cutter_ballista": ["thunder_kite", "dragon_kite_armada", "lantern_balloon"]
+  }
+}

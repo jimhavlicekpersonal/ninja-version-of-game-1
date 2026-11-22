@@ -15,6 +15,7 @@ import { engine as v4 } from './v4/engine';
 import { engine as v5 } from './v5/engine';
 import { engine as v6 } from './v6/engine';
 import { engine as v7 } from './v7/engine';
+import { engine as v8 } from './v8/engine';
 // rules-snapshot: imports (keep this marker)
 
 export const ARCHIVED_ENGINES: (() => RulesEngine)[] = [
@@ -23,5 +24,6 @@ export const ARCHIVED_ENGINES: (() => RulesEngine)[] = [
   v5,
   v6,
   v7,
+  v8,
   // rules-snapshot: engines (keep this marker)
 ];
