@@ -837,7 +837,12 @@ export async function attack(ctx: ServerContext, me: Player, sub: BattleReport):
     const attacker = (await tx.getPlayer(me.id)) ?? me;
     const defender = ticket.defenderId ? await tx.getPlayer(ticket.defenderId) : null;
     const defTrophies = defender?.trophies ?? ticket.defenderTrophies;
-    const delta = result.stars >= 1 ? winTrophies(attacker.trophies, defTrophies, data) : -lossTrophies(attacker.trophies, defTrophies, data);
+    let delta = result.stars >= 1 ? winTrophies(attacker.trophies, defTrophies, data) : -lossTrophies(attacker.trophies, defTrophies, data);
+    // Beast Mode SEC-01 (interim): a village kept on the device gains at most DEVICE_HONOR_PER_DAY honor a UTC day.
+    const gainCap = ctx.policy.deviceHonorPerDay;
+    const gainedToday = attacker.honorGain?.day === day ? attacker.honorGain.gained : 0;
+    const capped = delta > 0 && gainCap > 0 && !(await hasServerVillage(tx, me.id));
+    if (capped) delta = Math.min(delta, Math.max(0, gainCap - gainedToday));
     const playerTrophies = Math.max(0, attacker.trophies + delta);
     // P5-03 (review M1): the daily contract is the one of the ticket's start (the server's clock), sent back so the
     // game settles with the same contract; the device's own clock never picks it.
@@ -856,7 +861,8 @@ export async function attack(ctx: ServerContext, me: Player, sub: BattleReport):
     // Independent review 2026-11-18: any earlier used pvp ticket (generated opponents too: they write no attack row),
     // or any honor (a shielded newcomer cannot be raided, so honor means raids).
     const attackedBefore = (attacker.trophies ?? 0) > 0 || (await tx.attackedBefore(me.id, ticket.id));
-    const mePatch: { trophies: number; shieldUntil: number; ratings?: { attack: Rating; base: Rating } } = { trophies: playerTrophies, shieldUntil: shieldAfterAttack(attacker.shieldUntil, t, attackedBefore, data) };
+    const mePatch: { trophies: number; shieldUntil: number; ratings?: { attack: Rating; base: Rating }; honorGain?: { day: number; gained: number } } = { trophies: playerTrophies, shieldUntil: shieldAfterAttack(attacker.shieldUntil, t, attackedBefore, data) };
+    if (capped) mePatch.honorGain = { day, gained: gainedToday + delta };
     if (defender) {
       defPatch.honorLoss = { day, lost: lostToday + Math.max(0, defLoss) };
       // Step 28: the attacker's Attack Rating and the defender's Base Rating move; bots never move a rating.

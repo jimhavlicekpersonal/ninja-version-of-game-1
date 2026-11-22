@@ -125,6 +125,10 @@ export class PgPlayers extends PgBase implements PlayerStore {
       put('honor_loss_day', patch.honorLoss.day);
       put('honor_lost', patch.honorLoss.lost);
     }
+    if (patch.honorGain) {
+      put('honor_gain_day', patch.honorGain.day);
+      put('honor_gained', patch.honorGain.gained);
+    }
     if (!sets.length) return;
     vals.push(id);
     await this.db.query(`update players set ${sets.join(', ')} where id = $${vals.length}`, vals).catch((e) => {

@@ -297,6 +297,11 @@ export function policyFromEnv(env: Record<string, string | undefined>): Partial<
     if (!(v >= 0 && v <= 1)) throw new Error('PAIR_DAILY_LOOT_SHARE must be a number from 0 to 1.');
     out.pairDailyLootShare = v;
   }
+  if (env.DEVICE_HONOR_PER_DAY !== undefined && env.DEVICE_HONOR_PER_DAY.trim() !== '') {
+    const v = Number(env.DEVICE_HONOR_PER_DAY);
+    if (!(Number.isInteger(v) && v >= 0)) throw new Error('DEVICE_HONOR_PER_DAY must be a whole number, 0 or more (0: no ceiling).');
+    out.deviceHonorPerDay = v;
+  }
   if (env.UPLOAD_ACCOUNT_AGE !== undefined && env.UPLOAD_ACCOUNT_AGE !== '') out.uploadAccountAge = env.UPLOAD_ACCOUNT_AGE !== '0';
   if (env.REQUIRE_SERVER_VILLAGE !== undefined) out.requireServerVillage = env.REQUIRE_SERVER_VILLAGE === '1';
   if (env.EU_JADE_VALUE !== undefined) out.euJadeValue = env.EU_JADE_VALUE === '1';

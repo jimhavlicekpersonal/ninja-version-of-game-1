@@ -73,6 +73,12 @@ export interface ServerPolicy {
    * by being raided again and again; exhaustion only halved each raid).
    */
   pairDailyLootShare: number;
+  /**
+   * Beast Mode SEC-01 (interim, while REQUIRE_SERVER_VILLAGE is off): DEVICE_HONOR_PER_DAY (default 400; 0: off). A
+   * player whose village is kept on the device gains at most this much honor from raids per UTC day: its battle
+   * reports are trusted, so the ceiling bounds what a modified game can climb in a day.
+   */
+  deviceHonorPerDay: number;
 }
 
 export const DEFAULT_POLICY: ServerPolicy = {
@@ -92,6 +98,7 @@ export const DEFAULT_POLICY: ServerPolicy = {
   productsOff: [],
   featuresOff: [],
   pairDailyLootShare: 0.5,
+  deviceHonorPerDay: 400,
 };
 
 /** Beast Mode OPS-09: the features the operators may switch off without an app update. */
