@@ -105,6 +105,10 @@ for (const [label, makeRepo] of repoFactories) {
       expect(r.playerId).toBe(ann.id);
       expect((await phone.me()).name).toBe('Ann');
       expect((await ann.me()).id).toBe(ann.id);
+      // Beast Mode SEC-07: the account is told about the sign-in on a new device (and where to sign it out).
+      const told = (await ann.notices()).notices.find((n) => n.parts?.some((x) => x.key === 'srv.account.new_device_signin' || x.key === 'account.new_device_signin'));
+      expect(told?.kind).toBe('account');
+      expect(told?.text).toMatch(/signed in on another device/);
       expect(await err(new InProcessServerAdapter(w.core).signIn('apple', { idToken: p.token({ sub: 'nobody' }) }))).toMatch(/No player is linked/);
       await ann.unlink('apple');
       expect((await ann.links()).links).toEqual([]);

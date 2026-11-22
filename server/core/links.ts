@@ -271,5 +271,7 @@ export async function signIn(ctx: ServerContext, body: { provider?: unknown; cre
   await ctx.repo.addToken(playerId, await ctx.hash(token), ctx.now(), String(body?.device ?? '').slice(0, 40), id.provider);
   // A fresh Apple code replaces the refresh token kept for revocation.
   await keepAppleToken(ctx, id, body?.credential);
+  // Beast Mode SEC-07 (step 6): the account hears of every sign-in on a new device, and how to undo it.
+  await notify(ctx, playerId, 'account', [msg('account.new_device_signin')]);
   return { playerId, token };
 }

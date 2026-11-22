@@ -2068,6 +2068,7 @@
   "srv.moderation.rule.name": "an inappropriate name",
   "srv.moderation.rule.other": "breaking the community rules",
   "srv.account.apple_deleted": "The Apple account linked to this game account was deleted, so Sign in with Apple was removed. This game account will be deleted after a short review. If you still play it, contact support from Settings → Privacy and help.",
+  "srv.account.new_device_signin": "Your account was just signed in on another device. If that was not you, open Settings → Online play, sign out the other devices and contact support.",
   "srv.account.consent_withdrawn": "A parent or guardian withdrew consent for this game in the App Store, so online play is off for this account. To ask about it, contact support from Settings → Privacy and help.",
   "srv.account.enter_id": "Enter your Player ID (Settings → Online play → Account).",
   "srv.signin.unknown_provider": "Unknown sign-in provider.",
