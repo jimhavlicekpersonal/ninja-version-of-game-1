@@ -19,9 +19,15 @@ const KIT_FLOOR = 2;
 // kits fell under the floor after this list was first set at 6e81fe0, all from later Phase 4 changes, and are listed with
 // the cause: drum_monk (haste 0.25 -> 0.10, P4-01/P4-08), eclipse_ninja (HP x0.9, P4-06), sage_of_clouds (support strikes
 // and the Drum's cut, P4-01). One tier pair is fixed (mist_weaver<drum_monk). Phase 4 review #5.
-const KIT_KNOWN_BELOW = new Set(['bear_warrior', 'blowgun_hunter', 'drum_monk', 'mist_weaver', 'ram_crew', 'shadow_stalker', 'spirit_caller', 'thunder_kite', 'twin_fang_dancer', 'eclipse_ninja', 'herbalist', 'lantern_balloon', 'tiger_lord', 'void_walker', 'bomb_carrier', 'dragon_kite_armada', 'hound_handler', 'mirage_twin', 'night_blade', 'sage_of_clouds']);
+// SIM_RULES 9 (2026-11-22, combat rebalance), re-measured: eclipse_ninja and void_walker now reach +2 and left the
+// list; mole_king and phantom_gate entered it (their HP and damage rose 1.21x and 1.3x so they beat the tier below, and
+// the kit is a smaller share of that).
+const KIT_KNOWN_BELOW = new Set(['bear_warrior', 'blowgun_hunter', 'bomb_carrier', 'dragon_kite_armada', 'drum_monk', 'herbalist', 'hound_handler', 'lantern_balloon', 'mirage_twin', 'mist_weaver', 'mole_king', 'night_blade', 'phantom_gate', 'ram_crew', 'sage_of_clouds', 'shadow_stalker', 'spirit_caller', 'thunder_kite', 'tiger_lord', 'twin_fang_dancer']);
 /** Keep 15 scores where a newer tier is below the previous one in its role ("newer<older"). */
-const TIER_KNOWN_BELOW = new Set(['boar_rider<hawk_tamer', 'oni_breaker<mountain_shield', 'blowgun_hunter<shuriken_storm', 'thousand_needle<chain_sickle_reaper', 'bomb_carrier<fire_monk', 'volcano_cannoneer<siege_bombardier', 'crane_glider<owl_bomber', 'night_blade<mirage_twin', 'ghost_engineer<fuse_master', 'wall_climber<mole_digger', 'wind_step_assassin<twin_fang_dancer', 'storm_sovereign<moonblade_master']);
+// SIM_RULES 9: four pairs fixed (blowgun_hunter, volcano_cannoneer, night_blade and wall_climber now score above the tier
+// before them). The rest stay: boosting a Keep 13-15 tier also strengthens that Keep's bot army (matched Keep 15 farmed),
+// and crane_glider / bomb_carrier do not respond to stats.
+const TIER_KNOWN_BELOW = new Set(['boar_rider<hawk_tamer', 'oni_breaker<mountain_shield', 'thousand_needle<chain_sickle_reaper', 'bomb_carrier<fire_monk', 'crane_glider<owl_bomber', 'ghost_engineer<fuse_master', 'wind_step_assassin<twin_fang_dancer', 'storm_sovereign<moonblade_master']);
 
 const ROLE: Record<string, string> = Object.fromEntries((roster.warriors as { role: string; liveTroop?: string }[]).filter((w) => w.liveTroop).map((w) => [w.liveTroop!, w.role]));
 const ids = Object.keys(data.troops).sort();
