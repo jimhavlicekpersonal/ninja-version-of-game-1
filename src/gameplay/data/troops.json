@@ -885,18 +885,18 @@
     "levels": [
       {
         "level": 1,
-        "hp": 78,
-        "damage": 43.1,
+        "hp": 101,
+        "damage": 56,
         "cost": {
-          "dew": 400
+          "dew": 240
         }
       },
       {
         "level": 2,
-        "hp": 89,
-        "damage": 50,
+        "hp": 116,
+        "damage": 65,
         "cost": {
-          "dew": 520
+          "dew": 312
         },
         "research": {
           "cost": {
@@ -907,10 +907,10 @@
       },
       {
         "level": 3,
-        "hp": 104,
-        "damage": 57.8,
+        "hp": 135,
+        "damage": 75.1,
         "cost": {
-          "dew": 675
+          "dew": 405
         },
         "research": {
           "cost": {
@@ -921,10 +921,10 @@
       },
       {
         "level": 4,
-        "hp": 122,
-        "damage": 67.3,
+        "hp": 159,
+        "damage": 87.5,
         "cost": {
-          "dew": 880
+          "dew": 528
         },
         "research": {
           "cost": {
@@ -935,10 +935,10 @@
       },
       {
         "level": 5,
-        "hp": 141,
-        "damage": 78.5,
+        "hp": 183,
+        "damage": 102.1,
         "cost": {
-          "dew": 1140
+          "dew": 684
         },
         "research": {
           "cost": {
@@ -949,10 +949,10 @@
       },
       {
         "level": 6,
-        "hp": 164,
-        "damage": 90.6,
+        "hp": 213,
+        "damage": 117.8,
         "cost": {
-          "dew": 1485
+          "dew": 891
         },
         "research": {
           "cost": {
@@ -963,10 +963,10 @@
       },
       {
         "level": 7,
-        "hp": 188,
-        "damage": 105.1,
+        "hp": 244,
+        "damage": 136.6,
         "cost": {
-          "dew": 1931
+          "dew": 1159
         },
         "research": {
           "cost": {
@@ -977,10 +977,10 @@
       },
       {
         "level": 8,
-        "hp": 220,
-        "damage": 121.9,
+        "hp": 286,
+        "damage": 158.5,
         "cost": {
-          "dew": 2510
+          "dew": 1506
         },
         "research": {
           "cost": {
@@ -991,10 +991,10 @@
       },
       {
         "level": 9,
-        "hp": 254,
-        "damage": 141.5,
+        "hp": 330,
+        "damage": 184,
         "cost": {
-          "dew": 3263
+          "dew": 1958
         },
         "research": {
           "cost": {
@@ -1005,10 +1005,10 @@
       },
       {
         "level": 10,
-        "hp": 295,
-        "damage": 164,
+        "hp": 384,
+        "damage": 213.2,
         "cost": {
-          "dew": 4242
+          "dew": 2545
         },
         "research": {
           "cost": {
@@ -1019,10 +1019,10 @@
       },
       {
         "level": 11,
-        "hp": 342,
-        "damage": 190.2,
+        "hp": 445,
+        "damage": 247.3,
         "cost": {
-          "dew": 5514
+          "dew": 3308
         },
         "research": {
           "cost": {
@@ -1033,10 +1033,10 @@
       },
       {
         "level": 12,
-        "hp": 398,
-        "damage": 220.7,
+        "hp": 517,
+        "damage": 286.9,
         "cost": {
-          "dew": 7169
+          "dew": 4301
         },
         "research": {
           "cost": {
@@ -1047,10 +1047,10 @@
       },
       {
         "level": 13,
-        "hp": 460,
-        "damage": 256,
+        "hp": 598,
+        "damage": 332.8,
         "cost": {
-          "dew": 9319
+          "dew": 5591
         },
         "research": {
           "cost": {
@@ -1061,10 +1061,10 @@
       },
       {
         "level": 14,
-        "hp": 535,
-        "damage": 297,
+        "hp": 696,
+        "damage": 386.1,
         "cost": {
-          "dew": 12115
+          "dew": 7269
         },
         "research": {
           "cost": {
@@ -1075,10 +1075,10 @@
       },
       {
         "level": 15,
-        "hp": 620,
-        "damage": 344.6,
+        "hp": 806,
+        "damage": 448,
         "cost": {
-          "dew": 15750
+          "dew": 9450
         },
         "research": {
           "cost": {
@@ -1089,10 +1089,10 @@
       },
       {
         "level": 16,
-        "hp": 720,
-        "damage": 399.6,
+        "hp": 936,
+        "damage": 519.5,
         "cost": {
-          "dew": 20474
+          "dew": 12284
         },
         "research": {
           "cost": {
@@ -1103,10 +1103,10 @@
       },
       {
         "level": 17,
-        "hp": 834,
-        "damage": 463.5,
+        "hp": 1084,
+        "damage": 602.6,
         "cost": {
-          "dew": 26617
+          "dew": 15970
         },
         "research": {
           "cost": {
@@ -1117,10 +1117,10 @@
       },
       {
         "level": 18,
-        "hp": 969,
-        "damage": 537.8,
+        "hp": 1260,
+        "damage": 699.1,
         "cost": {
-          "dew": 34602
+          "dew": 20761
         },
         "research": {
           "cost": {
@@ -1131,10 +1131,10 @@
       },
       {
         "level": 19,
-        "hp": 1123,
-        "damage": 623.6,
+        "hp": 1460,
+        "damage": 810.7,
         "cost": {
-          "dew": 44982
+          "dew": 26989
         },
         "research": {
           "cost": {
@@ -1145,10 +1145,10 @@
       },
       {
         "level": 20,
-        "hp": 1302,
-        "damage": 723.5,
+        "hp": 1693,
+        "damage": 940.6,
         "cost": {
-          "dew": 58477
+          "dew": 35086
         },
         "research": {
           "cost": {
@@ -6285,18 +6285,18 @@
     "levels": [
       {
         "level": 1,
-        "hp": 109,
-        "damage": 40.6,
+        "hp": 142,
+        "damage": 52.8,
         "cost": {
-          "dew": 800
+          "dew": 480
         }
       },
       {
         "level": 2,
-        "hp": 128,
-        "damage": 47.2,
+        "hp": 166,
+        "damage": 61.4,
         "cost": {
-          "dew": 1040
+          "dew": 624
         },
         "research": {
           "cost": {
@@ -6307,10 +6307,10 @@
       },
       {
         "level": 3,
-        "hp": 147,
-        "damage": 54.8,
+        "hp": 191,
+        "damage": 71.2,
         "cost": {
-          "dew": 1352
+          "dew": 811
         },
         "research": {
           "cost": {
@@ -6321,10 +6321,10 @@
       },
       {
         "level": 4,
-        "hp": 171,
-        "damage": 63.4,
+        "hp": 222,
+        "damage": 82.4,
         "cost": {
-          "dew": 1758
+          "dew": 1055
         },
         "research": {
           "cost": {
@@ -6335,10 +6335,10 @@
       },
       {
         "level": 5,
-        "hp": 199,
-        "damage": 73.6,
+        "hp": 259,
+        "damage": 95.7,
         "cost": {
-          "dew": 2285
+          "dew": 1371
         },
         "research": {
           "cost": {
@@ -6349,10 +6349,10 @@
       },
       {
         "level": 6,
-        "hp": 230,
-        "damage": 85.4,
+        "hp": 299,
+        "damage": 111,
         "cost": {
-          "dew": 2970
+          "dew": 1782
         },
         "research": {
           "cost": {
@@ -6363,10 +6363,10 @@
       },
       {
         "level": 7,
-        "hp": 268,
-        "damage": 99,
+        "hp": 348,
+        "damage": 128.7,
         "cost": {
-          "dew": 3861
+          "dew": 2317
         },
         "research": {
           "cost": {
@@ -6377,10 +6377,10 @@
       },
       {
         "level": 8,
-        "hp": 311,
-        "damage": 114.9,
+        "hp": 404,
+        "damage": 149.4,
         "cost": {
-          "dew": 5020
+          "dew": 3012
         },
         "research": {
           "cost": {
@@ -6391,10 +6391,10 @@
       },
       {
         "level": 9,
-        "hp": 360,
-        "damage": 133.1,
+        "hp": 468,
+        "damage": 173,
         "cost": {
-          "dew": 6526
+          "dew": 3916
         },
         "research": {
           "cost": {
@@ -6405,10 +6405,10 @@
       },
       {
         "level": 10,
-        "hp": 417,
-        "damage": 154.5,
+        "hp": 542,
+        "damage": 200.9,
         "cost": {
-          "dew": 8484
+          "dew": 5090
         },
         "research": {
           "cost": {
@@ -6419,10 +6419,10 @@
       },
       {
         "level": 11,
-        "hp": 484,
-        "damage": 179.3,
+        "hp": 629,
+        "damage": 233.1,
         "cost": {
-          "dew": 11029
+          "dew": 6617
         },
         "research": {
           "cost": {
@@ -6433,10 +6433,10 @@
       },
       {
         "level": 12,
-        "hp": 561,
-        "damage": 208,
+        "hp": 729,
+        "damage": 270.4,
         "cost": {
-          "dew": 14337
+          "dew": 8602
         },
         "research": {
           "cost": {
@@ -6447,10 +6447,10 @@
       },
       {
         "level": 13,
-        "hp": 652,
-        "damage": 241.2,
+        "hp": 848,
+        "damage": 313.6,
         "cost": {
-          "dew": 18638
+          "dew": 11183
         },
         "research": {
           "cost": {
@@ -6461,10 +6461,10 @@
       },
       {
         "level": 14,
-        "hp": 756,
-        "damage": 279.9,
+        "hp": 983,
+        "damage": 363.9,
         "cost": {
-          "dew": 24230
+          "dew": 14538
         },
         "research": {
           "cost": {
@@ -6475,10 +6475,10 @@
       },
       {
         "level": 15,
-        "hp": 877,
-        "damage": 324.6,
+        "hp": 1140,
+        "damage": 422,
         "cost": {
-          "dew": 31499
+          "dew": 18899
         },
         "research": {
           "cost": {
@@ -6489,10 +6489,10 @@
       },
       {
         "level": 16,
-        "hp": 1016,
-        "damage": 376.6,
+        "hp": 1321,
+        "damage": 489.6,
         "cost": {
-          "dew": 40949
+          "dew": 24569
         },
         "research": {
           "cost": {
@@ -6503,10 +6503,10 @@
       },
       {
         "level": 17,
-        "hp": 1180,
-        "damage": 436.7,
+        "hp": 1534,
+        "damage": 567.7,
         "cost": {
-          "dew": 53233
+          "dew": 31940
         },
         "research": {
           "cost": {
@@ -6517,10 +6517,10 @@
       },
       {
         "level": 18,
-        "hp": 1369,
-        "damage": 506.7,
+        "hp": 1780,
+        "damage": 658.7,
         "cost": {
-          "dew": 69203
+          "dew": 41522
         },
         "research": {
           "cost": {
@@ -6558,18 +6558,18 @@
     "levels": [
       {
         "level": 1,
-        "hp": 154,
-        "damage": 56.9,
+        "hp": 200,
+        "damage": 74,
         "cost": {
-          "dew": 1600
+          "dew": 960
         }
       },
       {
         "level": 2,
-        "hp": 178,
-        "damage": 66,
+        "hp": 231,
+        "damage": 85.8,
         "cost": {
-          "dew": 2080
+          "dew": 1248
         },
         "research": {
           "cost": {
@@ -6580,10 +6580,10 @@
       },
       {
         "level": 3,
-        "hp": 207,
-        "damage": 76.6,
+        "hp": 269,
+        "damage": 99.6,
         "cost": {
-          "dew": 2704
+          "dew": 1622
         },
         "research": {
           "cost": {
@@ -6594,10 +6594,10 @@
       },
       {
         "level": 4,
-        "hp": 239,
-        "damage": 88.8,
+        "hp": 311,
+        "damage": 115.4,
         "cost": {
-          "dew": 3515
+          "dew": 2109
         },
         "research": {
           "cost": {
@@ -6608,10 +6608,10 @@
       },
       {
         "level": 5,
-        "hp": 279,
-        "damage": 103.1,
+        "hp": 363,
+        "damage": 134,
         "cost": {
-          "dew": 4570
+          "dew": 2742
         },
         "research": {
           "cost": {
@@ -6622,10 +6622,10 @@
       },
       {
         "level": 6,
-        "hp": 323,
-        "damage": 119.5,
+        "hp": 420,
+        "damage": 155.4,
         "cost": {
-          "dew": 5941
+          "dew": 3565
         },
         "research": {
           "cost": {
@@ -6636,10 +6636,10 @@
       },
       {
         "level": 7,
-        "hp": 374,
-        "damage": 138.6,
+        "hp": 486,
+        "damage": 180.2,
         "cost": {
-          "dew": 7723
+          "dew": 4634
         },
         "research": {
           "cost": {
@@ -6650,10 +6650,10 @@
       },
       {
         "level": 8,
-        "hp": 434,
-        "damage": 160.7,
+        "hp": 564,
+        "damage": 208.9,
         "cost": {
-          "dew": 10040
+          "dew": 6024
         },
         "research": {
           "cost": {
@@ -6664,10 +6664,10 @@
       },
       {
         "level": 9,
-        "hp": 503,
-        "damage": 186.6,
+        "hp": 654,
+        "damage": 242.6,
         "cost": {
-          "dew": 13052
+          "dew": 7831
         },
         "research": {
           "cost": {
@@ -6678,10 +6678,10 @@
       },
       {
         "level": 10,
-        "hp": 584,
-        "damage": 216.5,
+        "hp": 759,
+        "damage": 281.5,
         "cost": {
-          "dew": 16967
+          "dew": 10180
         },
         "research": {
           "cost": {
@@ -6692,10 +6692,10 @@
       },
       {
         "level": 11,
-        "hp": 679,
-        "damage": 251,
+        "hp": 883,
+        "damage": 326.3,
         "cost": {
-          "dew": 22057
+          "dew": 13234
         },
         "research": {
           "cost": {
@@ -6706,10 +6706,10 @@
       },
       {
         "level": 12,
-        "hp": 786,
-        "damage": 291.2,
+        "hp": 1022,
+        "damage": 378.6,
         "cost": {
-          "dew": 28675
+          "dew": 17205
         },
         "research": {
           "cost": {
@@ -6720,10 +6720,10 @@
       },
       {
         "level": 13,
-        "hp": 912,
-        "damage": 337.8,
+        "hp": 1186,
+        "damage": 439.1,
         "cost": {
-          "dew": 37277
+          "dew": 22366
         },
         "research": {
           "cost": {
@@ -6734,10 +6734,10 @@
       },
       {
         "level": 14,
-        "hp": 1058,
-        "damage": 391.8,
+        "hp": 1375,
+        "damage": 509.3,
         "cost": {
-          "dew": 48460
+          "dew": 29076
         },
         "research": {
           "cost": {
@@ -6748,10 +6748,10 @@
       },
       {
         "level": 15,
-        "hp": 1227,
-        "damage": 454.5,
+        "hp": 1595,
+        "damage": 590.9,
         "cost": {
-          "dew": 62998
+          "dew": 37799
         },
         "research": {
           "cost": {
@@ -6762,10 +6762,10 @@
       },
       {
         "level": 16,
-        "hp": 1423,
-        "damage": 527.1,
+        "hp": 1850,
+        "damage": 685.2,
         "cost": {
-          "dew": 81897
+          "dew": 49138
         },
         "research": {
           "cost": {
@@ -6801,18 +6801,18 @@
     "levels": [
       {
         "level": 1,
-        "hp": 215,
-        "damage": 71.73,
+        "hp": 280,
+        "damage": 93.2,
         "cost": {
-          "dew": 3200
+          "dew": 1920
         }
       },
       {
         "level": 2,
-        "hp": 250,
-        "damage": 83.07,
+        "hp": 325,
+        "damage": 108,
         "cost": {
-          "dew": 4160
+          "dew": 2496
         },
         "research": {
           "cost": {
@@ -6823,10 +6823,10 @@
       },
       {
         "level": 3,
-        "hp": 290,
-        "damage": 96.48,
+        "hp": 377,
+        "damage": 125.4,
         "cost": {
-          "dew": 5408
+          "dew": 3245
         },
         "research": {
           "cost": {
@@ -6837,10 +6837,10 @@
       },
       {
         "level": 4,
-        "hp": 336,
-        "damage": 111.87,
+        "hp": 437,
+        "damage": 145.4,
         "cost": {
-          "dew": 7030
+          "dew": 4218
         },
         "research": {
           "cost": {
@@ -6851,10 +6851,10 @@
       },
       {
         "level": 5,
-        "hp": 390,
-        "damage": 129.78,
+        "hp": 507,
+        "damage": 168.7,
         "cost": {
-          "dew": 9140
+          "dew": 5484
         },
         "research": {
           "cost": {
@@ -6865,10 +6865,10 @@
       },
       {
         "level": 6,
-        "hp": 452,
-        "damage": 150.57,
+        "hp": 588,
+        "damage": 195.7,
         "cost": {
-          "dew": 11881
+          "dew": 7129
         },
         "research": {
           "cost": {
@@ -6879,10 +6879,10 @@
       },
       {
         "level": 7,
-        "hp": 525,
-        "damage": 174.69,
+        "hp": 683,
+        "damage": 227.1,
         "cost": {
-          "dew": 15446
+          "dew": 9268
         },
         "research": {
           "cost": {
@@ -6893,10 +6893,10 @@
       },
       {
         "level": 8,
-        "hp": 608,
-        "damage": 202.59,
+        "hp": 790,
+        "damage": 263.4,
         "cost": {
-          "dew": 20080
+          "dew": 12048
         },
         "research": {
           "cost": {
@@ -6907,10 +6907,10 @@
       },
       {
         "level": 9,
-        "hp": 705,
-        "damage": 235.08,
+        "hp": 917,
+        "damage": 305.6,
         "cost": {
-          "dew": 26103
+          "dew": 15662
         },
         "research": {
           "cost": {
@@ -6921,10 +6921,10 @@
       },
       {
         "level": 10,
-        "hp": 818,
-        "damage": 272.61,
+        "hp": 1063,
+        "damage": 354.4,
         "cost": {
-          "dew": 33934
+          "dew": 20360
         },
         "research": {
           "cost": {
@@ -6935,10 +6935,10 @@
       },
       {
         "level": 11,
-        "hp": 949,
-        "damage": 316.35,
+        "hp": 1234,
+        "damage": 411.3,
         "cost": {
-          "dew": 44115
+          "dew": 26469
         },
         "research": {
           "cost": {
@@ -6949,10 +6949,10 @@
       },
       {
         "level": 12,
-        "hp": 1101,
-        "damage": 366.75,
+        "hp": 1431,
+        "damage": 476.8,
         "cost": {
-          "dew": 57349
+          "dew": 34409
         },
         "research": {
           "cost": {
@@ -6963,10 +6963,10 @@
       },
       {
         "level": 13,
-        "hp": 1277,
-        "damage": 425.61,
+        "hp": 1660,
+        "damage": 553.3,
         "cost": {
-          "dew": 74554
+          "dew": 44732
         },
         "research": {
           "cost": {
@@ -6977,10 +6977,10 @@
       },
       {
         "level": 14,
-        "hp": 1481,
-        "damage": 493.74,
+        "hp": 1925,
+        "damage": 641.9,
         "cost": {
-          "dew": 96920
+          "dew": 58152
         },
         "research": {
           "cost": {
@@ -7016,18 +7016,18 @@
     "levels": [
       {
         "level": 1,
-        "hp": 302,
-        "damage": 94.86,
+        "hp": 393,
+        "damage": 123.3,
         "cost": {
-          "dew": 6400
+          "dew": 3840
         }
       },
       {
         "level": 2,
-        "hp": 349,
-        "damage": 109.99,
+        "hp": 454,
+        "damage": 143,
         "cost": {
-          "dew": 8320
+          "dew": 4992
         },
         "research": {
           "cost": {
@@ -7038,10 +7038,10 @@
       },
       {
         "level": 3,
-        "hp": 405,
-        "damage": 127.585,
+        "hp": 527,
+        "damage": 165.9,
         "cost": {
-          "dew": 10816
+          "dew": 6490
         },
         "research": {
           "cost": {
@@ -7052,10 +7052,10 @@
       },
       {
         "level": 4,
-        "hp": 470,
-        "damage": 147.985,
+        "hp": 611,
+        "damage": 192.4,
         "cost": {
-          "dew": 14061
+          "dew": 8437
         },
         "research": {
           "cost": {
@@ -7066,10 +7066,10 @@
       },
       {
         "level": 5,
-        "hp": 545,
-        "damage": 171.7,
+        "hp": 709,
+        "damage": 223.2,
         "cost": {
-          "dew": 18279
+          "dew": 10967
         },
         "research": {
           "cost": {
@@ -7080,10 +7080,10 @@
       },
       {
         "level": 6,
-        "hp": 633,
-        "damage": 199.155,
+        "hp": 823,
+        "damage": 258.9,
         "cost": {
-          "dew": 23763
+          "dew": 14258
         },
         "research": {
           "cost": {
@@ -7094,10 +7094,10 @@
       },
       {
         "level": 7,
-        "hp": 733,
-        "damage": 230.945,
+        "hp": 953,
+        "damage": 300.2,
         "cost": {
-          "dew": 30892
+          "dew": 18535
         },
         "research": {
           "cost": {
@@ -7108,10 +7108,10 @@
       },
       {
         "level": 8,
-        "hp": 851,
-        "damage": 267.92,
+        "hp": 1106,
+        "damage": 348.3,
         "cost": {
-          "dew": 40159
+          "dew": 24095
         },
         "research": {
           "cost": {
@@ -7122,10 +7122,10 @@
       },
       {
         "level": 9,
-        "hp": 988,
-        "damage": 310.76,
+        "hp": 1284,
+        "damage": 404,
         "cost": {
-          "dew": 52207
+          "dew": 31324
         },
         "research": {
           "cost": {
@@ -7136,10 +7136,10 @@
       },
       {
         "level": 10,
-        "hp": 1146,
-        "damage": 360.485,
+        "hp": 1490,
+        "damage": 468.6,
         "cost": {
-          "dew": 67869
+          "dew": 40721
         },
         "research": {
           "cost": {
@@ -7150,10 +7150,10 @@
       },
       {
         "level": 11,
-        "hp": 1328,
-        "damage": 418.115,
+        "hp": 1726,
+        "damage": 543.5,
         "cost": {
-          "dew": 88229
+          "dew": 52937
         },
         "research": {
           "cost": {
@@ -7164,10 +7164,10 @@
       },
       {
         "level": 12,
-        "hp": 1541,
-        "damage": 485.095,
+        "hp": 2003,
+        "damage": 630.6,
         "cost": {
-          "dew": 114698
+          "dew": 68819
         },
         "research": {
           "cost": {
