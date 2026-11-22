@@ -616,7 +616,7 @@ export async function startAttack(ctx: ServerContext, me: Player, body: { ticket
   if (ticket.used) throw fail(409, 'conflict', 'pvp.opponent_gone');
   if (ticket.startedAt === undefined && ctx.now() > ticket.expiresAt) throw fail(410, 'expired', 'pvp.scout_expired');
   // Declared stakes (protocol 11): fixed now, before the seed is sent, and only with the first start.
-  const stake = ticket.startedAt === undefined && validStake(body?.stake, ctx.data) ? body!.stake as number : undefined;
+  const stake = ticket.startedAt === undefined && validStake(body?.stake, ctx.data, me.hallLevel) ? body!.stake as number : undefined;
   if (!(await ctx.repo.startTicket(ticket.id, ctx.now(), stake))) throw fail(409, 'conflict', 'pvp.opponent_gone');
   const held = ticket.startedAt === undefined ? stake : ticket.stake;
   return { started: true, ...(ticket.seed !== undefined ? { seed: ticket.seed } : {}), ...(held !== undefined ? { stake: held } : {}) };

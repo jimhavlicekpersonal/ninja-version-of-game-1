@@ -63,6 +63,8 @@ interface BattleHudDeps {
   onFinished(): { result: BattleResult; banked: Cost; trophies: number; bonus?: Cost; eventBonus?: Cost; overflow?: Cost; note?: string; pending?: boolean; stake?: number; /** The diversity share the raid carried (sim/carry.ts; absent = 1). */ diversity?: number; /** P5-03: the daily contract it met (its name). */ contract?: string; /** P6-07: what the battle moved. */ progress?: ProgressLine[] } | null;
   /** A raid that may declare a stake (sim/carry.ts): offline, or on a server with the `stakes` feature. */
   stakes?: boolean;
+  /** Beast Mode GT-10: the attacker's Keep (stakes open from `raids.stakes.minKeep`). */
+  keep?: number;
   /** Beast Mode GT-10: the player's own recent raids reaching 2★ and 3★ (`recentStarHits`), shown with the stakes. */
   recentHits?: { raids: number; two: number; three: number } | null;
   /** P6-13 (UIS-07): the share of the loot this army would carry (sim/carry.ts; raids only, absent or 1 = all). */
@@ -441,7 +443,7 @@ export class BattleHud {
         ? h('p', { class: 'small temper-profile' }, t('scout.profile', { reach: fmtPercent(r.profile.reach * 100), blast: fmtPercent(r.profile.blast * 100), watch: fmtPercent(r.profile.watch * 100) }))
         : null,
       ...r.tips.map((t) => h('p', { class: 'small' }, ownedText(t))),
-      this.deps.stakes && stakeOptions(this.s.data).length && this.s.stake === undefined ? h('p', { class: 'small muted' }, t('stake.help')) : null,
+      this.deps.stakes && stakeOptions(this.s.data, this.deps.keep).length && this.s.stake === undefined ? h('p', { class: 'small muted' }, t('stake.help')) : null,
       // P6-13 (UIS-07): the diversity share before the raid, not only after it.
       this.deps.carryShare !== undefined && this.deps.carryShare < 1 ? h('p', { class: 'small carry-preview', 'data-id': 'carry-preview' }, t('carry.preview', { pct: fmtPercent(this.deps.carryShare * 100) })) : null,
       ...(() => {
@@ -474,7 +476,7 @@ export class BattleHud {
   private stakeRow(): HTMLElement[] {
     if (!this.deps.stakes || this.s.mode !== 'scout') return [];
     const gd = this.s.data;
-    const opts = stakeOptions(gd);
+    const opts = stakeOptions(gd, this.deps.keep);
     if (!opts.length) return [];
     const mult = (m: number) => fmtDecimal(m, Math.round(m * 10) === m * 10 ? 1 : 2);
     const chip = (stake: number | undefined, label: string) => {

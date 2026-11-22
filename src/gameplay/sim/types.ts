@@ -1022,7 +1022,8 @@ export interface RaidsDef {
    * `byStars`; reaching it carries the loot times its multiplier, missing it carries nothing and a real defender keeps
    * the loot. Without a declaration the loot is carried as before.
    */
-  stakes?: { byStars: Record<string, number> };
+  /** `minKeep` (Beast Mode GT-10): the first Keep a stake can be declared at. */
+  stakes?: { byStars: Record<string, number>; minKeep?: number };
   /**
    * P5-03 (RET-11): one contract a UTC day, the same for everyone (`contractFor`): what a won raid carries home that
    * day, never the battle. `list[day mod length]`.

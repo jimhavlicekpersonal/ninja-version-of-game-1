@@ -59,14 +59,20 @@ export function diversityShare(d: number, data: GameData, roles = Infinity): num
   return def.minShare + (1 - def.minShare) * Math.min(1, def.fullAt > 0 ? d / def.fullAt : 1);
 }
 
-/** The star counts an attacker may declare (none without the rule). */
-export function stakeOptions(data: GameData): number[] {
+/** Beast Mode GT-10: stakes open from `raids.stakes.minKeep` (below it three stars are the usual result: free money). */
+export function stakesOpenAt(keep: number, data: GameData): boolean {
+  return keep >= (data.raids.stakes?.minKeep ?? 1);
+}
+
+/** The star counts an attacker may declare (none without the rule, or at a Keep below `minKeep` when `keep` is given). */
+export function stakeOptions(data: GameData, keep?: number): number[] {
+  if (keep !== undefined && !stakesOpenAt(keep, data)) return [];
   return Object.keys(data.raids.stakes?.byStars ?? {}).map(Number).filter((n) => n >= 1 && n <= 3).sort((a, b) => a - b);
 }
 
-/** A declarable stake. */
-export function validStake(stake: unknown, data: GameData): stake is number {
-  return typeof stake === 'number' && stakeOptions(data).includes(stake);
+/** A declarable stake (at that Keep, when `keep` is given; a stake the server fixed is checked without one). */
+export function validStake(stake: unknown, data: GameData, keep?: number): stake is number {
+  return typeof stake === 'number' && stakeOptions(data, keep).includes(stake);
 }
 
 /** Whether a declared stake was reached (true without one). */

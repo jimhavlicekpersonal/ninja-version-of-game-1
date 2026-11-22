@@ -35,7 +35,8 @@ describe('staked honor', () => {
 
 describe('declared stakes', () => {
   it('a missed stake carries nothing and the defender keeps its loot', async () => {
-    const w = world();
+    // Keep 1 and 2 players: stakes opened at Keep 1 here (they open from raids.stakes.minKeep, GT-10).
+    const w = world({ data: { ...defaultData, raids: { ...defaultData.raids, stakes: { ...defaultData.raids.stakes!, minKeep: 1 } } } });
     const dot = await w.player('Dot', baseAt(2, 21, 500));
     const ann = await w.player('Ann', baseAt(1));
     w.pastShields();

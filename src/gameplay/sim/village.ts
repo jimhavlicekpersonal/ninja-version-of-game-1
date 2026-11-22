@@ -2132,7 +2132,7 @@ function battleEnd(s: VillageState, rec0: Omit<BattleRecord, 'result' | 'id' | '
     s.shieldUntil = shieldAfterAttack(s.shieldUntil, now, hasAttacked(s), data);
     s.scout = null;
     const record: BattleRecord = { ...rec, id: `r${s.nextSeed++}`, kind: 'attack', at: rec.at ?? now, result: { ...result, loot: { ...result.loot } }, trophies: 0, banked: {}, rules: SIM_RULES, settlement: 'pending' };
-    if (!validStake(record.stake, data)) delete record.stake;
+    if (!validStake(record.stake, data, hallLevel(s, data))) delete record.stake;
     s.battleLog.push(record);
     trimLog(s.battleLog, data.battle.maxReplays);
     return { ok: true, state: s, events: [{ kind: 'raid_end', record }] };
@@ -2141,7 +2141,7 @@ function battleEnd(s: VillageState, rec0: Omit<BattleRecord, 'result' | 'id' | '
   // simulation says), the bonuses on top (league, limited-time event), and what
   // really reached storage. Whatever was won but did not fit is kept as
   // `overflow`, so the results screen can say so precisely.
-  const stake = validStake(rec.stake, data) ? rec.stake : undefined;
+  const stake = validStake(rec.stake, data, hallLevel(s, data)) ? rec.stake : undefined;
   // P5-03: the contract of the day the raid began (its own time, never later than now: browser and server agree).
   const contract = contractFor(battleBegan(rec, now, data) ?? now, data); // review L3: bounded like any record time
   const roles = trainableRoles(s, data);

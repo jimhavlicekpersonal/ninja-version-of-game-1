@@ -299,3 +299,10 @@ describe('late defense counts, and the online build is gated (Beast Mode GT-05)'
     for (const k of rows('regular_online')) expect(k.stars, `Keep ${k.keep}`).toBeGreaterThanOrEqual(0.9);
   });
 });
+
+describe('a declared 3-star stake is no free money (Beast Mode GT-10)', () => {
+  it('for every campaign and Keep with 10+ raids, the three-star rate times the 3-star stake multiplier stays under 1', () => {
+    const mult = defaultData.raids.stakes!.byStars['3'];
+    for (const r of results) for (const k of r.byKeep.filter((x) => x.raids >= 10)) expect(k.threeStar * mult, `${r.id} Keep ${k.keep}`).toBeLessThan(1);
+  });
+});

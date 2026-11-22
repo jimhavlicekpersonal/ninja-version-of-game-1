@@ -235,7 +235,11 @@ describe('protocol contract', () => {
   });
 
   it('pvp: a declared stake is fixed when the raid starts and comes back with the result (protocol 11)', async () => {
-    const a = await player('Staker', 3);
+    // Beast Mode GT-10: stakes open from raids.stakes.minKeep (6); below it a declared stake is ignored.
+    const low = await player('Low Staker', 3);
+    const lm = (await low.match())!;
+    expect((await low.startAttack!(lm.ticket, 3)).stake).toBeUndefined();
+    const a = await player('Staker', data.raids.stakes!.minKeep ?? 6);
     const m = (await a.match())!;
     const started = await a.startAttack!(m.ticket, 3);
     expect(started.stake).toBe(3);

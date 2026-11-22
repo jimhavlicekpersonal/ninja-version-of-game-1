@@ -12,6 +12,7 @@ import { defenseHonorLoss, winTrophies } from '../../../src/gameplay/sim/ranks';
 import type { VillageState } from '../../../src/gameplay/sim/types';
 import { applyCommand, payableInProvisions, placeQuote, upgradeQuote } from '../../../src/gameplay/sim/village';
 import { data, newGame, pointDeploys } from './helpers';
+const base0 = data;
 
 const H = 3_600_000;
 
@@ -109,6 +110,8 @@ describe('declared stakes', () => {
   });
 
   it('battleEnd banks the stake (and records it); a missed stake banks no battle loot', () => {
+    // A Keep 1 village: stakes open from raids.stakes.minKeep (GT-10, stake-keep.test.ts), so this test opens them at 1.
+    const data = { ...base0, raids: { ...base0.raids, stakes: { ...base0.raids.stakes!, minKeep: 1 } } };
     const { state, clock } = newGame({ acorns: 0, dew: 0 });
     const s0: VillageState = { ...state, army: { hedgehog_roller: 20 } };
     const base = { name: 'Dummy', hallLevel: 1, buildings: [{ id: 'h', type: 'elder_toadstool', level: 1, x: 18, y: 18, loot: { dew: 100 } }] };
