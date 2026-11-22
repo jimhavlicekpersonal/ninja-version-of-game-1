@@ -86,6 +86,7 @@ import {
   type UploadBaseRequest,
   type AttackStartResponse,
 } from './protocol';
+import { tokenVault } from './tokenVault';
 
 /** Where this device keeps its player token for a server. */
 interface TokenStore {
@@ -93,25 +94,12 @@ interface TokenStore {
   set(token: string | null): void;
 }
 
-/** localStorage, one token per server address (a token is never sent to a different server). */
+/** One token per server address (a token is never sent to a different server), kept in the token vault (SEC-11). */
 function localTokenStore(serverUrl: string, prefix = 'tk.net.token:'): TokenStore {
   const key = `${prefix}${serverUrl}`;
   return {
-    get() {
-      try {
-        return localStorage.getItem(key);
-      } catch {
-        return null;
-      }
-    },
-    set(token) {
-      try {
-        if (token) localStorage.setItem(key, token);
-        else localStorage.removeItem(key);
-      } catch {
-        /* private mode: the token lasts for this session only */
-      }
-    },
+    get: () => tokenVault().get(key),
+    set: (token) => tokenVault().set(key, token),
   };
 }
 

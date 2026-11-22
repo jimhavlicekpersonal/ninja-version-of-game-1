@@ -7,6 +7,7 @@ class TkViewController: CAPBridgeViewController {
         bridge?.registerPluginInstance(TkStorePlugin())
         bridge?.registerPluginInstance(TkAuthPlugin())
         bridge?.registerPluginInstance(TkAgePlugin())
+        bridge?.registerPluginInstance(TkSecureStorePlugin())
     }
 
     /// Low memory (device F19): tell the game, which drops painted art no scene shows

@@ -68,11 +68,15 @@ describe('iOS app shell', () => {
       ['TkStorePlugin', 'TkStore', 'src/backend/payments/storekit.ts'],
       ['TkAuthPlugin', 'TkAuth', 'src/backend/platform/auth.ts'],
       ['TkAgePlugin', 'TkAge', 'src/backend/platform/auth.ts'],
+      ['TkSecureStorePlugin', 'TkSecureStore', 'src/backend/platform/secureTokens.ts'],
     ] as const) {
       expect(vc, cls).toContain(`registerPluginInstance(${cls}())`);
       expect(read(`ios/App/App/${cls}.swift`), cls).toContain(`public let jsName = "${jsName}"`);
       expect(read(ts), jsName).toContain(`('${jsName}')`);
+      expect(read('ios/App/App.xcodeproj/project.pbxproj'), cls).toContain(`${cls}.swift in Sources`);
     }
+    // SEC-11: Keychain items stay on this device (no iCloud/backup copy of the session token).
+    expect(read('ios/App/App/TkSecureStorePlugin.swift')).toContain('kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly');
   });
 
   it('TestFlight builds take their version from package.json (the project says 1.0 for ever)', () => {

@@ -32,6 +32,7 @@ import { NEWER_VILLAGE_MESSAGE, updateNeeded } from './versionCheck';
 import { NewerSaveError } from '../../gameplay/sim/save';
 import { bandFromProfile, type AgeBand } from '../../gameplay/sim/age';
 import type { DeletionCodeResponse, NoticeView } from './protocol';
+import { tokenVault } from './tokenVault';
 
 /** What the connection needs from the game. GameController provides it. */
 export interface GameLink {
@@ -973,15 +974,10 @@ export class Connection {
    * still exists on the server, so Settings offers to delete it (re-audit).
    */
   storedAccounts(): string[] {
-    const out: string[] = [];
-    try {
-      for (let i = 0; i < localStorage.length; i++) {
-        const k = localStorage.key(i);
-        if (k?.startsWith('tk.net.token:') && localStorage.getItem(k)) out.push(k.slice('tk.net.token:'.length));
-      }
-    } catch {
-      /* storage blocked: nothing to list */
-    }
+    const out = tokenVault()
+      .keys()
+      .filter((k) => k.startsWith('tk.net.token:') && tokenVault().get(k))
+      .map((k) => k.slice('tk.net.token:'.length));
     return out.filter((u) => u && u !== this.url);
   }
 

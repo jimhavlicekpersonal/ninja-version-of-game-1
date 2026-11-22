@@ -50,6 +50,7 @@ import { MockPaymentProvider, type PaymentProvider } from './backend/payments/pr
 import { StoreKitPaymentProvider, UnavailablePaymentProvider } from './backend/payments/storekit';
 import { PlayBillingPaymentProvider } from './backend/payments/playBilling';
 import { pushDevice } from './backend/platform/push';
+import { installSecureTokens } from './backend/platform/secureTokens';
 import { choosePaymentProvider, isSandbox, paymentPath, previewAllowed } from './backend/payments/select';
 import { planNotifications, upcomingReminders } from './gameplay/sim/reminders';
 import { Tutorial } from './presentation/ui/tutorial';
@@ -402,6 +403,8 @@ async function boot(): Promise<void> {
   // "Update Kagemura" (roadmap step 75) opens the store listing in the apps; the web build reloads.
   const env = import.meta.env as Record<string, string | undefined>;
   const updateUrl = isNative() ? (platform() === 'ios' ? env.VITE_APP_STORE_URL : platform() === 'android' ? env.VITE_PLAY_STORE_URL : undefined) : undefined;
+  // Beast Mode SEC-11: iOS keeps sign-in tokens in the Keychain (this device only), read once before the connection.
+  if (isNative() && platform() === 'ios') await installSecureTokens().catch(() => false);
   const connection = new Connection({ game: controller, builtInUrl, offline: sandbox || failure === 'failed', allowServerChoice, build: `${__APP_VERSION__}+${isNative() ? platform() : 'web'}`, keepVillageOnServer: store.persistent, updateUrl, rulesAccepted: acceptedRulesVersion, ...(balance ? { balance, dataVersion: () => balance.dataVersion() } : {}), ...(eventSchedule ? { events: eventSchedule } : {}) });
   onCommunityRulesAccepted(() => void connection.acceptRules());
   const growth = new GrowthClient(connection);

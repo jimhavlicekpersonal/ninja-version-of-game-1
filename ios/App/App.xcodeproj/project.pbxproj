@@ -20,6 +20,7 @@
 		A7C1E0F1B2D3E4F5A6B7C801 /* TkStorePlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7C1E0F1B2D3E4F5A6B7C802 /* TkStorePlugin.swift */; };
 		A7C1E0F1B2D3E4F5A6B7C811 /* TkAuthPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7C1E0F1B2D3E4F5A6B7C812 /* TkAuthPlugin.swift */; };
 		A7C1E0F1B2D3E4F5A6B7C821 /* TkAgePlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7C1E0F1B2D3E4F5A6B7C822 /* TkAgePlugin.swift */; };
+		A7C1E0F1B2D3E4F5A6B7C841 /* TkSecureStorePlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7C1E0F1B2D3E4F5A6B7C842 /* TkSecureStorePlugin.swift */; };
 		A7C1E0F1B2D3E4F5A6B7C803 /* TkViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7C1E0F1B2D3E4F5A6B7C804 /* TkViewController.swift */; };
 		B9C32A701A00100000000001 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = B9C32A701A00100000000002 /* InfoPlist.strings */; };
 /* End PBXBuildFile section */
@@ -40,6 +41,7 @@
 		A7C1E0F1B2D3E4F5A6B7C802 /* TkStorePlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TkStorePlugin.swift; sourceTree = "<group>"; };
 		A7C1E0F1B2D3E4F5A6B7C812 /* TkAuthPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TkAuthPlugin.swift; sourceTree = "<group>"; };
 		A7C1E0F1B2D3E4F5A6B7C822 /* TkAgePlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TkAgePlugin.swift; sourceTree = "<group>"; };
+		A7C1E0F1B2D3E4F5A6B7C842 /* TkSecureStorePlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TkSecureStorePlugin.swift; sourceTree = "<group>"; };
 		A7C1E0F1B2D3E4F5A6B7C832 /* App.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = App.entitlements; sourceTree = "<group>"; };
 		A7C1E0F1B2D3E4F5A6B7C804 /* TkViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TkViewController.swift; sourceTree = "<group>"; };
 		B9C32A701A00100000000003 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
@@ -131,6 +133,7 @@
 				A7C1E0F1B2D3E4F5A6B7C802 /* TkStorePlugin.swift */,
 				A7C1E0F1B2D3E4F5A6B7C812 /* TkAuthPlugin.swift */,
 				A7C1E0F1B2D3E4F5A6B7C822 /* TkAgePlugin.swift */,
+				A7C1E0F1B2D3E4F5A6B7C842 /* TkSecureStorePlugin.swift */,
 				A7C1E0F1B2D3E4F5A6B7C832 /* App.entitlements */,
 				50379B222058CBB4000EE86E /* capacitor.config.json */,
 				504EC3071FED79650016851F /* AppDelegate.swift */,
@@ -284,6 +287,7 @@
 				A7C1E0F1B2D3E4F5A6B7C801 /* TkStorePlugin.swift in Sources */,
 				A7C1E0F1B2D3E4F5A6B7C811 /* TkAuthPlugin.swift in Sources */,
 				A7C1E0F1B2D3E4F5A6B7C821 /* TkAgePlugin.swift in Sources */,
+				A7C1E0F1B2D3E4F5A6B7C841 /* TkSecureStorePlugin.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
