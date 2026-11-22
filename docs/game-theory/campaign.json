@@ -1,6 +1,6 @@
 {
  "$generated": "npm run balance:campaign (tools/balance/run-campaigns.mjs); do not edit",
- "fingerprint": "4c86645cbb7094b5",
+ "fingerprint": "4def89ee27e572c1",
  "results": [
   {
    "id": "regular",
@@ -3682,46 +3682,46 @@
     {
      "keep": 15,
      "raids": 107,
-     "stars": 0.7383177570093458,
+     "stars": 0.6915887850467289,
      "threeStar": 0,
-     "won": 0.45794392523364486,
-     "destruction": 45.822429906542055,
-     "loot": 4620437.887850467,
+     "won": 0.42990654205607476,
+     "destruction": 44.981308411214954,
+     "loot": 4406283.570093458,
      "opponentKeep": 14,
-     "strength": 13.577618447638441,
-     "honor": 1253.8130841121495,
+     "strength": 13.57264938090157,
+     "honor": 1250.8971962616822,
      "defenses": 131,
      "held": 0,
-     "stolen": 5704499.259541985,
+     "stolen": 5660875.053435114,
      "defenseHonor": 0,
      "starsByRep": [
-      0.846,
-      0.5,
+      0.692,
+      0.571,
       0.615,
-      0.625,
-      0.769,
-      1,
-      0.833,
-      0.75
+      0.5,
+      0.846,
+      0.929,
+      0.583,
+      0.833
      ]
     }
    ],
    "defenses": 209,
    "totals": {
-    "looted": 228138876.375,
-    "stolen": 367550475.375,
+    "looted": 225274562.375,
+    "stolen": 366836129,
     "defenseRewards": 227427.625
    },
    "jade": {
     "start": 500,
     "earned": {
      "openDailyChest": 383,
-     "claimTier": 163,
+     "claimTier": 161,
      "offline": 331,
-     "trialEnd": 24
+     "trialEnd": 23
     },
     "spent": {},
-    "end": 1401
+    "end": 1398
    },
    "reps": 8,
    "reachedByRep": {

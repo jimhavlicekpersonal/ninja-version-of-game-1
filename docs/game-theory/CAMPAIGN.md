@@ -127,7 +127,7 @@ Totals: 1,095,886,319 looted, 653,089,568 taken by raids against the village (60
 
 Keep reached (day): 1: 0 [0.0–0.0] · 2: 0 [0.0–0.0] · 3: 0 [0.0–0.0] · 4: 1.9 [1.6–2.3] · 5: 7.5 [6.5–8.4] · 6: 20.9 [19.6–22.3] · 7: 36.6 [34.1–39.2] · 8: 50.3 [48.2–52.3] · 9: 64.1 [61.1–67.2] · 10: 82.1 [78.5–85.8] · 11: 98.3 [94.9–101.7] · 12: 120.8 [119.3–122.3] · 13: 148.8 [144.3–153.3] · 14: 179.5 [175.6–183.4] · 15: 207.4 [202.1–212.7]. Played 225 days; 209 raids against the village.
 
-Totals: 228,138,876 looted, 367,550,475 taken by raids against the village (161% of the loot), 227,428 paid for held raids.
+Totals: 225,274,562 looted, 366,836,129 taken by raids against the village (163% of the loot), 227,428 paid for held raids.
 
 | Keep | Raids | Avg stars | Won | 3★ rate | Destruction | Loot | Opponent Keep | Army strength | Honor | Raided | Held | Stolen | Honor lost |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
@@ -144,7 +144,7 @@ Totals: 228,138,876 looted, 367,550,475 taken by raids against the village (161%
 | 12 | 166 | 0.76 | 48% | 2% | 46% | 1,057,837 | 11.1 | 10.97 | 1309 | 199 | 0% | 1,693,895 | 0.0 |
 | 13 | 184 | 0.90 | 57% | 1% | 50% | 1,619,745 | 12.0 | 11.94 | 1287 | 231 | 0% | 2,713,010 | 0.0 |
 | 14 | 168 | 1.00 | 59% | 1% | 52% | 3,623,825 | 13.0 | 12.84 | 1326 | 206 | 0% | 4,099,942 | 0.0 |
-| 15 | 107 | 0.74 | 46% | 0% | 46% | 4,620,438 | 14.0 | 13.58 | 1254 | 131 | 0% | 5,704,499 | 0.0 |
+| 15 | 107 | 0.69 | 43% | 0% | 45% | 4,406,284 | 14.0 | 13.57 | 1251 | 131 | 0% | 5,660,875 | 0.0 |
 
 ## Casual who hires the third artisan with the starting Jade (one visit a day, suggested army, Trials and tasks)
 
@@ -226,7 +226,7 @@ Per-run means. Earned and spent by what moved it: the command (openDailyChest, c
 | casual | 500 | 167 | 447 | 341 | 21 | 0 | 1476 |
 | regular_rusher | 500 | 0 | 606 | 197 | 0 | 0 | 1304 |
 | regular_sandbagger | 500 | 0 | 594 | 201 | 0 | 0 | 1295 |
-| casual_explorer | 500 | 163 | 331 | 383 | 24 | 0 | 1401 |
+| casual_explorer | 500 | 161 | 331 | 383 | 23 | 0 | 1398 |
 | casual_hires | 500 | 134 | 334 | 248 | 15 | 750 (place) | 481 |
 | casual_queues | 500 | 318 | 481 | 204 | 15 | 750 (place) | 768 |
 | regular_fortress | 500 | 0 | 728 | 241 | 0 | 0 | 1469 |
