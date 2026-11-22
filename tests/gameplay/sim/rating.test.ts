@@ -1,7 +1,7 @@
 /** Hidden matchmaking ratings (roadmap step 27): the math, K schedule, decay and layout changes. */
 import { describe, expect, it } from 'vitest';
 import { defaultData as data } from '../../../src/gameplay/sim/data';
-import { battleScore, decayed, expectedScore, kFor, layoutChangedShare, newRating, pickByRating, powerRating, rateBattle } from '../../../src/gameplay/sim/rating';
+import { battleScore, decayed, defensePower, expectedScore, kFor, layoutChangedShare, newRating, pickByRating, powerRating, rateBattle } from '../../../src/gameplay/sim/rating';
 import { generateOpponent } from '../../../src/gameplay/sim/battle/basegen';
 
 const def = data.ranks.rating;
@@ -56,5 +56,17 @@ describe('ratings', () => {
     for (const b of moved.buildings.slice(0, Math.ceil(moved.buildings.length / 2))) b.x += 100;
     expect(layoutChangedShare(base, moved)).toBeGreaterThan(def.layoutResetShare);
     expect(layoutChangedShare(null, base)).toBe(1);
+  });
+});
+
+describe('defense power (Beast Mode GT-12)', () => {
+  it('a base with defenses at its Keep caps reads its Keep; one with every defense at level 1 reads lower; never below Keep - 1', () => {
+    const capped = generateOpponent(41, 10, data, { levelBias: 1 });
+    const low = structuredClone(capped);
+    for (const b of low.buildings) if (data.buildings[b.type]?.category === 'defense') b.level = 1;
+    expect(defensePower(capped, data)).toBeCloseTo(10, 0);
+    expect(defensePower(low, data)).toBeLessThan(defensePower(capped, data) - 0.5);
+    expect(defensePower(low, data)).toBeGreaterThanOrEqual(9);
+    expect(defensePower({ ...capped, buildings: capped.buildings.filter((b) => data.buildings[b.type]?.category !== 'defense') }, data)).toBe(9);
   });
 });

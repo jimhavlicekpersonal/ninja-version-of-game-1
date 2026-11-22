@@ -12,7 +12,7 @@
  * steer matchmaking and the Power Ranking. Pure and deterministic.
  */
 import type { BaseLayout } from './battle/types';
-import type { RatingDef } from './types';
+import type { GameData, RatingDef } from './types';
 
 export interface Rating {
   rating: number;
@@ -68,6 +68,26 @@ export function matchDistance(expected: number, def: RatingDef): number {
 /** The Power Ranking: skill (AR) plus power (Keep), so both a strong player and a strong village rank high. */
 export function powerRating(attack: Rating, keep: number, def: RatingDef): number {
   return attack.rating + def.powerWeight * (Math.max(1, keep) - 1);
+}
+
+/**
+ * Beast Mode GT-12: a defender's power for the rating's power term, from its defenses rather than its Keep alone:
+ * Keep - 1 plus the mean share of each defense's level of its cap at that Keep (a base with every defense at its
+ * caps reads its Keep, a base with none reads Keep - 1). The mirror of the attacker's research strength.
+ */
+export function defensePower(base: BaseLayout, data: GameData): number {
+  const keep = Math.max(1, Math.min(data.hall.levels.length, base.hallLevel ?? 1));
+  const limits = data.hall.levels[keep - 1].limits;
+  let sum = 0;
+  let n = 0;
+  for (const b of base.buildings) {
+    if (data.buildings[b.type]?.category !== 'defense') continue;
+    const cap = limits[b.type]?.maxLevel ?? 0;
+    if (!cap) continue;
+    sum += Math.min(1, Math.max(0, b.level / cap));
+    n++;
+  }
+  return Math.max(1, keep - 1 + (n ? sum / n : 0));
 }
 
 /** Share of a layout that changed: buildings moved, added or removed (by id). */
