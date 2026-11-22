@@ -25,11 +25,12 @@ const KIT_FLOOR = 2;
 // the kit is a smaller share of that).
 const KIT_KNOWN_BELOW = new Set(['bear_warrior', 'blowgun_hunter', 'bomb_carrier', 'dragon_kite_armada', 'drum_monk', 'herbalist', 'hound_handler', 'lantern_balloon', 'mirage_twin', 'mist_weaver', 'mole_king', 'night_blade', 'phantom_gate', 'ram_crew', 'sage_of_clouds', 'shadow_stalker', 'spirit_caller', 'thunder_kite', 'tiger_lord', 'twin_fang_dancer', 'void_walker']);
 /** Keep 15 scores where a newer tier is below the previous one in its role ("newer<older"). */
-// SIM_RULES 9: four pairs fixed (blowgun_hunter, volcano_cannoneer, night_blade and wall_climber now score above the tier
+// SIM_RULES 10: the Keep 13 tier's four pairs fixed (x1.25, Ghost Engineer x1.45, with late defense levels x1.5 so
+// the Keep 15 bot army does not farm). SIM_RULES 9: four pairs fixed (blowgun_hunter, volcano_cannoneer, night_blade and wall_climber now score above the tier
 // before them). The rest stay: boosting a Keep 13-15 tier also strengthens that Keep's bot army (matched Keep 15 farmed),
 // and crane_glider / bomb_carrier do not respond to stats. The shadow line is in order with the solo
 // gate held: night_blade 1.02 (79.7), void_walker 1.03 (80.9; a lone army flattened Keep 15 at 1.04), eclipse_ninja 1.08 (85.1; at 1.12).
-const TIER_KNOWN_BELOW = new Set(['boar_rider<hawk_tamer', 'oni_breaker<mountain_shield', 'thousand_needle<chain_sickle_reaper', 'bomb_carrier<fire_monk', 'crane_glider<owl_bomber', 'ghost_engineer<fuse_master', 'wind_step_assassin<twin_fang_dancer', 'storm_sovereign<moonblade_master']);
+const TIER_KNOWN_BELOW = new Set(['boar_rider<hawk_tamer', 'bomb_carrier<fire_monk', 'crane_glider<owl_bomber', 'wind_step_assassin<twin_fang_dancer']);
 
 const ROLE: Record<string, string> = Object.fromEntries((roster.warriors as { role: string; liveTroop?: string }[]).filter((w) => w.liveTroop).map((w) => [w.liveTroop!, w.role]));
 const ids = Object.keys(data.troops).sort();
