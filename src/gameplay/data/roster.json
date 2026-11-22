@@ -50,7 +50,9 @@
         "accent": "#8ad0ff",
         "weapon": "straight blade with wind ribbons"
       },
-      "liveTroop": "wind_step_assassin"
+      "liveTroop": "wind_step_assassin",
+      "hpScale": 1.16,
+      "dpsScale": 1.16
     },
     {
       "id": "moonblade_master",
@@ -84,7 +86,9 @@
         "accent": "#7fd3ff",
         "weapon": "lightning-etched katana"
       },
-      "liveTroop": "storm_sovereign"
+      "liveTroop": "storm_sovereign",
+      "hpScale": 1.09,
+      "dpsScale": 1.09
     },
     {
       "id": "kunai_adept",
@@ -118,7 +122,9 @@
         "accent": "#c8402f",
         "weapon": "shuriken fan"
       },
-      "liveTroop": "shuriken_storm"
+      "liveTroop": "shuriken_storm",
+      "hpScale": 0.85,
+      "dpsScale": 0.85
     },
     {
       "id": "blowgun_hunter",
@@ -135,7 +141,9 @@
         "accent": "#9be05a",
         "weapon": "bamboo blowgun"
       },
-      "liveTroop": "blowgun_hunter"
+      "liveTroop": "blowgun_hunter",
+      "hpScale": 1.16,
+      "dpsScale": 1.16
     },
     {
       "id": "chain_sickle_reaper",
@@ -169,8 +177,9 @@
         "accent": "#f4ead6",
         "weapon": "needle quiver and launcher"
       },
-      "dpsScale": 0.8,
-      "liveTroop": "thousand_needle"
+      "dpsScale": 0.928,
+      "liveTroop": "thousand_needle",
+      "hpScale": 1.16
     },
     {
       "id": "armored_guardian",
@@ -260,7 +269,9 @@
         "weapon": "giant spiked club",
         "armor": "black lacquer with horned helm"
       },
-      "liveTroop": "oni_breaker"
+      "liveTroop": "oni_breaker",
+      "hpScale": 1.06,
+      "dpsScale": 1.06
     },
     {
       "id": "saboteur",
@@ -345,7 +356,9 @@
         "accent": "#8ad0ff",
         "weapon": "lantern of silence"
       },
-      "liveTroop": "ghost_engineer"
+      "liveTroop": "ghost_engineer",
+      "hpScale": 1.46,
+      "dpsScale": 1.46
     },
     {
       "id": "tunnel_runner",
@@ -380,7 +393,9 @@
         "accent": "#b8a888",
         "weapon": "climbing claws"
       },
-      "liveTroop": "wall_climber"
+      "liveTroop": "wall_climber",
+      "hpScale": 1.14,
+      "dpsScale": 1.14
     },
     {
       "id": "grapple_raider",
@@ -397,7 +412,9 @@
         "accent": "#c8402f",
         "weapon": "grappling line"
       },
-      "liveTroop": "grapple_raider"
+      "liveTroop": "grapple_raider",
+      "hpScale": 1.26,
+      "dpsScale": 1.26
     },
     {
       "id": "mole_king",
@@ -415,7 +432,9 @@
         "weapon": "iron digging claws",
         "hat": "miner helm"
       },
-      "liveTroop": "mole_king"
+      "liveTroop": "mole_king",
+      "hpScale": 1.21,
+      "dpsScale": 1.21
     },
     {
       "id": "phantom_gate",
@@ -432,7 +451,9 @@
         "accent": "#b48cff",
         "weapon": "key-shaped staff"
       },
-      "liveTroop": "phantom_gate"
+      "liveTroop": "phantom_gate",
+      "hpScale": 1.3,
+      "dpsScale": 1.3
     },
     {
       "id": "kite_raider",
@@ -695,8 +716,9 @@
         "accent": "#ff4a2a",
         "weapon": "volcanic cannon"
       },
-      "dpsScale": 1.1,
-      "liveTroop": "volcano_cannoneer"
+      "dpsScale": 1.265,
+      "liveTroop": "volcano_cannoneer",
+      "hpScale": 1.15
     },
     {
       "id": "hound_handler",
@@ -732,8 +754,9 @@
         "weapon": "falconry glove",
         "mount": "hawk"
       },
-      "dpsScale": 0.6,
-      "liveTroop": "hawk_tamer"
+      "dpsScale": 0.456,
+      "liveTroop": "hawk_tamer",
+      "hpScale": 0.76
     },
     {
       "id": "boar_rider",
@@ -751,7 +774,9 @@
         "weapon": "spear",
         "mount": "armoured boar"
       },
-      "liveTroop": "boar_rider"
+      "liveTroop": "boar_rider",
+      "hpScale": 1.15,
+      "dpsScale": 1.15
     },
     {
       "id": "bear_warrior",
@@ -769,7 +794,9 @@
         "weapon": "bear-claw gauntlets",
         "armor": "fur mantle"
       },
-      "liveTroop": "bear_warrior"
+      "liveTroop": "bear_warrior",
+      "hpScale": 1.19,
+      "dpsScale": 1.19
     },
     {
       "id": "tiger_lord",
@@ -787,7 +814,9 @@
         "weapon": "glaive",
         "mount": "white war tiger"
       },
-      "liveTroop": "tiger_lord"
+      "liveTroop": "tiger_lord",
+      "hpScale": 1.6,
+      "dpsScale": 1.6
     },
     {
       "id": "shadow_stalker",
@@ -838,7 +867,9 @@
         "accent": "#c9ced6",
         "weapon": "black katana"
       },
-      "liveTroop": "night_blade"
+      "liveTroop": "night_blade",
+      "hpScale": 1.08,
+      "dpsScale": 1.08
     },
     {
       "id": "void_walker",
@@ -855,7 +886,9 @@
         "accent": "#7a4aff",
         "weapon": "twin kama"
       },
-      "liveTroop": "void_walker"
+      "liveTroop": "void_walker",
+      "hpScale": 1.04,
+      "dpsScale": 1.04
     },
     {
       "id": "eclipse_ninja",
@@ -872,8 +905,9 @@
         "accent": "#e9b44c",
         "weapon": "eclipse ring blade"
       },
-      "hpScale": 0.9,
-      "liveTroop": "eclipse_ninja"
+      "hpScale": 1.008,
+      "liveTroop": "eclipse_ninja",
+      "dpsScale": 1.12
     }
   ],
   "heroes": [
