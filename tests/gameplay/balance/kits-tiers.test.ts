@@ -25,12 +25,14 @@ const KIT_FLOOR = 2;
 // the kit is a smaller share of that).
 const KIT_KNOWN_BELOW = new Set(['bear_warrior', 'blowgun_hunter', 'bomb_carrier', 'dragon_kite_armada', 'drum_monk', 'herbalist', 'hound_handler', 'lantern_balloon', 'mirage_twin', 'mist_weaver', 'mole_king', 'night_blade', 'phantom_gate', 'ram_crew', 'sage_of_clouds', 'shadow_stalker', 'spirit_caller', 'thunder_kite', 'tiger_lord', 'twin_fang_dancer', 'void_walker']);
 /** Keep 15 scores where a newer tier is below the previous one in its role ("newer<older"). */
-// SIM_RULES 10: the Keep 13 tier's four pairs fixed (x1.25, Ghost Engineer x1.45, with late defense levels x1.5 so
-// the Keep 15 bot army does not farm). SIM_RULES 9: four pairs fixed (blowgun_hunter, volcano_cannoneer, night_blade and wall_climber now score above the tier
+// Beast Mode follow-up (2026-11-22, measured, not shipped): raising the Keep 13 tier x1.25 with every defense level past
+// Keep 12 x1.5 (so Keep 15 raids stay 1-2 stars) fixed its four pairs but put 16 pairs out of order (x1.25 defenses: 17);
+// the 80%-bot-mix scores compress and close pairs flip. Rules 9 stays, these gaps with it.
+// SIM_RULES 9: four pairs fixed (blowgun_hunter, volcano_cannoneer, night_blade and wall_climber now score above the tier
 // before them). The rest stay: boosting a Keep 13-15 tier also strengthens that Keep's bot army (matched Keep 15 farmed),
 // and crane_glider / bomb_carrier do not respond to stats. The shadow line is in order with the solo
 // gate held: night_blade 1.02 (79.7), void_walker 1.03 (80.9; a lone army flattened Keep 15 at 1.04), eclipse_ninja 1.08 (85.1; at 1.12).
-const TIER_KNOWN_BELOW = new Set(['boar_rider<hawk_tamer', 'bomb_carrier<fire_monk', 'crane_glider<owl_bomber', 'wind_step_assassin<twin_fang_dancer']);
+const TIER_KNOWN_BELOW = new Set(['boar_rider<hawk_tamer', 'oni_breaker<mountain_shield', 'thousand_needle<chain_sickle_reaper', 'bomb_carrier<fire_monk', 'crane_glider<owl_bomber', 'ghost_engineer<fuse_master', 'wind_step_assassin<twin_fang_dancer', 'storm_sovereign<moonblade_master']);
 
 const ROLE: Record<string, string> = Object.fromEntries((roster.warriors as { role: string; liveTroop?: string }[]).filter((w) => w.liveTroop).map((w) => [w.liveTroop!, w.role]));
 const ids = Object.keys(data.troops).sort();
@@ -72,7 +74,7 @@ describe('P4-06 (CMB-03): no single-warrior army flattens Keep 15', () => {
   });
 
   // Beast Mode GT-07: measured, not a todo (tools/balance/temperPanel.ts, the audit's Keep 12 panel, 5 layouts x 2
-  // plans). Rules 10: the searched mix is best on every profile (plain 92.7, Reach 95.5, Blast 88.7, Watch 71.3 against
+  // plans). Rules 9: the searched mix is best on every profile (plain 92.7, Reach 95.5, Blast 88.5, Watch 73.3 against
   // Reaper + Mountain Shield 70.8). Watch's support cuts already sit at their 0.9 ceiling for that base (raising
   // troopCuts.watch to 1.6 left Watch at 71.3 / 70.8), so closing it needs a new Watch lever: a recorded gap.
   it.fails('KNOWN GAP (GT-07): at Keep 12 no single army is best on all four temper profiles', { timeout: 900_000 }, () => {

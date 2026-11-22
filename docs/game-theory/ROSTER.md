@@ -27,22 +27,22 @@
 | 2 | **Twin-Fang Dancer** `twin_fang_dancer` | Blade | 2 Adept | 4 | Twin Strike: Every hit lands twice, on its target and the next building beside it. | 70 / 12 | 18 | 875 / 154 | 3460 | yes (`twin_fang_dancer`) |
 | 3 | **Wind-Step Assassin** `wind_step_assassin` | Blade | 3 Veteran | 7 | Wind Step: Dashes to a new target; the first hit after each dash deals double damage. | 132 / 23 | 16 | 911 / 160 | 4095 | yes (`wind_step_assassin`) |
 | 4 | **Moonblade Master** `moonblade_master` | Blade | 4 Master | 10 | Moon Cut: Every fourth strike is a crescent slash for 2.5x damage. | 249 / 44 | 14 | 947 / 166 | 4846 | yes (`moonblade_master`) |
-| 5 | **Storm Sovereign** `storm_sovereign` | Blade | 5 Legend | 13 | Storm Chain: Slashes arc between up to three nearby buildings. | 680 / 119 | 12 | 1233 / 216 | 5735 | yes (`storm_sovereign`) |
+| 5 | **Storm Sovereign** `storm_sovereign` | Blade | 5 Legend | 13 | Storm Chain: Slashes arc between up to three nearby buildings. | 544 / 95 | 12 | 986 / 173 | 5735 | yes (`storm_sovereign`) |
 | 6 | **Kunai Adept** `kunai_adept` | Thrower | 1 Initiate | 1 | Kunai Volley: Fragile ranged damage from behind the front line. | 24 / 7 | 20 | 403 / 117 | 7310 | yes (`frog_lobber`) |
 | 7 | **Shuriken Storm** `shuriken_storm` | Thrower | 2 Adept | 4 | Fan Throw: Throws three shuriken at once; small splash. | 25 / 8 | 18 | 319 / 93 | 8650 | yes (`shuriken_storm`) |
 | 8 | **Blowgun Hunter** `blowgun_hunter` | Thrower | 3 Veteran | 7 | Venom Dart: Darts keep damaging a building for 5 seconds. | 64 / 19 | 16 | 443 / 129 | 10k | yes (`blowgun_hunter`) |
 | 9 | **Chain-Sickle Reaper** `chain_sickle_reaper` | Thrower | 4 Master | 10 | Armor Shred: Hits make the target take 20% more damage from everyone. | 121 / 35 | 14 | 461 / 135 | 12k | yes (`chain_sickle_reaper`) |
-| 10 | **Thousand Needle** `thousand_needle` | Thrower | 5 Legend | 13 | Needle Rain: Very long range and rapid fire; must stay behind cover. | 331 / 77 | 12 | 600 / 140 | 14k | yes (`thousand_needle`) |
+| 10 | **Thousand Needle** `thousand_needle` | Thrower | 5 Legend | 13 | Needle Rain: Very long range and rapid fire; must stay behind cover. | 265 / 62 | 12 | 480 / 112 | 14k | yes (`thousand_needle`) |
 | 11 | **Armored Guardian** `armored_guardian` | Guardian | 1 Initiate | 2 | Stand Firm: Walks straight into defenses and soaks their fire. | 755 / 19 | 20 | 11k / 280 | 37k | yes (`beetle_brute`) |
 | 12 | **Iron Monk** `iron_monk` | Guardian | 2 Adept | 4 | Iron Skin: Warriors beside him take 15% less damage. | 918 / 24 | 18 | 11k / 293 | 43k | yes (`iron_monk`) |
 | 13 | **Bell Warden** `bell_warden` | Guardian | 3 Veteran | 7 | Alarm Bell: Rings a bell that makes defenses in range target him first. | 1729 / 44 | 16 | 12k / 305 | 51k | yes (`bell_warden`) |
 | 14 | **Mountain Shield** `mountain_shield` | Guardian | 4 Master | 10 | Great Wall: Carries a tower shield that absorbs splash for allies behind him. | 3258 / 84 | 14 | 12k / 318 | 61k | yes (`mountain_shield`) |
-| 15 | **Oni Breaker** `oni_breaker` | Guardian | 5 Legend | 13 | Oni Smash: Huge health; smashes walls for five times damage. | 8899 / 228 | 12 | 16k / 413 | 72k | yes (`oni_breaker`) |
+| 15 | **Oni Breaker** `oni_breaker` | Guardian | 5 Legend | 13 | Oni Smash: Huge health; smashes walls for five times damage. | 7119 / 183 | 12 | 13k / 331 | 72k | yes (`oni_breaker`) |
 | 16 | **Saboteur** `saboteur` | Saboteur | 1 Initiate | 1 | Sabotage: Jams the nearest working defense for 6 seconds (once per Saboteur). | 150 / 6 | 20 | 2516 / 101 | 13k | yes (`saboteur`) |
 | 17 | **Trap Breaker** `trap_breaker` | Saboteur | 2 Adept | 4 | Disarm: Finds and disarms hidden traps along the squad's path. | 212 / 8 | 18 | 2639 / 106 | 16k | yes (`trap_breaker`) |
 | 18 | **Gearbreaker** `gearbreaker` | Saboteur | 3 Veteran | 7 | Long Jam: Two jams per warrior, each lasting 9 seconds. | 399 / 16 | 16 | 2746 / 110 | 18k | yes (`gearbreaker`) |
 | 19 | **Fuse Master** `fuse_master` | Saboteur | 4 Master | 10 | Delayed Charge: Plants a charge on a defense that explodes after 5 seconds. | 751 / 30 | 14 | 2857 / 114 | 22k | yes (`fuse_master`) |
-| 20 | **Ghost Engineer** `ghost_engineer` | Saboteur | 5 Legend | 13 | Blackout: Once per battle, jams up to three defenses within 3 tiles for 4 seconds. Shares jam immunity with other specialists. | 2381 / 95 | 12 | 4309 / 172 | 26k | yes (`ghost_engineer`) |
+| 20 | **Ghost Engineer** `ghost_engineer` | Saboteur | 5 Legend | 13 | Blackout: Once per battle, jams up to three defenses within 3 tiles for 4 seconds. Shares jam immunity with other specialists. | 1642 / 66 | 12 | 2972 / 119 | 26k | yes (`ghost_engineer`) |
 | 21 | **Tunnel Runner** `tunnel_runner` | Infiltrator | 1 Initiate | 4 | Tunnel: Digs under walls to reach any building. | 135 / 22 | 20 | 1678 / 268 | 18k | yes (`mole_digger`) |
 | 22 | **Wall Climber** `wall_climber` | Infiltrator | 2 Adept | 5 | Climb: Climbs over walls and goes for storehouses first. | 185 / 30 | 18 | 1985 / 318 | 21k | yes (`wall_climber`) |
 | 23 | **Grapple Raider** `grapple_raider` | Infiltrator | 3 Veteran | 8 | Grapple Line: Swings over walls straight to the nearest defense. | 384 / 62 | 16 | 2283 / 365 | 25k | yes (`grapple_raider`) |
@@ -62,7 +62,7 @@
 | 37 | **Fire Monk** `fire_monk` | Siege | 2 Adept | 6 | Flame Breath: Short-range fire that burns a small area of buildings. | 185 / 62 | 18 | 1714 / 571 | 10k | yes (`fire_monk`) |
 | 38 | **Bomb Carrier** `bomb_carrier` | Siege | 3 Veteran | 9 | Big Bang: Runs to the nearest wall or defense and explodes. | 404 / 135 | 16 | 1783 / 594 | 12k | yes (`bomb_carrier`) |
 | 39 | **Siege Bombardier** `siege_bombardier` | Siege | 4 Master | 12 | Long Shot: Artillery with 5-tile range that fires on defenses. Stops to fire every 2.5 seconds; vulnerable while approaching and cannot move while firing. | 762 / 102 | 14 | 1856 / 247 | 15k | yes (`siege_bombardier`) |
-| 40 | **Volcano Cannoneer** `volcano_cannoneer` | Siege | 5 Legend | 15 | Eruption: Huge splash that leaves burning ground. | 2998 / 1099 | 12 | 2998 / 1099 | 17k | yes (`volcano_cannoneer`) |
+| 40 | **Volcano Cannoneer** `volcano_cannoneer` | Siege | 5 Legend | 15 | Eruption: Huge splash that leaves burning ground. | 2221 / 814 | 12 | 2221 / 814 | 17k | yes (`volcano_cannoneer`) |
 | 41 | **Hound Handler** `hound_handler` | Beast | 1 Initiate | 3 | Unleash: Fights alongside two hunting dogs. The handler and dogs share one health and damage budget. | 196 / 25 | 20 | 2840 / 355 | 8772 | yes (`hound_handler`) |
 | 42 | **Hawk Tamer** `hawk_tamer` | Beast | 2 Adept | 6 | Hawk Harass: Her hawk harries a defense from range, slowing its fire. | 319 / 24 | 18 | 2955 / 222 | 10k | yes (`hawk_tamer`) |
 | 43 | **Boar Rider** `boar_rider` | Beast | 3 Veteran | 9 | Charge: Charges through the first wall in its way. | 697 / 87 | 16 | 3074 / 384 | 12k | yes (`boar_rider`) |
