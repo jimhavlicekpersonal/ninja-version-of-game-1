@@ -10,6 +10,7 @@ import { addCapped, capacity } from './resources';
 import { addReinforcements } from './social/grove';
 import { troopLevelOf } from './research';
 import type { Cost, GameData, NetState, ResourceKind, VillageState } from './types';
+import { byOwnStars } from './social/warChest';
 
 /** How many applied donation ids to remember (older ones are long acknowledged). */
 const MAX_DONATION_IDS = 300;
@@ -63,20 +64,6 @@ export function spendDonation(state: VillageState, troop: string, count: number,
   return true;
 }
 
-/** Beast Mode GT-13: a chest with `share` of it paid by the member's own stars (0..1); no `starShare`: the whole chest. */
-function byOwnStars(chest: Cost, share: number | undefined, starShare: number | undefined): Cost {
-  if (starShare === undefined || !share) return chest;
-  const f = 1 - share + share * Math.max(0, Math.min(1, starShare));
-  const out: Cost = {};
-  for (const [k, v] of Object.entries(chest) as [ResourceKind, number][]) out[k] = Math.floor(v * f);
-  return out;
-}
-
-/** Beast Mode GT-13: a member's own-star share in a war: stars won over `attacks` x 3. */
-export function ownStarShare(stars: number, attacks: number): number {
-  return attacks > 0 ? Math.max(0, Math.min(1, stars / (attacks * 3))) : 0;
-}
-
 /**
  * Collect a server Grove Raid chest (same contents as the offline Grove Raid,
  * scaled to the hall level). Once per week. Mutates; returns the chest or null.
@@ -122,3 +109,5 @@ export function claimGangChest(state: VillageState, warId: string, outcome: 'win
   addCapped(state.resources, soft, capacity(state, data));
   return chest;
 }
+
+export { ownStarShare } from './social/warChest';

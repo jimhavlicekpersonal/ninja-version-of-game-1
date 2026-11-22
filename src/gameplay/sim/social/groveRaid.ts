@@ -10,6 +10,7 @@ import { addCapped, capacity } from '../resources';
 import { createRng, int, mixSeed, next, pick } from '../rng';
 import type { Cost, GameData, GroveRaidState, ResourceKind, VillageState } from '../types';
 import { generateGrove, type Grove } from './grove';
+import { byOwnStars, ownStarShare } from './warChest';
 
 const HOUR = 3_600_000;
 const WEEK = 7 * 24 * HOUR;
@@ -178,7 +179,8 @@ export function settleRaids(state: VillageState, now: number, hall: number, data
     const fought = raid.attacks.length >= def.chestMinAttacks;
     const { xp: fullXp, ...base } = def.rewards[outcome];
     const xp = fought ? fullXp : 0;
-    const chest = fought ? scaleReward(base, hall, data) : {};
+    // Beast Mode GT-13: as online, chestStarShare of the chest follows the player's own stars this war.
+    const chest = fought ? byOwnStars(scaleReward(base, hall, data), def.chestStarShare, ownStarShare(raid.attacks.reduce((n, a) => n + a.stars, 0), def.attacksPerMember)) : {};
     const soft: Cost = {};
     for (const [k, v] of Object.entries(chest) as [ResourceKind, number][]) {
       if (k === 'moonstones') state.resources.moonstones += v;
