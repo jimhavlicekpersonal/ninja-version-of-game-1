@@ -8,7 +8,15 @@ class TkViewController: CAPBridgeViewController {
         bridge?.registerPluginInstance(TkAuthPlugin())
         bridge?.registerPluginInstance(TkAgePlugin())
         bridge?.registerPluginInstance(TkSecureStorePlugin())
+        bridge?.registerPluginInstance(TkNativePlugin())
+        // OPS-03: count WebKit content process exits (kept strongly here; the web view holds its delegate weakly).
+        if let webView = bridge?.webView {
+            contentWatch = TkContentProcessWatch(inner: webView.navigationDelegate)
+            webView.navigationDelegate = contentWatch
+        }
     }
+
+    private var contentWatch: TkContentProcessWatch?
 
     /// Low memory (device F19): tell the game, which drops painted art no scene shows
     /// (window event "tkmemorywarning", main.ts), instead of WebKit killing the web content.
