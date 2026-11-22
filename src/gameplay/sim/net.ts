@@ -63,16 +63,30 @@ export function spendDonation(state: VillageState, troop: string, count: number,
   return true;
 }
 
+/** Beast Mode GT-13: a chest with `share` of it paid by the member's own stars (0..1); no `starShare`: the whole chest. */
+function byOwnStars(chest: Cost, share: number | undefined, starShare: number | undefined): Cost {
+  if (starShare === undefined || !share) return chest;
+  const f = 1 - share + share * Math.max(0, Math.min(1, starShare));
+  const out: Cost = {};
+  for (const [k, v] of Object.entries(chest) as [ResourceKind, number][]) out[k] = Math.floor(v * f);
+  return out;
+}
+
+/** Beast Mode GT-13: a member's own-star share in a war: stars won over `attacks` x 3. */
+export function ownStarShare(stars: number, attacks: number): number {
+  return attacks > 0 ? Math.max(0, Math.min(1, stars / (attacks * 3))) : 0;
+}
+
 /**
  * Collect a server Grove Raid chest (same contents as the offline Grove Raid,
  * scaled to the hall level). Once per week. Mutates; returns the chest or null.
  */
-export function claimRaidChest(state: VillageState, week: number, outcome: 'win' | 'draw' | 'loss', score: { ours: number; theirs: number }, hall: number, data: GameData): Cost | null {
+export function claimRaidChest(state: VillageState, week: number, outcome: 'win' | 'draw' | 'loss', score: { ours: number; theirs: number }, hall: number, data: GameData, starShare?: number): Cost | null {
   if (state.net.raidWeeks.includes(week)) return null;
   state.net.raidWeeks.push(week);
   if (state.net.raidWeeks.length > MAX_RAID_WEEKS) state.net.raidWeeks.shift();
   const { xp, ...base } = data.social.groveRaid.rewards[outcome];
-  const chest = scaleReward(base, hall, data);
+  const chest = byOwnStars(scaleReward(base, hall, data), data.social.groveRaid.chestStarShare, starShare);
   const soft: Cost = {};
   for (const [k, v] of Object.entries(chest) as [ResourceKind, number][]) {
     if (k === 'moonstones') state.resources.moonstones += v;
@@ -92,12 +106,12 @@ const MAX_GANG_WARS = 20;
  * to the Keep, once per war. Returns what it gave, or null if this war's
  * chest was already collected. Mutates.
  */
-export function claimGangChest(state: VillageState, warId: string, outcome: 'win' | 'draw' | 'loss', hall: number, data: GameData, generated = false): Cost | null {
+export function claimGangChest(state: VillageState, warId: string, outcome: 'win' | 'draw' | 'loss', hall: number, data: GameData, generated = false, starShare?: number): Cost | null {
   state.net.gangWars = state.net.gangWars ?? [];
   if (state.net.gangWars.includes(warId)) return null;
   state.net.gangWars.push(warId);
   if (state.net.gangWars.length > MAX_GANG_WARS) state.net.gangWars.shift();
-  const chest = scaleReward(data.social.gangWar.rewards[outcome], hall, data);
+  const chest = byOwnStars(scaleReward(data.social.gangWar.rewards[outcome], hall, data), data.social.gangWar.chestStarShare, starShare);
   // Ledger audit E13: a generated Gang is always there to fight, so its wars pay no Jade.
   if (generated && !data.social.gangWar.generatedOpponentJade) delete chest.moonstones;
   const soft: Cost = {};

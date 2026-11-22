@@ -591,6 +591,8 @@ export interface GangWarClaimResponse {
   warId: string;
   outcome: 'win' | 'draw' | 'loss';
   alreadyClaimed: boolean;
+  /** Beast Mode GT-13: the member's own stars over attacksPerMember x 3 (0..1); `chestStarShare` of the chest follows it. */
+  starShare?: number;
   /** The war was against a generated Gang: its chest pays no Jade (ledger audit E13; absent from older servers). */
   generated?: boolean;
 }
@@ -1127,6 +1129,8 @@ export interface RaidClaimResponse {
   theirs: number;
   /** True when this claim was already made (safe to retry). */
   alreadyClaimed: boolean;
+  /** Beast Mode GT-13: as GangWarClaimResponse.starShare. */
+  starShare?: number;
 }
 
 // ---------------------------------------------------------------- purchases (roadmap Phase 4)

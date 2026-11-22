@@ -281,6 +281,8 @@
     "chestMinAttacks": 1,
     "$commentChestEffort": "Beast Mode 2026-11-21 GT-13: an online war attack counts toward the chest only when it won a star or deployed at least chestMinDeployShare of the Keep's full camp housing (sim/army.ts warChestAttack); a one-warrior token attack burned a team slot and still paid the chest.",
     "chestMinDeployShare": 0.8,
+    "$commentStarShare": "Beast Mode GT-13: this share of a member's chest follows the member's own stars (stars won over attacksPerMember x 3); the rest is paid by the outcome alone. Absent from an older server's claim: the whole chest.",
+    "chestStarShare": 0.3,
     "settleWeeksMax": 2,
     "prepOfferHours": 24,
     "starOdds": {
@@ -321,6 +323,8 @@
     "generatedOpponentJade": false,
     "relayCarry": 0.5,
     "chestMinDeployShare": 0.8,
+    "$commentStarShare": "Beast Mode GT-13: this share of a member's chest follows the member's own stars (stars won over attacksPerMember x 3); the rest is paid by the outcome alone. Absent from an older server's claim: the whole chest.",
+    "chestStarShare": 0.3,
     "botAfterMinutes": 3,
     "recentOpponents": 3,
     "rewards": {

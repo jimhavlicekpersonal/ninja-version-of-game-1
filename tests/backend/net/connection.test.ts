@@ -175,12 +175,18 @@ describe('Connection', () => {
     expect(game.state.net.raidWeeks).toContain(week);
     expect(game.state.grove.raidHistory).toHaveLength(1);
     const outcome = game.state.grove.raidHistory[0].outcome;
-    expect(game.state.resources.moonstones).toBe(moon + (w.data.social.groveRaid.rewards[outcome].moonstones ?? 0));
+    // Beast Mode GT-13: 30% of the chest follows the member's own stars (one attack of two here), so the Jade lies
+    // between 70% and all of the outcome's chest, and is what the record says was paid.
+    const full = w.data.social.groveRaid.rewards[outcome].moonstones ?? 0;
+    const paid = game.state.resources.moonstones - moon;
+    expect(paid).toBe(game.state.grove.raidHistory[0].reward.moonstones);
+    expect(paid).toBeGreaterThanOrEqual(Math.floor(full * 0.7));
+    expect(paid).toBeLessThanOrEqual(full);
     // A fresh session (app restart) asks again; the server says it was claimed and nothing is paid twice.
     const again = connect(w, game, memoryKv(), port).conn;
     await again.sync();
     expect(game.state.grove.raidHistory).toHaveLength(1);
-    expect(game.state.resources.moonstones).toBe(moon + (w.data.social.groveRaid.rewards[outcome].moonstones ?? 0));
+    expect(game.state.resources.moonstones).toBe(moon + paid);
   });
 
   it('keeps battle reports in the outbox until the server takes them', async () => {

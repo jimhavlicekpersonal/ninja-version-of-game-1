@@ -139,10 +139,10 @@ export type Command =
   | { type: 'netBind'; playerId: string }
   | { type: 'receiveDonations'; items: ServerDonation[] }
   | { type: 'spendDonation'; troop: string; count: number; xp: number }
-  | { type: 'claimRaidChest'; week: number; outcome: 'win' | 'draw' | 'loss'; ours: number; theirs: number }
+  | { type: 'claimRaidChest'; week: number; outcome: 'win' | 'draw' | 'loss'; ours: number; theirs: number; /** GT-13: the member's own-star share (the server's). */ starShare?: number }
   /** A Gang War chest the server confirmed (step 65), once per war. */
   /** `generated`: the war was against a generated Gang (ledger audit E13: no Jade). */
-  | { type: 'claimGangChest'; warId: string; outcome: 'win' | 'draw' | 'loss'; generated?: boolean }
+  | { type: 'claimGangChest'; warId: string; outcome: 'win' | 'draw' | 'loss'; generated?: boolean; /** GT-13: the member's own-star share (the server's). */ starShare?: number }
   /** `known`: server only, the result it has just simulated from this setup (see battleEnd). */
   | { type: 'remoteGroveBattleEnd'; target: number; record: Omit<BattleRecord, 'result' | 'id' | 'kind'>; known?: BattleResult }
   /**
@@ -877,11 +877,11 @@ function runCommand(s: VillageState, cmd0: Command, now: number, data: GameData)
       if (!spendDonation(s, cmd.troop, cmd.count, cmd.xp)) return fail('NOT_AVAILABLE', 'Not enough of that warrior.');
       return { ok: true, state: s, events: [{ kind: 'donation', troop: cmd.troop, count: cmd.count, xp: cmd.xp }] };
     case 'claimGangChest': {
-      const chest = claimGangChest(s, cmd.warId, cmd.outcome, hallLevel(s, data), data, cmd.generated === true);
+      const chest = claimGangChest(s, cmd.warId, cmd.outcome, hallLevel(s, data), data, cmd.generated === true, typeof cmd.starShare === 'number' ? cmd.starShare : undefined);
       return chest ? { ok: true, state: s, events: [] } : fail('ALREADY_CLAIMED', 'This Gang War chest was already collected.');
     }
     case 'claimRaidChest': {
-      const chest = claimRaidChest(s, cmd.week, cmd.outcome, cmd, hallLevel(s, data), data);
+      const chest = claimRaidChest(s, cmd.week, cmd.outcome, cmd, hallLevel(s, data), data, typeof cmd.starShare === 'number' ? cmd.starShare : undefined);
       if (!chest) return fail('ALREADY_CLAIMED', 'That chest was already collected.');
       return { ok: true, state: s, events: [{ kind: 'reward', source: `grove_raid:${cmd.week}`, grants: chest }] };
     }

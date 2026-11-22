@@ -1204,6 +1204,8 @@ export interface SocialDef {
     chestMinAttacks: number;
     /** Beast Mode GT-13: share of the Keep's full camp housing an attack without a star must deploy to count. */
     chestMinDeployShare?: number;
+    /** Beast Mode GT-13: share of the chest paid by the member's own stars. */
+    chestStarShare?: number;
     /** Ledger audit E12: at most this many ended wars are paid when a player comes back. */
     settleWeeksMax: number;
     prepOfferHours: number;
@@ -1225,6 +1227,8 @@ export interface SocialDef {
     chestMinAttacks?: number;
     /** Beast Mode GT-13: as `groveRaid.chestMinDeployShare`. */
     chestMinDeployShare?: number;
+    /** Beast Mode GT-13: as `groveRaid.chestStarShare`. */
+    chestStarShare?: number;
     botAfterMinutes: number;
     recentOpponents: number;
     rewards: Record<'win' | 'draw' | 'loss', Cost>;

@@ -1361,7 +1361,7 @@ export class Connection {
       this.triedGangWars.add(w.id);
       try {
         const c = await port.gangWarClaim(w.id);
-        g.dispatch({ type: 'claimGangChest', warId: c.warId, outcome: c.outcome, ...(c.generated ? { generated: true } : {}) });
+        g.dispatch({ type: 'claimGangChest', warId: c.warId, outcome: c.outcome, ...(c.generated ? { generated: true } : {}), ...(typeof c.starShare === 'number' ? { starShare: c.starShare } : {}) });
       } catch (e) {
         if (!(e instanceof ServerError) || e.retryable) {
           this.triedGangWars.delete(w.id);
@@ -1381,7 +1381,7 @@ export class Connection {
       this.triedWeeks.add(week);
       try {
         const c = await port.claimRaid(week);
-        g.dispatch({ type: 'claimRaidChest', week, outcome: c.outcome, ours: c.ours, theirs: c.theirs });
+        g.dispatch({ type: 'claimRaidChest', week, outcome: c.outcome, ours: c.ours, theirs: c.theirs, ...(typeof c.starShare === 'number' ? { starShare: c.starShare } : {}) });
       } catch (e) {
         if (!(e instanceof ServerError) || e.retryable) {
           this.triedWeeks.delete(week);

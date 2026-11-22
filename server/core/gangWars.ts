@@ -32,6 +32,7 @@ import { battleSeed, checkArmy, engineForClient, engineForTicket, lockPlayers, r
 import { requireSquad, setRosterLock } from './squads';
 import { applyServerResult, requireHeldVillage } from './village';
 import { fail } from './errors';
+import { ownStarShare } from '../../src/gameplay/sim/net';
 
 /** The roster lock squads.ts asks about: a war that has not ended. */
 setRosterLock(async (ctx, squadId) => Boolean(await ctx.repo.activeWarOf(squadId, ctx.now())));
@@ -424,7 +425,10 @@ export async function claim(ctx: ServerContext, me: Player, warId: unknown): Pro
   // a squad with an alt used to collect a chest a day without attacking.
   const minAttacks = ctx.data.social.gangWar.chestMinAttacks ?? 1;
   // Beast Mode GT-13: only attacks that count (a star, or most of the camps deployed).
-  if ((await ctx.repo.warAttacks(w.id)).filter((a) => a.attackerId === me.id && a.counts !== false).length < minAttacks) throw fail(404, 'not_found', 'war.not_part');
+  const mine = (await ctx.repo.warAttacks(w.id)).filter((a) => a.attackerId === me.id && a.counts !== false);
+  if (mine.length < minAttacks) throw fail(404, 'not_found', 'war.not_part');
+  // Beast Mode GT-13: part of the chest follows the member's own stars in the counting attacks.
+  const starShare = ownStarShare(mine.reduce((n, a) => n + a.stars, 0), ctx.data.social.gangWar.attacksPerMember);
   const { ours, theirs } = await totals(ctx, w, side, w.endsAt);
   const outcome = gangWarOutcome(sideTotal(ours), sideTotal(theirs));
   const generated = w[other(side)].bot;
@@ -432,9 +436,9 @@ export async function claim(ctx: ServerContext, me: Player, warId: unknown): Pro
     const first = await tx.addGangClaim(w.id, me.id, outcome, ctx.now());
     // A village the server keeps gets the chest with the claim (once). Ledger audit E13: no Jade
     // from a war against a generated Gang (the game applies the same command with `generated`).
-    if (first) await applyServerResult(tx, ctx, me, [{ cmd: { type: 'claimGangChest', warId: w.id, outcome, generated }, reason: 'gangwar:chest' }], `gangwar:${w.id}`);
+    if (first) await applyServerResult(tx, ctx, me, [{ cmd: { type: 'claimGangChest', warId: w.id, outcome, generated, starShare }, reason: 'gangwar:chest' }], `gangwar:${w.id}`);
     return first;
   });
-  return { warId: w.id, outcome, alreadyClaimed: !fresh, generated };
+  return { warId: w.id, outcome, alreadyClaimed: !fresh, generated, starShare };
 }
 

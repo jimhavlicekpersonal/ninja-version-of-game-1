@@ -14,6 +14,7 @@ import { battleSeed, checkArmy, engineForClient, engineForTicket, lockPlayers, r
 import type { ClientInfo } from '../rules/registry';
 import { applyServerResult, requireHeldVillage } from './village';
 import { fail } from './errors';
+import { ownStarShare } from '../../src/gameplay/sim/net';
 
 const ACTIVE_WINDOW_MS = 3 * 24 * HOUR;
 
@@ -301,11 +302,14 @@ export async function claimRaid(ctx: ServerContext, me: Player, week: unknown): 
   }
   const s = await scores(ctx, pairing, end);
   const outcome = outcomeOf(s);
+  // Beast Mode GT-13: part of the chest follows the member's own stars in the counting attacks.
+  const mine = (await ctx.repo.raidAttacks(w, grove.id)).filter((a) => a.attackerId === me.id && a.counts !== false);
+  const starShare = ownStarShare(mine.reduce((n, a) => n + a.stars, 0), ctx.data.social.groveRaid.attacksPerMember);
   const fresh = await ctx.repo.transaction(async (tx) => {
     const first = await tx.addClaim({ week: w, playerId: me.id, groveId: grove.id, outcome, at: ctx.now() });
     // A village the server keeps gets the chest with the claim (once: only the first claim).
-    if (first) await applyServerResult(tx, ctx, me, [{ cmd: { type: 'claimRaidChest', week: w, outcome, ours: s.ours, theirs: s.theirs }, reason: 'war:chest' }], `week:${w}`);
+    if (first) await applyServerResult(tx, ctx, me, [{ cmd: { type: 'claimRaidChest', week: w, outcome, ours: s.ours, theirs: s.theirs, starShare }, reason: 'war:chest' }], `week:${w}`);
     return first;
   });
-  return { week: w, outcome, ours: s.ours, theirs: s.theirs, alreadyClaimed: !fresh };
+  return { week: w, outcome, ours: s.ours, theirs: s.theirs, alreadyClaimed: !fresh, starShare };
 }
