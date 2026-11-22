@@ -35,7 +35,7 @@ table{border-collapse:collapse;width:100%}td,th{border-bottom:1px solid #eee;pad
 <span id="status" class="muted"></span></header>
 <main>
 <section><div class="row"><input id="q" placeholder="Player name or id"><button id="find" class="primary">Find</button>
-<button id="queues">Reports and deletion requests</button><button id="log">Staff log</button><button id="suspects">Top honor gainers</button></div>
+<button id="queues">Reports and deletion requests</button><button id="log">Staff log</button><button id="suspects">Top honor gainers</button><button id="pairs">Pairs raiding each other</button></div>
 <div id="results"></div></section>
 <div id="detail"></div>
 </main>
@@ -134,6 +134,9 @@ $('queues').onclick = async () => {
       el('section', {}, el('h3', {}, 'Open reports'), table(reports.reports, [['When', (r) => when(r.at)], ['About', (r) => el('a', { href: '#', onclick: (e) => { e.preventDefault(); show(r.targetId); } }, r.targetName || r.targetId)], ['Reason', (r) => r.reason], ['Text', (r) => r.text || ''], ['Id', (r) => r.id]]), el('p', { class: 'muted' }, 'Resolve with POST /admin/v1/reports/:id (dismiss, remove_message, mute).')),
       el('section', {}, el('h3', {}, 'Deletion requests'), table(deletions.requests, [['When', (r) => when(r.at)], ['Player', (r) => r.playerId || r.name], ['Verified', (r) => (r.verified ? 'yes (code)' : 'NO: check ownership')], ['Note', (r) => r.note], ['Id', (r) => r.id]]), el('p', { class: 'muted' }, 'Carry out with POST /admin/v1/deletion-requests/:id: delete (verified only), reject, or override with a note saying how ownership was checked.')));
   } catch (e) { status(e.message); }
+};
+$('pairs').onclick = async () => {
+  try { const r = await api('GET', '/admin/v1/pairs?days=7'); $('detail').replaceChildren(el('section', {}, el('h3', {}, 'Pairs raiding each other (last ' + r.days + ' days)'), table(r.pairs, [['Player', (x) => x.a.name + ' (' + x.a.id + ')'], ['Player', (x) => x.b.name + ' (' + x.b.id + ')'], ['Raids', (x) => x.raids], ['One way', (x) => x.oneWay], ['Other way', (x) => x.otherWay], ['Loot moved', (x) => x.loot], ['Honor', (x) => x.honor]]))); } catch (e) { status(e.message); }
 };
 $('suspects').onclick = async () => {
   try { const r = await api('GET', '/admin/v1/suspects?days=3'); $('detail').replaceChildren(el('section', {}, el('h3', {}, 'Top honor gainers (last ' + r.days + ' days)'), table(r.players, [['Player', (x) => x.name + ' (' + x.id + ')'], ['Honor', (x) => x.honor], ['Gained', (x) => x.honorGained], ['Per day', (x) => x.perDay], ['Raids', (x) => x.raids], ['Wins per active hour', (x) => x.winsPerActiveHour], ['Late reports', (x) => x.lateReports], ['Village', (x) => (x.heldOnServer ? 'server' : 'device')]]))); } catch (e) { status(e.message); }

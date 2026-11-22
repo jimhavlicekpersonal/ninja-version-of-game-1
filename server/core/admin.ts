@@ -109,6 +109,39 @@ export async function suspects(ctx: ServerContext, actor: string, days: unknown)
   return { days: d, players: rows.sort((a, b) => b.honorGained - a.honorGained).slice(0, 100) };
 }
 
+/**
+ * Beast Mode GT-17: GET /admin/v1/pairs?days=N: pairs of players with at least two recorded raids between them in
+ * the last N days (default 7, at most 30), raids both ways first: alternate accounts feeding a main raid each other
+ * again and again. Read from the raids of the 200 highest-honor players (as `suspects`); the view is logged.
+ */
+export async function pairs(ctx: ServerContext, actor: string, days: unknown) {
+  const d = Math.max(1, Math.min(30, Math.floor(Number(days)) || 7));
+  const since = ctx.now() - d * 24 * HOUR;
+  const byPair = new Map<string, { a: string; b: string; ab: number; ba: number; loot: number; honor: number; last: number }>();
+  const seen = new Set<string>();
+  for (const p of await ctx.repo.topPlayers(200)) {
+    for (const r of await ctx.repo.attacksBy(p.id, since, 500)) {
+      if (seen.has(r.id) || !r.defenderId) continue;
+      seen.add(r.id);
+      const [a, b] = [r.attackerId, r.defenderId].sort();
+      const row = byPair.get(`${a}|${b}`) ?? { a, b, ab: 0, ba: 0, loot: 0, honor: 0, last: 0 };
+      if (r.attackerId === a) row.ab++;
+      else row.ba++;
+      row.loot += (r.result.loot?.acorns ?? 0) + (r.result.loot?.dew ?? 0);
+      row.honor += Math.max(0, r.attackerTrophies ?? 0);
+      row.last = Math.max(row.last, r.at);
+      byPair.set(`${a}|${b}`, row);
+    }
+  }
+  const named = async (id: string) => ({ id, name: (await ctx.repo.getPlayer(id))?.name ?? '' });
+  const rows = [];
+  for (const x of [...byPair.values()].filter((x) => x.ab + x.ba >= 2).sort((p, q) => Math.min(q.ab, q.ba) - Math.min(p.ab, p.ba) || q.ab + q.ba - (p.ab + p.ba)).slice(0, 100)) {
+    rows.push({ a: await named(x.a), b: await named(x.b), raids: x.ab + x.ba, oneWay: Math.max(x.ab, x.ba), otherWay: Math.min(x.ab, x.ba), loot: x.loot, honor: x.honor, lastAt: x.last });
+  }
+  await audit(ctx, actor, 'view-pairs', null, { days: d });
+  return { days: d, pairs: rows };
+}
+
 export async function detail(ctx: ServerContext, id: string, actor = '') {
   const p = await playerOr404(ctx, id);
   if (actor) await auditView(ctx, actor, p.id);

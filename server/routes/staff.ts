@@ -26,6 +26,8 @@ export function staffRoutes(staff: StaffRoute, core: ServerCore, ip: (input: Rou
   staff('POST', '/admin/v1/players/:id/revoke-sessions', { params: id, body: note }, async (actor, { params, body }) => core.admin.revokeSessions(actor, params.id, body));
   staff('POST', '/admin/v1/players/:id/reset-honor', { params: id, body: body(fields<{ to: number; note: string }>()({ to: number(), note: string() })) }, async (actor, { params, body }) => core.admin.resetHonor(actor, params.id, body));
   staff('GET', '/admin/v1/suspects', { query: query('days') }, async (actor, { query }) => core.admin.suspects(actor, query.days));
+  // Beast Mode GT-17: pairs that keep raiding each other.
+  staff('GET', '/admin/v1/pairs', { query: query('days') }, async (actor, { query }) => core.admin.pairs(actor, query.days));
   // Japan C17: the unused paid Jade balance on a 資金決済法 base date (?date=YYYY-03-31|YYYY-09-30; default the latest).
   staff('GET', '/admin/v1/reports/jp-unused-balance', { query: query('date') }, async (actor, { query }) => core.admin.japanBalance(actor, query.date));
   staff('POST', '/admin/v1/players/:id/adjust', { params: id, body: body(fields<{ resources: object; note: string }>()({ resources: object(), note: string() })) }, async (actor, { params, body }) => core.admin.adjust(actor, params.id, body));
