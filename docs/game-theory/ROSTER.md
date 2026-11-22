@@ -29,7 +29,7 @@
 | 4 | **Moonblade Master** `moonblade_master` | Blade | 4 Master | 10 | Moon Cut: Every fourth strike is a crescent slash for 2.5x damage. | 249 / 44 | 14 | 947 / 166 | 4846 | yes (`moonblade_master`) |
 | 5 | **Storm Sovereign** `storm_sovereign` | Blade | 5 Legend | 13 | Storm Chain: Slashes arc between up to three nearby buildings. | 544 / 95 | 12 | 986 / 173 | 5735 | yes (`storm_sovereign`) |
 | 6 | **Kunai Adept** `kunai_adept` | Thrower | 1 Initiate | 1 | Kunai Volley: Fragile ranged damage from behind the front line. | 24 / 7 | 20 | 403 / 117 | 7310 | yes (`frog_lobber`) |
-| 7 | **Shuriken Storm** `shuriken_storm` | Thrower | 2 Adept | 4 | Fan Throw: Throws three shuriken at once; small splash. | 26 / 8 | 18 | 319 / 93 | 8650 | yes (`shuriken_storm`) |
+| 7 | **Shuriken Storm** `shuriken_storm` | Thrower | 2 Adept | 4 | Fan Throw: Throws three shuriken at once; small splash. | 25 / 8 | 18 | 319 / 93 | 8650 | yes (`shuriken_storm`) |
 | 8 | **Blowgun Hunter** `blowgun_hunter` | Thrower | 3 Veteran | 7 | Venom Dart: Darts keep damaging a building for 5 seconds. | 64 / 19 | 16 | 443 / 129 | 10k | yes (`blowgun_hunter`) |
 | 9 | **Chain-Sickle Reaper** `chain_sickle_reaper` | Thrower | 4 Master | 10 | Armor Shred: Hits make the target take 20% more damage from everyone. | 121 / 35 | 14 | 461 / 135 | 12k | yes (`chain_sickle_reaper`) |
 | 10 | **Thousand Needle** `thousand_needle` | Thrower | 5 Legend | 13 | Needle Rain: Very long range and rapid fire; must stay behind cover. | 265 / 62 | 12 | 480 / 112 | 14k | yes (`thousand_needle`) |
@@ -51,8 +51,8 @@
 | 26 | **Kite Raider** `kite_raider` | Sky | 1 Initiate | 3 | Firebomb: Glides over walls on a war kite and bombs defenses. | 89 / 33 | 20 | 1302 / 482 | 58k | yes (`owl_bomber`) |
 | 27 | **Crane Glider** `crane_glider` | Sky | 2 Adept | 5 | Swift Glide: Very fast flyer that raids storehouses. | 166 / 61 | 18 | 1780 / 659 | 42k | yes (`crane_glider`) |
 | 28 | **Lantern Balloon** `lantern_balloon` | Sky | 3 Veteran | 8 | Ember Drop: Slow balloon that drops burning embers in a wide area. | 311 / 115 | 16 | 1850 / 685 | 49k | yes (`lantern_balloon`) |
-| 29 | **Thunder Kite** `thunder_kite` | Sky | 4 Master | 11 | Chain Lightning: Lightning hits a defense and up to three nearby defenses for 35% damage each. | 683 / 227 | 14 | 1925 / 642 | 58k | yes (`thunder_kite`) |
-| 30 | **Dragon Kite Crew** `dragon_kite_armada` | Sky | 5 Legend | 14 | Bomber Crew: A heavy dragon kite carrying a crew of bombers. | 1490 / 469 | 12 | 2003 / 631 | 69k | yes (`dragon_kite_armada`) |
+| 29 | **Thunder Kite** `thunder_kite` | Sky | 4 Master | 11 | Chain Lightning: Lightning hits a defense and up to three nearby defenses for 35% damage each. | 525 / 175 | 14 | 1481 / 494 | 58k | yes (`thunder_kite`) |
+| 30 | **Dragon Kite Crew** `dragon_kite_armada` | Sky | 5 Legend | 14 | Bomber Crew: A heavy dragon kite carrying a crew of bombers. | 1261 / 397 | 12 | 1695 / 534 | 69k | yes (`dragon_kite_armada`) |
 | 31 | **Herbalist** `herbalist` | Mystic | 1 Initiate | 2 | Mend: Heals nearby warriors over time. | 222 / 16 | 20 | 3204 / 235 | 8772 | yes (`herbalist`) |
 | 32 | **Drum Monk** `drum_monk` | Mystic | 2 Adept | 5 | War Drum: Nearby warriors move and attack 10% faster within 3 tiles. Multiple drums do not stack. | 310 / 23 | 18 | 3334 / 245 | 10k | yes (`drum_monk`) |
 | 33 | **Mist Weaver** `mist_weaver` | Mystic | 3 Veteran | 8 | Veil: Wraps nearby warriors in thin mist (a small moving smoke cloud). | 584 / 43 | 16 | 3467 / 254 | 12k | yes (`mist_weaver`) |

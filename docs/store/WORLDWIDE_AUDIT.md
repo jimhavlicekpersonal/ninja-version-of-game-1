@@ -1497,3 +1497,18 @@ Every number above moved by several points between runs of 4 seeds; `CAMPAIGN_RE
 
 Not run: real players (every number is a model player), 8-seed runs, Postgres.
 
+### 2026-11-22 Beast Mode combat rebalance (SIM_RULES 9; GT-03, GT-04, GT-07, GT-16), on `claude/optimistic-faraday-qq0uoc`
+
+`npm run rules:snapshot` archived rules 8 before any combat change; the one bump of the pass is 8 → 9. Measurements are model armies against generated bases (the kit lab, the army lab, a smoke probe, matched raids and the 8-seed campaign), never players.
+
+| # | Finding | Status | What changed | Proving test | Limits |
+|---|---|---|---|---|---|
+| GT-04 | **HIGH** newer tiers below older ones | partly done | Per-warrior HP/damage factors (`tools/progression/warriorscale.mjs`, roster `hpScale`/`dpsScale`): night_blade 1.08, void_walker 1.04, eclipse_ninja 1.12, volcano_cannoneer 1.15, wall_climber 1.14, grapple_raider 1.26, mole_king 1.21, phantom_gate 1.3; shuriken_storm trimmed to 0.748 (it scored 98.8) | `kits-tiers.test.ts` (slow): tier gaps 12 → 8 | Boosting the Keep 13-15 tiers strengthened the Keep 15 bot army (matched raids 2.67 stars, 67% three-star), so Storm Sovereign, Thousand Needle, Oni Breaker, Ghost Engineer and the beast chain stay gaps; Crane Glider and Bomb Carrier do not respond to stats; Mole King and Phantom Gate's kits fell under +2 |
+| GT-03 | **HIGH** air dominated | partly done | crane_glider and lantern_balloon ×1.3, dragon_kite_armada ×1.1, training Provisions ×0.6 for the air warriors but Owl Bomber | `army-lab.test.ts`, the solo gate in `kits-tiers.test.ts` | Thunder Kite unboosted (a lone army flattened Keep 15 at any boost); Keep 12 air under 40% (anti-air) |
+| GT-16 | **LOW** smoke adds little | measured, unchanged | — | smoke probe: +8.2 at Keep 10, +0.6 at Keep 15 | Keep 15 is at the destruction ceiling; no radius, duration or range setting helped |
+| GT-07 | **MEDIUM** one army wins | partly done | (through the stats above) | `army-lab.test.ts`: melee@8 and support@8 reach the 30% floor | Temper axes not retuned; the Keep 12 temper gap stays `it.todo` |
+
+Exact replays re-recorded with the bump: the combat fingerprint, the rules-9 fixture, the relay test (rules 9 replayable, 8 not); the aura and matchmaking pins hold unchanged (their warriors did not move); the hero test's rules-4 comparison uses original units. Campaign (8 seeds): every gate passes but two recorded gaps: casual_explorer Keep 4's wins lower bound (0.4996 of 0.5) and regular Keep 15 at 0.29 stars under Keep 14 (limit 0.25).
+
+Not run: players, devices, Postgres.
+
