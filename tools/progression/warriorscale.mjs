@@ -6,7 +6,7 @@ import { readFileSync, writeFileSync } from 'node:fs';
 const args = process.argv.slice(2);
 if (!args.length || args.length % 2) throw new Error('usage: warriorscale.mjs <liveTroopId> <factor> [...]');
 const troops = JSON.parse(readFileSync('src/gameplay/data/troops.json', 'utf8'));
-let roster = readFileSync('src/gameplay/data/roster.json', 'utf8');
+const roster = readFileSync('src/gameplay/data/roster.json', 'utf8');
 const parsed = JSON.parse(roster);
 for (let i = 0; i < args.length; i += 2) {
   const id = args[i];
