@@ -47,7 +47,7 @@ describe('aura lookups by kind (quality 28)', () => {
         }
       });
     }
-    expect(SIM_RULES).toBe(9);
-    expect(fnv64(parts.join('|'))).toBe('7b32daf5ecedecb2'); // SIM_RULES 9 (2026-11-22) left these armies' warriors unchanged, so the rules-8 pin holds
+    expect(SIM_RULES).toBe(10);
+    expect(fnv64(parts.join('|'))).toBe('b07e2c110b57bd78'); // SIM_RULES 10 (2026-11-22): Keep 13 tier and late defense levels changed
   }, 120_000);
 });

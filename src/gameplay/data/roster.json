@@ -84,7 +84,9 @@
         "accent": "#7fd3ff",
         "weapon": "lightning-etched katana"
       },
-      "liveTroop": "storm_sovereign"
+      "liveTroop": "storm_sovereign",
+      "hpScale": 1.25,
+      "dpsScale": 1.25
     },
     {
       "id": "kunai_adept",
@@ -171,8 +173,9 @@
         "accent": "#f4ead6",
         "weapon": "needle quiver and launcher"
       },
-      "dpsScale": 0.8,
-      "liveTroop": "thousand_needle"
+      "dpsScale": 1,
+      "liveTroop": "thousand_needle",
+      "hpScale": 1.25
     },
     {
       "id": "armored_guardian",
@@ -262,7 +265,9 @@
         "weapon": "giant spiked club",
         "armor": "black lacquer with horned helm"
       },
-      "liveTroop": "oni_breaker"
+      "liveTroop": "oni_breaker",
+      "hpScale": 1.25,
+      "dpsScale": 1.25
     },
     {
       "id": "saboteur",
@@ -347,7 +352,9 @@
         "accent": "#8ad0ff",
         "weapon": "lantern of silence"
       },
-      "liveTroop": "ghost_engineer"
+      "liveTroop": "ghost_engineer",
+      "hpScale": 1.45,
+      "dpsScale": 1.45
     },
     {
       "id": "tunnel_runner",
@@ -710,9 +717,9 @@
         "accent": "#ff4a2a",
         "weapon": "volcanic cannon"
       },
-      "dpsScale": 1.265,
+      "dpsScale": 1.708,
       "liveTroop": "volcano_cannoneer",
-      "hpScale": 1.15
+      "hpScale": 1.553
     },
     {
       "id": "hound_handler",

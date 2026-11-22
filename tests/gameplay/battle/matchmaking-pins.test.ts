@@ -40,7 +40,8 @@ function row(keep: number, lag: number, battles: number): string[] {
 }
 
 // Re-pinned for SIM_RULES 8 (2026-11-18): Phase 4's combat changes and P4-07's raid layouts; Keep 8 rows again for
-// the rules-8 power slack. SIM_RULES 9 (2026-11-22) left the Keep 8 and Keep 15 bot armies' warriors unchanged, so these hold.
+// the rules-8 power slack. SIM_RULES 9 left these unchanged; SIM_RULES 10 (2026-11-22: the Keep 13 tier and late
+// defense levels) re-pinned the Keep 15 rows (Keep 8 unchanged).
 const PINNED: string[] = [
   'K8 lag0 #0: base d4aaffaf Keep 8 deps 9018cbfb 1* 52% t877 7bb3ba61',
   'K8 lag0 #1: base 5be08c91 Keep 8 deps 22c24102 0* 47% t1100 c5a6f8a4',
@@ -48,12 +49,12 @@ const PINNED: string[] = [
   'K8 lag2 #0: base 083557ac Keep 7 deps 8894ed06 3* 100% t681 6e93f037',
   'K8 lag2 #1: base 881784bf Keep 7 deps 22c24102 1* 70% t719 0c30883b',
   'K8 lag2 #2: base dd410f6e Keep 7 deps 798fbbfd 2* 53% t1442 e6bf2cef',
-  'K15 lag0 #0: base a454ff00 Keep 15 deps a902890c 2* 63% t1800 2efd10b2',
-  'K15 lag0 #1: base 42256ef7 Keep 15 deps 80ce8626 1* 60% t1800 1278cae0',
-  'K15 lag0 #2: base f6f1397d Keep 15 deps 96cb11d4 2* 65% t1285 beb8bb08',
-  'K15 lag2 #0: base 5e68117f Keep 14 deps a902890c 3* 100% t1681 c365c4a8',
-  'K15 lag2 #1: base 6e52bb45 Keep 14 deps 80ce8626 2* 72% t1740 5757676a',
-  'K15 lag2 #2: base a08de6a0 Keep 14 deps 96cb11d4 2* 65% t1040 dd49075c',
+  'K15 lag0 #0: base a454ff00 Keep 15 deps a902890c 0* 41% t1067 7fd78fbc',
+  'K15 lag0 #1: base 42256ef7 Keep 15 deps 80ce8626 1* 50% t1800 ce0a55a5',
+  'K15 lag0 #2: base f6f1397d Keep 15 deps 96cb11d4 2* 67% t1800 1487ba49',
+  'K15 lag2 #0: base 5e68117f Keep 14 deps a902890c 3* 100% t1466 9d9e9c14',
+  'K15 lag2 #1: base 6e52bb45 Keep 14 deps 80ce8626 2* 62% t1800 33dba640',
+  'K15 lag2 #2: base a08de6a0 Keep 14 deps 96cb11d4 2* 67% t1800 dd3b7541',
 ];
 
 describe('matchmaking, generated bases and the bot plan replay exactly (PUB-02)', () => {

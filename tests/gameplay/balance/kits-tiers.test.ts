@@ -12,6 +12,7 @@ import { maxHousingAtHall, troopEarliestKeep } from '../../../src/gameplay/sim/a
 import { defaultData as data } from '../../../src/gameplay/sim/data';
 import roster from '../../../src/gameplay/data/roster.json';
 import { armyScore, kitValue } from '../../../tools/balance/kitValue';
+import { bestByProfile } from '../../../tools/balance/temperPanel';
 
 const KIT_FLOOR = 2;
 /** Kits worth under +2 at both their unlock Keep and Keep 15 (P4-01's support kits among them). */
@@ -69,7 +70,12 @@ describe('P4-06 (CMB-03): no single-warrior army flattens Keep 15', () => {
     }
   });
 
-  // Listed so it stays visible until a later pass closes it (the audit: at Keep 12 one searched mix is the best answer
-  // to every temper profile; no measurement in this pass changed that).
-  it.todo('KNOWN GAP (P4-06): one army is best on all four temper profiles at Keep 12');
+  // Beast Mode GT-07: measured, not a todo (tools/balance/temperPanel.ts, the audit's Keep 12 panel, 5 layouts x 2
+  // plans). Rules 10: the searched mix is best on every profile (plain 92.7, Reach 95.5, Blast 88.7, Watch 71.3 against
+  // Reaper + Mountain Shield 70.8). Watch's support cuts already sit at their 0.9 ceiling for that base (raising
+  // troopCuts.watch to 1.6 left Watch at 71.3 / 70.8), so closing it needs a new Watch lever: a recorded gap.
+  it.fails('KNOWN GAP (GT-07): at Keep 12 no single army is best on all four temper profiles', { timeout: 900_000 }, () => {
+    const best = Object.values(bestByProfile(12, data)).map((x) => x.best);
+    expect(new Set(best).size).toBeGreaterThan(1);
+  });
 });
