@@ -16,9 +16,9 @@ import { runBuildingPreview, runHeroPreview } from '../../../tools/balance/previ
 
 const OPTS = { layouts: ['random', 'kunai_ring', 'walled_keep', 'mortar_core', 'twin_gates', 'open_court'], seeds: 5 };
 const COUNTER_KNOWN_BELOW = new Set<string>([
-  // Every planned counter but the Lightning Rod Tower (effect -5.8 / -3.8 / -3.0 at its three Keeps: it passes) and, since
-  // SIM_RULES 9 (2026-11-22, the armies it answers changed), the Steam Vent.
-  'whirling_blade_tower', 'rain_barrel_tower', 'listening_jars', 'living_bamboo_wall', 'straw_scarecrow', 'mirror_screen', 'sand_bucket_post',
+  // Every planned counter but the Lightning Rod Tower (effect -5.8 / -3.8 / -3.0 at its three Keeps: it passes). The Steam
+  // Vent passed under SIM_RULES 9 and is back under the line at 10 (the late defense levels it is measured beside grew x1.5).
+  'steam_vent', 'whirling_blade_tower', 'rain_barrel_tower', 'listening_jars', 'living_bamboo_wall', 'straw_scarecrow', 'mirror_screen', 'sand_bucket_post',
   'discipline_banner', 'spotter_perch', 'sleep_dart_tower', 'rolling_log_chute', 'moonlit_gravel', 'ink_seal_post',
 ]);
 const HERO_KNOWN_BELOW = new Set<string>([
