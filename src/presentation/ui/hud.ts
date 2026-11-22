@@ -163,6 +163,7 @@ export class Hud {
         source: this.deps.groveSource,
         troopThumb: (t) => this.deps.troopThumb(t),
         onGroveAttack: (i) => this.deps.onGroveAttack(i),
+        serverNow: (t) => this.deps.connection.serverNow(t),
       })), failed);
     // Report section 5 step 10 (quality 17, 31): Friends, Gangs, Gang Wars and the QR code load on first use,
     // not with the first download (most players open them late or never).

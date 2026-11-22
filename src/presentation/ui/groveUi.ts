@@ -30,6 +30,8 @@ interface GroveUiDeps {
   source: GroveSource;
   troopThumb(type: string): string | null;
   onGroveAttack(target: number): void;
+  /** Beast Mode SAV-13: a device time on the server's clock (Connection.serverNow). */
+  serverNow?(deviceNow: number): number;
 }
 
 type Tab = 'chat' | 'requests' | 'members' | 'raid';
@@ -359,7 +361,8 @@ export class GroveUi {
   private raidTab(body: HTMLElement, snap: GroveSnapshot): void {
     const s = this.c.state;
     const gd = localizedData(this.c.data);
-    const now = this.c.now();
+    // Beast Mode SAV-13: a server's Alliance War ends on the server's clock; the offline war on the device's.
+    const now = snap.kind === 'local' ? this.c.now() : (this.d.serverNow?.(this.c.now()) ?? this.c.now());
     const p = snap.raid;
     const hall = hallLevel(s, gd);
     if (p.phase !== 'live') {

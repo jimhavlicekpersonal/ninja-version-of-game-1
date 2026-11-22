@@ -159,4 +159,12 @@ describe('Beast Mode SAV-13: device clock offset', () => {
     near.noteServerTime(1_000_000 + 60_000, 1_000_000, 1_000_000);
     expect(near.clockWarning).toBeNull();
   });
+
+  it('serverNow shifts a device time by the offset, for countdowns to server times (Gang and Alliance Wars)', () => {
+    const w = world();
+    const conn = new Connection({ game: game(w), builtInUrl: 'test.server', kv: memoryKv(), makePort: () => new InProcessServerAdapter(w.core), log: () => undefined });
+    expect(conn.serverNow(5_000)).toBe(5_000);
+    conn.noteServerTime(1_000_000 + 600_000 + 50, 1_000_000, 1_000_100);
+    expect(conn.serverNow(5_000)).toBe(5_000 + conn.clockOffsetMs);
+  });
 });

@@ -1084,6 +1084,10 @@ export class Connection {
     const sorted = [...this.offsets].sort((a, b) => a - b);
     this.clockOffsetMs = Math.round(sorted[Math.floor(sorted.length / 2)]);
   }
+  /** SAV-13: a device time read on the server's clock, for countdowns to times the server set (war ends, prep ends). */
+  serverNow(deviceNow: number): number {
+    return deviceNow + this.clockOffsetMs;
+  }
   /** SAV-13: the device clock is off by more than five minutes (minutes, signed), or null. */
   get clockWarning(): number | null {
     return Math.abs(this.clockOffsetMs) > 5 * 60_000 ? Math.round(this.clockOffsetMs / 60_000) : null;

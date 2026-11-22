@@ -33,8 +33,9 @@ export class GangWarUi {
 
   constructor(private readonly d: GangWarUiDeps) {}
 
+  /** Beast Mode SAV-13: every time here was set by the server, so countdowns read the server's clock. */
   private now(): number {
-    return this.d.kit.c.now();
+    return this.d.connection.serverNow(this.d.kit.c.now());
   }
 
   async load(redraw: () => void): Promise<void> {
