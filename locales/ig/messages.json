@@ -1907,6 +1907,7 @@
   "srv.pvp.fewer_troops": { "en": "Your village on the server has fewer {warrior} than this battle used.", "text": "Obodo gị dị na sava nwere {warrior} erughị ihe agha a jiri." },
   "srv.pvp.opponent_gone": { "en": "This opponent is no longer available. Find a new one.", "text": "Onye mmegide a adịkwaghị. Chọta onye ọhụrụ." },
   "srv.pvp.scout_expired": { "en": "This scout has expired. Find a new opponent.", "text": "Nlele a agafeela oge. Chọta onye mmegide ọhụrụ." },
+  "srv.pvp.report_pending": { "en": "Your last raid has not been reported yet. The game sends it first; if it was lost, a new raid opens in {minutes, plural, one {# minute} other {# minutes}}.", "text": "A kọbeghị mwakpo ikpeazụ gị. Egwuregwu na-ebu ụzọ ziga ya; ọ bụrụ na o furu efu, mwakpo ọhụrụ ga-emepe n'ime {minutes, plural, one {nkeji #} other {nkeji #}}." },
   "srv.pvp.started": { "en": "This battle has started: it can only be reported.", "text": "Agha a amalitela: ọ bụ naanị ịkọ akụkọ ya ka a pụrụ." },
   "srv.pvp.rules_differ": { "en": "This battle was played with different rules than the ticket was issued for. Find a new opponent.", "text": "Ejiri iwu dị iche na nke tiketi ahụ egwu agha a. Chọta onye mmegide ọhụrụ." },
   "srv.pvp.wrong_seed": { "en": "This battle was played with a seed the server did not issue. Update Kagemura to keep playing online.", "text": "Ejiri mkpụrụ sava ahụ enyeghị egwu agha a. Melite Kagemura iji gaa n'ihu na-egwu n'ịntanetị." },

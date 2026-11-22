@@ -1907,6 +1907,7 @@
   "srv.pvp.fewer_troops": { "en": "Your village on the server has fewer {warrior} than this battle used.", "text": "सर्वर पर आपके गाँव में इस लड़ाई में इस्तेमाल हुए {warrior} से कम हैं।" },
   "srv.pvp.opponent_gone": { "en": "This opponent is no longer available. Find a new one.", "text": "यह प्रतिद्वंद्वी अब उपलब्ध नहीं है। नया ढूँढें।" },
   "srv.pvp.scout_expired": { "en": "This scout has expired. Find a new opponent.", "text": "यह जासूसी पुरानी हो गई है। नया प्रतिद्वंद्वी ढूँढें।" },
+  "srv.pvp.report_pending": { "en": "Your last raid has not been reported yet. The game sends it first; if it was lost, a new raid opens in {minutes, plural, one {# minute} other {# minutes}}.", "text": "आपके पिछले छापे की रिपोर्ट अभी नहीं भेजी गई है। गेम पहले उसे भेजता है; अगर वह खो गई, तो {minutes, plural, one {# मिनट} other {# मिनट}} में नया छापा खुलेगा।" },
   "srv.pvp.started": { "en": "This battle has started: it can only be reported.", "text": "यह लड़ाई शुरू हो चुकी है: अब सिर्फ़ इसकी रिपोर्ट भेजी जा सकती है।" },
   "srv.pvp.rules_differ": { "en": "This battle was played with different rules than the ticket was issued for. Find a new opponent.", "text": "यह लड़ाई उन नियमों से अलग नियमों पर खेली गई जिनके लिए टिकट जारी हुआ था। नया प्रतिद्वंद्वी ढूँढें।" },
   "srv.pvp.wrong_seed": { "en": "This battle was played with a seed the server did not issue. Update Kagemura to keep playing online.", "text": "यह लड़ाई ऐसे सीड से खेली गई जो सर्वर ने जारी नहीं किया था। ऑनलाइन खेलते रहने के लिए Kagemura अपडेट करें।" },

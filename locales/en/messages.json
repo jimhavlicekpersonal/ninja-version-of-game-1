@@ -1907,6 +1907,7 @@
   "srv.pvp.fewer_troops": "Your village on the server has fewer {warrior} than this battle used.",
   "srv.pvp.opponent_gone": "This opponent is no longer available. Find a new one.",
   "srv.pvp.scout_expired": "This scout has expired. Find a new opponent.",
+  "srv.pvp.report_pending": "Your last raid has not been reported yet. The game sends it first; if it was lost, a new raid opens in {minutes, plural, one {# minute} other {# minutes}}.",
   "srv.pvp.started": "This battle has started: it can only be reported.",
   "srv.pvp.rules_differ": "This battle was played with different rules than the ticket was issued for. Find a new opponent.",
   "srv.pvp.wrong_seed": "This battle was played with a seed the server did not issue. Update Kagemura to keep playing online.",

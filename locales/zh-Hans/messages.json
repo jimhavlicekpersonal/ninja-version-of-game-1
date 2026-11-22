@@ -1907,6 +1907,7 @@
   "srv.pvp.fewer_troops": { "en": "Your village on the server has fewer {warrior} than this battle used.", "text": "你在服务器上的村庄中的{warrior}比这场战斗使用的少。" },
   "srv.pvp.opponent_gone": { "en": "This opponent is no longer available. Find a new one.", "text": "这位对手已不可用。请寻找新的对手。" },
   "srv.pvp.scout_expired": { "en": "This scout has expired. Find a new opponent.", "text": "此次侦察已过期。请寻找新的对手。" },
+  "srv.pvp.report_pending": { "en": "Your last raid has not been reported yet. The game sends it first; if it was lost, a new raid opens in {minutes, plural, one {# minute} other {# minutes}}.", "text": "你上一次突袭的结果还没有上报。游戏会先发送它；如果丢失了，{minutes, plural, other {# 分钟}}后可以开始新的突袭。" },
   "srv.pvp.started": { "en": "This battle has started: it can only be reported.", "text": "这场战斗已经开始：只能提交战报。" },
   "srv.pvp.rules_differ": { "en": "This battle was played with different rules than the ticket was issued for. Find a new opponent.", "text": "这场战斗使用的规则与发放战斗凭证时不同。请寻找新的对手。" },
   "srv.pvp.wrong_seed": { "en": "This battle was played with a seed the server did not issue. Update Kagemura to keep playing online.", "text": "这场战斗使用了服务器未发放的种子。请更新 Kagemura 以继续在线游戏。" },

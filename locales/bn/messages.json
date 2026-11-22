@@ -1907,6 +1907,7 @@
   "srv.pvp.fewer_troops": { "en": "Your village on the server has fewer {warrior} than this battle used.", "text": "এই যুদ্ধে যত ব্যবহার হয়েছে, সার্ভারে থাকা আপনার গ্রামে তার চেয়ে কম আছে: {warrior}।" },
   "srv.pvp.opponent_gone": { "en": "This opponent is no longer available. Find a new one.", "text": "এই প্রতিপক্ষকে আর পাওয়া যাচ্ছে না। নতুন একজন খুঁজুন।" },
   "srv.pvp.scout_expired": { "en": "This scout has expired. Find a new opponent.", "text": "এই খোঁজের মেয়াদ ফুরিয়েছে। নতুন প্রতিপক্ষ খুঁজুন।" },
+  "srv.pvp.report_pending": { "en": "Your last raid has not been reported yet. The game sends it first; if it was lost, a new raid opens in {minutes, plural, one {# minute} other {# minutes}}.", "text": "আপনার শেষ হানার খবর এখনো পাঠানো হয়নি। গেম আগে সেটি পাঠায়; হারিয়ে গেলে {minutes, plural, one {# মিনিটে} other {# মিনিটে}} নতুন হানা খুলবে।" },
   "srv.pvp.started": { "en": "This battle has started: it can only be reported.", "text": "এই যুদ্ধ শুরু হয়ে গেছে: এখন কেবল রিপোর্ট করা যায়।" },
   "srv.pvp.rules_differ": { "en": "This battle was played with different rules than the ticket was issued for. Find a new opponent.", "text": "টিকিট যে নিয়মে দেওয়া হয়েছিল, এই যুদ্ধ তার থেকে আলাদা নিয়মে খেলা হয়েছে। নতুন প্রতিপক্ষ খুঁজুন।" },
   "srv.pvp.wrong_seed": { "en": "This battle was played with a seed the server did not issue. Update Kagemura to keep playing online.", "text": "এই যুদ্ধ এমন একটি সিড দিয়ে খেলা হয়েছে, যা সার্ভার দেয়নি। অনলাইনে খেলতে থাকতে Kagemura আপডেট করুন।" },

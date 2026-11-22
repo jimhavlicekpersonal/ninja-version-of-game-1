@@ -1907,6 +1907,7 @@
   "srv.pvp.fewer_troops": { "en": "Your village on the server has fewer {warrior} than this battle used.", "text": "Satul tău de pe server are mai puțin decât a folosit această luptă: {warrior}." },
   "srv.pvp.opponent_gone": { "en": "This opponent is no longer available. Find a new one.", "text": "Adversarul nu mai e disponibil. Găsește altul." },
   "srv.pvp.scout_expired": { "en": "This scout has expired. Find a new opponent.", "text": "Această cercetare a expirat. Găsește un adversar nou." },
+  "srv.pvp.report_pending": { "en": "Your last raid has not been reported yet. The game sends it first; if it was lost, a new raid opens in {minutes, plural, one {# minute} other {# minutes}}.", "text": "Ultima ta incursiune nu a fost încă raportată. Jocul o trimite mai întâi; dacă s-a pierdut, o incursiune nouă se deschide în {minutes, plural, one {# minut} few {# minute} other {# de minute}}." },
   "srv.pvp.started": { "en": "This battle has started: it can only be reported.", "text": "Lupta a început: poate fi doar raportată." },
   "srv.pvp.rules_differ": { "en": "This battle was played with different rules than the ticket was issued for. Find a new opponent.", "text": "Lupta a fost jucată cu alte reguli decât cele pentru care a fost emis biletul. Găsește un adversar nou." },
   "srv.pvp.wrong_seed": { "en": "This battle was played with a seed the server did not issue. Update Kagemura to keep playing online.", "text": "Lupta a fost jucată cu un seed pe care serverul nu l-a emis. Actualizează Kagemura ca să joci în continuare online." },

@@ -1907,6 +1907,7 @@
   "srv.pvp.fewer_troops": { "en": "Your village on the server has fewer {warrior} than this battle used.", "text": "Isigodi sakho kuseva sinokuncane kunalokho okusetshenziswe kule mpi: {warrior}." },
   "srv.pvp.opponent_gone": { "en": "This opponent is no longer available. Find a new one.", "text": "Le mbangi ayisatholakali. Thola entsha." },
   "srv.pvp.scout_expired": { "en": "This scout has expired. Find a new opponent.", "text": "Lokhu kuhlola sekuphelelwe yisikhathi. Thola imbangi entsha." },
+  "srv.pvp.report_pending": { "en": "Your last raid has not been reported yet. The game sends it first; if it was lost, a new raid opens in {minutes, plural, one {# minute} other {# minutes}}.", "text": "Ukugasela kwakho kokugcina akukabikwa. Igeyimu iyakuthumela kuqala; uma kulahlekile, ukugasela okusha kuzovuleka emva {minutes, plural, one {komzuzu #} other {kwemizuzu #}}." },
   "srv.pvp.started": { "en": "This battle has started: it can only be reported.", "text": "Le mpi isiqalile: ingabikwa kuphela." },
   "srv.pvp.rules_differ": { "en": "This battle was played with different rules than the ticket was issued for. Find a new opponent.", "text": "Le mpi idlalwe ngemithetho ehlukile kunaleyo ithikithi elakhishelwa yona. Thola imbangi entsha." },
   "srv.pvp.wrong_seed": { "en": "This battle was played with a seed the server did not issue. Update Kagemura to keep playing online.", "text": "Le mpi idlalwe ngembewu engakhishwanga yiseva. Buyekeza i-Kagemura ukuze uqhubeke udlala ku-inthanethi." },

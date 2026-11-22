@@ -1907,6 +1907,7 @@
   "srv.pvp.fewer_troops": { "en": "Your village on the server has fewer {warrior} than this battle used.", "text": "A szerveren lévő faludban kevesebb van ebből, mint amennyit ez a csata felhasznált: {warrior}." },
   "srv.pvp.opponent_gone": { "en": "This opponent is no longer available. Find a new one.", "text": "Ez az ellenfél már nem elérhető. Keress újat." },
   "srv.pvp.scout_expired": { "en": "This scout has expired. Find a new opponent.", "text": "Ez a felderítés lejárt. Keress új ellenfelet." },
+  "srv.pvp.report_pending": { "en": "Your last raid has not been reported yet. The game sends it first; if it was lost, a new raid opens in {minutes, plural, one {# minute} other {# minutes}}.", "text": "Az utolsó portyádat még nem jelentették. A játék előbb azt küldi el; ha elveszett, új portya {minutes, plural, one {# perc} other {# perc}} múlva nyílik." },
   "srv.pvp.started": { "en": "This battle has started: it can only be reported.", "text": "Ez a csata már elkezdődött: csak jelenteni lehet." },
   "srv.pvp.rules_differ": { "en": "This battle was played with different rules than the ticket was issued for. Find a new opponent.", "text": "Ezt a csatát más szabályokkal játszották, mint amelyekre a jegyet kiadták. Keress új ellenfelet." },
   "srv.pvp.wrong_seed": { "en": "This battle was played with a seed the server did not issue. Update Kagemura to keep playing online.", "text": "Ezt a csatát olyan kezdőértékkel játszották, amelyet nem a szerver adott ki. Frissítsd a Kagemurát, hogy online játszhass tovább." },

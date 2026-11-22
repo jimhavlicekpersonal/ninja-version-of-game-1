@@ -1907,6 +1907,7 @@
   "srv.pvp.fewer_troops": { "en": "Your village on the server has fewer {warrior} than this battle used.", "text": "Desamu di server punya {warrior} lebih sedikit daripada yang dipakai dalam pertempuran ini." },
   "srv.pvp.opponent_gone": { "en": "This opponent is no longer available. Find a new one.", "text": "Lawan ini sudah tidak tersedia. Cari yang baru." },
   "srv.pvp.scout_expired": { "en": "This scout has expired. Find a new opponent.", "text": "Pengintaian ini sudah kedaluwarsa. Cari lawan baru." },
+  "srv.pvp.report_pending": { "en": "Your last raid has not been reported yet. The game sends it first; if it was lost, a new raid opens in {minutes, plural, one {# minute} other {# minutes}}.", "text": "Serbuan terakhirmu belum dilaporkan. Game mengirimnya lebih dulu; jika hilang, serbuan baru terbuka dalam {minutes, plural, other {# menit}}." },
   "srv.pvp.started": { "en": "This battle has started: it can only be reported.", "text": "Pertempuran ini sudah dimulai: hanya bisa dilaporkan." },
   "srv.pvp.rules_differ": { "en": "This battle was played with different rules than the ticket was issued for. Find a new opponent.", "text": "Pertempuran ini dimainkan dengan aturan yang berbeda dari tiketnya. Cari lawan baru." },
   "srv.pvp.wrong_seed": { "en": "This battle was played with a seed the server did not issue. Update Kagemura to keep playing online.", "text": "Pertempuran ini dimainkan dengan seed yang tidak diterbitkan server. Perbarui Kagemura untuk terus main online." },

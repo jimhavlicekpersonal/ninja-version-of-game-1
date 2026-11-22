@@ -1907,6 +1907,7 @@
   "srv.pvp.fewer_troops": { "en": "Your village on the server has fewer {warrior} than this battle used.", "text": "ಸರ್ವರ್‌ನಲ್ಲಿರುವ ನಿಮ್ಮ ಗ್ರಾಮದಲ್ಲಿ ಈ ಯುದ್ಧ ಬಳಸಿದ್ದಕ್ಕಿಂತ ಕಡಿಮೆ ಇದೆ: {warrior}." },
   "srv.pvp.opponent_gone": { "en": "This opponent is no longer available. Find a new one.", "text": "ಈ ಎದುರಾಳಿ ಈಗ ಲಭ್ಯವಿಲ್ಲ. ಹೊಸಬರನ್ನು ಹುಡುಕಿ." },
   "srv.pvp.scout_expired": { "en": "This scout has expired. Find a new opponent.", "text": "ಈ ಬೇಹುಗಾರಿಕೆಯ ಅವಧಿ ಮುಗಿದಿದೆ. ಹೊಸ ಎದುರಾಳಿಯನ್ನು ಹುಡುಕಿ." },
+  "srv.pvp.report_pending": { "en": "Your last raid has not been reported yet. The game sends it first; if it was lost, a new raid opens in {minutes, plural, one {# minute} other {# minutes}}.", "text": "ನಿಮ್ಮ ಕೊನೆಯ ದಾಳಿಯ ವರದಿ ಇನ್ನೂ ಕಳುಹಿಸಲಾಗಿಲ್ಲ. ಆಟ ಮೊದಲು ಅದನ್ನು ಕಳುಹಿಸುತ್ತದೆ; ಅದು ಕಳೆದುಹೋಗಿದ್ದರೆ, {minutes, plural, one {# ನಿಮಿಷದಲ್ಲಿ} other {# ನಿಮಿಷಗಳಲ್ಲಿ}} ಹೊಸ ದಾಳಿ ತೆರೆಯುತ್ತದೆ." },
   "srv.pvp.started": { "en": "This battle has started: it can only be reported.", "text": "ಈ ಯುದ್ಧ ಆರಂಭವಾಗಿದೆ: ಇದನ್ನು ವರದಿ ಮಾತ್ರ ಮಾಡಬಹುದು." },
   "srv.pvp.rules_differ": { "en": "This battle was played with different rules than the ticket was issued for. Find a new opponent.", "text": "ಟಿಕೆಟ್ ನೀಡಿದ ನಿಯಮಗಳಿಗಿಂತ ಬೇರೆ ನಿಯಮಗಳಿಂದ ಈ ಯುದ್ಧ ಆಡಲಾಗಿದೆ. ಹೊಸ ಎದುರಾಳಿಯನ್ನು ಹುಡುಕಿ." },
   "srv.pvp.wrong_seed": { "en": "This battle was played with a seed the server did not issue. Update Kagemura to keep playing online.", "text": "ಸರ್ವರ್ ನೀಡದ ಬೀಜದಿಂದ ಈ ಯುದ್ಧ ಆಡಲಾಗಿದೆ. ಆನ್‌ಲೈನ್‌ನಲ್ಲಿ ಆಡುತ್ತಿರಲು Kagemura ಅನ್ನು ಅಪ್‌ಡೇಟ್ ಮಾಡಿ." },

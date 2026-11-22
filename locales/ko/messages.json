@@ -1907,6 +1907,7 @@
   "srv.pvp.fewer_troops": { "en": "Your village on the server has fewer {warrior} than this battle used.", "text": "서버에 있는 마을의 {warrior}이(가) 이 전투에 쓴 것보다 적어요." },
   "srv.pvp.opponent_gone": { "en": "This opponent is no longer available. Find a new one.", "text": "이 상대는 더 이상 이용할 수 없어요. 새 상대를 찾으세요." },
   "srv.pvp.scout_expired": { "en": "This scout has expired. Find a new opponent.", "text": "이 정찰은 만료되었어요. 새 상대를 찾으세요." },
+  "srv.pvp.report_pending": { "en": "Your last raid has not been reported yet. The game sends it first; if it was lost, a new raid opens in {minutes, plural, one {# minute} other {# minutes}}.", "text": "마지막 습격이 아직 보고되지 않았어요. 게임이 먼저 보내요. 사라졌다면 {minutes, plural, other {#분}} 뒤에 새 습격을 할 수 있어요." },
   "srv.pvp.started": { "en": "This battle has started: it can only be reported.", "text": "이 전투는 이미 시작됐어요. 결과 보고만 할 수 있어요." },
   "srv.pvp.rules_differ": { "en": "This battle was played with different rules than the ticket was issued for. Find a new opponent.", "text": "이 전투는 티켓이 발급된 것과 다른 규칙으로 진행되었어요. 새 상대를 찾으세요." },
   "srv.pvp.wrong_seed": { "en": "This battle was played with a seed the server did not issue. Update Kagemura to keep playing online.", "text": "이 전투는 서버가 발급하지 않은 시드로 진행되었어요. 온라인에서 계속 플레이하려면 Kagemura를 업데이트하세요." },

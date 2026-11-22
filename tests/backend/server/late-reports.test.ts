@@ -60,3 +60,20 @@ describe('SEC-04: late battle reports', () => {
     expect(metrics.value('tk_late_reports_total', { kind: 'pvp' })).toBe(0);
   });
 });
+
+describe('SAV-05: one started raid at a time', () => {
+  it('a match while a started raid awaits its report (inside the grace) is refused with report_pending; after the report it is not', async () => {
+    const { w, a, submit } = await raid(false);
+    await w.player('Eve', baseAt(1, 91, 3000));
+    w.advance(MIN);
+    await expect(a.match()).rejects.toMatchObject({ code: 'conflict', parts: [expect.objectContaining({ key: 'pvp.report_pending' })] });
+    await submit();
+    await expect(a.match()).resolves.toBeTruthy();
+  });
+
+  it('past the grace the started raid is forfeited at the next match, as before', async () => {
+    const { w, a } = await raid(false);
+    w.advance(REPORT_GRACE_MS + MIN);
+    await expect(a.match()).resolves.toBeTruthy();
+  });
+});

@@ -1907,6 +1907,7 @@
   "srv.pvp.fewer_troops": { "en": "Your village on the server has fewer {warrior} than this battle used.", "text": "У твоєму селі на сервері менше воїнів «{warrior}», ніж використано в цьому бою." },
   "srv.pvp.opponent_gone": { "en": "This opponent is no longer available. Find a new one.", "text": "Цей суперник більше недоступний. Знайди нового." },
   "srv.pvp.scout_expired": { "en": "This scout has expired. Find a new opponent.", "text": "Час розвідки минув. Знайди нового суперника." },
+  "srv.pvp.report_pending": { "en": "Your last raid has not been reported yet. The game sends it first; if it was lost, a new raid opens in {minutes, plural, one {# minute} other {# minutes}}.", "text": "Звіт про твій останній набіг ще не надіслано. Гра надішле його першим; якщо він загубився, новий набіг відкриється через {minutes, plural, one {# хвилину} few {# хвилини} many {# хвилин} other {# хвилини}}." },
   "srv.pvp.started": { "en": "This battle has started: it can only be reported.", "text": "Цей бій уже почався: про нього можна лише звітувати." },
   "srv.pvp.rules_differ": { "en": "This battle was played with different rules than the ticket was issued for. Find a new opponent.", "text": "Цей бій зіграно за іншими правилами, ніж ті, для яких видано квиток. Знайди нового суперника." },
   "srv.pvp.wrong_seed": { "en": "This battle was played with a seed the server did not issue. Update Kagemura to keep playing online.", "text": "Цей бій зіграно із зерном, яке сервер не видавав. Онови Kagemura, щоб і далі грати онлайн." },

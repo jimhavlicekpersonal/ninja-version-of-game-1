@@ -1907,6 +1907,7 @@
   "srv.pvp.fewer_troops": { "en": "Your village on the server has fewer {warrior} than this battle used.", "text": "Tvoje selo na poslužitelju ima manje nego što je ova bitka upotrijebila: {warrior}." },
   "srv.pvp.opponent_gone": { "en": "This opponent is no longer available. Find a new one.", "text": "Ovaj protivnik više nije dostupan. Pronađi novog." },
   "srv.pvp.scout_expired": { "en": "This scout has expired. Find a new opponent.", "text": "Ovo je izviđanje isteklo. Pronađi novog protivnika." },
+  "srv.pvp.report_pending": { "en": "Your last raid has not been reported yet. The game sends it first; if it was lost, a new raid opens in {minutes, plural, one {# minute} other {# minutes}}.", "text": "Tvoj posljednji prepad još nije prijavljen. Igra ga šalje prvo; ako se izgubio, novi prepad otvara se za {minutes, plural, one {# minutu} few {# minute} other {# minuta}}." },
   "srv.pvp.started": { "en": "This battle has started: it can only be reported.", "text": "Ova je bitka počela: može se samo prijaviti." },
   "srv.pvp.rules_differ": { "en": "This battle was played with different rules than the ticket was issued for. Find a new opponent.", "text": "Ova je bitka odigrana s drugačijim pravilima od onih za koja je izdana karta. Pronađi novog protivnika." },
   "srv.pvp.wrong_seed": { "en": "This battle was played with a seed the server did not issue. Update Kagemura to keep playing online.", "text": "Ova je bitka odigrana sa sjemenom koje poslužitelj nije izdao. Ažuriraj Kagemura da nastaviš igrati na mreži." },

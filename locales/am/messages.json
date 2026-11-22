@@ -1907,6 +1907,7 @@
   "srv.pvp.fewer_troops": { "en": "Your village on the server has fewer {warrior} than this battle used.", "text": "በአገልጋዩ ላይ ያለው መንደርዎ ይህ ውጊያ ከተጠቀመው ያነሰ አለው፦ {warrior}።" },
   "srv.pvp.opponent_gone": { "en": "This opponent is no longer available. Find a new one.", "text": "ይህ ተቃዋሚ ከእንግዲህ አይገኝም። አዲስ ይፈልጉ።" },
   "srv.pvp.scout_expired": { "en": "This scout has expired. Find a new opponent.", "text": "ይህ ስለላ ጊዜው አልፏል። አዲስ ተቃዋሚ ይፈልጉ።" },
+  "srv.pvp.report_pending": { "en": "Your last raid has not been reported yet. The game sends it first; if it was lost, a new raid opens in {minutes, plural, one {# minute} other {# minutes}}.", "text": "የመጨረሻው ወረራዎ ገና አልተላከም። ጨዋታው መጀመሪያ ይልከዋል፤ ከጠፋ፣ አዲስ ወረራ በ{minutes, plural, one {# ደቂቃ} other {# ደቂቃዎች}} ውስጥ ይከፈታል።" },
   "srv.pvp.started": { "en": "This battle has started: it can only be reported.", "text": "ይህ ውጊያ ተጀምሯል፦ ሪፖርት ብቻ ማድረግ ይቻላል።" },
   "srv.pvp.rules_differ": { "en": "This battle was played with different rules than the ticket was issued for. Find a new opponent.", "text": "ይህ ውጊያ ትኬቱ ከተሰጠበት የተለየ ደንብ ተጫውቷል። አዲስ ተቃዋሚ ይፈልጉ።" },
   "srv.pvp.wrong_seed": { "en": "This battle was played with a seed the server did not issue. Update Kagemura to keep playing online.", "text": "ይህ ውጊያ አገልጋዩ ባልሰጠው ዘር ተጫውቷል። በመስመር ላይ መጫወት ለመቀጠል Kagemuraን ያዘምኑ።" },

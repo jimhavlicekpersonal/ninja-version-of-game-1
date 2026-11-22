@@ -385,7 +385,15 @@ export async function match(ctx: ServerContext, me: Player, client?: ClientInfo)
   // past REPORT_GRACE_MS it counts as a loss now (ledger audit A1: hiding a lost raid gained 73 hours).
   const held: string[] = [];
   let forfeited = false;
-  for (const open of await repo.openTickets(me.id, 'pvp')) {
+  const openNow = await repo.openTickets(me.id, 'pvp');
+  // Beast Mode SAV-05: a raid started inside REPORT_GRACE_MS is still awaiting its report (the game sends it before
+  // matching), so no second raid runs beside it; past the grace it is forfeited below, as before.
+  const waiting = openNow.find((o) => o.startedAt !== undefined && t <= o.startedAt + REPORT_GRACE_MS);
+  if (waiting) {
+    ctx.metrics.count('tk_refused_total', { reason: 'report_pending' });
+    throw fail(409, 'conflict', 'pvp.report_pending', { minutes: Math.max(1, Math.ceil((waiting.startedAt! + REPORT_GRACE_MS - t) / MIN)) });
+  }
+  for (const open of openNow) {
     if (open.startedAt === undefined) {
       if (await repo.useTicket(open.id, { voided: true })) if (open.defenderId) await ctx.locks.release(open.defenderId, me.id);
     } else if (t > open.startedAt + REPORT_GRACE_MS) {

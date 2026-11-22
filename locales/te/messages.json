@@ -1907,6 +1907,7 @@
   "srv.pvp.fewer_troops": { "en": "Your village on the server has fewer {warrior} than this battle used.", "text": "ఈ యుద్ధం వాడిన దాని కంటే సర్వర్‌లోని మీ గ్రామంలో తక్కువ ఉన్నాయి: {warrior}." },
   "srv.pvp.opponent_gone": { "en": "This opponent is no longer available. Find a new one.", "text": "ఈ ప్రత్యర్థి ఇక అందుబాటులో లేరు. కొత్తవారిని వెతకండి." },
   "srv.pvp.scout_expired": { "en": "This scout has expired. Find a new opponent.", "text": "ఈ నిఘా గడువు ముగిసింది. కొత్త ప్రత్యర్థిని వెతకండి." },
+  "srv.pvp.report_pending": { "en": "Your last raid has not been reported yet. The game sends it first; if it was lost, a new raid opens in {minutes, plural, one {# minute} other {# minutes}}.", "text": "మీ చివరి దాడి ఇంకా నివేదించబడలేదు. ఆట ముందుగా దాన్ని పంపుతుంది; అది పోయి ఉంటే, {minutes, plural, one {# నిమిషంలో} other {# నిమిషాల్లో}} కొత్త దాడి తెరుచుకుంటుంది." },
   "srv.pvp.started": { "en": "This battle has started: it can only be reported.", "text": "ఈ యుద్ధం మొదలైంది: దాన్ని నివేదించడం మాత్రమే సాధ్యం." },
   "srv.pvp.rules_differ": { "en": "This battle was played with different rules than the ticket was issued for. Find a new opponent.", "text": "టికెట్ ఇచ్చిన నియమాల కంటే వేరే నియమాలతో ఈ యుద్ధం ఆడబడింది. కొత్త ప్రత్యర్థిని వెతకండి." },
   "srv.pvp.wrong_seed": { "en": "This battle was played with a seed the server did not issue. Update Kagemura to keep playing online.", "text": "సర్వర్ ఇవ్వని సీడ్‌తో ఈ యుద్ధం ఆడబడింది. ఆన్‌లైన్‌లో ఆడుతూ ఉండటానికి Kagemura‌ను అప్‌డేట్ చేయండి." },

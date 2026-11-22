@@ -1907,6 +1907,7 @@
   "srv.pvp.fewer_troops": { "en": "Your village on the server has fewer {warrior} than this battle used.", "text": "لدى قريتك على الخادم {warrior} أقل مما استُخدم في هذه المعركة." },
   "srv.pvp.opponent_gone": { "en": "This opponent is no longer available. Find a new one.", "text": "هذا الخصم لم يعد متاحًا. يلزم البحث عن خصم جديد." },
   "srv.pvp.scout_expired": { "en": "This scout has expired. Find a new opponent.", "text": "انتهت صلاحية هذا الاستطلاع. يلزم البحث عن خصم جديد." },
+  "srv.pvp.report_pending": { "en": "Your last raid has not been reported yet. The game sends it first; if it was lost, a new raid opens in {minutes, plural, one {# minute} other {# minutes}}.", "text": "لم يُرسَل تقرير غارتك الأخيرة بعد. ترسله اللعبة أولًا؛ وإن فُقد، تُفتح غارة جديدة بعد {minutes, plural, zero {# دقيقة} one {دقيقة واحدة} two {دقيقتين} few {# دقائق} many {# دقيقة} other {# دقيقة}}." },
   "srv.pvp.started": { "en": "This battle has started: it can only be reported.", "text": "بدأت هذه المعركة: لا يمكن إلا الإبلاغ عن نتيجتها." },
   "srv.pvp.rules_differ": { "en": "This battle was played with different rules than the ticket was issued for. Find a new opponent.", "text": "لُعبت هذه المعركة بقواعد تختلف عن تلك التي صدرت لها التذكرة. يلزم البحث عن خصم جديد." },
   "srv.pvp.wrong_seed": { "en": "This battle was played with a seed the server did not issue. Update Kagemura to keep playing online.", "text": "لُعبت هذه المعركة ببذرة لم يُصدرها الخادم. يُرجى تحديث Kagemura لمتابعة اللعب عبر الإنترنت." },

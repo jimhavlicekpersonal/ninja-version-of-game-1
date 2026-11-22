@@ -1907,6 +1907,7 @@
   "srv.pvp.fewer_troops": { "en": "Your village on the server has fewer {warrior} than this battle used.", "text": "Din landsby på serveren har mindre {warrior}, end denne kamp brugte." },
   "srv.pvp.opponent_gone": { "en": "This opponent is no longer available. Find a new one.", "text": "Denne modstander er ikke længere tilgængelig. Find en ny." },
   "srv.pvp.scout_expired": { "en": "This scout has expired. Find a new opponent.", "text": "Denne spejdning er udløbet. Find en ny modstander." },
+  "srv.pvp.report_pending": { "en": "Your last raid has not been reported yet. The game sends it first; if it was lost, a new raid opens in {minutes, plural, one {# minute} other {# minutes}}.", "text": "Dit seneste togt er ikke indberettet endnu. Spillet sender det først; hvis det er gået tabt, åbner et nyt togt om {minutes, plural, one {# minut} other {# minutter}}." },
   "srv.pvp.started": { "en": "This battle has started: it can only be reported.", "text": "Denne kamp er begyndt: den kan kun indberettes." },
   "srv.pvp.rules_differ": { "en": "This battle was played with different rules than the ticket was issued for. Find a new opponent.", "text": "Denne kamp blev spillet med andre regler, end billetten blev udstedt til. Find en ny modstander." },
   "srv.pvp.wrong_seed": { "en": "This battle was played with a seed the server did not issue. Update Kagemura to keep playing online.", "text": "Denne kamp blev spillet med et seed, som serveren ikke udstedte. Opdater Kagemura for at blive ved med at spille online." },
