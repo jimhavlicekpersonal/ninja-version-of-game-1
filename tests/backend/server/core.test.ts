@@ -175,11 +175,13 @@ for (const [label, makeRepo] of repoFactories) {
         const m1 = (await a.match())!;
         // Ledger audit A1: the match never carries the seed; starting the raid does (and again on a retry).
         expect(m1.seed).toBeUndefined();
-        // Started, so the next match keeps it open (an unstarted ticket is voided by a new match: re-audit).
+        // Started: asking again gives the same seed; another raid's ticket has its own (Beast Mode SAV-05: the same
+        // player cannot match again while this one awaits its report, so the second ticket is another player's).
         const s1 = await startSeed(a, m1.ticket);
         expect(await startSeed(a, m1.ticket)).toBe(s1);
-        const m2 = (await a.match())!;
-        expect(s1).not.toBe(await startSeed(a, m2.ticket));
+        const b = await w.player('Bea', baseAt(1, 23));
+        const m2 = (await b.match())!;
+        expect(s1).not.toBe(await startSeed(b, m2.ticket));
         const { army, deployments } = rush(20);
         // A battle played with another seed is refused, and the ticket stays usable.
         expect(await code(a.submitAttack({ ticket: m1.ticket, seed: (s1 + 1) >>> 0, army, deployments }))).toBe('bad_request');

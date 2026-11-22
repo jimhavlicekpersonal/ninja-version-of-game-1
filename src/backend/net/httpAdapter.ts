@@ -129,6 +129,22 @@ interface HttpAdapterOptions {
    * Defaults to the built-in data.
    */
   dataVersion?: () => string;
+  /** Beast Mode SAV-06: the server reads gzip request bodies (hello feature `gzip-requests`). */
+  gzipRequests?: () => boolean;
+}
+
+/** SAV-06: bodies at least this long (JSON characters) go gzip-compressed when the server can read them. */
+const GZIP_MIN_CHARS = 16_000;
+
+async function gzipText(text: string): Promise<Uint8Array | null> {
+  const CS = (globalThis as { CompressionStream?: new (f: 'gzip') => TransformStream<Uint8Array, Uint8Array> }).CompressionStream;
+  if (!CS) return null;
+  try {
+    const stream = new Blob([text]).stream().pipeThrough(new CS('gzip'));
+    return new Uint8Array(await new Response(stream).arrayBuffer());
+  } catch {
+    return null;
+  }
 }
 
 const TOO_SLOW = 'The server took too long to answer.';
@@ -177,6 +193,7 @@ export class HttpServerAdapter implements ServerPort {
   private readonly retryDelayMs: number;
   private readonly build: string;
   private readonly dataVersion: () => string;
+  private readonly gzipRequests: () => boolean;
 
   constructor(
     readonly baseUrl: string,
@@ -192,6 +209,7 @@ export class HttpServerAdapter implements ServerPort {
     this.retryDelayMs = opts.retryDelayMs ?? 600;
     this.build = opts.build ?? 'unknown';
     this.dataVersion = opts.dataVersion ?? (() => dataVersionOf(defaultData));
+    this.gzipRequests = opts.gzipRequests ?? (() => false);
   }
 
   hasIdentity(): boolean {
@@ -257,11 +275,14 @@ export class HttpServerAdapter implements ServerPort {
 
   private async exchange<T>(method: string, path: string, body: unknown, ctrl: AbortController | null, token: string | null, key?: string): Promise<T> {
     let res: Response;
+    const sent = body === undefined ? undefined : JSON.stringify(body);
+    const zipped = sent !== undefined && sent.length >= GZIP_MIN_CHARS && this.gzipRequests() ? await gzipText(sent) : null;
     try {
       res = await this.fetchFn(`${this.baseUrl}${path}`, {
         method,
         headers: {
           ...(body !== undefined ? { 'content-type': 'application/json' } : {}),
+          ...(zipped ? { 'content-encoding': 'gzip' } : {}),
           ...(token ? { authorization: `Bearer ${token}` } : {}),
           [ClientHeaders.protocol]: String(PROTOCOL_VERSION),
           [ClientHeaders.simRules]: String(SIM_RULES),
@@ -269,7 +290,7 @@ export class HttpServerAdapter implements ServerPort {
           [ClientHeaders.clientBuild]: this.build,
           ...(method !== 'GET' ? { [ClientHeaders.idempotencyKey]: key ?? newKey() } : {}),
         },
-        body: body === undefined ? undefined : JSON.stringify(body),
+        body: (zipped as BodyInit | null) ?? sent,
         signal: ctrl?.signal,
       });
     } catch (e) {

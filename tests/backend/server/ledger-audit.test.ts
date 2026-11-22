@@ -43,10 +43,9 @@ describe('A1: a raid counts before its seed is known, and a hidden loss counts a
     const m = (await a.match())!;
     expect(m.opponent.name).toBe('Dot');
     await startSeed(a, m.ticket);
-    // Within the grace the raid is still being played or reported: nothing happens, Dot stays held.
+    // Within the grace the raid is still being played or reported: no second raid (Beast Mode SAV-05), no loss yet.
     w.advance(REPORT_GRACE_MS - 60_000);
-    const inGrace = (await a.match())!;
-    expect(inGrace.opponent.name).not.toBe('Dot');
+    expect(await code(a.match())).toBe('conflict');
     expect((await a.me()).trophies).toBe(400);
     // After it: the hidden raid counts as a loss now, not 73 hours later.
     w.advance(2 * 60_000);

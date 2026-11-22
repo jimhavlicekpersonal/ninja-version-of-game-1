@@ -230,7 +230,7 @@ export class Connection {
     this.kv = o.kv ?? browserKeyValue;
     this.url = o.offline ? '' : resolveServerUrl(this.kv, o.builtInUrl, o.allowServerChoice ?? true);
     if (this.url) {
-      this.port = (o.makePort ?? ((u) => new HttpServerAdapter(u, { build: o.build, dataVersion: o.dataVersion })))(this.url);
+      this.port = (o.makePort ?? ((u) => new HttpServerAdapter(u, { build: o.build, dataVersion: o.dataVersion, gzipRequests: () => this.server?.features.includes('gzip-requests') ?? false })))(this.url);
       this.status = 'connecting';
       const g = o.game;
       if (g.onCommand && g.adoptEconomy && g.adoptVillage) {

@@ -7,7 +7,7 @@
 import { ADMIN_PAGE_CSP, adminPage, adminScript } from './adminPage';
 import { createHash, randomUUID, timingSafeEqual } from 'node:crypto';
 import { promisify } from 'node:util';
-import { brotliCompress, constants as zlibConstants, gzip } from 'node:zlib';
+import { brotliCompress, constants as zlibConstants, createGunzip, gzip } from 'node:zlib';
 import Fastify, { type FastifyError, type FastifyInstance, type FastifyReply, type FastifyRequest } from 'fastify';
 import { ClientHeaders, Routes, type ErrorBody } from '../src/backend/net/protocol';
 import { MIN_PROTOCOL } from './core/identity';
@@ -226,6 +226,20 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
   const core: ServerCore = createCore(ctx);
   const app = Object.assign(fastify, { core, metrics });
   const started = Date.now();
+
+  // Beast Mode SAV-06 (hello feature `gzip-requests`): a gzip request body is inflated before parsing. The body
+  // limit applies to what comes out (no zip bomb), and the bytes received are what the content length counts.
+  app.addHook('preParsing', async (req, _reply, payload) => {
+    if (String(req.headers['content-encoding'] ?? '').toLowerCase() !== 'gzip') return payload;
+    const inflate = createGunzip();
+    let received = 0;
+    payload.on('data', (c: Buffer) => (received += c.length));
+    payload.on('error', (e) => inflate.destroy(e));
+    inflate.on('error', () => undefined);
+    const out = payload.pipe(inflate) as unknown as typeof payload & { receivedEncodedLength?: number };
+    payload.on('end', () => (out.receivedEncodedLength = received));
+    return out;
+  });
 
   // CORS without an extra dependency. corsOrigin: '*' (default; fine because
   // auth is a bearer token, not a cookie) or a comma-separated list of origins.

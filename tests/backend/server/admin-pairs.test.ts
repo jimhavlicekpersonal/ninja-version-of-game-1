@@ -26,7 +26,7 @@ describe('GT-17: the staff pair report', () => {
     const [a, b, c] = [await reg('Ann'), await reg('Bob'), await reg('Cat')];
     let n = 0;
     const raid = (from: string, to: string, loot: number) =>
-      repo.addAttack({ id: `x${++n}`, at: T - n * 3_600_000, attackerId: from, attackerName: from, defenderId: to, seed: 1, army: {}, base: baseAt(2), deployments: [], result: { stars: 3, destruction: 100, hallDestroyed: true, loot: { acorns: loot, dew: loot }, used: {}, ticks: 10, endReason: 'destroyed', hash: 'h' }, attackerTrophies: 20 } as AttackRecord);
+      repo.addAttack({ id: `x${++n}`, at: T - n * 3_600_000, attackerId: from, attackerName: from, defenderId: to, seed: 1, army: {}, base: baseAt(2), deployments: [], result: { stars: 3, destruction: 100, hallDestroyed: true, loot: { acorns: loot, dew: loot }, used: {}, ticks: 10, endReason: 'destroyed', hash: 'h' }, attackerTrophies: 20, defenderTrophies: 0 } as unknown as AttackRecord);
     for (let i = 0; i < 3; i++) await raid(a, b, 1000);
     for (let i = 0; i < 2; i++) await raid(b, a, 500);
     await raid(c, a, 10);
