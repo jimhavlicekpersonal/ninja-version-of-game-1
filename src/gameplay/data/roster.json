@@ -50,9 +50,7 @@
         "accent": "#8ad0ff",
         "weapon": "straight blade with wind ribbons"
       },
-      "liveTroop": "wind_step_assassin",
-      "hpScale": 1.16,
-      "dpsScale": 1.16
+      "liveTroop": "wind_step_assassin"
     },
     {
       "id": "moonblade_master",
@@ -86,9 +84,7 @@
         "accent": "#7fd3ff",
         "weapon": "lightning-etched katana"
       },
-      "liveTroop": "storm_sovereign",
-      "hpScale": 1.09,
-      "dpsScale": 1.09
+      "liveTroop": "storm_sovereign"
     },
     {
       "id": "kunai_adept",
@@ -141,9 +137,7 @@
         "accent": "#9be05a",
         "weapon": "bamboo blowgun"
       },
-      "liveTroop": "blowgun_hunter",
-      "hpScale": 1.16,
-      "dpsScale": 1.16
+      "liveTroop": "blowgun_hunter"
     },
     {
       "id": "chain_sickle_reaper",
@@ -177,9 +171,8 @@
         "accent": "#f4ead6",
         "weapon": "needle quiver and launcher"
       },
-      "dpsScale": 0.928,
-      "liveTroop": "thousand_needle",
-      "hpScale": 1.16
+      "dpsScale": 0.8,
+      "liveTroop": "thousand_needle"
     },
     {
       "id": "armored_guardian",
@@ -269,9 +262,7 @@
         "weapon": "giant spiked club",
         "armor": "black lacquer with horned helm"
       },
-      "liveTroop": "oni_breaker",
-      "hpScale": 1.06,
-      "dpsScale": 1.06
+      "liveTroop": "oni_breaker"
     },
     {
       "id": "saboteur",
@@ -356,9 +347,7 @@
         "accent": "#8ad0ff",
         "weapon": "lantern of silence"
       },
-      "liveTroop": "ghost_engineer",
-      "hpScale": 1.46,
-      "dpsScale": 1.46
+      "liveTroop": "ghost_engineer"
     },
     {
       "id": "tunnel_runner",
@@ -489,7 +478,9 @@
         "weapon": "hooked pole",
         "mount": "white crane-wing glider"
       },
-      "liveTroop": "crane_glider"
+      "liveTroop": "crane_glider",
+      "hpScale": 1.3,
+      "dpsScale": 1.3
     },
     {
       "id": "lantern_balloon",
@@ -507,7 +498,9 @@
         "weapon": "ember pots",
         "mount": "giant paper lantern balloon"
       },
-      "liveTroop": "lantern_balloon"
+      "liveTroop": "lantern_balloon",
+      "hpScale": 1.3,
+      "dpsScale": 1.3
     },
     {
       "id": "thunder_kite",
@@ -525,8 +518,9 @@
         "weapon": "lightning rod",
         "mount": "storm-blue kite"
       },
-      "dpsScale": 0.9,
-      "liveTroop": "thunder_kite"
+      "dpsScale": 1.17,
+      "liveTroop": "thunder_kite",
+      "hpScale": 1.3
     },
     {
       "id": "dragon_kite_armada",
@@ -544,8 +538,9 @@
         "weapon": "bomb racks",
         "mount": "long dragon kite"
       },
-      "dpsScale": 0.85,
-      "liveTroop": "dragon_kite_armada"
+      "dpsScale": 1.105,
+      "liveTroop": "dragon_kite_armada",
+      "hpScale": 1.3
     },
     {
       "id": "herbalist",
@@ -754,9 +749,8 @@
         "weapon": "falconry glove",
         "mount": "hawk"
       },
-      "dpsScale": 0.456,
-      "liveTroop": "hawk_tamer",
-      "hpScale": 0.76
+      "dpsScale": 0.6,
+      "liveTroop": "hawk_tamer"
     },
     {
       "id": "boar_rider",
@@ -774,9 +768,7 @@
         "weapon": "spear",
         "mount": "armoured boar"
       },
-      "liveTroop": "boar_rider",
-      "hpScale": 1.15,
-      "dpsScale": 1.15
+      "liveTroop": "boar_rider"
     },
     {
       "id": "bear_warrior",
@@ -794,9 +786,7 @@
         "weapon": "bear-claw gauntlets",
         "armor": "fur mantle"
       },
-      "liveTroop": "bear_warrior",
-      "hpScale": 1.19,
-      "dpsScale": 1.19
+      "liveTroop": "bear_warrior"
     },
     {
       "id": "tiger_lord",
@@ -814,9 +804,7 @@
         "weapon": "glaive",
         "mount": "white war tiger"
       },
-      "liveTroop": "tiger_lord",
-      "hpScale": 1.6,
-      "dpsScale": 1.6
+      "liveTroop": "tiger_lord"
     },
     {
       "id": "shadow_stalker",

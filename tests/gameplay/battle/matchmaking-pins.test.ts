@@ -39,21 +39,21 @@ function row(keep: number, lag: number, battles: number): string[] {
   return out;
 }
 
-// Re-pinned for SIM_RULES 8 (2026-11-18): Phase 4's combat changes and P4-07's raid layouts; Keep 8 rows again for
-// the rules-8 power slack (ranks.json powerSlackByKeep, Keep 8 0.75 -> 0.5), which rides the same bump.
+// Re-pinned for SIM_RULES 9 (2026-11-22): the combat rebalance's tier and air stats (the bases and bot plans are unchanged;
+// the battles' outcomes and final states are not).
 const PINNED: string[] = [
-  'K8 lag0 #0: base d4aaffaf Keep 8 deps 9018cbfb 1* 52% t877 7bb3ba61',
-  'K8 lag0 #1: base 5be08c91 Keep 8 deps 22c24102 0* 47% t1100 c5a6f8a4',
-  'K8 lag0 #2: base 96b74eab Keep 8 deps 2ec9874c 1* 52% t685 e42a7058',
-  'K8 lag2 #0: base 083557ac Keep 7 deps 8894ed06 3* 100% t681 6e93f037',
-  'K8 lag2 #1: base 881784bf Keep 7 deps 22c24102 1* 70% t719 0c30883b',
-  'K8 lag2 #2: base dd410f6e Keep 7 deps 798fbbfd 2* 53% t1442 e6bf2cef',
-  'K15 lag0 #0: base a454ff00 Keep 15 deps a902890c 2* 63% t1800 2efd10b2',
-  'K15 lag0 #1: base 42256ef7 Keep 15 deps 80ce8626 1* 60% t1800 1278cae0',
-  'K15 lag0 #2: base f6f1397d Keep 15 deps 96cb11d4 2* 65% t1285 beb8bb08',
-  'K15 lag2 #0: base 5e68117f Keep 14 deps a902890c 3* 100% t1681 c365c4a8',
-  'K15 lag2 #1: base 6e52bb45 Keep 14 deps 80ce8626 2* 72% t1740 5757676a',
-  'K15 lag2 #2: base a08de6a0 Keep 14 deps 96cb11d4 2* 65% t1040 dd49075c',
+  'K8 lag0 #0: base d4aaffaf Keep 8 deps 9018cbfb 3* 100% t861 e4956570',
+  'K8 lag0 #1: base 5be08c91 Keep 8 deps 22c24102 0* 47% t994 e55d5ad2',
+  'K8 lag0 #2: base 96b74eab Keep 8 deps 2ec9874c 2* 60% t631 4bc2c3d1',
+  'K8 lag2 #0: base 083557ac Keep 7 deps 8894ed06 3* 100% t617 e626125e',
+  'K8 lag2 #1: base 881784bf Keep 7 deps 22c24102 3* 100% t609 84a1cc85',
+  'K8 lag2 #2: base dd410f6e Keep 7 deps 798fbbfd 3* 100% t1119 981d6cbb',
+  'K15 lag0 #0: base a454ff00 Keep 15 deps a902890c 2* 63% t1800 592b50a4',
+  'K15 lag0 #1: base 42256ef7 Keep 15 deps 80ce8626 2* 70% t1430 e4727a40',
+  'K15 lag0 #2: base f6f1397d Keep 15 deps 96cb11d4 2* 67% t1800 b5b59893',
+  'K15 lag2 #0: base 5e68117f Keep 14 deps a902890c 3* 100% t975 4061edce',
+  'K15 lag2 #1: base 6e52bb45 Keep 14 deps 80ce8626 2* 72% t1265 ff962ef2',
+  'K15 lag2 #2: base a08de6a0 Keep 14 deps 96cb11d4 2* 67% t917 64869a9d',
 ];
 
 describe('matchmaking, generated bases and the bot plan replay exactly (PUB-02)', () => {

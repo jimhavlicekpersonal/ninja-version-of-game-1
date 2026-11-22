@@ -44,8 +44,14 @@ describe('the Shadow Captain', () => {
   });
 
   it('a battle without a hero plays exactly as under rules 4', () => {
+    // SIM_RULES 9 (2026-11-22) changed the stats of newer warriors in the Keep 9 bot army, so the comparison uses
+    // original units whose numbers have not moved since rules 4: what it checks is that the hero code is inert.
+    const originals = { hedgehog_roller: 40, frog_lobber: 30, beetle_brute: 8 };
     for (const seed of [3, 17]) {
-      const r = raid(9, seed, false);
+      const base = generateOpponent(9 * 7919 + seed, 9, data);
+      const setup: BattleSetup = { seed, base, army: originals, infiltration: true };
+      const probe = createBattle(setup, data);
+      const r = { setup, deployments: botDeployments(probe.deployable, probe.grid.size, originals, createRng(seed), data, {}, probe.entry) };
       expect(runBattle(r.setup, r.deployments, data).result).toEqual(v4().runBattle(r.setup, r.deployments, v4().data).result);
     }
   });

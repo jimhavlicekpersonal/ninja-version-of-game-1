@@ -203,7 +203,7 @@
     },
     "sky": {
       "name": "Sky",
-      "efficiency": 0.738,
+      "efficiency": 0.568,
       "hpPerDps": 2.7,
       "housing": 4,
       "range": 0.5,

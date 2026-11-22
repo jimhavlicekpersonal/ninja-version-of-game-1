@@ -51,8 +51,12 @@ import { heroShield } from './heroAbilities';
  * Thunder Kite damage and Eclipse Ninja health through the model, Shuriken Storm's fan radius, `counterShare` 0.75,
  * rival clans' home layouts in raids, `kit.breachRadius` removed. Live warriors behave differently in every battle,
  * so no older rules stay compatible; rules 7 is archived in server/rules/v7.
+ * 9 (2026-11-22 Beast Mode combat rebalance, GT-03/GT-04): newer warrior tiers no longer score below the tier before
+ * them at Keep 15 (per-warrior HP and damage factors in roster.json hpScale/dpsScale, Shuriken Storm and Hawk Tamer
+ * trimmed), and the air family's HP and damage x1.3 with its training cost x0.6. Smoke Bomb unchanged (measured). No
+ * older rules stay compatible; rules 8 is archived in server/rules/v8.
  */
-export const SIM_RULES = 8;
+export const SIM_RULES = 9;
 
 /**
  * Older rules this code plays out identically (their battles never use the

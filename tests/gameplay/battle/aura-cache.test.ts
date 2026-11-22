@@ -47,7 +47,7 @@ describe('aura lookups by kind (quality 28)', () => {
         }
       });
     }
-    expect(SIM_RULES).toBe(8);
-    expect(fnv64(parts.join('|'))).toBe('7b32daf5ecedecb2'); // re-pinned for SIM_RULES 8 (2026-11-18), again for the haste carry and Rally after the Captain falls (review #3, #10)
+    expect(SIM_RULES).toBe(9);
+    expect(fnv64(parts.join('|'))).toBe('2122d43eda0f182a'); // re-pinned for SIM_RULES 9 (2026-11-22, Beast Mode combat rebalance: tier and air stats); before: 7b32daf5ecedecb2 (rules 8)
   }, 120_000);
 });
