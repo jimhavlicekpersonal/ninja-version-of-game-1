@@ -48,6 +48,6 @@ describe('aura lookups by kind (quality 28)', () => {
       });
     }
     expect(SIM_RULES).toBe(9);
-    expect(fnv64(parts.join('|'))).toBe('2122d43eda0f182a'); // re-pinned for SIM_RULES 9 (2026-11-22, Beast Mode combat rebalance: tier and air stats); before: 7b32daf5ecedecb2 (rules 8)
+    expect(fnv64(parts.join('|'))).toBe('7b32daf5ecedecb2'); // SIM_RULES 9 (2026-11-22) left these armies' warriors unchanged, so the rules-8 pin holds
   }, 120_000);
 });

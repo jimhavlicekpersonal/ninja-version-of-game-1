@@ -119,8 +119,8 @@
         "weapon": "shuriken fan"
       },
       "liveTroop": "shuriken_storm",
-      "hpScale": 0.85,
-      "dpsScale": 0.85
+      "hpScale": 0.748,
+      "dpsScale": 0.748
     },
     {
       "id": "blowgun_hunter",

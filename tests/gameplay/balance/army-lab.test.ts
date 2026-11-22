@@ -142,7 +142,8 @@ describe('outcome gates: no composition dominates (audit F22, F23, F37)', () => 
   // P4-01 (2026-11-18, SIM_RULES 8): support warriors strike (warriorRules.supportStrike): support@7 and @8 left the list.
   // P4-04 (2026-11-18, SIM_RULES 8): faster siege warriors: siege@8 left the list too. P4-08 (four seeds a cell): the
   // steadier cells show melee@8 at 27.3 and support@8 at 27.6 (support was 22.0 before P4-01); listed, not hidden.
-  const KNOWN_BELOW = new Set<string>(['melee@8', 'support@8']);
+  // SIM_RULES 9 (2026-11-22, combat rebalance): melee@8 (37.6) and support@8 (35.3) reach the floor; the list is empty.
+  const KNOWN_BELOW = new Set<string>([]);
   it(`every family reaches ${FAMILY_FLOOR}% destruction at every Keep (known gaps listed, not hidden)`, () => {
     for (const keep of keeps) {
       for (const c of COMPOSITIONS) {

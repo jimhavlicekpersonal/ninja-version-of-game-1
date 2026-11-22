@@ -29,7 +29,7 @@
 | 4 | **Moonblade Master** `moonblade_master` | Blade | 4 Master | 10 | Moon Cut: Every fourth strike is a crescent slash for 2.5x damage. | 249 / 44 | 14 | 947 / 166 | 4846 | yes (`moonblade_master`) |
 | 5 | **Storm Sovereign** `storm_sovereign` | Blade | 5 Legend | 13 | Storm Chain: Slashes arc between up to three nearby buildings. | 544 / 95 | 12 | 986 / 173 | 5735 | yes (`storm_sovereign`) |
 | 6 | **Kunai Adept** `kunai_adept` | Thrower | 1 Initiate | 1 | Kunai Volley: Fragile ranged damage from behind the front line. | 24 / 7 | 20 | 403 / 117 | 7310 | yes (`frog_lobber`) |
-| 7 | **Shuriken Storm** `shuriken_storm` | Thrower | 2 Adept | 4 | Fan Throw: Throws three shuriken at once; small splash. | 34 / 10 | 18 | 426 / 124 | 8650 | yes (`shuriken_storm`) |
+| 7 | **Shuriken Storm** `shuriken_storm` | Thrower | 2 Adept | 4 | Fan Throw: Throws three shuriken at once; small splash. | 26 / 8 | 18 | 319 / 93 | 8650 | yes (`shuriken_storm`) |
 | 8 | **Blowgun Hunter** `blowgun_hunter` | Thrower | 3 Veteran | 7 | Venom Dart: Darts keep damaging a building for 5 seconds. | 64 / 19 | 16 | 443 / 129 | 10k | yes (`blowgun_hunter`) |
 | 9 | **Chain-Sickle Reaper** `chain_sickle_reaper` | Thrower | 4 Master | 10 | Armor Shred: Hits make the target take 20% more damage from everyone. | 121 / 35 | 14 | 461 / 135 | 12k | yes (`chain_sickle_reaper`) |
 | 10 | **Thousand Needle** `thousand_needle` | Thrower | 5 Legend | 13 | Needle Rain: Very long range and rapid fire; must stay behind cover. | 265 / 62 | 12 | 480 / 112 | 14k | yes (`thousand_needle`) |
@@ -44,15 +44,15 @@
 | 19 | **Fuse Master** `fuse_master` | Saboteur | 4 Master | 10 | Delayed Charge: Plants a charge on a defense that explodes after 5 seconds. | 751 / 30 | 14 | 2857 / 114 | 22k | yes (`fuse_master`) |
 | 20 | **Ghost Engineer** `ghost_engineer` | Saboteur | 5 Legend | 13 | Blackout: Once per battle, jams up to three defenses within 3 tiles for 4 seconds. Shares jam immunity with other specialists. | 1642 / 66 | 12 | 2972 / 119 | 26k | yes (`ghost_engineer`) |
 | 21 | **Tunnel Runner** `tunnel_runner` | Infiltrator | 1 Initiate | 4 | Tunnel: Digs under walls to reach any building. | 135 / 22 | 20 | 1678 / 268 | 18k | yes (`mole_digger`) |
-| 22 | **Wall Climber** `wall_climber` | Infiltrator | 2 Adept | 5 | Climb: Climbs over walls and goes for storehouses first. | 162 / 26 | 18 | 1741 / 279 | 21k | yes (`wall_climber`) |
-| 23 | **Grapple Raider** `grapple_raider` | Infiltrator | 3 Veteran | 8 | Grapple Line: Swings over walls straight to the nearest defense. | 305 / 49 | 16 | 1812 / 290 | 25k | yes (`grapple_raider`) |
-| 24 | **Burrow Ambusher** `mole_king` | Infiltrator | 4 Master | 11 | Surface Stun: Bursts out of the ground beside a defense, stunning it for 2 seconds. | 667 / 107 | 14 | 1885 / 302 | 29k | yes (`mole_king`) |
-| 25 | **Wall Phantom** `phantom_gate` | Infiltrator | 5 Legend | 14 | Open Path: Walls near it crumble, opening a path for everyone. | 1457 / 233 | 12 | 1961 / 314 | 34k | yes (`phantom_gate`) |
+| 22 | **Wall Climber** `wall_climber` | Infiltrator | 2 Adept | 5 | Climb: Climbs over walls and goes for storehouses first. | 185 / 30 | 18 | 1985 / 318 | 21k | yes (`wall_climber`) |
+| 23 | **Grapple Raider** `grapple_raider` | Infiltrator | 3 Veteran | 8 | Grapple Line: Swings over walls straight to the nearest defense. | 384 / 62 | 16 | 2283 / 365 | 25k | yes (`grapple_raider`) |
+| 24 | **Burrow Ambusher** `mole_king` | Infiltrator | 4 Master | 11 | Surface Stun: Bursts out of the ground beside a defense, stunning it for 2 seconds. | 807 / 129 | 14 | 2281 / 365 | 29k | yes (`mole_king`) |
+| 25 | **Wall Phantom** `phantom_gate` | Infiltrator | 5 Legend | 14 | Open Path: Walls near it crumble, opening a path for everyone. | 1894 / 303 | 12 | 2549 / 408 | 34k | yes (`phantom_gate`) |
 | 26 | **Kite Raider** `kite_raider` | Sky | 1 Initiate | 3 | Firebomb: Glides over walls on a war kite and bombs defenses. | 89 / 33 | 20 | 1302 / 482 | 58k | yes (`owl_bomber`) |
-| 27 | **Crane Glider** `crane_glider` | Sky | 2 Adept | 5 | Swift Glide: Very fast flyer that raids storehouses. | 128 / 47 | 18 | 1369 / 507 | 69k | yes (`crane_glider`) |
-| 28 | **Lantern Balloon** `lantern_balloon` | Sky | 3 Veteran | 8 | Ember Drop: Slow balloon that drops burning embers in a wide area. | 239 / 89 | 16 | 1423 / 527 | 82k | yes (`lantern_balloon`) |
-| 29 | **Thunder Kite** `thunder_kite` | Sky | 4 Master | 11 | Chain Lightning: Lightning hits a defense and up to three nearby defenses for 35% damage each. | 525 / 175 | 14 | 1481 / 494 | 97k | yes (`thunder_kite`) |
-| 30 | **Dragon Kite Crew** `dragon_kite_armada` | Sky | 5 Legend | 14 | Bomber Crew: A heavy dragon kite carrying a crew of bombers. | 1146 / 360 | 12 | 1541 / 485 | 115k | yes (`dragon_kite_armada`) |
+| 27 | **Crane Glider** `crane_glider` | Sky | 2 Adept | 5 | Swift Glide: Very fast flyer that raids storehouses. | 166 / 61 | 18 | 1780 / 659 | 42k | yes (`crane_glider`) |
+| 28 | **Lantern Balloon** `lantern_balloon` | Sky | 3 Veteran | 8 | Ember Drop: Slow balloon that drops burning embers in a wide area. | 311 / 115 | 16 | 1850 / 685 | 49k | yes (`lantern_balloon`) |
+| 29 | **Thunder Kite** `thunder_kite` | Sky | 4 Master | 11 | Chain Lightning: Lightning hits a defense and up to three nearby defenses for 35% damage each. | 683 / 227 | 14 | 1925 / 642 | 58k | yes (`thunder_kite`) |
+| 30 | **Dragon Kite Crew** `dragon_kite_armada` | Sky | 5 Legend | 14 | Bomber Crew: A heavy dragon kite carrying a crew of bombers. | 1490 / 469 | 12 | 2003 / 631 | 69k | yes (`dragon_kite_armada`) |
 | 31 | **Herbalist** `herbalist` | Mystic | 1 Initiate | 2 | Mend: Heals nearby warriors over time. | 222 / 16 | 20 | 3204 / 235 | 8772 | yes (`herbalist`) |
 | 32 | **Drum Monk** `drum_monk` | Mystic | 2 Adept | 5 | War Drum: Nearby warriors move and attack 10% faster within 3 tiles. Multiple drums do not stack. | 310 / 23 | 18 | 3334 / 245 | 10k | yes (`drum_monk`) |
 | 33 | **Mist Weaver** `mist_weaver` | Mystic | 3 Veteran | 8 | Veil: Wraps nearby warriors in thin mist (a small moving smoke cloud). | 584 / 43 | 16 | 3467 / 254 | 12k | yes (`mist_weaver`) |
@@ -62,7 +62,7 @@
 | 37 | **Fire Monk** `fire_monk` | Siege | 2 Adept | 6 | Flame Breath: Short-range fire that burns a small area of buildings. | 185 / 62 | 18 | 1714 / 571 | 10k | yes (`fire_monk`) |
 | 38 | **Bomb Carrier** `bomb_carrier` | Siege | 3 Veteran | 9 | Big Bang: Runs to the nearest wall or defense and explodes. | 404 / 135 | 16 | 1783 / 594 | 12k | yes (`bomb_carrier`) |
 | 39 | **Siege Bombardier** `siege_bombardier` | Siege | 4 Master | 12 | Long Shot: Artillery with 5-tile range that fires on defenses. Stops to fire every 2.5 seconds; vulnerable while approaching and cannot move while firing. | 762 / 102 | 14 | 1856 / 247 | 15k | yes (`siege_bombardier`) |
-| 40 | **Volcano Cannoneer** `volcano_cannoneer` | Siege | 5 Legend | 15 | Eruption: Huge splash that leaves burning ground. | 1931 / 708 | 12 | 1931 / 708 | 17k | yes (`volcano_cannoneer`) |
+| 40 | **Volcano Cannoneer** `volcano_cannoneer` | Siege | 5 Legend | 15 | Eruption: Huge splash that leaves burning ground. | 2221 / 814 | 12 | 2221 / 814 | 17k | yes (`volcano_cannoneer`) |
 | 41 | **Hound Handler** `hound_handler` | Beast | 1 Initiate | 3 | Unleash: Fights alongside two hunting dogs. The handler and dogs share one health and damage budget. | 196 / 25 | 20 | 2840 / 355 | 8772 | yes (`hound_handler`) |
 | 42 | **Hawk Tamer** `hawk_tamer` | Beast | 2 Adept | 6 | Hawk Harass: Her hawk harries a defense from range, slowing its fire. | 319 / 24 | 18 | 2955 / 222 | 10k | yes (`hawk_tamer`) |
 | 43 | **Boar Rider** `boar_rider` | Beast | 3 Veteran | 9 | Charge: Charges through the first wall in its way. | 697 / 87 | 16 | 3074 / 384 | 12k | yes (`boar_rider`) |
@@ -70,9 +70,9 @@
 | 45 | **Tiger Lord** `tiger_lord` | Beast | 5 Legend | 15 | Pride: Arrives with two war tigers. Rider and tigers share one health and damage budget. | 3328 / 416 | 12 | 3328 / 416 | 17k | yes (`tiger_lord`) |
 | 46 | **Shadow Stalker** `shadow_stalker` | Shadow | 1 Initiate | 3 | Unseen: Cannot be targeted until it attacks for the first time. | 117 / 29 | 20 | 1691 / 423 | 5848 | yes (`shadow_stalker`) |
 | 47 | **Mirage Twin** `mirage_twin` | Shadow | 2 Adept | 6 | Decoy: Leaves a decoy that draws fire for 4 seconds. | 191 / 48 | 18 | 1760 / 440 | 6920 | yes (`mirage_twin`) |
-| 48 | **Night Blade** `night_blade` | Shadow | 3 Veteran | 9 | Smoke Hunter: Deals double damage to buildings inside smoke. | 416 / 104 | 16 | 1830 / 458 | 8190 | yes (`night_blade`) |
-| 49 | **Void Walker** `void_walker` | Shadow | 4 Master | 12 | Shadow Step: Steps through shadows straight onto its target. | 782 / 195 | 14 | 1905 / 476 | 9692 | yes (`void_walker`) |
-| 50 | **Eclipse Ninja** `eclipse_ninja` | Shadow | 5 Legend | 15 | Eclipse: Unseen until its first attack, immune to traps, and has a 25% chance of double damage on each hit. | 1784 / 495 | 12 | 1784 / 495 | 11k | yes (`eclipse_ninja`) |
+| 48 | **Night Blade** `night_blade` | Shadow | 3 Veteran | 9 | Smoke Hunter: Deals double damage to buildings inside smoke. | 449 / 112 | 16 | 1976 / 494 | 8190 | yes (`night_blade`) |
+| 49 | **Void Walker** `void_walker` | Shadow | 4 Master | 12 | Shadow Step: Steps through shadows straight onto its target. | 813 / 203 | 14 | 1981 / 495 | 9692 | yes (`void_walker`) |
+| 50 | **Eclipse Ninja** `eclipse_ninja` | Shadow | 5 Legend | 15 | Eclipse: Unseen until its first attack, immune to traps, and has a 25% chance of double damage on each hit. | 1998 / 555 | 12 | 1998 / 555 | 11k | yes (`eclipse_ninja`) |
 
 ## Heroes
 

@@ -82,7 +82,9 @@ describe('DEF-01: a raid that wins fewer stars carries less home', () => {
 
   it('the fight is unchanged; what leaves the village is at most the carry share of what the old rule took', () => {
     const seen = new Set<number>();
-    for (const [seed, build] of [[4011, 'cap'], [4046, 'floor'], [4025, 'floor'], [4018, 'floor'], [4032, 'level1']] as const) {
+    // SIM_RULES 9 (2026-11-22): no seed below gave a one-star raid any more; 4030 on a capped base does (picked with
+    // seedWith, as the seeds above were).
+    for (const [seed, build] of [[4011, 'cap'], [4030, 'cap'], [4046, 'floor'], [4025, 'floor'], [4018, 'floor'], [4032, 'level1']] as const) {
       const { old, now, village: v } = both(seed, build);
       expect(now.result.hash).toBe(old.result.hash);
       const stars = now.result.stars;
