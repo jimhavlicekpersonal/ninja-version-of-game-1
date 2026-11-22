@@ -19,10 +19,10 @@ const KIT_FLOOR = 2;
 // kits fell under the floor after this list was first set at 6e81fe0, all from later Phase 4 changes, and are listed with
 // the cause: drum_monk (haste 0.25 -> 0.10, P4-01/P4-08), eclipse_ninja (HP x0.9, P4-06), sage_of_clouds (support strikes
 // and the Drum's cut, P4-01). One tier pair is fixed (mist_weaver<drum_monk). Phase 4 review #5.
-// SIM_RULES 9 (2026-11-22, combat rebalance), re-measured: eclipse_ninja and void_walker now reach +2 and left the
-// list; mole_king and phantom_gate entered it (their HP and damage rose 1.21x and 1.3x so they beat the tier below, and
+// SIM_RULES 9 (2026-11-22, combat rebalance), re-measured: eclipse_ninja now reaches +2 and left the list (void_walker
+// stays: at 1.03, held down by the solo gate, its kit is still under +2); mole_king and phantom_gate entered it (their HP and damage rose 1.21x and 1.3x so they beat the tier below, and
 // the kit is a smaller share of that).
-const KIT_KNOWN_BELOW = new Set(['bear_warrior', 'blowgun_hunter', 'bomb_carrier', 'dragon_kite_armada', 'drum_monk', 'herbalist', 'hound_handler', 'lantern_balloon', 'mirage_twin', 'mist_weaver', 'mole_king', 'night_blade', 'phantom_gate', 'ram_crew', 'sage_of_clouds', 'shadow_stalker', 'spirit_caller', 'thunder_kite', 'tiger_lord', 'twin_fang_dancer']);
+const KIT_KNOWN_BELOW = new Set(['bear_warrior', 'blowgun_hunter', 'bomb_carrier', 'dragon_kite_armada', 'drum_monk', 'herbalist', 'hound_handler', 'lantern_balloon', 'mirage_twin', 'mist_weaver', 'mole_king', 'night_blade', 'phantom_gate', 'ram_crew', 'sage_of_clouds', 'shadow_stalker', 'spirit_caller', 'thunder_kite', 'tiger_lord', 'twin_fang_dancer', 'void_walker']);
 /** Keep 15 scores where a newer tier is below the previous one in its role ("newer<older"). */
 // SIM_RULES 9: four pairs fixed (blowgun_hunter, volcano_cannoneer, night_blade and wall_climber now score above the tier
 // before them). The rest stay: boosting a Keep 13-15 tier also strengthens that Keep's bot army (matched Keep 15 farmed),
