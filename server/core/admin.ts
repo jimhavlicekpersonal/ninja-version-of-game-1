@@ -10,7 +10,7 @@ import { deserialize } from '../../src/gameplay/sim/save';
 import { RESOURCE_KINDS, type ResourceKind } from '../../src/gameplay/sim/types';
 import { NAME_HOLD_DAYS, nameKey } from '../../src/backend/net/names';
 import { DELETED_PLAYER, NameTakenError, type Player } from '../repo';
-import { nameFree, nameProblem, suggestNames } from './names';
+import { holdNameAndLookalikes, nameFree, nameProblem, suggestNames } from './names';
 import { HOUR, type ServerContext } from './context';
 import { notify } from './moderation';
 import { applyServerResult } from './village';
@@ -193,7 +193,7 @@ export async function rename(ctx: ServerContext, actor: string, id: string, body
   try {
     await ctx.repo.transaction(async (tx) => {
       await tx.updatePlayer(p.id, { name, nameKey: nameKey(name), previousName: null, nameChangedAt: 0, freeRenames: (p.freeRenames ?? 0) + 1, updatedAt: t, ...(p.base ? { base: { ...p.base, name } } : {}) });
-      if (p.nameKey) await tx.holdName(p.nameKey, DELETED_PLAYER.id, t + NAME_HOLD_DAYS * 24 * HOUR);
+      if (p.nameKey) await holdNameAndLookalikes(tx, p.nameKey, DELETED_PLAYER.id, t + NAME_HOLD_DAYS * 24 * HOUR);
     });
   } catch (e) {
     if (e instanceof NameTakenError) throw staffError(409, 'name_taken', 'That name was just taken.');

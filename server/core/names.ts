@@ -43,7 +43,21 @@ export async function nameFree(ctx: ServerContext, key: string, playerId: string
   // Beast Mode SEC-06: nor a look-alike of another player's name in another script.
   if (await ctx.repo.playerBySkeleton(skeletonOfKey(key), playerId)) return false;
   const hold = await ctx.repo.nameHold(key, ctx.now());
-  return !hold || hold.playerId === playerId;
+  if (hold && hold.playerId !== playerId) return false;
+  // SEC-06: a released name's look-alikes are held with it (`holdNameAndLookalikes`).
+  const look = await ctx.repo.nameHold(skeletonHoldKey(key), ctx.now());
+  return !look || look.playerId === playerId;
+}
+
+/** SEC-06: the hold key of a name's skeleton (its look-alikes in other scripts), beside the name's own key. */
+export function skeletonHoldKey(key: string): string {
+  return `skel:${skeletonOfKey(key)}`;
+}
+
+/** SEC-06: hold a released name and its look-alikes for the same time. */
+export async function holdNameAndLookalikes(repo: { holdName(key: string, playerId: string, until: number): Promise<void> }, key: string, playerId: string, until: number): Promise<void> {
+  await repo.holdName(key, playerId, until);
+  await repo.holdName(skeletonHoldKey(key), playerId, until);
 }
 
 /** The asked-for name made to fit the shape rules as far as it can (may still be too short or reserved). */
@@ -129,7 +143,7 @@ export async function changeName(ctx: ServerContext, me: Player, wanted: unknown
   try {
     await ctx.repo.transaction(async (tx) => {
       await tx.updatePlayer(me.id, { ...patch, ...(me.base ? { base: { ...me.base, name } } : {}) });
-      if (!sameName && me.nameKey) await tx.holdName(me.nameKey, me.id, t + NAME_HOLD_DAYS * DAY);
+      if (!sameName && me.nameKey) await holdNameAndLookalikes(tx, me.nameKey, me.id, t + NAME_HOLD_DAYS * DAY);
     });
   } catch (e) {
     if (e instanceof NameTakenError) throw fail(409, 'name_taken', 'name.just_taken', undefined, { suggestions: await suggestNames(ctx, name, me.id) });

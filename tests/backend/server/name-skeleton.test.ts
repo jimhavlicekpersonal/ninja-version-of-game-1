@@ -22,4 +22,16 @@ describe('SEC-06: name skeletons', () => {
     await expect(other.rename('\u0420\u043e\u0440\u0435\u0443\u0435')).rejects.toMatchObject({ code: 'name_taken' });
     await expect(other.rename('किरण')).resolves.toMatchObject({ name: 'किरण' });
   });
+
+  it('a released name holds its look-alikes too, for the hold; the owner may take either back', async () => {
+    const w = world();
+    const pop = await w.player('Popeye');
+    w.advance(30 * 86_400_000);
+    await pop.rename('Sailor Man');
+    const other = await w.player('Someone Else');
+    w.advance(30 * 86_400_000);
+    await expect(other.rename('Popeye')).rejects.toMatchObject({ code: 'name_taken' });
+    await expect(other.rename('\u0420\u043e\u0440\u0435\u0443\u0435')).rejects.toMatchObject({ code: 'name_taken' });
+    await expect(pop.rename('\u0420\u043e\u0440\u0435\u0443\u0435')).resolves.toMatchObject({ name: '\u0420\u043e\u0440\u0435\u0443\u0435' });
+  });
 });

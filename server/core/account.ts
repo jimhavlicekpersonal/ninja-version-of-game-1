@@ -12,6 +12,7 @@ import { leaveGrove } from './groves';
 import { revokeAppleTokens } from './links';
 import { leave as leaveSquad } from './squads';
 import { fail, staffError } from './errors';
+import { holdNameAndLookalikes } from './names';
 
 /**
  * Delete the caller's online account. Leaves their Alliance first (handing over leadership), without naming them.
@@ -26,7 +27,7 @@ export async function deleteAccount(ctx: ServerContext, me: Player): Promise<voi
   await ctx.repo.deletePlayer(me.id, me.name, ctx.now());
   // Report section 5 step 7 (backend A12): the name stays taken for NAME_HOLD_DAYS, so nobody takes it at once
   // to pose as the deleted player (an ex-Alliance leader, a known rival).
-  if (me.nameKey) await ctx.repo.holdName(me.nameKey, DELETED_PLAYER.id, ctx.now() + NAME_HOLD_DAYS * 24 * HOUR);
+  if (me.nameKey) await holdNameAndLookalikes(ctx.repo, me.nameKey, DELETED_PLAYER.id, ctx.now() + NAME_HOLD_DAYS * 24 * HOUR);
   await ctx.board.remove(me.id);
   await revokeAppleTokens(ctx, appleTokens, 'delete').catch((e) => ctx.log('warn', 'Sign in with Apple: revocation after deletion failed', { error: String(e) }));
 }
