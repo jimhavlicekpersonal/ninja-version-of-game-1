@@ -792,7 +792,9 @@
         "weapon": "bear-claw gauntlets",
         "armor": "fur mantle"
       },
-      "liveTroop": "bear_warrior"
+      "liveTroop": "bear_warrior",
+      "hpScale": 1.15,
+      "dpsScale": 1.15
     },
     {
       "id": "tiger_lord",

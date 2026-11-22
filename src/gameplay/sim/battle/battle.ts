@@ -56,7 +56,8 @@ import { heroShield } from './heroAbilities';
  * trimmed), and the air family's HP and damage x1.3 with its training cost x0.6. Smoke Bomb unchanged (measured). No
  * older rules stay compatible; rules 8 is archived in server/rules/v8.
  * 10 (2026-11-22 Beast Mode follow-up, GT-04/GT-05): the Keep 13 tier (Storm Sovereign, Thousand Needle, Oni Breaker
- * x1.25, Ghost Engineer x1.45 HP and damage) now outscores the Keep 12 tier at Keep 15, Volcano Cannoneer x1.35 more
+ * x1.25, Ghost Engineer x1.45 HP and damage) now outscores the Keep 12 tier at Keep 15, Bear Warrior x1.15 (back above
+ * Boar Rider), Volcano Cannoneer x1.35 more
  * (the siege family held at the 30% floor at Keep 15), and every defense level only a
  * base past Keep 12 can build has x1.5 HP and damage (`tools/progression/latedefense.mjs`), so Keep 15 raids stay one
  * to two stars and late defense counts. No older rules stay compatible; rules 9 is archived in server/rules/v9.
