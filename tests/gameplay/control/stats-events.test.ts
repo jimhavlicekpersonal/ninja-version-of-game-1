@@ -37,10 +37,13 @@ describe('statistics events from the controller', () => {
     const { controller: c, events } = await start();
     c.noteScoutLeft(2);
     c.noteGraphicsLost(true);
+    c.noteRendererExit(2, false);
     await new Promise((r) => setTimeout(r, 0));
     const left = events.events.find((x) => x.name === 'scout_leave')!;
     expect(cleanStatsEvent({ name: left.name, at: left.at, props: left.props as never })!.props).toEqual({ keep: 1, nexts: 2 });
     const lost = events.events.find((x) => x.name === 'webgl_lost')!;
     expect(cleanStatsEvent({ name: lost.name, at: lost.at, props: lost.props as never })!.props).toEqual({ stuck: true });
+    const exit = events.events.find((x) => x.name === 'renderer_exit')!;
+    expect(cleanStatsEvent({ name: exit.name, at: exit.at, props: exit.props as never })!.props).toEqual({ count: 2, crashed: false });
   });
 });

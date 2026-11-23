@@ -340,7 +340,8 @@ async function boot(): Promise<void> {
   crashReporter.install();
   // Beast Mode OPS-03 / STB-04: Android rebuilt the app after the WebView renderer died (recorded natively): report
   // it once, if the player allows crash reports.
-  void lastRendererExit().then((exit) => {
+  const rendererExit = lastRendererExit();
+  void rendererExit.then((exit) => {
     if (!exit) return;
     console.warn('The WebView renderer stopped and the app was rebuilt', exit);
     const r = rendererExitReport(exit);
@@ -403,6 +404,8 @@ async function boot(): Promise<void> {
   // "Update Kagemura" (roadmap step 75) opens the store listing in the apps; the web build reloads.
   const env = import.meta.env as Record<string, string | undefined>;
   const updateUrl = isNative() ? (platform() === 'ios' ? env.VITE_APP_STORE_URL : platform() === 'android' ? env.VITE_PLAY_STORE_URL : undefined) : undefined;
+  // Beast Mode OPS-03: the last renderer exit as an opt-in statistic too (the crash report above needs its own opt-in).
+  void rendererExit.then((exit) => exit && controller.noteRendererExit(exit.count, exit.didCrash));
   // Beast Mode SEC-11: iOS keeps sign-in tokens in the Keychain (this device only), read once before the connection.
   if (isNative() && platform() === 'ios') await installSecureTokens().catch(() => false);
   const connection = new Connection({ game: controller, builtInUrl, offline: sandbox || failure === 'failed', allowServerChoice, build: `${__APP_VERSION__}+${isNative() ? platform() : 'web'}`, keepVillageOnServer: store.persistent, updateUrl, rulesAccepted: acceptedRulesVersion, ...(balance ? { balance, dataVersion: () => balance.dataVersion() } : {}), ...(eventSchedule ? { events: eventSchedule } : {}) });

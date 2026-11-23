@@ -22,6 +22,7 @@ export type AnalyticsEventName =
   | 'tutorial_step'
   | 'scout_leave'
   | 'webgl_lost'
+  | 'renderer_exit'
   | 'session_reminder';
 
 export interface AnalyticsEvent {

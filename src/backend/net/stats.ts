@@ -29,6 +29,8 @@ export const STATS_EVENTS: Readonly<Record<string, Readonly<Record<string, Kind>
   scout_leave: { keep: 'number', nexts: 'number' },
   // STB-06: the graphics context was lost; `stuck` when it stayed lost and the reload card showed.
   webgl_lost: { stuck: 'boolean' },
+  // OPS-03: the app was rebuilt after its web renderer stopped (a graphics problem the player saw as a restart).
+  renderer_exit: { count: 'number', crashed: 'boolean' },
   offer_shown: { offerId: 'id', trigger: 'id' },
   purchase: { productId: 'id', usd: 'number', kind: 'id' },
   skip_used: { what: 'id', moonstones: 'number' },

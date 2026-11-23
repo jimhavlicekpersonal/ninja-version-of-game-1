@@ -646,6 +646,11 @@ export class GameController {
     this.deps.analytics.log('scout_leave', { keep: hallLevel(this.state, this.deps.data), nexts });
   }
 
+  /** Beast Mode OPS-03: the native side rebuilt the app after its web renderer stopped (`count` times since last read). */
+  noteRendererExit(count: number, crashed: boolean): void {
+    this.deps.analytics.log('renderer_exit', { count, crashed });
+  }
+
   /** Beast Mode STB-06: the graphics context was lost (`stuck`: it stayed lost and the reload card showed). */
   noteGraphicsLost(stuck: boolean): void {
     this.deps.analytics.log('webgl_lost', { stuck });
