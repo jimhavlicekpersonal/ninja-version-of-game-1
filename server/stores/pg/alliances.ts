@@ -179,6 +179,10 @@ export class PgAlliances extends PgBase {
     );
   }
 
+  async donationsSince(since: number, limit: number): Promise<Donation[]> {
+    return (await this.rows('select * from donations where at > $1 order by at desc limit $2', [since, limit])).map(toDonation);
+  }
+
   async undelivered(playerId: string): Promise<Donation[]> {
     return (await this.rows('select * from donations where to_id = $1 and not delivered order by at', [playerId])).map(toDonation);
   }

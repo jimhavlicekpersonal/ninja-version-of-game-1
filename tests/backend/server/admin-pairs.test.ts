@@ -28,11 +28,13 @@ describe('GT-17: the staff pair report', () => {
     const raid = (from: string, to: string, loot: number) =>
       repo.addAttack({ id: `x${++n}`, at: T - n * 3_600_000, attackerId: from, attackerName: from, defenderId: to, seed: 1, army: {}, base: baseAt(2), deployments: [], result: { stars: 3, destruction: 100, hallDestroyed: true, loot: { acorns: loot, dew: loot }, used: {}, ticks: 10, endReason: 'destroyed', hash: 'h' }, attackerTrophies: 20, defenderTrophies: 0 } as unknown as AttackRecord);
     for (let i = 0; i < 3; i++) await raid(a, b, 1000);
+    // Beast Mode GT-17: donations between the pair are counted beside the raids.
+    await repo.addDonation({ id: 'd1', requestId: 'q', groveId: 'g', fromId: b, fromName: 'Bob', toId: a, troop: 'hedgehog_roller', count: 5, level: 1, at: T - 1000, delivered: true });
     for (let i = 0; i < 2; i++) await raid(b, a, 500);
     await raid(c, a, 10);
     const r = await call('GET', '/admin/v1/pairs?days=3', ADMIN);
     expect(r.status).toBe(200);
-    expect(r.body.pairs[0]).toMatchObject({ raids: 5, oneWay: 3, otherWay: 2, loot: 8000, honor: 100 });
+    expect(r.body.pairs[0]).toMatchObject({ raids: 5, oneWay: 3, otherWay: 2, loot: 8000, honor: 100, donations: 1, warriorsDonated: 5 });
     expect([r.body.pairs[0].a.id, r.body.pairs[0].b.id].sort()).toEqual([a, b].sort());
     expect(r.body.pairs.some((p: { raids: number }) => p.raids === 1)).toBe(false);
     const actions = (await call('GET', '/admin/v1/actions', ADMIN)).body.actions as { action: string }[];

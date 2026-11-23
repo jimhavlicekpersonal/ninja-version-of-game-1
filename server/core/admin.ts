@@ -157,7 +157,8 @@ export async function suspects(ctx: ServerContext, actor: string, days: unknown)
 /**
  * Beast Mode GT-17: GET /admin/v1/pairs?days=N: pairs of players with at least two recorded raids between them in
  * the last N days (default 7, at most 30), raids both ways first: alternate accounts feeding a main raid each other
- * again and again. Read from the raids of the 200 highest-honor players (as `suspects`); the view is logged.
+ * again and again, and donations between them. Read from the raids of the 200 highest-honor players (as `suspects`)
+ * and the window's donations; the view is logged.
  */
 export async function pairs(ctx: ServerContext, actor: string, days: unknown) {
   const d = Math.max(1, Math.min(30, Math.floor(Number(days)) || 7));
@@ -178,10 +179,21 @@ export async function pairs(ctx: ServerContext, actor: string, days: unknown) {
       byPair.set(`${a}|${b}`, row);
     }
   }
+  // Donations between the same two players feed a main too: counted beside the raids.
+  const gifts = new Map<string, { donations: number; warriors: number }>();
+  for (const d of await ctx.repo.donationsSince(since, 5000)) {
+    const [a, b] = [d.fromId, d.toId].sort();
+    const g = gifts.get(`${a}|${b}`) ?? { donations: 0, warriors: 0 };
+    g.donations++;
+    g.warriors += d.count;
+    gifts.set(`${a}|${b}`, g);
+    if (!byPair.has(`${a}|${b}`)) byPair.set(`${a}|${b}`, { a, b, ab: 0, ba: 0, loot: 0, honor: 0, last: d.at });
+  }
   const named = async (id: string) => ({ id, name: (await ctx.repo.getPlayer(id))?.name ?? '' });
   const rows = [];
-  for (const x of [...byPair.values()].filter((x) => x.ab + x.ba >= 2).sort((p, q) => Math.min(q.ab, q.ba) - Math.min(p.ab, p.ba) || q.ab + q.ba - (p.ab + p.ba)).slice(0, 100)) {
-    rows.push({ a: await named(x.a), b: await named(x.b), raids: x.ab + x.ba, oneWay: Math.max(x.ab, x.ba), otherWay: Math.min(x.ab, x.ba), loot: x.loot, honor: x.honor, lastAt: x.last });
+  for (const x of [...byPair.values()].filter((x) => x.ab + x.ba >= 2 || (x.ab + x.ba >= 1 && gifts.has(`${x.a}|${x.b}`))).sort((p, q) => Math.min(q.ab, q.ba) - Math.min(p.ab, p.ba) || q.ab + q.ba - (p.ab + p.ba)).slice(0, 100)) {
+    const g = gifts.get(`${x.a}|${x.b}`);
+    rows.push({ a: await named(x.a), b: await named(x.b), raids: x.ab + x.ba, oneWay: Math.max(x.ab, x.ba), otherWay: Math.min(x.ab, x.ba), loot: x.loot, honor: x.honor, donations: g?.donations ?? 0, warriorsDonated: g?.warriors ?? 0, lastAt: x.last });
   }
   await audit(ctx, actor, 'view-pairs', null, { days: d });
   return { days: d, pairs: rows };

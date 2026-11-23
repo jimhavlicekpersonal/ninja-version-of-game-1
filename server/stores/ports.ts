@@ -438,6 +438,8 @@ export interface SocialStore {
   fillRequest(id: string, housing: number): Promise<TroopRequest | null>;
   addDonation(d: Donation): Promise<void>;
   undelivered(playerId: string): Promise<Donation[]>;
+  /** Beast Mode GT-17: donations made after `since`, newest first (the staff pair report). */
+  donationsSince(since: number, limit: number): Promise<Donation[]>;
   markDelivered(playerId: string, ids: string[]): Promise<void>;
   // grove raids
   getPairing(week: number, groveId: string): Promise<RaidPairing | null>;

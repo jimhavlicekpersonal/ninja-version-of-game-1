@@ -125,6 +125,9 @@ export class MemoryAlliances extends MemoryBase {
   async addDonation(d: Donation): Promise<void> {
     this.donations.push(clone(d));
   }
+  async donationsSince(since: number, limit: number): Promise<Donation[]> {
+    return this.donations.filter((d) => d.at > since).sort((a, b) => b.at - a.at).slice(0, limit).map(clone);
+  }
   async undelivered(playerId: string): Promise<Donation[]> {
     return this.donations.filter((d) => d.toId === playerId && !d.delivered).map(clone);
   }
