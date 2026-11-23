@@ -237,7 +237,8 @@ export function raidVillage(s: VillageState, t: number, rng: Rng, data: GameData
   // Staked honor: a lost defence costs `defenseHonorLossShare` of what the raider gained (none by default).
   if (!fought) delta = 0;
   else if (result.stars >= 1) delta = -defenseHonorLoss(winTrophies(attackerTrophies, s.trophies, data), data);
-  else delta = lossTrophies(attackerTrophies, s.trophies, data);
+  // Beast Mode GT-05 follow-up: a held simulated raid pays `raids.heldHonorShare` of the raider's loss (default all).
+  else delta = Math.floor(lossTrophies(attackerTrophies, s.trophies, data) * (data.raids.heldHonorShare ?? 1));
   s.trophies = Math.max(0, s.trophies + delta);
   const shield = shieldHoursFor(result.destruction, data);
   if (shield > 0) s.shieldUntil = Math.max(s.shieldUntil, t + shield * MS_PER_HOUR);

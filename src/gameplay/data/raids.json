@@ -18,6 +18,7 @@
   "$commentRaider": "P2-02 (DEF-04): bot raiders come from the defender's own Keep (a strength drawn between Keep-2 and Keep-1, which is a Keep - 1 raider at some level bias; independent review 2026-11-18 corrected 'Keep-1 to Keep'), not from honor, so holding raids no longer summons a stronger raider.",
   "raiderMatch": { "lo": -1, "hi": 0 },
   "$commentRaiderMatchByKeep": "Beast Mode GT-05 (2026-11-23): from Keep 10 simulated raiders come from Keep-1.5 to Keep-0.5, from Keep 12 from Keep-2.5 to Keep-1.5. A regular player who builds the counters first held 3% of the raids at Keeps 12-15 (every raider a near-capped army of its own Keep); measured 17% with this (3 seeds). Simulated raids only: real players attack as they are.",
+  "heldHonorShare": 0.5,
   "raiderMatchByKeep": [{ "fromKeep": 10, "lo": -1.5, "hi": -0.5 }, { "fromKeep": 12, "lo": -2.5, "hi": -1.5 }],
   "rematch": {
     "$comment": "Settle the score: once per bot raid, within `windowHours`, attack the raider's own generated base. No loot from buildings and no honor; a win (1+ stars) pays `shareOfRaidLoot` x stars/3 of the Keep's lowest raid loot.",

@@ -1003,6 +1003,8 @@ export interface RaidsDef {
   raiderMatch?: { lo: number; hi: number };
   /** Beast Mode GT-05: from a defender Keep on, simulated raiders are drawn from these offsets instead (latest entry that applies). */
   raiderMatchByKeep?: { fromKeep: number; lo: number; hi: number }[];
+  /** Beast Mode GT-05 follow-up: the share of a raider's honor loss a held simulated raid pays the defender (default 1). */
+  heldHonorShare?: number;
   /** Lab only (`tools/balance`): model villages are laid out on a generated base; live data never sets these. */
   labAutoLayout?: boolean;
   labWalls?: boolean;
