@@ -16,6 +16,7 @@ import m0043 from './0043_late_reports.sql?raw';
 import m0044 from './0044_name_skeletons.sql?raw';
 import m0045 from './0045_war_attack_effort.sql?raw';
 import m0046 from './0046_device_honor_gain.sql?raw';
+import m0047 from './0047_move_refused.sql?raw';
 /**
  * Every migration, bundled into the server build (no files are read at run
  * time). Add each new file here: an explicit list, because a glob import would
@@ -99,4 +100,5 @@ export const migrations = loadMigrations({
   '0044_name_skeletons.sql': m0044,
   '0045_war_attack_effort.sql': m0045,
   '0046_device_honor_gain.sql': m0046,
+  '0047_move_refused.sql': m0047,
 });

@@ -41,6 +41,7 @@ export const toPlayer = (r: Row): Player => ({
       }
     : {}),
   ...(num(r.honor_loss_day) >= 0 ? { honorLoss: { day: num(r.honor_loss_day), lost: num(r.honor_lost) } } : {}),
+  ...(num(r.move_refused_at) > 0 ? { moveRefused: { at: num(r.move_refused_at), reason: String(r.move_refused ?? '') } } : {}),
   ...(num(r.honor_gain_day) >= 0 ? { honorGain: { day: num(r.honor_gain_day), gained: num(r.honor_gained) } } : {}),
   ...(r.name_key !== null && r.name_key !== undefined ? { nameKey: String(r.name_key) } : {}),
   previousName: strOrNull(r.previous_name),

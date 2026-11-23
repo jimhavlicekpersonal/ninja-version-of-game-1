@@ -200,7 +200,7 @@ export async function detail(ctx: ServerContext, id: string, actor = '') {
     : null;
   const membership = await ctx.repo.getMembership(p.id);
   return {
-    player: { ...summary(p, now), shieldUntil: p.shieldUntil, mutedUntil: p.mutedUntil ?? 0, groveId: p.groveId, hasBase: Boolean(p.base), ratings: p.ratings ?? null, lateReports: p.lateReports ?? 0, lateReportAt: p.lateReportAt ?? 0 },
+    player: { ...summary(p, now), shieldUntil: p.shieldUntil, mutedUntil: p.mutedUntil ?? 0, groveId: p.groveId, hasBase: Boolean(p.base), ratings: p.ratings ?? null, lateReports: p.lateReports ?? 0, lateReportAt: p.lateReportAt ?? 0, moveRefused: p.moveRefused ?? null },
     links: (await ctx.repo.linksOf(p.id)).map((l) => ({ provider: l.provider, linkedAt: l.linkedAt })),
     ageGroup: await ctx.repo.getAgeGroup(p.id),
     alliance: membership ? { id: membership.groveId, role: membership.role } : null,

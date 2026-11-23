@@ -42,7 +42,7 @@ import { achievementValue } from '../../src/gameplay/sim/achievements';
 import type { VillageResponse } from '../../src/backend/net/protocol';
 import type { ImportHold, Player, PurchaseRow, VillageRow } from '../repo';
 import { settleNotCarried } from './purchases';
-import { HOUR, type ServerContext } from './context';
+import { ApiError, HOUR, type ServerContext } from './context';
 import { maxReinforcementAt, normalizeBase } from './pvp';
 import { getVillage } from './village';
 import { fail } from './errors';
@@ -351,6 +351,16 @@ export function sandboxEvidence(s: VillageState): boolean {
 
 /** POST /v1/village/import: the device's village becomes the server's (once). */
 export async function importVillage(ctx: ServerContext, me: Player, body: { file?: unknown } | undefined): Promise<VillageResponse> {
+  try {
+    return await importVillageChecked(ctx, me, body);
+  } catch (e) {
+    // Beast Mode SEC-01: a refused move is kept for staff with its reason (the game shows the player the same message).
+    if (e instanceof ApiError && (e.status === 400 || e.status === 403)) await ctx.repo.updatePlayer(me.id, { moveRefused: { at: ctx.now(), reason: e.message.slice(0, 500) } });
+    throw e;
+  }
+}
+
+async function importVillageChecked(ctx: ServerContext, me: Player, body: { file?: unknown } | undefined): Promise<VillageResponse> {
   if (await ctx.repo.getVillage(me.id)) throw fail(409, 'conflict', 'import.already');
   const tooBig = importSizeProblem(body?.file, ctx.data);
   if (tooBig) {

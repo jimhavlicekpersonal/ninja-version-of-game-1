@@ -125,6 +125,10 @@ export class PgPlayers extends PgBase implements PlayerStore {
       put('honor_loss_day', patch.honorLoss.day);
       put('honor_lost', patch.honorLoss.lost);
     }
+    if (patch.moveRefused) {
+      put('move_refused_at', patch.moveRefused.at);
+      put('move_refused', patch.moveRefused.reason);
+    }
     if (patch.honorGain) {
       put('honor_gain_day', patch.honorGain.day);
       put('honor_gained', patch.honorGain.gained);

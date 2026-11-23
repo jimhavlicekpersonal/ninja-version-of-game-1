@@ -35,6 +35,8 @@ export interface Player {
   honorLoss?: { day: number; lost: number };
   /** Beast Mode SEC-01: honor gained from raids on one UTC day (the device-village ceiling, DEVICE_HONOR_PER_DAY). */
   honorGain?: { day: number; gained: number };
+  /** Beast Mode SEC-01: the last refused village move and why (staff view). */
+  moveRefused?: { at: number; reason: string };
   /** Suspended by staff until this time (0 or absent: not banned). Banned players are not matched or ranked. */
   bannedUntil?: number;
   banReason?: string | null;
@@ -73,7 +75,7 @@ export interface Player {
   session?: string;
 }
 
-export type PlayerPatch = Partial<Pick<Player, 'name' | 'trophies' | 'hallLevel' | 'shieldUntil' | 'base' | 'groveId' | 'updatedAt' | 'lastSeenAt' | 'mutedUntil' | 'muteReason' | 'ratings' | 'honorLoss' | 'honorGain' | 'bannedUntil' | 'banReason' | 'nameKey' | 'previousName' | 'nameChangedAt' | 'freeRenames' | 'findable' | 'showOnline' | 'friendCode' | 'staff' | 'duelBase' | 'squadLeftAt' | 'rulesVersion' | 'rulesAcceptedAt' | 'lateReports' | 'lateReportAt' | 'onlineSince'>>;
+export type PlayerPatch = Partial<Pick<Player, 'name' | 'trophies' | 'hallLevel' | 'shieldUntil' | 'base' | 'groveId' | 'updatedAt' | 'lastSeenAt' | 'mutedUntil' | 'muteReason' | 'ratings' | 'honorLoss' | 'honorGain' | 'moveRefused' | 'bannedUntil' | 'banReason' | 'nameKey' | 'previousName' | 'nameChangedAt' | 'freeRenames' | 'findable' | 'showOnline' | 'friendCode' | 'staff' | 'duelBase' | 'squadLeftAt' | 'rulesVersion' | 'rulesAcceptedAt' | 'lateReports' | 'lateReportAt' | 'onlineSince'>>;
 
 /** Two players asked to change to the same name at once: the second one gets this (the store's unique key said no). */
 export class NameTakenError extends Error {

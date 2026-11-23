@@ -147,6 +147,8 @@ describe('worldwide audit GLOBAL-002: import provenance', () => {
     sandboxed.flags.sandbox = true;
     await expect(p.importVillage(serialize(sandboxed, w.now()))).rejects.toMatchObject({ code: 'bad_request', message: expect.stringMatching(/testing sandbox/) });
     expect(await p.getVillage()).toBeNull();
+    // Beast Mode SEC-01: the refusal is kept for staff (the player's detail view), with its reason.
+    expect((await w.repo.getPlayer(p.id))!.moveRefused).toMatchObject({ at: w.now(), reason: expect.stringMatching(/sandbox/) });
   });
 
   it('allows a checked buyer more than the free allowance, and never refuses legitimate progress outright below the ceiling', () => {
