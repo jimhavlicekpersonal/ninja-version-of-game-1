@@ -1512,3 +1512,30 @@ Exact replays re-recorded with the bump: the combat fingerprint, the rules-9 fix
 
 Not run: players, devices, Postgres.
 
+
+### 2026-11-23 Beast Mode follow-up: what was left (on `claude/optimistic-faraday-qq0uoc`)
+
+Asked for "fix whatever wasn't fixed" after the combat rebalance. Code items were closed or narrowed one per commit with a test first; OWNER, DEVICE and NEEDS-PLAYERS parts stay open and are named. Battle rules stay **SIM_RULES 9**: a rules-10 attempt was measured and reverted (below). Model measurements are model players and generated bases, not observed play.
+
+| # | Finding | Status | What changed | Proving test | Limits |
+|---|---|---|---|---|---|
+| SEC-11 | iOS token in backups | code done | `TkSecureStore` (Keychain, this device only), `net/tokenVault.ts`, iOS boot migrates localStorage tokens | `secure-tokens.test.ts`, `release-config.test.ts` | Swift not compiled; restored-backup device check open |
+| SEC-01 | device villages trusted | partly done | `DEVICE_HONOR_PER_DAY` (400) daily honor ceiling, migration 0046 | `device-honor-cap.test.ts` | Postgres path not run; owner D8 |
+| SEC-06 | look-alike names | partly done | a released name holds its skeleton too | `name-skeleton.test.ts` | admin clash listing open |
+| SEC-07 | account takeover | partly done | notice on a sign-in from a new device (50 languages) | `links.test.ts` | reversing a cheater's honor not built |
+| SAV-05 | one raid at a time | code done | `match` refuses `409 pvp.report_pending` inside a started raid's grace | `late-reports.test.ts` | App-level test (no Phaser harness) |
+| SAV-06 | slow uplinks | partly done | gzip request bodies (`gzip-requests`) | `gzip-requests.test.ts` | throttled browser run and 3G phone open |
+| SAV-13 | clock offset | done | war countdowns read `Connection.serverNow` | `connectionNetwork.test.ts` | — |
+| OPS-03 | renderer crashes | partly done | iOS `TkNativePlugin` + content-process watch | `release-config.test.ts` | Swift not compiled; kill test on a device |
+| OPS-06 / STB-06 | statistics gaps | partly done | `scout_leave`, `webgl_lost`, controller test for `trial_end`; explainer names Trials and graphics problems (50 languages) | `stats-events.test.ts` | funnel panel open |
+| OPS-09 | kill switches | partly done | DOM test for a paused product | `store-paused.dom.test.ts` | staging drill (owner) |
+| GT-10 | stake lottery | done (code) | stakes open from Keep 6 (at Keep 2 a 3-star stake paid 1.15x) | `stake-keep.test.ts`, campaign gate "no free money" | deploySpread unchanged (optional) |
+| GT-12 | rating power | partly done | defender power from defense strength (`defensePower`) | `rating.test.ts` | board power weight, wider convergence test |
+| GT-13 | token war attacks | done | chests split 30% by own stars, online and offline | `war-chest-stars.test.ts`, `connection.test.ts` | — |
+| GT-17 | alt feeding | partly done | staff pair report `/admin/v1/pairs` | `admin-pairs.test.ts` | donations not in it |
+| GT-05 | late defense | partly done | `regular_online` campaign (the shipped online build) and gate; simulated raiders below the defender's Keep from Keep 10/12 (`raiderMatchByKeep`): defender held 3% → 17% at Keeps 12-15 | `campaign-gates.test.ts` GT-05 | fortress Keep 15 pace 1.23x the rusher (gate 1.2x, it.fails); P2-12 server raids not built |
+| GT-15 | runway | partly done | campaign play-time estimate; runway and playtest plan in `PROGRESSION_MODEL.md` | — | owner go-live order; playtest |
+| GT-07 | one army wins | partly done | Keep 12 temper panel measured (`temperPanel.ts`, it.fails) | `kits-tiers.test.ts` | Watch's cut is at its ceiling; needs a new lever |
+| GT-04 | newer tiers below older | unchanged (rules 9) | measured a rules-10 change: Keep 13 tier x1.25 with defense levels past Keep 12 x1.5 fixed its four pairs but put 16 pairs out of order (rules 9: 9 on the same probe); reverted before it reached `main` | probe recorded in `kits-tiers.test.ts` comments | the Keep 13 tier, beast chain, Crane Glider, Bomb Carrier, Twin Fang pairs stay listed |
+
+Not run: devices, Postgres/Redis (`TEST_DATABASE_URL` unset), Xcode/Gradle builds, players. OPS-13's known-issues page was not added: the support page's translations are keyed by position, so a new section needs the pages worksheets re-keyed first.
