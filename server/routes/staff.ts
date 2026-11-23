@@ -24,6 +24,8 @@ export function staffRoutes(staff: StaffRoute, core: ServerCore, ip: (input: Rou
   // Beast Mode SEC-07: sessions (see and sign out every device), honor reset, the suspects view.
   staff('GET', '/admin/v1/players/:id/sessions', { params: id }, async (actor, { params }) => core.admin.sessions(actor, params.id));
   staff('POST', '/admin/v1/players/:id/revoke-sessions', { params: id, body: note }, async (actor, { params, body }) => core.admin.revokeSessions(actor, params.id, body));
+  // Beast Mode SEC-07: give back the honor a cheater's raids took.
+  staff('POST', '/admin/v1/players/:id/reverse-raids', { params: id, body: body(fields<{ days: number; note: string }>()({ days: number(), note: string() })) }, async (actor, { params, body }) => core.admin.reverseRaids(actor, params.id, body));
   staff('POST', '/admin/v1/players/:id/reset-honor', { params: id, body: body(fields<{ to: number; note: string }>()({ to: number(), note: string() })) }, async (actor, { params, body }) => core.admin.resetHonor(actor, params.id, body));
   staff('GET', '/admin/v1/suspects', { query: query('days') }, async (actor, { query }) => core.admin.suspects(actor, query.days));
   // Beast Mode GT-17: pairs that keep raiding each other.

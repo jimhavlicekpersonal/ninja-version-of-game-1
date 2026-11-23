@@ -199,6 +199,7 @@ export function createCore(ctx: ServerContext) {
       resetHonor: admin.resetHonor.bind(null, ctx),
       suspects: admin.suspects.bind(null, ctx),
       pairs: admin.pairs.bind(null, ctx),
+      reverseRaids: admin.reverseRaids.bind(null, ctx),
       adjust: admin.adjust.bind(null, ctx),
       ban: admin.ban.bind(null, ctx),
       resetRating: admin.resetRating.bind(null, ctx),

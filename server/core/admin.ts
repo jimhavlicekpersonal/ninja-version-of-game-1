@@ -90,6 +90,44 @@ export async function resetHonor(ctx: ServerContext, actor: string, id: string, 
 }
 
 /**
+ * Beast Mode SEC-07: POST /admin/v1/players/:id/reverse-raids { days, note }: for the player's recorded raids in the
+ * last `days` (default 7, at most 30), each defender gets back the honor the raid took and the player loses what
+ * it gained (never below 0). A raid is reversed once (earlier runs' attack ids are in the staff log). Logged.
+ */
+export async function reverseRaids(ctx: ServerContext, actor: string, id: string, body: { days?: unknown; note?: unknown } | undefined) {
+  const p = await playerOr404(ctx, id);
+  const note = text(body?.note, 500);
+  if (!note) throw staffError(400, 'bad_request', 'Say why (a note for the staff log).');
+  const d = Math.max(1, Math.min(30, Math.floor(Number(body?.days)) || 7));
+  const done = new Set((await ctx.repo.staffActions(p.id, 200)).filter((a) => a.action === 'reverse-raids').flatMap((a) => (Array.isArray(a.detail.attacks) ? (a.detail.attacks as string[]) : [])));
+  const raids = (await ctx.repo.attacksBy(p.id, ctx.now() - d * 24 * HOUR, 500)).filter((a) => !done.has(a.id));
+  const back = new Map<string, number>();
+  let taken = 0;
+  for (const a of raids) {
+    taken += Math.max(0, a.attackerTrophies ?? 0);
+    const lost = Math.max(0, -(a.defenderTrophies ?? 0));
+    if (lost && a.defenderId) back.set(a.defenderId, (back.get(a.defenderId) ?? 0) + lost);
+  }
+  let returned = 0;
+  await ctx.repo.transaction(async (tx) => {
+    for (const [defId, lost] of back) {
+      const def = await tx.getPlayer(defId);
+      if (!def) continue;
+      await tx.updatePlayer(defId, { trophies: def.trophies + lost });
+      returned += lost;
+    }
+    const me = (await tx.getPlayer(p.id)) ?? p;
+    await tx.updatePlayer(p.id, { trophies: Math.max(0, me.trophies - taken) });
+  });
+  for (const defId of [...back.keys(), p.id]) {
+    const q = await ctx.repo.getPlayer(defId);
+    if (q?.base && !q.bannedUntil) await ctx.board.set(q.id, q.trophies, q.createdAt);
+  }
+  await audit(ctx, actor, 'reverse-raids', p.id, { note, days: d, attacks: raids.map((a) => a.id), returned, taken });
+  return { raids: raids.length, returned, taken };
+}
+
+/**
  * SEC-07: GET /admin/v1/suspects?days=N: the players whose recorded raids gained the most honor in the last N days
  * (default 3, at most 14), with wins per active hour, late reports and whether the server holds their village.
  */
