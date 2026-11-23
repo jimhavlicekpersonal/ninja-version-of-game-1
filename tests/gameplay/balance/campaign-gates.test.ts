@@ -193,7 +193,7 @@ describe('Keep 15 alone (GT-08)', () => {
     expect(k15.won).toBeGreaterThanOrEqual(0.7);
   });
 
-  // KNOWN GAP (2026-11-23, GT-05 follow-up): 1.36 stars, lower 95% bound 1.23 (8 seeds; 1.4 passed before). Late
+  // KNOWN GAP (2026-11-23, GT-05 follow-up): 1.38 stars (8 seeds; 1.36 before the counter build cap; 1.4 passed before GT-05). Late
   // villages now hold more simulated raids (raiderMatchByKeep), a held raid earns honor, and higher honor meets
   // stronger bases.
   it.fails('regular: Keep 15 >= 1.4 stars with a lower 95% bound >= 1.25', () => {

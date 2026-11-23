@@ -1541,3 +1541,20 @@ Asked for "fix whatever wasn't fixed" after the combat rebalance. Code items wer
 Side effects of GT-05, recorded as gaps (it.fails with the numbers): late villages now hold more simulated raids and so earn more honor, so the regular player's Keep 15 raids meet stronger bases (1.36 stars against the 1.4 target; the 1.2-star gate passes) and reach the Shadow league, whose win bonus is 28% of a Keep 15 raid's loot (bound 20%). The next balance pass should look at honor from held simulated raids or the top league's bonus, with a new campaign.
 
 Not run: devices, Postgres/Redis (`TEST_DATABASE_URL` unset), Xcode/Gradle builds, players. OPS-13's known-issues page was not added: the support page's translations are keyed by position, so a new section needs the pages worksheets re-keyed first.
+
+### 2026-11-23 Beast Mode follow-up, second pass ("fix what hasn't been fixed")
+
+| # | What changed | Proving test | Still open |
+|---|---|---|---|
+| SEC-07 | staff reverse a cheater's raids (`/admin/v1/players/:id/reverse-raids`: defenders get their honor back, once per raid) | `admin-reverse.test.ts` | — |
+| SEC-06 | staff list of look-alike names from before the check (`/admin/v1/name-clashes`) | `name-skeleton.test.ts` | Postgres run |
+| SEC-01 | a refused village move is kept with its reason (migration 0047) and shown to staff | `villageImport.test.ts` | owner D8, Postgres run |
+| GT-17 | donations between a pair in the pair report | `admin-pairs.test.ts` | telemetry (players) |
+| OPS-06 | Battles panel on `/admin/stats` (surrenders, scouted-and-left, Trial clears, lost graphics) | `stats-page.test.ts` | — |
+| OPS-03 | `renderer_exit` opt-in statistic | `stats-events.test.ts` | device kill test |
+| OPS-13 | Known issues section on the support page (owner value `knownIssues`), 50 languages | i18n check | owner fills it during incidents |
+| GT-12 | Power board ranks skill within nearby Keeps (`boardPowerWeight` 10); its text says so (50 languages) | `rating-convergence.test.ts` (Keeps 3-15) | — |
+| GT-11 | `SEARCH_FORMATIONS=all` searches every formation; run once in this pass's slow suite | `searched-attacker.test.ts` | — |
+| GT-05 / GT-08 | counters build in at most 4 days; league bonus shares 0.074-0.078 from Oak up | campaign gates (8 seeds) | regular Keep 15 at 1.38 stars (target 1.4) |
+
+Tried and reverted: `heldHonorShare` 0.5 (Keep 15 honor did not move; stars fell to 1.32). Not changed: GT-07 (Watch has no lever left at its ceiling), GT-04's eight tier pairs (the rules-10 attempt made 16), deploySpread and partial 2-star pay (optional, would need a rules bump). Owner, device and player steps as listed in the ledger.
