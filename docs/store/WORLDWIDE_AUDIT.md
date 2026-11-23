@@ -1554,7 +1554,7 @@ Not run: devices, Postgres/Redis (`TEST_DATABASE_URL` unset), Xcode/Gradle build
 | OPS-03 | `renderer_exit` opt-in statistic | `stats-events.test.ts` | device kill test |
 | OPS-13 | Known issues section on the support page (owner value `knownIssues`), 50 languages | i18n check | owner fills it during incidents |
 | GT-12 | Power board ranks skill within nearby Keeps (`boardPowerWeight` 10); its text says so (50 languages) | `rating-convergence.test.ts` (Keeps 3-15) | — |
-| GT-11 | `SEARCH_FORMATIONS=all` searches every formation; run once in this pass's slow suite | `searched-attacker.test.ts` | — |
+| GT-11 | `SEARCH_FORMATIONS=all` searches every formation; run once in this pass's slow suite | `searched-attacker.test.ts` | finding: at Keep 8 the 'tanks'/'file' order wipes a capped base (100%, gate 95%); Keeps 12 and 15 hold; a combat fix needs a rules bump |
 | GT-05 / GT-08 | counters build in at most 4 days; league bonus shares 0.074-0.078 from Oak up | campaign gates (8 seeds) | regular Keep 15 at 1.38 stars (target 1.4) |
 
 Tried and reverted: `heldHonorShare` 0.5 (Keep 15 honor did not move; stars fell to 1.32). Not changed: GT-07 (Watch has no lever left at its ceiling), GT-04's eight tier pairs (the rules-10 attempt made 16), deploySpread and partial 2-star pay (optional, would need a rules bump). Owner, device and player steps as listed in the ledger.
