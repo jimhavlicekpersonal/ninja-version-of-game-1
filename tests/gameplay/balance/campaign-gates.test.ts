@@ -179,10 +179,9 @@ describe('Keep 15 alone (GT-08)', () => {
     });
   }
 
-  // KNOWN GAP (GT-08 target, accepted by the owner 2026-11-21): the fortress reaches Keep 15 with research behind
-  // (0.97 stars). A lower topKeepMaxBias lifts it to 1.23-1.32 but lets a fully researched Keep 15 army three-star
-  // 50-58% of matched Keep 15 raids (matched.test.ts), so the cap stays 0.5. Waits for GT-05.
-  it.fails('regular_fortress: Keep 15 at >= 1.2 stars and >= 65% won, pooled', () => {
+  // GT-08 target, a recorded gap until 2026-11-23 (0.97 stars): passes since the GT-05 follow-up (counters build in at
+  // most 4 days, raiders below the defender's Keep from Keep 10), which leaves the fortress richer and less behind.
+  it('regular_fortress: Keep 15 at >= 1.2 stars and >= 65% won, pooled', () => {
     const k = byId('regular_fortress').byKeep.find((x) => x.keep === 15)!;
     expect(k.stars).toBeGreaterThanOrEqual(1.2);
     expect(k.won).toBeGreaterThanOrEqual(0.65);
@@ -292,9 +291,9 @@ describe('late defense counts, and the online build is gated (Beast Mode GT-05)'
     expect(h.share).toBeGreaterThanOrEqual(0.15);
   });
 
-  // KNOWN GAP (measured 2026-11-23): 1.25x on rules 9, 1.23x with raiderMatchByKeep (3 seeds); Keep 12 passes at 1.16x.
-  // The fortress spends builder time on its counters before each Keep; weaker raiders do not change that.
-  it.fails('the fortress reaches Keep 15 within 1.2x the rusher\'s days', () => {
+  // 2026-11-23: 1.25x on rules 9, 1.23x with raiderMatchByKeep; 1.17x once counter levels build in at most 4 days
+  // (buildings.json buildCapSeconds on the five counters).
+  it('the fortress reaches Keep 15 within 1.2x the rusher\'s days', () => {
     expect(byId('regular_fortress').reached[15] / byId('regular_rusher').reached[15]).toBeLessThanOrEqual(1.2);
   });
 
