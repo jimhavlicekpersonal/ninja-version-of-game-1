@@ -19,7 +19,7 @@ import { stakeMet, validStake } from '../../src/gameplay/sim/carry';
 import { deserialize } from '../../src/gameplay/sim/save';
 import { advance, battleArmy, foughtWithWarriors } from '../../src/gameplay/sim/village';
 import { leavesEntryRoom } from '../../src/gameplay/sim/entryRoom';
-import { defensePower, newRating, orderByRating, powerRating, rateBattle, type Rating } from '../../src/gameplay/sim/rating';
+import { boardPower, defensePower, newRating, orderByRating, rateBattle, type Rating } from '../../src/gameplay/sim/rating';
 import { troopLevelCapAt } from '../../src/gameplay/sim/research';
 import { sanitizeName } from '../../src/gameplay/sim/social/names';
 import type { Cost, GameData, ResourceKind, Temper } from '../../src/gameplay/sim/types';
@@ -961,7 +961,7 @@ async function powerBoard(ctx: ServerContext): Promise<{ top: Player[]; values: 
   const t = ctx.now();
   if (hit && t - hit.at < POWER_BOARD_TTL_MS && t >= hit.at) return hit;
   const filter = boardFilter(ctx);
-  const [top, values] = await Promise.all([ctx.repo.topByPower(100, def.powerBoardMinBattles, def.powerWeight, filter), ctx.repo.powerValues(def.powerBoardMinBattles, def.powerWeight, filter)]);
+  const [top, values] = await Promise.all([ctx.repo.topByPower(100, def.powerBoardMinBattles, def.boardPowerWeight ?? def.powerWeight, filter), ctx.repo.powerValues(def.powerBoardMinBattles, def.boardPowerWeight ?? def.powerWeight, filter)]);
   const board = { at: t, top, values: values.sort((a, b) => b - a) };
   powerBoards.set(ctx, board);
   return board;
@@ -987,9 +987,9 @@ export async function powerLeaderboard(ctx: ServerContext, me: Player, limit: nu
   const top = board.top.slice(0, n);
   const groveNames = new Map<string, string>();
   for (const p of top) if (p.groveId && !groveNames.has(p.groveId)) groveNames.set(p.groveId, (await ctx.repo.getGrove(p.groveId))?.name ?? '');
-  const mine = me.ratings && me.ratings.attack.battles >= def.powerBoardMinBattles ? Math.round(powerRating(me.ratings.attack, me.hallLevel, def)) : null;
+  const mine = me.ratings && me.ratings.attack.battles >= def.powerBoardMinBattles ? Math.round(boardPower(me.ratings.attack, me.hallLevel, def)) : null;
   return {
-    players: top.map((p, i) => ({ rank: i + 1, name: p.name, power: Math.round(powerRating(ratingsOf(p, ctx.now(), ctx).attack, p.hallLevel, def)), hallLevel: p.hallLevel, grove: p.groveId ? groveNames.get(p.groveId) || null : null })),
+    players: top.map((p, i) => ({ rank: i + 1, name: p.name, power: Math.round(boardPower(ratingsOf(p, ctx.now(), ctx).attack, p.hallLevel, def)), hallLevel: p.hallLevel, grove: p.groveId ? groveNames.get(p.groveId) || null : null })),
     me: mine === null ? null : { rank: rankIn(board.values, mine), power: mine, battles: me.ratings!.attack.battles },
   };
 }

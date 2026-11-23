@@ -1270,7 +1270,7 @@
   "ui.player_id_for_support_and_for_deletion_209a9b611c": { "en": "Player ID (for support, and for deletion requests)", "text": "מזהה שחקן (לתמיכה ולבקשות מחיקה)" },
   "ui.players_under_13_can_only_be_found_by__f3c16e1ffc": { "en": "Players under 13 can only be found by friend code: share it only with people you know.", "text": "אפשר למצוא שחקנים מתחת לגיל 13 רק לפי קוד חבר: שתפו אותו רק עם אנשים שמכירים." },
   "ui.power_848e96567d": { "en": "Power", "text": "עוצמה" },
-  "ui.power_is_your_skill_as_an_attacker_plu_e58aae723f": { "en": "Power is your skill as an attacker plus the strength of your Keep, from your rated raids.", "text": "העוצמה היא הכישרון שלך בהתקפה ועוד חוזק המצודה שלך, לפי הפשיטות המדורגות שלך." },
+  "ui.power_is_your_skill_as_an_attacker_plu_e58aae723f": { "en": "Power is your skill as an attacker from your rated raids, plus a little for your Keep, so it compares skill among players with Keeps close to yours.", "text": "העוצמה היא המיומנות שלך כתוקף מהפשיטות המדורגות שלך, עם תוספת קטנה על המבצר שלך: היא משווה מיומנות בין שחקנים עם מבצרים דומים.", "old": "העוצמה היא הכישרון שלך בהתקפה ועוד חוזק המצודה שלך, לפי הפשיטות המדורגות שלך." },
   "ui.practice_battle_nothing_is_spent_or_wo_c68624fd43": { "en": "Practice battle · nothing is spent or won", "text": "קרב אימון · שום דבר לא מוצא ולא נזכה" },
   "ui.practice_battle_nothing_spent_or_won_f8edd0efbf": { "en": "Practice battle (nothing spent or won)", "text": "קרב אימון (שום דבר לא מוצא ולא נזכה)" },
   "ui.practice_battle_with_a_squad_of_nothin_bcdcdb0816": { "en": "Practice battle with a squad of {arg1}: nothing is spent or won", "text": "קרב אימון עם חוליה של {arg1}: שום דבר לא מוצא ולא נזכה" },

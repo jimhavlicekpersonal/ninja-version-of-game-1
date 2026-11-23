@@ -4,6 +4,7 @@ Other compartments write here instead of editing `src/backend/` or `server/` (AG
 
 ## Open
 
+- **2026-11-23 (GAME THEORY, Beast Mode follow-up): rating and raid data, no rules bump.** The Power board ranks by `boardPower` (ranks.json `rating.boardPowerWeight` 10, matchmaking keeps `powerWeight` 150); the rating's defender power is `defensePower`; simulated raiders on late Keeps come from `raids.raiderMatchByKeep`; stakes open at `raids.stakes.minKeep` 6; war chests take `starShare`. Deploy the server first.
 - **2026-11-22 (GAME THEORY, Beast Mode combat rebalance): SIM_RULES 9. Deploy the server before the game.** Rules 8 is archived in `server/rules/v8` (`npm run rules:snapshot` ran before the bump) and the rules-9 fixture is recorded. Combat data changed (`troops.json` stats of nine warriors and four air warriors, Shuriken Storm trimmed, air training cost); `PROTOCOL_VERSION` unchanged. Games on rules 8 keep being checked with the archived engine until `RETIRED_RULES=8`.
 
 - **2026-11-21 (GAME THEORY, Beast Mode GT-02, GT-08): matchmaking data changed; the server's generated fallback follows it.** `ranks.json` `powerSlackByKeep` is now `[0.75, 0.75, 1, 1.25, 0.5, 0.75, 0.125, 0.625, 0.125, 0.25, 0.5, 0.5, 0.75, 0.5, 0.5]` and the new `topKeepMaxBias` 0.25 caps how far honor lifts a top-Keep base toward its caps (`matchStrength`). `opponentForRank` (the server's fallback outpost) reads both, so deploy the server with the game; no protocol change. The data version changes.

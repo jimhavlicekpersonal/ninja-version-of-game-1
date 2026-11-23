@@ -1270,7 +1270,7 @@
   "ui.player_id_for_support_and_for_deletion_209a9b611c": { "en": "Player ID (for support, and for deletion requests)", "text": "معرّف اللاعب (للدعم ولطلبات الحذف)" },
   "ui.players_under_13_can_only_be_found_by__f3c16e1ffc": { "en": "Players under 13 can only be found by friend code: share it only with people you know.", "text": "لا يمكن العثور على اللاعبين دون 13 عامًا إلا برمز الصداقة: يجب ألا يُشارَك إلا مع أشخاص معروفين." },
   "ui.power_848e96567d": { "en": "Power", "text": "القوة" },
-  "ui.power_is_your_skill_as_an_attacker_plu_e58aae723f": { "en": "Power is your skill as an attacker plus the strength of your Keep, from your rated raids.", "text": "القوة هي مهارتك كمهاجم مضافًا إليها قوة قلعتك، محسوبة من غاراتك المصنّفة." },
+  "ui.power_is_your_skill_as_an_attacker_plu_e58aae723f": { "en": "Power is your skill as an attacker from your rated raids, plus a little for your Keep, so it compares skill among players with Keeps close to yours.", "text": "القوة هي مهارتك كمهاجم من غاراتك المصنَّفة، مع إضافة صغيرة لقلعتك، فهي تقارن المهارة بين لاعبين قلاعهم متقاربة.", "old": "القوة هي مهارتك كمهاجم مضافًا إليها قوة قلعتك، محسوبة من غاراتك المصنّفة." },
   "ui.practice_battle_nothing_is_spent_or_wo_c68624fd43": { "en": "Practice battle · nothing is spent or won", "text": "معركة تدريبية · لا إنفاق ولا مكاسب" },
   "ui.practice_battle_nothing_spent_or_won_f8edd0efbf": { "en": "Practice battle (nothing spent or won)", "text": "معركة تدريبية (لا إنفاق ولا مكاسب)" },
   "ui.practice_battle_with_a_squad_of_nothin_bcdcdb0816": { "en": "Practice battle with a squad of {arg1}: nothing is spent or won", "text": "معركة تدريبية بفرقة من {arg1}: لا إنفاق ولا مكاسب" },

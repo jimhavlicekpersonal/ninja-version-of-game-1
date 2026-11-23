@@ -7,7 +7,7 @@
  */
 import { describe, expect, it } from 'vitest';
 import { defaultData as data } from '../../../src/gameplay/sim/data';
-import { expectedScore, newRating, pickByRating, rateBattle, type Rating } from '../../../src/gameplay/sim/rating';
+import { boardPower, expectedScore, newRating, pickByRating, rateBattle, type Rating } from '../../../src/gameplay/sim/rating';
 import { createRng, next } from '../../../src/gameplay/sim/rng';
 
 const def = data.ranks.rating;
@@ -65,6 +65,47 @@ describe('rating convergence (model players, simulated weeks)', () => {
     expect(Math.max(...players.map((p) => p.attack.rd))).toBeLessThan(def.initialRd / 2);
     const meanE = expectations.reduce((s, e) => s + e, 0) / expectations.length;
     expect(Math.abs(meanE - def.matchTarget)).toBeLessThan(0.08);
+  });
+});
+
+/**
+ * Beast Mode GT-12: mixed Keeps 3-15, luck about as wide as measured (GT-10). The Power board ranks by skill within a
+ * Keep band (`boardPower`, a smaller Keep weight than the matchmaking's), so strong players below Keep 15 show near the
+ * top instead of the board reading as Keep order.
+ */
+describe('the Power board across Keeps 3-15 (GT-12)', () => {
+  const rng = createRng(7);
+  const N = 240;
+  const players = Array.from({ length: N }, (_, i) => ({ id: i, keep: 3 + Math.floor(next(rng) * 13), skill: 1200 + next(rng) * 700, defense: 1200 + next(rng) * 700, attack: newRating(0, def) as Rating, base: newRating(0, def) as Rating }));
+  const DAY = 86_400_000;
+  for (let day = 0; day < 28; day++) {
+    for (const p of players) {
+      for (let k = 0; k < 4; k++) {
+        const now = day * DAY + k * 3_600_000;
+        const pool = players.filter((q) => q !== p && Math.abs(q.keep - p.keep) <= 1);
+        const sample = Array.from({ length: Math.min(20, pool.length) }, () => pool[Math.floor(next(rng) * pool.length)]);
+        const target = pickByRating(p.attack, p.keep, sample.map((q) => ({ item: q, base: q.base, power: q.keep })), now, def, () => next(rng))!;
+        const truth = expectedScore(p.skill, target.defense, p.keep, target.keep, def);
+        const score = Math.max(0, Math.min(1, truth + (next(rng) - 0.5) * 0.4));
+        const r = rateBattle(p.attack, target.base, p.keep, target.keep, Math.round(score * 3), Math.round(score * 100), now, def);
+        p.attack = r.attack;
+        target.base = r.base;
+      }
+    }
+  }
+  const power = (p: (typeof players)[number]) => boardPower(p.attack, p.keep, def);
+
+  it('within each Keep band the board follows true skill (Spearman >= 0.85)', () => {
+    for (const [lo, hi] of [[3, 5], [6, 8], [9, 11], [12, 15]]) {
+      const band = players.filter((p) => p.keep >= lo && p.keep <= hi);
+      expect(spearman(band.map(power), band.map((p) => p.skill)), `Keeps ${lo}-${hi}`).toBeGreaterThan(0.85);
+    }
+  });
+
+  it('the top 10% of the board holds players below Keep 15 with top-decile skill (at least 30% of it)', () => {
+    const top = [...players].sort((a, b) => power(b) - power(a)).slice(0, N / 10);
+    const skillCut = [...players].map((p) => p.skill).sort((a, b) => b - a)[N / 10 - 1];
+    expect(top.filter((p) => p.keep < 15 && p.skill >= skillCut).length / top.length).toBeGreaterThanOrEqual(0.3);
   });
 });
 

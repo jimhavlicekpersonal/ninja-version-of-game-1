@@ -90,6 +90,15 @@ export function defensePower(base: BaseLayout, data: GameData): number {
   return Math.max(1, keep - 1 + (n ? sum / n : 0));
 }
 
+/**
+ * Beast Mode GT-12: the Power board's number: the attack rating plus `boardPowerWeight` per Keep (default
+ * `powerWeight`). Matchmaking keeps `powerWeight`; the board uses a smaller weight so it reads as skill within a
+ * Keep band, not Keep order.
+ */
+export function boardPower(attack: Rating, keep: number, def: RatingDef): number {
+  return attack.rating + (def.boardPowerWeight ?? def.powerWeight) * (Math.max(1, keep) - 1);
+}
+
 /** Share of a layout that changed: buildings moved, added or removed (by id). */
 export function layoutChangedShare(before: BaseLayout | null, after: BaseLayout): number {
   if (!before) return 1;

@@ -868,6 +868,8 @@ export interface RatingDef {
   rdGrowthPerIdleDay: number;
   /** β: rating points one Keep level of power is worth. */
   powerWeight: number;
+  /** Beast Mode GT-12: the Keep weight on the Power board only (`boardPower`); default `powerWeight`. */
+  boardPowerWeight?: number;
   /** K at the starting deviation, and once fully settled. */
   kNew: number;
   kSettled: number;

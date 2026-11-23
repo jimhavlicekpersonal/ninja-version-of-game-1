@@ -177,6 +177,8 @@
     "rdShrinkPerBattle": 0.93,
     "rdGrowthPerIdleDay": 6,
     "powerWeight": 150,
+    "$commentBoardPowerWeight": "Beast Mode GT-12: the Power board alone weighs a Keep 10 points (matchmaking keeps 150; measured in rating-convergence.test.ts: 50 and 20 left strong players below Keep 15 out of the top 10%), so it reads as skill within a Keep band: Keep 1 to 15 used to add 2,100 points against a skill spread of about 700.",
+    "boardPowerWeight": 10,
     "kNew": 40,
     "kSettled": 16,
     "starWeight": 0.6,

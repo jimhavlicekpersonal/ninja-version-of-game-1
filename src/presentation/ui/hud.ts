@@ -981,7 +981,7 @@ export class Hud {
   private leaderboardBlock(open: boolean): HTMLElement {
     const conn = this.deps.connection;
     const board = h('div', { class: 'events' }, i18nText("ui.loading_ba3bbbe10d"));
-    // Two ladders: Honor (leagues) and, when the server has it, the Power Ranking (skill plus Keep).
+    // Two ladders: Honor (leagues) and, when the server has it, the Power Ranking (skill, plus a small Keep weight: GT-12 boardPower).
     let which: 'honor' | 'power' = 'honor';
     const hasPower = Boolean(conn.server?.features.includes('power-ranking'));
     const tabs = h('div', { class: 'shop-tabs' });

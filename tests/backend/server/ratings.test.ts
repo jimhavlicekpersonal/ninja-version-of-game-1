@@ -105,19 +105,21 @@ for (const [label, makeRepo] of repoFactories) {
       expect(after.attack.rating).toBe(1600); // the attacker's skill is untouched
     });
 
-    it('lists the Power Ranking: rated players by skill plus Keep', async () => {
+    it('lists the Power Ranking: rated players by skill plus a small Keep weight', async () => {
       const w = world({ repo: await makeRepo() });
       const t = w.now();
       const players = [await w.player('Low', baseAt(1)), await w.player('High', baseAt(3)), await w.player('New', baseAt(5))];
       await w.repo.updatePlayer(players[0].id, { ratings: { attack: { rating: 1800, rd: 60, battles: 10, at: t }, base: newRating(t, def) } });
       await w.repo.updatePlayer(players[1].id, { ratings: { attack: { rating: 1600, rd: 60, battles: 10, at: t }, base: newRating(t, def) } });
       const board = await players[0].powerLeaderboard(10);
-      // High: 1600 + 2β = 1900 beats Low: 1800 + 0; New has no rated attacks yet.
+      // Beast Mode GT-12: the board weighs a Keep boardPowerWeight (10), so skill leads: Low 1800 beats High
+      // 1600 + 2 x 10; New has no rated attacks yet.
+      const w2 = def.boardPowerWeight ?? def.powerWeight;
       expect(board.players.map((p) => [p.name, p.power])).toEqual([
-        ['High', 1600 + 2 * def.powerWeight],
         ['Low', 1800],
+        ['High', 1600 + 2 * w2],
       ]);
-      expect(board.me).toEqual({ rank: 2, power: 1800, battles: 10 });
+      expect(board.me).toEqual({ rank: 1, power: 1800, battles: 10 });
       expect((await players[2].powerLeaderboard(10)).me).toBeNull();
     });
   });
