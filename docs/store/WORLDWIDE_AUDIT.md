@@ -1538,4 +1538,6 @@ Asked for "fix whatever wasn't fixed" after the combat rebalance. Code items wer
 | GT-07 | one army wins | partly done | Keep 12 temper panel measured (`temperPanel.ts`, it.fails) | `kits-tiers.test.ts` | Watch's cut is at its ceiling; needs a new lever |
 | GT-04 | newer tiers below older | unchanged (rules 9) | measured a rules-10 change: Keep 13 tier x1.25 with defense levels past Keep 12 x1.5 fixed its four pairs but put 16 pairs out of order (rules 9: 9 on the same probe); reverted before it reached `main` | probe recorded in `kits-tiers.test.ts` comments | the Keep 13 tier, beast chain, Crane Glider, Bomb Carrier, Twin Fang pairs stay listed |
 
+Side effects of GT-05, recorded as gaps (it.fails with the numbers): late villages now hold more simulated raids and so earn more honor, so the regular player's Keep 15 raids meet stronger bases (1.36 stars against the 1.4 target; the 1.2-star gate passes) and reach the Shadow league, whose win bonus is 28% of a Keep 15 raid's loot (bound 20%). The next balance pass should look at honor from held simulated raids or the top league's bonus, with a new campaign.
+
 Not run: devices, Postgres/Redis (`TEST_DATABASE_URL` unset), Xcode/Gradle builds, players. OPS-13's known-issues page was not added: the support page's translations are keyed by position, so a new section needs the pages worksheets re-keyed first.
