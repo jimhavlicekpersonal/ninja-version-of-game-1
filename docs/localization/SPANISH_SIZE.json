@@ -23,8 +23,8 @@
           "translated": 2126
         },
         "pages": {
-          "total": 335,
-          "translated": 335
+          "total": 338,
+          "translated": 338
         },
         "ui": {
           "total": 375,
@@ -53,8 +53,8 @@
           "translated": 2126
         },
         "pages": {
-          "total": 335,
-          "translated": 335
+          "total": 338,
+          "translated": 338
         },
         "ui": {
           "total": 375,
@@ -100,10 +100,10 @@
           },
           {
             "path": "public/es/support.html",
-            "installedUtf8": 6377,
-            "gzip": 2588,
-            "brotli": 2163,
-            "deflate": 2570
+            "installedUtf8": 6702,
+            "gzip": 2706,
+            "brotli": 2255,
+            "deflate": 2688
           },
           {
             "path": "public/es/terms.html",
@@ -141,10 +141,10 @@
             "deflate": 270
           }
         ],
-        "installedUtf8": 331860,
-        "gzipSum": 108226,
-        "brotliSum": 89443,
-        "zipArchive": 109560,
+        "installedUtf8": 332185,
+        "gzipSum": 108344,
+        "brotliSum": 89535,
+        "zipArchive": 109678,
         "extraFontBytes": 0,
         "excludes": [
           "Shared English fallback and localization code (measured in built JS separately)",
@@ -175,8 +175,8 @@
           "translated": 2126
         },
         "pages": {
-          "total": 335,
-          "translated": 335
+          "total": 338,
+          "translated": 338
         },
         "ui": {
           "total": 375,
@@ -205,8 +205,8 @@
           "translated": 2126
         },
         "pages": {
-          "total": 335,
-          "translated": 335
+          "total": 338,
+          "translated": 338
         },
         "ui": {
           "total": 375,
@@ -235,8 +235,8 @@
           "translated": 2126
         },
         "pages": {
-          "total": 335,
-          "translated": 335
+          "total": 338,
+          "translated": 338
         },
         "ui": {
           "total": 375,
@@ -265,8 +265,8 @@
           "translated": 2126
         },
         "pages": {
-          "total": 335,
-          "translated": 335
+          "total": 338,
+          "translated": 338
         },
         "ui": {
           "total": 375,
@@ -295,8 +295,8 @@
           "translated": 2126
         },
         "pages": {
-          "total": 335,
-          "translated": 335
+          "total": 338,
+          "translated": 338
         },
         "ui": {
           "total": 375,
@@ -325,8 +325,8 @@
           "translated": 2126
         },
         "pages": {
-          "total": 335,
-          "translated": 335
+          "total": 338,
+          "translated": 338
         },
         "ui": {
           "total": 375,
@@ -355,8 +355,8 @@
           "translated": 2126
         },
         "pages": {
-          "total": 335,
-          "translated": 335
+          "total": 338,
+          "translated": 338
         },
         "ui": {
           "total": 375,
@@ -385,8 +385,8 @@
           "translated": 2126
         },
         "pages": {
-          "total": 335,
-          "translated": 335
+          "total": 338,
+          "translated": 338
         },
         "ui": {
           "total": 375,
@@ -415,8 +415,8 @@
           "translated": 2126
         },
         "pages": {
-          "total": 335,
-          "translated": 335
+          "total": 338,
+          "translated": 338
         },
         "ui": {
           "total": 375,
@@ -445,8 +445,8 @@
           "translated": 2126
         },
         "pages": {
-          "total": 335,
-          "translated": 335
+          "total": 338,
+          "translated": 338
         },
         "ui": {
           "total": 375,
@@ -475,8 +475,8 @@
           "translated": 2126
         },
         "pages": {
-          "total": 335,
-          "translated": 335
+          "total": 338,
+          "translated": 338
         },
         "ui": {
           "total": 375,
@@ -505,8 +505,8 @@
           "translated": 2126
         },
         "pages": {
-          "total": 335,
-          "translated": 335
+          "total": 338,
+          "translated": 338
         },
         "ui": {
           "total": 375,
@@ -535,8 +535,8 @@
           "translated": 2126
         },
         "pages": {
-          "total": 335,
-          "translated": 335
+          "total": 338,
+          "translated": 338
         },
         "ui": {
           "total": 375,
@@ -565,8 +565,8 @@
           "translated": 2126
         },
         "pages": {
-          "total": 335,
-          "translated": 335
+          "total": 338,
+          "translated": 338
         },
         "ui": {
           "total": 375,
@@ -595,8 +595,8 @@
           "translated": 2126
         },
         "pages": {
-          "total": 335,
-          "translated": 335
+          "total": 338,
+          "translated": 338
         },
         "ui": {
           "total": 375,
@@ -625,8 +625,8 @@
           "translated": 2126
         },
         "pages": {
-          "total": 335,
-          "translated": 335
+          "total": 338,
+          "translated": 338
         },
         "ui": {
           "total": 375,
@@ -655,8 +655,8 @@
           "translated": 2126
         },
         "pages": {
-          "total": 335,
-          "translated": 335
+          "total": 338,
+          "translated": 338
         },
         "ui": {
           "total": 375,
@@ -685,8 +685,8 @@
           "translated": 2126
         },
         "pages": {
-          "total": 335,
-          "translated": 335
+          "total": 338,
+          "translated": 338
         },
         "ui": {
           "total": 375,
@@ -715,8 +715,8 @@
           "translated": 2126
         },
         "pages": {
-          "total": 335,
-          "translated": 335
+          "total": 338,
+          "translated": 338
         },
         "ui": {
           "total": 375,
@@ -745,8 +745,8 @@
           "translated": 2126
         },
         "pages": {
-          "total": 335,
-          "translated": 335
+          "total": 338,
+          "translated": 338
         },
         "ui": {
           "total": 375,
@@ -775,8 +775,8 @@
           "translated": 2126
         },
         "pages": {
-          "total": 335,
-          "translated": 335
+          "total": 338,
+          "translated": 338
         },
         "ui": {
           "total": 375,
@@ -805,8 +805,8 @@
           "translated": 2126
         },
         "pages": {
-          "total": 335,
-          "translated": 335
+          "total": 338,
+          "translated": 338
         },
         "ui": {
           "total": 375,
@@ -835,8 +835,8 @@
           "translated": 2126
         },
         "pages": {
-          "total": 335,
-          "translated": 335
+          "total": 338,
+          "translated": 338
         },
         "ui": {
           "total": 375,
@@ -865,8 +865,8 @@
           "translated": 2126
         },
         "pages": {
-          "total": 335,
-          "translated": 335
+          "total": 338,
+          "translated": 338
         },
         "ui": {
           "total": 375,
@@ -895,8 +895,8 @@
           "translated": 2126
         },
         "pages": {
-          "total": 335,
-          "translated": 335
+          "total": 338,
+          "translated": 338
         },
         "ui": {
           "total": 375,
@@ -925,8 +925,8 @@
           "translated": 2126
         },
         "pages": {
-          "total": 335,
-          "translated": 335
+          "total": 338,
+          "translated": 338
         },
         "ui": {
           "total": 375,
@@ -955,8 +955,8 @@
           "translated": 2126
         },
         "pages": {
-          "total": 335,
-          "translated": 335
+          "total": 338,
+          "translated": 338
         },
         "ui": {
           "total": 375,
@@ -985,8 +985,8 @@
           "translated": 2126
         },
         "pages": {
-          "total": 335,
-          "translated": 335
+          "total": 338,
+          "translated": 338
         },
         "ui": {
           "total": 375,
@@ -1015,8 +1015,8 @@
           "translated": 2126
         },
         "pages": {
-          "total": 335,
-          "translated": 335
+          "total": 338,
+          "translated": 338
         },
         "ui": {
           "total": 375,
@@ -1045,8 +1045,8 @@
           "translated": 2126
         },
         "pages": {
-          "total": 335,
-          "translated": 335
+          "total": 338,
+          "translated": 338
         },
         "ui": {
           "total": 375,
@@ -1075,8 +1075,8 @@
           "translated": 2126
         },
         "pages": {
-          "total": 335,
-          "translated": 335
+          "total": 338,
+          "translated": 338
         },
         "ui": {
           "total": 375,
@@ -1105,8 +1105,8 @@
           "translated": 2126
         },
         "pages": {
-          "total": 335,
-          "translated": 335
+          "total": 338,
+          "translated": 338
         },
         "ui": {
           "total": 375,
@@ -1135,8 +1135,8 @@
           "translated": 2126
         },
         "pages": {
-          "total": 335,
-          "translated": 335
+          "total": 338,
+          "translated": 338
         },
         "ui": {
           "total": 375,
@@ -1165,8 +1165,8 @@
           "translated": 2126
         },
         "pages": {
-          "total": 335,
-          "translated": 335
+          "total": 338,
+          "translated": 338
         },
         "ui": {
           "total": 375,
@@ -1195,8 +1195,8 @@
           "translated": 2126
         },
         "pages": {
-          "total": 335,
-          "translated": 335
+          "total": 338,
+          "translated": 338
         },
         "ui": {
           "total": 375,
@@ -1225,8 +1225,8 @@
           "translated": 2126
         },
         "pages": {
-          "total": 335,
-          "translated": 335
+          "total": 338,
+          "translated": 338
         },
         "ui": {
           "total": 375,
@@ -1255,8 +1255,8 @@
           "translated": 2126
         },
         "pages": {
-          "total": 335,
-          "translated": 335
+          "total": 338,
+          "translated": 338
         },
         "ui": {
           "total": 375,
@@ -1285,8 +1285,8 @@
           "translated": 2126
         },
         "pages": {
-          "total": 335,
-          "translated": 335
+          "total": 338,
+          "translated": 338
         },
         "ui": {
           "total": 375,
@@ -1315,8 +1315,8 @@
           "translated": 2126
         },
         "pages": {
-          "total": 335,
-          "translated": 335
+          "total": 338,
+          "translated": 338
         },
         "ui": {
           "total": 375,
@@ -1345,8 +1345,8 @@
           "translated": 2126
         },
         "pages": {
-          "total": 335,
-          "translated": 335
+          "total": 338,
+          "translated": 338
         },
         "ui": {
           "total": 375,
@@ -1375,8 +1375,8 @@
           "translated": 2126
         },
         "pages": {
-          "total": 335,
-          "translated": 335
+          "total": 338,
+          "translated": 338
         },
         "ui": {
           "total": 375,
@@ -1405,8 +1405,8 @@
           "translated": 2126
         },
         "pages": {
-          "total": 335,
-          "translated": 335
+          "total": 338,
+          "translated": 338
         },
         "ui": {
           "total": 375,
@@ -1435,8 +1435,8 @@
           "translated": 2126
         },
         "pages": {
-          "total": 335,
-          "translated": 335
+          "total": 338,
+          "translated": 338
         },
         "ui": {
           "total": 375,
@@ -1465,8 +1465,8 @@
           "translated": 2126
         },
         "pages": {
-          "total": 335,
-          "translated": 335
+          "total": 338,
+          "translated": 338
         },
         "ui": {
           "total": 375,
@@ -1495,8 +1495,8 @@
           "translated": 2126
         },
         "pages": {
-          "total": 335,
-          "translated": 335
+          "total": 338,
+          "translated": 338
         },
         "ui": {
           "total": 375,
@@ -1525,8 +1525,8 @@
           "translated": 2126
         },
         "pages": {
-          "total": 335,
-          "translated": 335
+          "total": 338,
+          "translated": 338
         },
         "ui": {
           "total": 375,
@@ -1555,8 +1555,8 @@
           "translated": 2126
         },
         "pages": {
-          "total": 335,
-          "translated": 335
+          "total": 338,
+          "translated": 338
         },
         "ui": {
           "total": 375,
@@ -1585,8 +1585,8 @@
           "translated": 2126
         },
         "pages": {
-          "total": 335,
-          "translated": 335
+          "total": 338,
+          "translated": 338
         },
         "ui": {
           "total": 375,
@@ -1599,26 +1599,26 @@
     "50_languages_at_1x_spanish": {
       "estimate": true,
       "basis": "Complete Spanish client text pack, six public pages, PWA manifest and locale resources multiplied by 50 and the stated expansion factor. English is already embedded, so this intentionally overestimates 49 added packs. The other 0 target languages are not ready or measured; fonts use the existing OS fallback policy.",
-      "installedUtf8": 16593000,
-      "gzip": 5411300,
-      "brotli": 4472150,
-      "zipArchive": 5478000
+      "installedUtf8": 16609250,
+      "gzip": 5417200,
+      "brotli": 4476750,
+      "zipArchive": 5483900
     },
     "50_languages_at_1.5x_spanish": {
       "estimate": true,
       "basis": "Complete Spanish client text pack, six public pages, PWA manifest and locale resources multiplied by 50 and the stated expansion factor. English is already embedded, so this intentionally overestimates 49 added packs. The other 0 target languages are not ready or measured; fonts use the existing OS fallback policy.",
-      "installedUtf8": 24889500,
-      "gzip": 8116950,
-      "brotli": 6708225,
-      "zipArchive": 8217000
+      "installedUtf8": 24913875,
+      "gzip": 8125800,
+      "brotli": 6715125,
+      "zipArchive": 8225850
     },
     "50_languages_at_2x_spanish": {
       "estimate": true,
       "basis": "Complete Spanish client text pack, six public pages, PWA manifest and locale resources multiplied by 50 and the stated expansion factor. English is already embedded, so this intentionally overestimates 49 added packs. The other 0 target languages are not ready or measured; fonts use the existing OS fallback policy.",
-      "installedUtf8": 33186000,
-      "gzip": 10822600,
-      "brotli": 8944300,
-      "zipArchive": 10956000
+      "installedUtf8": 33218500,
+      "gzip": 10834400,
+      "brotli": 8953500,
+      "zipArchive": 10967800
     }
   },
   "decision": "Bundle every completed language in native installs; the web caches only the chosen language. No extra font is needed for Spanish.",

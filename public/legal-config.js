@@ -23,6 +23,12 @@ window.KAGEMURA_LEGAL = {
    * e.g. https://api.example.com/complaints. support.html links it while set.
    */
   complaintUrl: '',
+  /**
+   * Beast Mode OPS-13: known issues shown on support.html under "Known issues", in plain words, e.g. "Purchases on
+   * Android may take a few minutes to arrive (fix coming 1.1.2)." Empty: the page says there are none right now.
+   * Update it with a web deploy during an incident (docs/ops/LAUNCH_DAY.md).
+   */
+  knownIssues: '',
   /** EU representative under GDPR Art. 27 (name and address), if the publisher is outside the EU. */
   euRepresentative: '',
   /** UK representative under UK GDPR Art. 27 (name and address), if the publisher is outside the UK. */

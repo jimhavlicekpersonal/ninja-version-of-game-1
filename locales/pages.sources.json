@@ -1379,7 +1379,25 @@
     "file": "public/support.html",
     "name": "support",
     "start": 5510,
-    "end": 5820,
+    "end": 5522,
+    "en": "Known issues",
+    "tokens": [],
+    "kind": "html"
+  },
+  "pages.support.29": {
+    "file": "public/support.html",
+    "name": "support",
+    "start": 5533,
+    "end": 5657,
+    "en": "Problems we already know about and are fixing. If yours is listed, there is no need to write to us; if it is not, please do.",
+    "tokens": [],
+    "kind": "html"
+  },
+  "pages.support.30": {
+    "file": "public/support.html",
+    "name": "support",
+    "start": 5792,
+    "end": 6102,
     "en": "Kagemura: Ninja Clans · {t0}Privacy policy{t1} · {t2}Community rules{t3} · {t4}Terms of service{t5} · {t6}特定商取引法に基づく表記{t7} · {t8}資金決済法に基づく表示{t9} · {t10}Third-party licences{t11}",
     "tokens": [
       "<a href=\"./privacy.html\">",
@@ -1397,7 +1415,7 @@
     ],
     "kind": "html"
   },
-  "pages.support.29": {
+  "pages.support.31": {
     "file": "public/support.html",
     "name": "support",
     "start": 398,
@@ -1406,7 +1424,7 @@
     "tokens": [],
     "kind": "attribute"
   },
-  "pages.support.30": {
+  "pages.support.32": {
     "file": "public/support.html",
     "name": "support",
     "start": 678,
@@ -1415,7 +1433,7 @@
     "tokens": [],
     "kind": "attribute"
   },
-  "pages.support.31": {
+  "pages.support.33": {
     "file": "public/support.html",
     "name": "support",
     "start": 4825,
@@ -1424,12 +1442,21 @@
     "tokens": [],
     "kind": "attribute"
   },
-  "pages.support.32": {
+  "pages.support.34": {
     "file": "public/support.html",
     "name": "support",
     "start": 5072,
     "end": 5101,
     "en": "web address not published yet",
+    "tokens": [],
+    "kind": "attribute"
+  },
+  "pages.support.35": {
+    "file": "public/support.html",
+    "name": "support",
+    "start": 5725,
+    "end": 5751,
+    "en": "No known issues right now.",
     "tokens": [],
     "kind": "attribute"
   },
