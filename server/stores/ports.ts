@@ -331,6 +331,8 @@ export interface SocialStore {
   holdName(key: string, playerId: string, until: number): Promise<void>;
   /** Beast Mode SEC-06: another player whose name has this skeleton (`nameSkeleton`), or null. */
   playerBySkeleton(skeleton: string, exceptId: string | null): Promise<Player | null>;
+  /** SEC-06: groups of players whose names share a skeleton (look-alikes that existed before the check), largest first. */
+  skeletonClashes(limit: number): Promise<{ skeleton: string; players: Player[] }[]>;
   /** SEC-06: players with a name key but no stored skeleton yet (the start-up backfill); sets theirs; how many. */
   backfillSkeletons(limit: number): Promise<number>;
   /** Players from before step 59 with no name key yet, oldest first (the name migration). */

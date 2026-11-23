@@ -89,6 +89,13 @@ export async function resetHonor(ctx: ServerContext, actor: string, id: string, 
   return { honor: to };
 }
 
+/** Beast Mode SEC-06: GET /admin/v1/name-clashes: names that look alike across scripts and existed before the check. */
+export async function nameClashes(ctx: ServerContext, actor: string) {
+  const groups = (await ctx.repo.skeletonClashes(100)).map((g) => ({ players: g.players.map((p) => summary(p, ctx.now())) }));
+  await audit(ctx, actor, 'view-name-clashes', null, { groups: groups.length });
+  return { groups };
+}
+
 /**
  * Beast Mode SEC-07: POST /admin/v1/players/:id/reverse-raids { days, note }: for the player's recorded raids in the
  * last `days` (default 7, at most 30), each defender gets back the honor the raid took and the player loses what

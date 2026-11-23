@@ -22,6 +22,12 @@ export class PgFriends extends PgBase {
     const r = await this.rows('select * from players where name_skeleton = $1 and ($2::text is null or id <> $2) limit 1', [skeleton, exceptId]);
     return r[0] ? toPlayer(r[0]) : null;
   }
+  async skeletonClashes(limit: number): Promise<{ skeleton: string; players: Player[] }[]> {
+    const groups = await this.rows('select name_skeleton from players where name_skeleton is not null group by name_skeleton having count(*) > 1 order by count(*) desc limit $1', [limit]);
+    const out: { skeleton: string; players: Player[] }[] = [];
+    for (const g of groups) out.push({ skeleton: String(g.name_skeleton), players: (await this.rows('select * from players where name_skeleton = $1 order by created_at', [g.name_skeleton])).map(toPlayer) });
+    return out;
+  }
   async backfillSkeletons(limit: number): Promise<number> {
     const list = await this.rows('select id, name_key from players where name_skeleton is null and name_key is not null limit $1', [limit]);
     for (const r of list) await this.db.query('update players set name_skeleton = $2 where id = $1', [r.id, skeletonOfKey(String(r.name_key))]);

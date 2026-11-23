@@ -200,6 +200,7 @@ export function createCore(ctx: ServerContext) {
       suspects: admin.suspects.bind(null, ctx),
       pairs: admin.pairs.bind(null, ctx),
       reverseRaids: admin.reverseRaids.bind(null, ctx),
+      nameClashes: admin.nameClashes.bind(null, ctx),
       adjust: admin.adjust.bind(null, ctx),
       ban: admin.ban.bind(null, ctx),
       resetRating: admin.resetRating.bind(null, ctx),

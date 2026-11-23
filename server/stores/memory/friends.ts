@@ -20,6 +20,11 @@ export class MemoryFriends extends MemoryBase {
     const p = [...this.players.values()].find((x) => x.nameKey && x.id !== exceptId && skeletonOfKey(x.nameKey) === skeleton);
     return p ? clone(p) : null;
   }
+  async skeletonClashes(limit: number): Promise<{ skeleton: string; players: Player[] }[]> {
+    const by = new Map<string, Player[]>();
+    for (const p of this.players.values()) if (p.nameKey) by.set(skeletonOfKey(p.nameKey), [...(by.get(skeletonOfKey(p.nameKey)) ?? []), clone(p)]);
+    return [...by.entries()].filter(([, l]) => l.length > 1).sort((a, b) => b[1].length - a[1].length).slice(0, limit).map(([skeleton, players]) => ({ skeleton, players }));
+  }
   async backfillSkeletons(): Promise<number> {
     return 0; // computed from the key on every read
   }

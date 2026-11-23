@@ -34,4 +34,15 @@ describe('SEC-06: name skeletons', () => {
     await expect(other.rename('\u0420\u043e\u0440\u0435\u0443\u0435')).rejects.toMatchObject({ code: 'name_taken' });
     await expect(pop.rename('\u0420\u043e\u0440\u0435\u0443\u0435')).resolves.toMatchObject({ name: '\u0420\u043e\u0440\u0435\u0443\u0435' });
   });
+
+  it('staff can list look-alike names that existed before the check', async () => {
+    const w = world();
+    const a = await w.player('Popeye');
+    const b = await w.player('Someone Else');
+    // A clash from before SEC-06: written straight to storage, past the check.
+    await w.repo.updatePlayer(b.id, { name: '\u0420\u043e\u0440\u0435\u0443\u0435', nameKey: '\u0440\u043e\u0440\u0435\u0443\u0435' });
+    const groups = await w.repo.skeletonClashes(10);
+    expect(groups).toHaveLength(1);
+    expect(groups[0].players.map((p) => p.id).sort()).toEqual([a.id, b.id].sort());
+  });
 });
