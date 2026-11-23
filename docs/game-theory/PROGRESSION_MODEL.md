@@ -70,6 +70,40 @@ Tasks are chosen when a day or week begins, only from ones the village can still
 
 The pacing model player (`tests/gameplay/balance/progression.test.ts`) reaches Keep 6 in 9–17 days (about 10.4 since the design re-audit smoothed Keep 5 → 6). `policies.test.ts` checks the same pace for a defensive planner that builds the counters and an explorer that fields the newer warriors of every family and plays Trials, tasks and the pass.
 
+## Content runway after Keep 15 (Beast Mode GT-15, 2026-11-23)
+
+Model players, not observed play (8 seeds each, `docs/game-theory/campaign.json`; play time is the campaign's
+estimate from `tools/balance/playerModel.ts` `PLAY_TIME`: 90 s of upkeep a session, 20 s a scout, 30 s to place an
+army, each battle at its simulated length at 1x):
+
+| Player | Keep 15 (day) | Play to Keep 15 | About a day |
+|---|---|---|---|
+| Regular (4 sessions a day) | 104.5 | 43.8 h | 25 min |
+| Regular, online build (no simulated raids) | 96.1 | 40.4 h | 25 min |
+| Regular fortress | 129.4 | 52.1 h | 24 min |
+| Casual who queues the next army | 108.4 | 17.1 h | 10 min |
+| Casual who hires the third artisan | 130.4 | 13.4 h | 6 min |
+| Casual (one visit a day) | 179.3 | 18.2 h | 6 min |
+| Casual explorer | 207.8 | 21.7 h | 6 min |
+
+**After Keep 15** a regular player has, in order of length: the roster's research to the caps (under a year of
+research, `progression-model.test.ts`; the Keep 15 bot mix alone is about 290M Provisions, roughly a week of
+income), the builder-day horizon (1,267 builder-days to every cap), the Shadow Trial ladder to about tier 58, and
+the repeating loops (the weekly Gauntlet, the 28-day event calendar, monthly leagues, Alliance and Gang Wars).
+Warrior Mastery gives no stat bonus. The built-but-not-live content (fifteen counters, three heroes and the Hero
+Hall, `withPreview`) is the next runway and is held by `tests/gameplay/planned/golive-gate.test.ts`: today only the
+Lightning Rod Tower passes its gate.
+
+**Owner decision (not code):** the go-live order of that content, and whether the regular player's runway (about
+44 hours of play over 15 weeks, then the loops) is long enough for the launch markets.
+
+**Playtest plan** (replaces the `PLAY_TIME` assumptions with observations; `docs/ops/PLAYTEST.md` has the silent
+protocol): 8-12 players across the casual and regular rhythms for two weeks on a sandbox build with time skips
+off; record session length and sessions a day (opt-in statistics `session_start`, `raid_end.ticks`,
+`scout_leave`), minutes per raid from scout to result, and the first day each player stops raising the Keep. Compare
+the median session and minutes a day with the table above; rerun the campaign with the measured `PLAY_TIME` and
+restate the runway in hours.
+
 ## How to change it (GAME THEORY AI checklist)
 
 1. Change a constant in `progression.json` or `trials.json`. Never change a number in code. For research or training curves, run `node tools/progression/pacing.mjs` to rewrite the live tables; to change a role's budget, `node tools/progression/rolecut.mjs <role> <hp×> <damage×>` scales its live troops and the model together.
