@@ -27,6 +27,13 @@ describe('OPS-06: battle statistics', () => {
     const ev = (name: string, props: Record<string, number | boolean | string>) => ({ name, at: 1, props }) as never;
     const r = battleOutcomesOf([ev('trial_end', { tier: 3, cleared: true }), ev('trial_end', { tier: 3, cleared: false }), ev('raid_end', { keep: 5, endReason: 'surrender' }), ev('raid_end', { keep: 5, endReason: 'time' }), ev('raid_end', { keep: 5, endReason: 'destroyed' }), ev('raid_end', { keep: 5, endReason: 'time' })]);
     expect(r.tiers).toEqual([{ tier: 3, attempts: 2, clears: 1, clearRate: 0.5 }]);
-    expect(r.keeps).toEqual([{ keep: 5, raids: 4, surrenders: 1, surrenderShare: 0.25 }]);
+    expect(r.keeps).toEqual([{ keep: 5, raids: 4, surrenders: 1, surrenderShare: 0.25, scoutLeaves: 0 }]);
+  });
+
+  it('the staff report counts scouted bases left unplayed per Keep and lost graphics', () => {
+    const ev = (name: string, props: Record<string, number | boolean | string>) => ({ name, at: 1, props }) as never;
+    const r = battleOutcomesOf([ev('scout_leave', { keep: 6, nexts: 2 }), ev('scout_leave', { keep: 6, nexts: 0 }), ev('raid_end', { keep: 6, endReason: 'time' }), ev('webgl_lost', { stuck: false }), ev('webgl_lost', { stuck: true })]);
+    expect(r.keeps).toEqual([{ keep: 6, raids: 1, surrenders: 0, surrenderShare: 0, scoutLeaves: 2 }]);
+    expect(r.graphicsLost).toEqual({ lost: 1, stuck: 1 });
   });
 });

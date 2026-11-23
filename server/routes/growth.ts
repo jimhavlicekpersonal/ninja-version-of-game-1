@@ -67,6 +67,7 @@ table{border-collapse:collapse;width:100%}td,th{border-bottom:1px solid #eee;pad
 <p class="muted">Only adult players who chose to share send statistics, under a random statistics id (no player id, name or IP address). Rates appear once a cohort is old enough. Local days use the UTC offset the game reported; ids without one count in UTC.</p>
 <section><h2>Funnel</h2><div id="funnel"></div></section>
 <section><h2>Returns by install day (D1 / D7 / D30)</h2><div id="cohorts"></div></section>
+<section><h2>Battles (installs first seen in the period)</h2><div id="battles"></div></section>
 </main>
 <script src="/admin/stats.js"></script>
 </body></html>`;
@@ -94,6 +95,12 @@ $('load').onclick = async () => {
     $('funnel').replaceChildren(el('table', {}, el('tr', {}, el('th', {}, 'Step'), el('th', {}, 'Installs'), el('th', {}, 'Share')), ...rows.map((r) => el('tr', {}, el('td', {}, r[0]), el('td', {}, r[1] + (r[2] !== f.installs ? ' of ' + r[2] : '')), el('td', {}, pct(r[2] ? r[1] / r[2] : null), bar(r[1], r[2]))))));
     const c = await api('/admin/v1/stats/local' + qs);
     $('cohorts').replaceChildren(el('table', {}, el('tr', {}, ...['Install day', 'Arm', 'Installs', 'D1', 'D7', 'D30', 'Tutorial', 'Raid in 7 d', 'Paid in 7 d'].map((h) => el('th', {}, h))), ...c.rows.map((r) => el('tr', {}, el('td', {}, r.date), el('td', {}, r.arm || '-'), el('td', {}, r.installs), el('td', {}, pct(r.d1Rate)), el('td', {}, pct(r.d7Rate)), el('td', {}, pct(r.d30Rate)), el('td', {}, pct(r.installs ? r.tutorialDone / r.installs : null)), el('td', {}, r.raided7), el('td', {}, r.payers7)))));
+    // Beast Mode OPS-06: per-Keep raids, surrenders and scouted bases left unplayed; Trial clears; lost graphics.
+    const b = await api('/admin/v1/stats/battles?days=' + Math.min(90, Number($('days').value)));
+    $('battles').replaceChildren(
+      el('table', {}, el('tr', {}, ...['Keep', 'Raids', 'Surrendered', 'Scouted and left'].map((h) => el('th', {}, h))), ...b.keeps.map((k) => el('tr', {}, el('td', {}, k.keep), el('td', {}, k.raids), el('td', {}, pct(k.surrenderShare)), el('td', {}, k.scoutLeaves)))),
+      el('table', {}, el('tr', {}, ...['Trial tier', 'Attempts', 'Cleared'].map((h) => el('th', {}, h))), ...b.tiers.map((t) => el('tr', {}, el('td', {}, t.tier), el('td', {}, t.attempts), el('td', {}, pct(t.clearRate))))),
+      el('p', { class: 'muted' }, 'Graphics lost: ' + b.graphicsLost.lost + ' recovered or pending, ' + b.graphicsLost.stuck + ' stuck (reload offered).'));
     $('status').textContent = 'Basis: ' + c.basis + '.';
     $('status').className = 'muted';
   } catch (e) { $('status').textContent = e.message; $('status').className = 'err'; }
