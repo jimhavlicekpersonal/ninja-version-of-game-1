@@ -999,6 +999,8 @@ export interface RaidsDef {
   carryByStars?: number[];
   /** P2-02 (DEF-04): bot raiders come from the defender's Keep (strength Keep+lo to Keep+hi), not from honor. */
   raiderMatch?: { lo: number; hi: number };
+  /** Beast Mode GT-05: from a defender Keep on, simulated raiders are drawn from these offsets instead (latest entry that applies). */
+  raiderMatchByKeep?: { fromKeep: number; lo: number; hi: number }[];
   /** Lab only (`tools/balance`): model villages are laid out on a generated base; live data never sets these. */
   labAutoLayout?: boolean;
   labWalls?: boolean;
