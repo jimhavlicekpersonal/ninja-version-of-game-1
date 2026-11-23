@@ -2453,6 +2453,8 @@
   },
   "paper_lantern_line": {
     "name": "Paper Lantern Line",
+    "$comment": "Beast Mode GT-05 follow-up (2026-11-23): a counter level takes at most 4 days to build (was 7): a player who keeps the counters near their caps reached Keep 15 1.24x later than one who builds none.",
+    "buildCapSeconds": 345600,
     "description": "Lanterns strung low between posts. Hidden or mist-veiled ground warriors within 2 tiles are lit up for a few seconds: defenses can see them, and lit warriors take extra damage. Once it has lit someone, the line itself is no longer hidden.",
     "size": 1,
     "category": "trap",
@@ -2540,6 +2542,8 @@
   },
   "clockwork_repairer": {
     "name": "Clockwork Repair Crane",
+    "$comment": "Beast Mode GT-05 follow-up (2026-11-23): a counter level takes at most 4 days to build (was 7): a player who keeps the counters near their caps reached Keep 15 1.24x later than one who builds none.",
+    "buildCapSeconds": 345600,
     "description": "A mechanic's crane that reaches over nearby defenses: jams, stuns and a Hawk Tamer's slowing on defenses within 3 tiles are cut short. A few repairs per battle.",
     "size": 2,
     "category": "support",
@@ -2628,7 +2632,7 @@
         "cost": {
           "acorns": 1115300
         },
-        "buildSeconds": 408168,
+        "buildSeconds": 345600,
         "hp": 10888,
         "effect": {
           "pct": 0.433,
@@ -2640,7 +2644,7 @@
         "cost": {
           "acorns": 1617200
         },
-        "buildSeconds": 604800,
+        "buildSeconds": 345600,
         "hp": 14398,
         "effect": {
           "pct": 0.456,
@@ -2652,7 +2656,7 @@
         "cost": {
           "acorns": 2344900
         },
-        "buildSeconds": 604800,
+        "buildSeconds": 345600,
         "hp": 21899,
         "effect": {
           "pct": 0.478,
@@ -2664,7 +2668,7 @@
         "cost": {
           "acorns": 3400100
         },
-        "buildSeconds": 604800,
+        "buildSeconds": 345600,
         "hp": 28960,
         "effect": {
           "pct": 0.5,
@@ -2675,6 +2679,8 @@
   },
   "bitter_incense_burner": {
     "name": "Bitter Smoke Brazier",
+    "$comment": "Beast Mode GT-05 follow-up (2026-11-23): a counter level takes at most 4 days to build (was 7): a player who keeps the counters near their caps reached Keep 15 1.24x later than one who builds none.",
+    "buildCapSeconds": 345600,
     "description": "Burns bitter herbs: warriors within 3 tiles receive less healing, and healing, haste and toughness auras and shelter shields work at reduced strength on them.",
     "size": 2,
     "category": "support",
@@ -2763,7 +2769,7 @@
         "cost": {
           "acorns": 1115300
         },
-        "buildSeconds": 408168,
+        "buildSeconds": 345600,
         "hp": 10160,
         "effect": {
           "healCutPct": 0.433,
@@ -2775,7 +2781,7 @@
         "cost": {
           "acorns": 1617200
         },
-        "buildSeconds": 604800,
+        "buildSeconds": 345600,
         "hp": 13438,
         "effect": {
           "healCutPct": 0.456,
@@ -2787,7 +2793,7 @@
         "cost": {
           "acorns": 2344900
         },
-        "buildSeconds": 604800,
+        "buildSeconds": 345600,
         "hp": 20440,
         "effect": {
           "healCutPct": 0.478,
@@ -2799,7 +2805,7 @@
         "cost": {
           "acorns": 3400100
         },
-        "buildSeconds": 604800,
+        "buildSeconds": 345600,
         "hp": 27029,
         "effect": {
           "healCutPct": 0.5,
@@ -2810,6 +2816,8 @@
   },
   "kite_cutter_ballista": {
     "name": "Kite-Cutter Ballista",
+    "$comment": "Beast Mode GT-05 follow-up (2026-11-23): a counter level takes at most 4 days to build (was 7): a player who keeps the counters near their caps reached Keep 15 1.24x later than one who builds none.",
+    "buildCapSeconds": 345600,
     "description": "Air only. Fires a spinning bolas that tangles anything with wings or strings: a flyer it hits is grounded for 3 seconds, where ground defenses can reach it. A flyer that breaks free can't be tangled again for 3 seconds.",
     "size": 2,
     "category": "defense",
@@ -2877,7 +2885,7 @@
         "cost": {
           "acorns": 2563900
         },
-        "buildSeconds": 371062,
+        "buildSeconds": 345600,
         "hp": 24995,
         "damage": 353.25
       },
@@ -2886,7 +2894,7 @@
         "cost": {
           "acorns": 3717600
         },
-        "buildSeconds": 604800,
+        "buildSeconds": 345600,
         "hp": 33701,
         "damage": 476.16
       },
@@ -2895,7 +2903,7 @@
         "cost": {
           "acorns": 5390600
         },
-        "buildSeconds": 604800,
+        "buildSeconds": 345600,
         "hp": 44565,
         "damage": 629.71
       },
@@ -2904,7 +2912,7 @@
         "cost": {
           "acorns": 7816400
         },
-        "buildSeconds": 604800,
+        "buildSeconds": 345600,
         "hp": 58934,
         "damage": 832.79
       },
@@ -2913,7 +2921,7 @@
         "cost": {
           "acorns": 11333700
         },
-        "buildSeconds": 604800,
+        "buildSeconds": 345600,
         "hp": 67776,
         "damage": 957.72
       }
@@ -2921,6 +2929,8 @@
   },
   "longbow_yagura": {
     "name": "Longbow Yagura",
+    "$comment": "Beast Mode GT-05 follow-up (2026-11-23): a counter level takes at most 4 days to build (was 7): a player who keeps the counters near their caps reached Keep 15 1.24x later than one who builds none.",
+    "buildCapSeconds": 345600,
     "description": "A tall archery tower with range 13 that outranges every siege warrior. It prefers warriors attacking from 3.5 tiles or more (throwers and artillery), but cannot hit anything closer than 2 tiles.",
     "size": 2,
     "category": "defense",
@@ -2979,7 +2989,7 @@
         "cost": {
           "acorns": 4284200
         },
-        "buildSeconds": 604800,
+        "buildSeconds": 345600,
         "hp": 22120,
         "damage": 3300.35
       },
@@ -2988,7 +2998,7 @@
         "cost": {
           "acorns": 5569400
         },
-        "buildSeconds": 604800,
+        "buildSeconds": 345600,
         "hp": 29249,
         "damage": 4364.77
       },
@@ -2997,7 +3007,7 @@
         "cost": {
           "acorns": 7240200
         },
-        "buildSeconds": 604800,
+        "buildSeconds": 345600,
         "hp": 33639,
         "damage": 5019.45
       },
@@ -3006,7 +3016,7 @@
         "cost": {
           "acorns": 9412300
         },
-        "buildSeconds": 604800,
+        "buildSeconds": 345600,
         "hp": 44486,
         "damage": 6638.28
       },
@@ -3015,7 +3025,7 @@
         "cost": {
           "acorns": 12236000
         },
-        "buildSeconds": 604800,
+        "buildSeconds": 345600,
         "hp": 51163,
         "damage": 7634.01
       },
@@ -3024,7 +3034,7 @@
         "cost": {
           "acorns": 15906700
         },
-        "buildSeconds": 604800,
+        "buildSeconds": 345600,
         "hp": 58836,
         "damage": 8779.07
       }

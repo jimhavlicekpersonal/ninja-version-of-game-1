@@ -1,5 +1,5 @@
 {
-  "$commentWinBonusShare": "P2-09 (DEF-10, ECO-08, 2026-11-18): winBonusShare per league, a share of the Keep's lowest generated raid loot (Coins and Provisions), larger of it and winBonus, x stars/3. Fitted to the regular campaign: 6.8-18.7% of an average raid's banked loot at Keeps 5-15 (Obsidian, Ember and Storm 0.095 after the Phase 2 campaign put Keep 15 at 22.6% with 0.115; Shadow 0.13 -> 0.11 after Phase 3 put the regular Keep 15 in Shadow at 20.2%) (was 22% at Keep 5 falling to 0.7% at Keep 15). Iron's flat winBonus 5000 -> 4000 each so Keep 5 stays under 20%.",
+  "$commentWinBonusShare": "P2-09 (DEF-10, ECO-08, 2026-11-18): winBonusShare per league, a share of the Keep's lowest generated raid loot (Coins and Provisions), larger of it and winBonus, x stars/3. Fitted to the regular campaign: 6.8-18.7% of an average raid's banked loot at Keeps 5-15 (Obsidian, Ember and Storm 0.095 after the Phase 2 campaign put Keep 15 at 22.6% with 0.115; Shadow 0.13 -> 0.11 after Phase 3 put the regular Keep 15 in Shadow at 20.2%) (was 22% at Keep 5 falling to 0.7% at Keep 15). Iron's flat winBonus 5000 -> 4000 each so Keep 5 stays under 20%. Beast Mode GT-05 follow-up (2026-11-23): Oak to Shadow 0.078 and Kage 0.08 (were 0.09-0.15); late villages now hold more simulated raids and the regular player reached Shadow at Keep 15, where 0.11 paid 28% of a raid's loot. The flat winBonus and the chests still grow by league.",
   "startingTrophies": 0,
   "attackWin": {
     "base": 24,
@@ -46,7 +46,7 @@
     },
     {
       "id": "oak",
-      "winBonusShare": 0.09,
+      "winBonusShare": 0.078,
       "name": "Iron League",
       "min": 1000,
       "chest": {
@@ -62,7 +62,7 @@
     {
       "id": "elder",
       "look": "league_obsidian",
-      "winBonusShare": 0.095,
+      "winBonusShare": 0.078,
       "name": "Obsidian League",
       "min": 2000,
       "chest": {
@@ -77,7 +77,7 @@
     },
     {
       "id": "jade",
-      "winBonusShare": 0.095,
+      "winBonusShare": 0.078,
       "name": "Ember League",
       "min": 2800,
       "chest": {
@@ -93,7 +93,7 @@
     {
       "id": "storm",
       "look": "league_storm",
-      "winBonusShare": 0.095,
+      "winBonusShare": 0.078,
       "name": "Storm League",
       "min": 3600,
       "chest": {
@@ -108,7 +108,7 @@
     },
     {
       "id": "shadow",
-      "winBonusShare": 0.11,
+      "winBonusShare": 0.078,
       "name": "Shadow League",
       "min": 4400,
       "chest": {
@@ -124,7 +124,7 @@
     {
       "id": "kage",
       "look": "league_kage",
-      "winBonusShare": 0.15,
+      "winBonusShare": 0.08,
       "name": "Kage League",
       "min": 5200,
       "chest": {
