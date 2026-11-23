@@ -14,6 +14,8 @@ Keep reached (day): 1: 0 [0.0–0.0] · 2: 0 [0.0–0.0] · 3: 0 [0.0–0.0] · 
 
 Totals: 1,199,060,612 looted, 636,487,666 taken by raids against the village (53% of the loot), 39,504,398 paid for held raids.
 
+Play time (GT-15 estimate, playerModel `PLAY_TIME`): 43.8 h to Keep 15, 51.6 h over the run, about 25.3 minutes a day.
+
 | Keep | Raids | Avg stars | Won | 3★ rate | Destruction | Loot | Opponent Keep | Army strength | Honor | Raided | Held | Stolen | Honor lost |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | 2 | 38 | 2.63 | 100% | 66% | 95% | 4,101 | 1.0 | 1.00 | 82 | 0 | – | – | – |
@@ -36,6 +38,8 @@ Totals: 1,199,060,612 looted, 636,487,666 taken by raids against the village (53
 Keep reached (day): 1: 0 [0.0–0.0] · 2: 0 [0.0–0.0] · 3: 0 [0.0–0.0] · 4: 1.1 [1.0–1.3] · 5: 4.7 [4.3–5.0] · 6: 11.2 [10.9–11.4] · 7: 19.9 [19.3–20.4] · 8: 28.1 [27.9–28.4] · 9: 32.1 [31.0–33.2] · 10: 37.8 [36.8–38.8] · 11: 47.2 [46.1–48.3] · 12: 55.9 [54.8–57.0] · 13: 69.4 [68.2–70.5] · 14: 87.7 [86.7–88.7] · 15: 109.4 [108.4–110.4]. Played 126 days; 250 raids against the village.
 
 Totals: 1,255,906,981 looted, 727,784,177 taken by raids against the village (58% of the loot), 15,517,270 paid for held raids.
+
+Play time (GT-15 estimate, playerModel `PLAY_TIME`): 44 h to Keep 15, 51.3 h over the run, about 24.5 minutes a day.
 
 | Keep | Raids | Avg stars | Won | 3★ rate | Destruction | Loot | Opponent Keep | Army strength | Honor | Raided | Held | Stolen | Honor lost |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
@@ -60,6 +64,8 @@ Keep reached (day): 1: 0 [0.0–0.0] · 2: 0 [0.0–0.0] · 3: 0 [0.0–0.0] · 
 
 Totals: 384,744,938 looted, 387,498,478 taken by raids against the village (101% of the loot), 249,453 paid for held raids.
 
+Play time (GT-15 estimate, playerModel `PLAY_TIME`): 18.2 h to Keep 15, 20.2 h over the run, about 6.1 minutes a day.
+
 | Keep | Raids | Avg stars | Won | 3★ rate | Destruction | Loot | Opponent Keep | Army strength | Honor | Raided | Held | Stolen | Honor lost |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | 2 | 40 | 2.70 | 100% | 73% | 95% | 4,101 | 1.0 | 1.00 | 81 | 0 | – | – | – |
@@ -82,6 +88,8 @@ Totals: 384,744,938 looted, 387,498,478 taken by raids against the village (101%
 Keep reached (day): 1: 0 [0.0–0.0] · 2: 0 [0.0–0.0] · 3: 0 [0.0–0.0] · 4: 0.7 [0.5–0.9] · 5: 3.7 [3.3–4.1] · 6: 9.2 [8.5–9.8] · 7: 15.8 [14.6–16.9] · 8: 19.8 [18.8–20.7] · 9: 25.7 [24.5–27.0] · 10: 30.5 [29.2–31.9] · 11: 39.2 [37.6–40.7] · 12: 48.3 [46.8–49.9] · 13: 61.8 [60.1–63.5] · 14: 81.5 [79.3–83.8] · 15: 103.2 [100.9–105.4]. Played 121 days; 237 raids against the village.
 
 Totals: 1,351,949,199 looted, 886,527,035 taken by raids against the village (66% of the loot), 0 paid for held raids.
+
+Play time (GT-15 estimate, playerModel `PLAY_TIME`): 42.9 h to Keep 15, 50.5 h over the run, about 25.2 minutes a day.
 
 | Keep | Raids | Avg stars | Won | 3★ rate | Destruction | Loot | Opponent Keep | Army strength | Honor | Raided | Held | Stolen | Honor lost |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
@@ -106,6 +114,8 @@ Keep reached (day): 1: 0 [0.0–0.0] · 2: 0 [0.0–0.0] · 3: 0 [0.0–0.0] · 
 
 Totals: 1,081,144,373 looted, 645,748,021 taken by raids against the village (60% of the loot), 35,601,022 paid for held raids.
 
+Play time (GT-15 estimate, playerModel `PLAY_TIME`): 45.2 h to Keep 15, 53.1 h over the run, about 25.9 minutes a day.
+
 | Keep | Raids | Avg stars | Won | 3★ rate | Destruction | Loot | Opponent Keep | Army strength | Honor | Raided | Held | Stolen | Honor lost |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | 2 | 38 | 2.63 | 100% | 66% | 95% | 4,101 | 1.0 | 1.00 | 82 | 0 | – | – | – |
@@ -128,6 +138,8 @@ Totals: 1,081,144,373 looted, 645,748,021 taken by raids against the village (60
 Keep reached (day): 1: 0 [0.0–0.0] · 2: 0 [0.0–0.0] · 3: 0 [0.0–0.0] · 4: 1.9 [1.6–2.3] · 5: 7.5 [6.5–8.4] · 6: 20.9 [19.6–22.3] · 7: 36.6 [34.1–39.2] · 8: 50.3 [48.2–52.3] · 9: 64.1 [61.1–67.2] · 10: 82.3 [78.6–85.9] · 11: 98.6 [95.1–102.2] · 12: 120.4 [118.5–122.3] · 13: 151.2 [147.8–154.5] · 14: 179.5 [175.5–183.6] · 15: 207.8 [201.6–213.9]. Played 225 days; 209 raids against the village.
 
 Totals: 222,731,985 looted, 366,024,717 taken by raids against the village (164% of the loot), 569,064 paid for held raids.
+
+Play time (GT-15 estimate, playerModel `PLAY_TIME`): 21.7 h to Keep 15, 23.6 h over the run, about 6.3 minutes a day.
 
 | Keep | Raids | Avg stars | Won | 3★ rate | Destruction | Loot | Opponent Keep | Army strength | Honor | Raided | Held | Stolen | Honor lost |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
@@ -152,6 +164,8 @@ Keep reached (day): 1: 0 [0.0–0.0] · 2: 0 [0.0–0.0] · 3: 0 [0.0–0.0] · 
 
 Totals: 282,108,418 looted, 311,755,315 taken by raids against the village (111% of the loot), 30,054 paid for held raids.
 
+Play time (GT-15 estimate, playerModel `PLAY_TIME`): 13.4 h to Keep 15, 15.3 h over the run, about 6.2 minutes a day.
+
 | Keep | Raids | Avg stars | Won | 3★ rate | Destruction | Loot | Opponent Keep | Army strength | Honor | Raided | Held | Stolen | Honor lost |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | 2 | 35 | 2.89 | 100% | 89% | 98% | 4,206 | 1.0 | 1.00 | 77 | 0 | – | – | – |
@@ -175,6 +189,8 @@ Keep reached (day): 1: 0 [0.0–0.0] · 2: 0 [0.0–0.0] · 3: 0 [0.0–0.0] · 
 
 Totals: 506,204,868 looted, 309,103,603 taken by raids against the village (61% of the loot), 18,896 paid for held raids.
 
+Play time (GT-15 estimate, playerModel `PLAY_TIME`): 17.1 h to Keep 15, 20 h over the run, about 9.5 minutes a day.
+
 | Keep | Raids | Avg stars | Won | 3★ rate | Destruction | Loot | Opponent Keep | Army strength | Honor | Raided | Held | Stolen | Honor lost |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | 2 | 32 | 2.72 | 100% | 72% | 93% | 3,850 | 1.0 | 1.00 | 75 | 0 | – | – | – |
@@ -192,11 +208,38 @@ Totals: 506,204,868 looted, 309,103,603 taken by raids against the village (61% 
 | 14 | 189 | 2.14 | 97% | 32% | 78% | 5,556,961 | 13.0 | 12.86 | 3377 | 105 | 0% | 4,860,607 | 0.0 |
 | 15 | 249 | 2.10 | 94% | 33% | 77% | 7,009,537 | 14.0 | 13.83 | 3485 | 139 | 0% | 8,765,049 | 0.0 |
 
+## Regular online (4 sessions a day, no simulated raids against the village: the online build)
+
+Keep reached (day): 1: 0 [0.0–0.0] · 2: 0 [0.0–0.0] · 3: 0 [0.0–0.0] · 4: 0.6 [0.6–0.7] · 5: 3.5 [3.2–3.7] · 6: 8 [7.7–8.3] · 7: 12.1 [11.7–12.6] · 8: 16.1 [15.5–16.8] · 9: 21.5 [20.8–22.3] · 10: 26.5 [25.7–27.3] · 11: 33.8 [32.7–34.9] · 12: 42.6 [41.5–43.8] · 13: 56.1 [54.9–57.2] · 14: 74.4 [73.2–75.6] · 15: 96.1 [94.9–97.2]. Played 113 days; 0 raids against the village.
+
+Totals: 724,658,370 looted, 0 taken by raids against the village (0% of the loot), 0 paid for held raids.
+
+Play time (GT-15 estimate, playerModel `PLAY_TIME`): 40.4 h to Keep 15, 47.7 h over the run, about 25.4 minutes a day.
+
+| Keep | Raids | Avg stars | Won | 3★ rate | Destruction | Loot | Opponent Keep | Army strength | Honor | Raided | Held | Stolen | Honor lost |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 2 | 38 | 2.63 | 100% | 66% | 95% | 4,101 | 1.0 | 1.00 | 82 | 0 | – | – | – |
+| 3 | 47 | 1.91 | 89% | 23% | 70% | 5,360 | 2.0 | 1.57 | 221 | 0 | – | – | – |
+| 4 | 87 | 1.66 | 82% | 23% | 69% | 9,116 | 3.0 | 2.97 | 466 | 0 | – | – | – |
+| 5 | 145 | 2.08 | 91% | 34% | 76% | 26,710 | 4.0 | 3.56 | 913 | 0 | – | – | – |
+| 6 | 132 | 1.61 | 82% | 20% | 67% | 63,895 | 5.0 | 5.17 | 1376 | 0 | – | – | – |
+| 7 | 115 | 1.72 | 84% | 23% | 71% | 276,176 | 6.8 | 5.99 | 1825 | 0 | – | – | – |
+| 8 | 175 | 1.68 | 83% | 21% | 67% | 277,630 | 7.1 | 6.95 | 2245 | 0 | – | – | – |
+| 9 | 156 | 1.78 | 84% | 24% | 69% | 519,319 | 8.9 | 8.79 | 2739 | 0 | – | – | – |
+| 10 | 186 | 1.68 | 88% | 16% | 67% | 597,165 | 9.5 | 9.39 | 2260 | 0 | – | – | – |
+| 11 | 282 | 2.04 | 93% | 33% | 78% | 1,036,972 | 11.0 | 10.90 | 3417 | 0 | – | – | – |
+| 12 | 431 | 1.26 | 73% | 6% | 58% | 1,257,207 | 12.3 | 11.95 | 3994 | 0 | – | – | – |
+| 13 | 585 | 1.91 | 91% | 22% | 72% | 2,069,004 | 12.6 | 12.53 | 3907 | 0 | – | – | – |
+| 14 | 695 | 1.59 | 81% | 13% | 63% | 2,994,880 | 14.1 | 13.74 | 4278 | 0 | – | – | – |
+| 15 | 535 | 1.38 | 74% | 6% | 59% | 2,589,225 | 14.7 | 14.00 | 4944 | 0 | – | – | – |
+
 ## Regular fortress (4 sessions a day, counters within 2 levels of the caps before the Keep, walled generated layout)
 
 Keep reached (day): 1: 0 [0.0–0.0] · 2: 0 [0.0–0.0] · 3: 0 [0.0–0.0] · 4: 1.2 [1.2–1.2] · 5: 4.8 [4.4–5.1] · 6: 11.3 [10.9–11.7] · 7: 19.6 [19.3–20.0] · 8: 27.2 [25.6–28.8] · 9: 31.3 [30.8–31.8] · 10: 36.8 [36.2–37.4] · 11: 46.2 [45.2–47.1] · 12: 55 [54.1–56.0] · 13: 68.9 [67.9–69.8] · 14: 88.5 [85.4–91.5] · 15: 129.4 [127.4–131.4]. Played 146 days; 297 raids against the village.
 
 Totals: 1,138,010,054 looted, 437,702,055 taken by raids against the village (38% of the loot), 98,811,703 paid for held raids.
+
+Play time (GT-15 estimate, playerModel `PLAY_TIME`): 52.1 h to Keep 15, 59 h over the run, about 24.3 minutes a day.
 
 | Keep | Raids | Avg stars | Won | 3★ rate | Destruction | Loot | Opponent Keep | Army strength | Honor | Raided | Held | Stolen | Honor lost |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
@@ -229,6 +272,7 @@ Per-run means. Earned and spent by what moved it: the command (openDailyChest, c
 | casual_explorer | 500 | 171 | 331 | 382 | 22 | 0 | 1407 |
 | casual_hires | 500 | 134 | 334 | 248 | 15 | 750 (place) | 481 |
 | casual_queues | 500 | 318 | 481 | 204 | 15 | 750 (place) | 768 |
+| regular_online | 500 | 0 | 475 | 183 | 0 | 0 | 1158 |
 | regular_fortress | 500 | 0 | 753 | 243 | 0 | 0 | 1496 |
 
 ## Is defense worth building? (economy E26, defense DEF-03)
