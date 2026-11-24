@@ -19,6 +19,7 @@ import { listenForAppLinks, parseGameLink } from './backend/platform/links';
 import { Keys, buildingTexture, buildingThumbKey, paintedBuildingBytes, prepareTextures, textureBytes, thumbnailDataUrl, trimTextureCaches, villageTexture } from './presentation/render/assets';
 import { loadInterfaceFonts } from './presentation/render/fonts';
 import { loadArtManifest, queueArt } from './presentation/render/artManifest';
+import { smoothArtTextures, webgl2Context } from './presentation/render/smoothing';
 import { VillageScene, type VillageSceneInit } from './presentation/render/VillageScene';
 import { BattleScene } from './presentation/render/BattleScene';
 import { quality, renderScaleFor } from './presentation/render/quality';
@@ -570,8 +571,14 @@ async function boot(): Promise<void> {
   const size = () => ({ w: Math.max(1, host.clientWidth), h: Math.max(1, host.clientHeight) });
   const { w, h } = size();
   const bus = new Bus<UiEvents>();
+  // Art polish (render/smoothing.ts): on WebGL2 every image texture gets mipmaps, so art the camera shrinks stays
+  // smooth instead of stair-stepped; without WebGL2 (or with ?gl=1) Phaser picks its renderer as before.
+  const glCanvas = document.createElement('canvas');
+  const gl2 = webgl2Context(glCanvas, { antialias: true, powerPreference: q.powerPreference });
   const game = new Phaser.Game({
-    type: Phaser.AUTO,
+    type: gl2 ? Phaser.WEBGL : Phaser.AUTO,
+    // Phaser's types name only a 2D context here; its WebGL renderer takes this one as it is.
+    ...(gl2 ? { canvas: glCanvas, context: gl2 as unknown as CanvasRenderingContext2D } : {}),
     parent: host,
     backgroundColor: '#1d2537',
     banner: false,
@@ -584,6 +591,7 @@ async function boot(): Promise<void> {
     // throttle below can lower the rate at run time without restarting the loop.
     fps: q.fps < 60 ? { target: q.fps, limit: q.fps + 1 } : { target: 60, limit: 1000 },
   });
+  smoothArtTextures(game);
   // The map is drawn on a canvas: name it for screen readers (client re-audit item 15).
   game.canvas?.setAttribute('role', 'img');
   game.canvas?.setAttribute('aria-label', i18nText("ui.village_map_drag_to_look_around_pinch__2599974c91"));

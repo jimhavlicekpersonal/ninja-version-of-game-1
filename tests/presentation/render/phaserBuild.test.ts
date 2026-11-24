@@ -47,7 +47,10 @@ describe('custom Phaser build', () => {
     used.delete('Types'); // types only
     used.delete('AUTO'); // constants merged from phaser/src/const
     used.delete('CANVAS');
-    expect(readFileSync(join(ROOT, 'node_modules/phaser/src/const.js'), 'utf8')).toMatch(/\bCANVAS: 1\b/);
+    used.delete('WEBGL');
+    const constants = readFileSync(join(ROOT, 'node_modules/phaser/src/const.js'), 'utf8');
+    expect(constants).toMatch(/\bCANVAS: 1\b/);
+    expect(constants).toMatch(/\bWEBGL: 2\b/);
     for (const ns of used) expect(BUILD, `Phaser.${ns}`).toMatch(new RegExp(`\\b${ns}\\b`));
   });
 

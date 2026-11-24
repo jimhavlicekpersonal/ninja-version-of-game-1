@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { gpuBytes, mipFactor } from './smoothing';
 import { CLIFF, GROUND_PAD, paintBackdrop, paintGround, paintWave } from '../art/ground';
 import {
   buildingPainters,
@@ -137,7 +138,7 @@ export function trimTextureCaches(textures: Phaser.Textures.TextureManager): num
 
 /**
  * Texture memory by kind, in bytes of one copy (perf logs, `window.tk.textureBytes`): `gpu` counts
- * every texture's pixels, `cpu` the painting canvases still kept beside them (released ones are
+ * every texture's pixels (mipmaps included, `render/smoothing.ts`), `cpu` the painting canvases still kept beside them (released ones are
  * 1 px), `building` the budgeted building looks (device F1).
  */
 export function textureBytes(textures: Phaser.Textures.TextureManager): { gpu: number; cpu: number; building: number; island: number; troops: number } {
@@ -148,7 +149,7 @@ export function textureBytes(textures: Phaser.Textures.TextureManager): { gpu: n
   for (const [key, tex] of Object.entries(textures.list)) {
     if (key.startsWith('__')) continue;
     for (const src of tex.source) {
-      const px = src.width * src.height * 4;
+      const px = gpuBytes(src);
       gpu += px;
       const img = src.image as { width?: number; height?: number; getContext?: unknown } | undefined;
       if (img && typeof img.getContext === 'function') cpu += (img.width ?? 0) * (img.height ?? 0) * 4;
@@ -246,7 +247,7 @@ function paintLevel(textures: Phaser.Textures.TextureManager, key: string, type:
   paintBuildingLevel(c.ctx, type, size, level, info?.maxLevel ?? 1, def);
   c.done();
   // Counted against the budget; removed at the next hold/release if unused (never mid-frame).
-  budget(textures).added(key, c.bytes);
+  budget(textures).added(key, c.bytes * mipFactor());
 }
 
 /** Origin that puts the footprint centre of a building image on its world position. */
