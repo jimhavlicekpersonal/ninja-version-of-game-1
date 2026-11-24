@@ -141,6 +141,8 @@ export class BattleHud {
   private toastEl = h('div', { class: 'toasts' });
   private modalEl = h('div', { class: 'modal-root' });
   private interval = 0;
+  /** The pending slice of a "What if…" run (STB-N4: kept on the HUD so every close path and destroy() stop it). */
+  private whatIfTimer: number | null = null;
   private finished = false;
   private lastStars = -1;
   /** P6-01: the squad order row (above the troop cards). */
@@ -278,6 +280,7 @@ export class BattleHud {
 
   destroy(): void {
     window.clearInterval(this.interval);
+    this.stopWhatIf();
     window.removeEventListener('keydown', this.onKey);
     clear(this.deps.root);
     this.deps.root.hidden = true;
@@ -910,12 +913,13 @@ export class BattleHud {
     const deployments = [...s.deployments];
     const endTick = s.endTick;
     const list = h('div', { class: 'what-if' });
-    let running: number | null = null;
+    // One review at a time: a run left from an earlier opening stops now (STB-N4).
+    this.stopWhatIf();
     entry.points.forEach((p, i) => {
       const out = h('span', { class: 'small what-if-out', 'aria-live': 'polite' });
       const btn = h('button', { class: 'btn ghost', type: 'button', 'data-id': `what-if-${i}` }, pointLabel(p.label)) as HTMLButtonElement;
       btn.addEventListener('click', () => {
-        if (running !== null) return;
+        if (this.whatIfTimer !== null) return;
         btn.disabled = true;
         out.textContent = '…';
         const run = new WhatIfRun(setup, deployments, i, s.data, endTick);
@@ -924,28 +928,27 @@ export class BattleHud {
           // ~8 ms of work a slice, then give the frame back.
           while (!run.advance(4) && performance.now() - t0 < 6);
           if (!run.sim.ended) {
-            running = window.setTimeout(slice, 0);
+            this.whatIfTimer = window.setTimeout(slice, 0);
             return;
           }
-          running = null;
+          this.whatIfTimer = null;
           btn.disabled = false;
           const o = run.outcome();
           out.textContent = t('review.result', { stars: o.result.stars, pct: fmtPercent(o.result.destruction) });
           if (o.sent < o.total) out.append(h('span', { class: 'muted' }, ` · ${t('review.fit', { sent: o.sent, total: o.total })}`));
         };
-        running = window.setTimeout(slice, 0);
+        this.whatIfTimer = window.setTimeout(slice, 0);
       });
       list.append(h('div', { class: 'what-if-row' }, btn, out));
     });
-    const close = this.modal(t('review.title'), h('div', {}, h('p', { class: 'muted small' }, t('review.about')), list), [
-      {
-        label: i18nText("ui.close_7d9eb7acb1"),
-        onClick: () => {
-          if (running !== null) window.clearTimeout(running);
-          close();
-        },
-      },
-    ]);
+    // Every way out (Close, the X, Escape) stops the run: the modal's onClose (STB-N4).
+    const close = this.modal(t('review.title'), h('div', {}, h('p', { class: 'muted small' }, t('review.about')), list), [{ label: i18nText("ui.close_7d9eb7acb1"), onClick: () => close() }], true, () => this.stopWhatIf());
+  }
+
+  /** Stop a "What if…" run in progress (its dialog closed, it was opened again, or the HUD went away). */
+  private stopWhatIf(): void {
+    if (this.whatIfTimer !== null) window.clearTimeout(this.whatIfTimer);
+    this.whatIfTimer = null;
   }
 
   /** P6-07: the tasks this battle moved, honor to the next league and the Scroll's next tier (only what moved). */
@@ -1032,9 +1035,12 @@ export class BattleHud {
     if (pulse) this.deps.root.querySelectorAll(pulse).forEach((el) => el.classList.add('coach-pulse'));
   }
 
-  private modal(title: string, body: HTMLElement, buttons: { label: string; primary?: boolean; danger?: boolean; onClick: () => void }[], closable = true): () => void {
+  private modal(title: string, body: HTMLElement, buttons: { label: string; primary?: boolean; danger?: boolean; onClick: () => void }[], closable = true, onClose?: () => void): () => void {
     const backdrop = h('div', { class: 'modal-backdrop' });
-    const close = () => removeWithExit(backdrop);
+    const close = () => {
+      onClose?.();
+      removeWithExit(backdrop);
+    };
     const foot = h('div', { class: 'modal-foot' });
     for (const b of buttons) foot.append(h('button', { class: `btn${b.primary ? ' primary' : ''}${b.danger ? ' danger' : ''}`, type: 'button', onclick: b.onClick }, b.label));
     backdrop.append(
