@@ -141,11 +141,20 @@ export function canPurchase(state: VillageState, productId: string, now: number,
     const active = state.offers.active.find((a) => a.id === rule.id && a.expiresAt > now);
     if (!active) return { ok: false, code: 'OFFER_EXPIRED', message: 'This offer has ended.' };
   }
-  if (state.profile.under18) {
-    const cap = data.store.minorMonthlyCapUsd;
-    if (spentThisMonth(state, now) + product.usd > cap + 1e-9) {
-      return { ok: false, code: 'SPEND_CAP', message: `Monthly spending limit of $${cap.toFixed(2)} reached for players under 18.` };
-    }
-  }
+  const capped = minorCapRefusal(state, product.usd, now, data);
+  if (capped) return capped;
   return { ok: true, product };
+}
+
+/**
+ * The under-18 monthly cap alone: the refusal if `usd` more this month would pass it, else null. A receipt the
+ * device delivers without a server (`GameController.deliverReceipt`'s trusted path) is held to it too (MONEY-01).
+ */
+export function minorCapRefusal(state: VillageState, usd: number, now: number, data: GameData): { ok: false; code: 'SPEND_CAP'; message: string } | null {
+  if (!state.profile.under18) return null;
+  const cap = data.store.minorMonthlyCapUsd;
+  if (spentThisMonth(state, now) + usd > cap + 1e-9) {
+    return { ok: false, code: 'SPEND_CAP', message: `Monthly spending limit of $${cap.toFixed(2)} reached for players under 18.` };
+  }
+  return null;
 }

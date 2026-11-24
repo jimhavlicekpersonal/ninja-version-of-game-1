@@ -7,7 +7,7 @@ import { deserialize, NewerSaveError, serialize } from '../sim/save';
 import type { GameData, VillageState, PendingBattle } from '../sim/types';
 import type { BattleRecord, BattleSetup, Deployment } from '../sim/battle/types';
 import type { Cost, OfferRule, OfferTrigger } from '../sim/types';
-import { canPurchase, productForStoreId, productInfo, storeProductId } from '../sim/monetization';
+import { canPurchase, minorCapRefusal, productForStoreId, productInfo, storeProductId } from '../sim/monetization';
 import { raidPhase } from '../sim/social/groveRaid';
 import { MockPaymentProvider, type PaymentProvider, type PurchaseVerifier, type StoreReceipt } from '../../backend/payments/provider';
 import { advance, applyCommand, createNewVillage, hallLevel, type Command, type CommandResult, type FinishedUpgrade, type SimEvent } from '../sim/village';
@@ -456,6 +456,10 @@ export class GameController {
     if (!product) return { ok: false, code: 'UNKNOWN_PRODUCT', message: 'That item is not available.' };
     const id = receiptId(receipt);
     if (!this.state.purchases.some((p) => p.id === id)) {
+      // MONEY-01: `verified` only skips the offer and Scroll checks here (the store was paid); the under-18 cap
+      // still holds. A receipt over it stays unfinished (the store keeps it) and is not delivered.
+      const capped = minorCapRefusal(this.state, product.usd, this.now(), this.deps.data);
+      if (capped) return capped;
       const g = this.dispatch({ type: 'grantPurchase', productId: product.id, transactionId: id, verified: true });
       if (!g.ok) return { ok: false, code: g.code, message: g.message };
     }

@@ -460,10 +460,14 @@ async function boot(): Promise<void> {
   // Store receipts go to the server when it checks them (roadmap Phase 4).
   controller.purchaseVerifier = () => (payments.store ? connection.purchaseVerifier(payments.store) : null);
   // Purchases approved later (Ask to Buy, pending payments), and paid ones not yet delivered.
-  const deliverLater = (receipt: Parameters<GameController['deliverReceipt']>[0]) =>
+  // MONEY-01: like recoverPurchases, only once the server answered (or with no server): before the first hello the
+  // receipt stays unfinished, and the reconnection's recoverPurchases delivers it.
+  const deliverLater = (receipt: Parameters<GameController['deliverReceipt']>[0]) => {
+    if (connection.enabled && !connection.online) return;
     void controller.deliverReceipt(receipt).then((r) => {
       if (r.ok) hud?.toast(i18nText("ui.your_purchase_has_been_delivered_ae90965955"), 'success');
     });
+  };
   if (storeKit) void storeKit.listen(deliverLater);
   if (play) void play.listen(deliverLater);
   // Paid purchases not delivered yet are retried on every reconnection (not only the first one

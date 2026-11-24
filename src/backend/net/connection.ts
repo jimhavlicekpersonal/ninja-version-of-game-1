@@ -294,10 +294,14 @@ export class Connection {
    */
   purchaseVerifier(store: PurchaseStore): PurchaseVerifier | null {
     if (!this.port) return null;
-    const checks = Boolean(this.server?.features.includes(`purchases-${store}`));
-    if (!checks && !this.serverVillage) return null;
+    // Money audit 2026-11-24 (MONEY-01): before the first hello of this start the server's features are unknown.
+    // The last hello this device heard from this server stands in for them; with none, the server may check this
+    // store (and keep a held receipt over the under-18 cap unfinished), so nothing is trusted: the receipt waits.
+    const features = this.server?.features ?? this.lastHelloFeatures();
+    if (features && !features.includes(`purchases-${store}`) && !this.serverVillage) return null;
     const ready = async () => {
-      if (!checks) throw new ServerError(403, 'purchase_refused', 'Purchases are not set up on this server yet. Nothing was charged.');
+      const now = this.server?.features ?? this.lastHelloFeatures();
+      if (now && !now.includes(`purchases-${store}`)) throw new ServerError(403, 'purchase_refused', 'Purchases are not set up on this server yet. Nothing was charged.');
       if (!this.port || !this.online) throw new ServerError(0, 'network', 'Connect to the internet to buy.');
       // The server reads the age group from a village it keeps: send what is queued first.
       await this.village?.flush().catch(() => undefined);
@@ -309,11 +313,28 @@ export class Connection {
         return (await ready()).purchaseIntent({ store: s, productId, under18, ...(this.village?.device ? { device: this.village.device } : {}), ...(install ? { install } : {}) });
       },
       redeem: async (r) => (await ready()).redeem({ store: r.store, storeProductId: r.storeProductId, receipt: r.receipt }),
-      history: async () => (checks && this.port && this.online ? (await this.port.purchaseHistory()).purchases : []),
+      history: async () => (this.checksNow(store) && this.port && this.online ? (await this.port.purchaseHistory()).purchases : []),
       release: async (accountToken, outcome) => {
-        if (checks && this.port && this.online) await this.port.releaseIntent({ accountToken, outcome });
+        if (this.checksNow(store) && this.port && this.online) await this.port.releaseIntent({ accountToken, outcome });
       },
     };
+  }
+
+  /** The server checks receipts from `store`, by the hello of this start (false before it). */
+  private checksNow(store: PurchaseStore): boolean {
+    return Boolean(this.server?.features.includes(`purchases-${store}`));
+  }
+
+  /** The features of the last hello this device heard from this server (any earlier start), or null if none. */
+  private lastHelloFeatures(): string[] | null {
+    const saved = this.kv.get(`tk.net.helloFeatures:${this.url}`);
+    if (!saved) return null;
+    try {
+      const f = JSON.parse(saved) as unknown;
+      return Array.isArray(f) && f.every((x) => typeof x === 'string') ? f : null;
+    } catch {
+      return null;
+    }
   }
 
   /** Notification types this device gets as server push (roadmap step 40); empty when none. */
@@ -1138,6 +1159,7 @@ export class Connection {
         if (this.status !== 'connecting') this.setStatus('connecting');
         const sent = Date.now();
         this.server = await port.hello();
+        this.kv.set(`tk.net.helloFeatures:${this.url}`, JSON.stringify(this.server.features));
         this.noteServerTime(this.server.serverTime, sent, Date.now());
         // Step 75: a game the server can no longer check pauses online play (the village keeps working offline).
         const update = updateNeeded(this.server, SIM_RULES, this.o.build);
