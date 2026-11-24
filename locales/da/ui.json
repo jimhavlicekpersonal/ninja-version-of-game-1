@@ -372,6 +372,8 @@
   "store.buyNamed": { "en": "Buy {name} for {price}", "text": "Køb {name} for {price}" },
   "res.jadeOpenStore": { "en": "Jade: {n}. Open the Store", "text": "Jade: {n}. Åbn butikken" },
   "settings.textSize": { "en": "Text size", "text": "Tekststørrelse" },
+  "settings.panSpeed": { "en": "Map drag speed", "text": "Hastighed for træk på kortet" },
+  "settings.zoomSpeed": { "en": "Zoom speed", "text": "Zoomhastighed" },
   "stake.recentHits": { "en": "Your last {raids} raids: 2★ or more in {two}, 3★ in {three}.", "text": "Dine seneste {raids} raids: 2★ eller mere i {two}, 3★ i {three}." },
   "whatsNew.0_2_0": { "en": "What's new: choose a larger text size, and turn screen shake and flashes down, in Settings. The stake picker shows how often your recent raids reached two and three stars. Shadow Trials climb more evenly, and raids at Keep 4 and Keep 15 meet fairer opponents.", "text": "Nyt: Vælg en større tekststørrelse, og skru ned for skærmrystelser og blink i Indstillinger. Indsatsvælgeren viser, hvor ofte dine seneste raids nåede to og tre stjerner. Skyggeprøverne stiger mere jævnt, og raids ved Borg 4 og Borg 15 møder mere fair modstandere." }
 }

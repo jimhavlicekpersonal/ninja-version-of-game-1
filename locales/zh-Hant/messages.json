@@ -1270,7 +1270,7 @@
   "ui.player_id_for_support_and_for_deletion_209a9b611c": { "en": "Player ID (for support, and for deletion requests)", "text": "玩家 ID（用於客服和刪除請求）" },
   "ui.players_under_13_can_only_be_found_by__f3c16e1ffc": { "en": "Players under 13 can only be found by friend code: share it only with people you know.", "text": "未滿 13 歲的玩家只能透過好友代碼被找到：只分享給你認識的人。" },
   "ui.power_848e96567d": { "en": "Power", "text": "戰力" },
-  "ui.power_is_your_skill_as_an_attacker_plu_e58aae723f": { "en": "Power is your skill as an attacker from your rated raids, plus a little for your Keep, so it compares skill among players with Keeps close to yours.", "text": "戰力是根據你的排名突襲得出的進攻水準，再為你的天守閣稍加一點；它比較的是天守閣相近的玩家之間的水準。", "old": "戰力是你作為進攻者的實力加上天守閣的強度，根據你計分的突襲計算。" },
+  "ui.power_is_your_skill_as_an_attacker_plu_e58aae723f": { "en": "Power is your skill as an attacker from your rated raids, plus a little for your Keep, so it compares skill among players with Keeps close to yours.", "text": "戰力是根據你的排名突襲得出的進攻水準，再為你的天守閣稍加一點；它比較的是天守閣相近的玩家之間的水準。" },
   "ui.practice_battle_nothing_is_spent_or_wo_c68624fd43": { "en": "Practice battle · nothing is spent or won", "text": "練習戰 · 不消耗也不贏得任何東西" },
   "ui.practice_battle_nothing_spent_or_won_f8edd0efbf": { "en": "Practice battle (nothing spent or won)", "text": "練習戰（不消耗也不贏得任何東西）" },
   "ui.practice_battle_with_a_squad_of_nothin_bcdcdb0816": { "en": "Practice battle with a squad of {arg1}: nothing is spent or won", "text": "以 {arg1} 的小隊進行練習戰：不消耗也不贏得任何東西" },

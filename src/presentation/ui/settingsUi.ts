@@ -22,6 +22,7 @@ import { formatDuration } from './format';
 import { getQualityChoice, quality, setQualityChoice, type QualityChoice } from '../render/quality';
 import { reduceEffectsChoice, setReduceEffects } from '../render/motion';
 import { TEXT_SCALES, setTextScale, textScale } from '../render/textScale';
+import { CAMERA_SPEEDS, panSpeed, setPanSpeed, setZoomSpeed, zoomSpeed } from '../render/cameraSpeed';
 import { uiArt } from './feedback';
 import { statsExplainer } from './statsText';
 
@@ -126,7 +127,7 @@ export class SettingsUi {
 
     // Graphics
     body.append(this.languageRow());
-    body.append(h('h3', {}, i18nText("ui.graphics_a874fca87c")), this.qualityRow(), this.textSizeRow());
+    body.append(h('h3', {}, i18nText("ui.graphics_a874fca87c")), this.qualityRow(), this.textSizeRow(), this.cameraSpeedRow('pan-speed', t('settings.panSpeed'), panSpeed(), setPanSpeed), this.cameraSpeedRow('zoom-speed', t('settings.zoomSpeed'), zoomSpeed(), setZoomSpeed));
 
     // Privacy and help (crash reports are a privacy choice, so they sit here)
     body.append(this.privacySection());
@@ -283,6 +284,14 @@ export class SettingsUi {
     const select = h('select', { class: 'text', 'data-id': 'text-size', 'aria-label': t('settings.textSize') }, ...TEXT_SCALES.map((v) => h('option', { value: String(v), ...(v === now ? { selected: true } : {}) }, fmtPercent(v * 100)))) as HTMLSelectElement;
     select.addEventListener('change', () => setTextScale(Number(select.value)));
     return h('div', {}, h('label', { class: 'toggle' }, t('settings.textSize'), select));
+  }
+
+  /** Map drag speed and zoom speed (50–200 %), per device, applied at once in the village and in battle. */
+  private cameraSpeedRow(id: string, label: string, now: number, set: (v: number) => void): HTMLElement {
+    const select = h('select', { class: 'text', 'data-id': id, 'aria-label': label }, ...CAMERA_SPEEDS.map((v) => h('option', { value: String(v), ...(v === now ? { selected: true } : {}) }, fmtPercent(v * 100)))) as HTMLSelectElement;
+    select.value = String(now);
+    select.addEventListener('change', () => set(Number(select.value)));
+    return h('div', {}, h('label', { class: 'toggle' }, label, select));
   }
 
   private privacySection(): HTMLElement {

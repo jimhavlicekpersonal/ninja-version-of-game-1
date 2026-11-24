@@ -372,6 +372,8 @@
   "store.buyNamed": { "en": "Buy {name} for {price}", "text": "Kupi {name} za {price}" },
   "res.jadeOpenStore": { "en": "Jade: {n}. Open the Store", "text": "Žad: {n}. Otvori trgovinu" },
   "settings.textSize": { "en": "Text size", "text": "Veličina teksta" },
+  "settings.panSpeed": { "en": "Map drag speed", "text": "Brzina povlačenja karte" },
+  "settings.zoomSpeed": { "en": "Zoom speed", "text": "Brzina zumiranja" },
   "stake.recentHits": { "en": "Your last {raids} raids: 2★ or more in {two}, 3★ in {three}.", "text": "Tvojih zadnjih {raids} napada: 2★ ili više u {two}, 3★ u {three}." },
   "whatsNew.0_2_0": { "en": "What's new: choose a larger text size, and turn screen shake and flashes down, in Settings. The stake picker shows how often your recent raids reached two and three stars. Shadow Trials climb more evenly, and raids at Keep 4 and Keep 15 meet fairer opponents.", "text": "Novo: u Postavkama odaberi veća slova i smanji podrhtavanje zaslona i bljeskove. Odabir uloga pokazuje koliko su često tvoji nedavni napadi dosegli dvije i tri zvjezdice. Iskušenja sjena rastu ravnomjernije, a napadi na Utvrdi 4 i 15 nailaze na pravednije protivnike." }
 }

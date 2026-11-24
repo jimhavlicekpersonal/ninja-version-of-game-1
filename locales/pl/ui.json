@@ -372,6 +372,8 @@
   "store.buyNamed": { "en": "Buy {name} for {price}", "text": "Kup {name} za {price}" },
   "res.jadeOpenStore": { "en": "Jade: {n}. Open the Store", "text": "Jadeit: {n}. Otwórz sklep" },
   "settings.textSize": { "en": "Text size", "text": "Rozmiar tekstu" },
+  "settings.panSpeed": { "en": "Map drag speed", "text": "Szybkość przesuwania mapy" },
+  "settings.zoomSpeed": { "en": "Zoom speed", "text": "Szybkość przybliżania" },
   "stake.recentHits": { "en": "Your last {raids} raids: 2★ or more in {two}, 3★ in {three}.", "text": "Twoje ostatnie najazdy ({raids}): 2★ lub więcej w {two}, 3★ w {three}." },
   "whatsNew.0_2_0": { "en": "What's new: choose a larger text size, and turn screen shake and flashes down, in Settings. The stake picker shows how often your recent raids reached two and three stars. Shadow Trials climb more evenly, and raids at Keep 4 and Keep 15 meet fairer opponents.", "text": "Nowości: w Ustawieniach wybierz większy tekst i ogranicz wstrząsy ekranu oraz błyski. Wybór stawki pokazuje, jak często twoje ostatnie najazdy zdobyły dwie i trzy gwiazdki. Próby Cienia rosną równiej, a najazdy przy Twierdzy 4 i 15 trafiają na uczciwszych rywali." }
 }

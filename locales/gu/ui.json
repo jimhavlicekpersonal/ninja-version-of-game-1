@@ -372,6 +372,8 @@
   "store.buyNamed": { "en": "Buy {name} for {price}", "text": "{name} {price}માં ખરીદો" },
   "res.jadeOpenStore": { "en": "Jade: {n}. Open the Store", "text": "જેડ: {n}. સ્ટોર ખોલો" },
   "settings.textSize": { "en": "Text size", "text": "લખાણનું કદ" },
+  "settings.panSpeed": { "en": "Map drag speed", "text": "નકશો ખેંચવાની ઝડપ" },
+  "settings.zoomSpeed": { "en": "Zoom speed", "text": "ઝૂમની ઝડપ" },
   "stake.recentHits": { "en": "Your last {raids} raids: 2★ or more in {two}, 3★ in {three}.", "text": "તમારા છેલ્લા {raids} હુમલા: {two}માં 2★ કે વધુ, {three}માં 3★." },
   "whatsNew.0_2_0": { "en": "What's new: choose a larger text size, and turn screen shake and flashes down, in Settings. The stake picker shows how often your recent raids reached two and three stars. Shadow Trials climb more evenly, and raids at Keep 4 and Keep 15 meet fairer opponents.", "text": "નવું શું છે: સેટિંગ્સમાં મોટું લખાણ પસંદ કરો, અને સ્ક્રીનનું હલવું અને ઝબકારા ઘટાડો. દાવ પસંદગી બતાવે છે કે તમારા તાજેતરના હુમલાએ કેટલી વાર બે અને ત્રણ તારા મેળવ્યા. શેડો ટ્રાયલ વધુ સરખી રીતે ચઢે છે, અને કિપ ૪ અને કિપ ૧૫ પરના હુમલાને વધુ ન્યાયી વિરોધીઓ મળે છે." }
 }

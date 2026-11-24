@@ -372,6 +372,8 @@
   "store.buyNamed": { "en": "Buy {name} for {price}", "text": "شراء {name} مقابل {price}" },
   "res.jadeOpenStore": { "en": "Jade: {n}. Open the Store", "text": "اليشم: {n}. افتح المتجر" },
   "settings.textSize": { "en": "Text size", "text": "حجم النص" },
+  "settings.panSpeed": { "en": "Map drag speed", "text": "سرعة سحب الخريطة" },
+  "settings.zoomSpeed": { "en": "Zoom speed", "text": "سرعة التكبير" },
   "stake.recentHits": { "en": "Your last {raids} raids: 2★ or more in {two}, 3★ in {three}.", "text": "آخر {raids} غارات لك: 2★ أو أكثر في {two}، و3★ في {three}." },
   "whatsNew.0_2_0": { "en": "What's new: choose a larger text size, and turn screen shake and flashes down, in Settings. The stake picker shows how often your recent raids reached two and three stars. Shadow Trials climb more evenly, and raids at Keep 4 and Keep 15 meet fairer opponents.", "text": "الجديد: اختر حجم نص أكبر، وخفّف اهتزاز الشاشة والومضات من الإعدادات. يُظهر منتقي الرهان عدد المرات التي بلغت فيها غاراتك الأخيرة نجمتين وثلاث نجوم. تتدرّج تحديات الظل بشكل أكثر انتظامًا، وتلقى الغارات في الحصن 4 والحصن 15 خصومًا أكثر إنصافًا." }
 }

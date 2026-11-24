@@ -372,6 +372,8 @@
   "store.buyNamed": { "en": "Buy {name} for {price}", "text": "Acheter {name} pour {price}" },
   "res.jadeOpenStore": { "en": "Jade: {n}. Open the Store", "text": "Jade : {n}. Ouvrir la boutique" },
   "settings.textSize": { "en": "Text size", "text": "Taille du texte" },
+  "settings.panSpeed": { "en": "Map drag speed", "text": "Vitesse de défilement de la carte" },
+  "settings.zoomSpeed": { "en": "Zoom speed", "text": "Vitesse du zoom" },
   "stake.recentHits": { "en": "Your last {raids} raids: 2★ or more in {two}, 3★ in {three}.", "text": "Tes {raids} derniers raids : 2★ ou plus dans {two}, 3★ dans {three}." },
   "whatsNew.0_2_0": { "en": "What's new: choose a larger text size, and turn screen shake and flashes down, in Settings. The stake picker shows how often your recent raids reached two and three stars. Shadow Trials climb more evenly, and raids at Keep 4 and Keep 15 meet fairer opponents.", "text": "Nouveautés : choisis une taille de texte plus grande et réduis les secousses et les flashs de l’écran dans les Paramètres. Le choix de l’enjeu montre combien de fois tes derniers raids ont atteint deux et trois étoiles. Les Épreuves de l’ombre progressent plus régulièrement, et les raids au Donjon 4 et 15 trouvent des adversaires plus équitables." }
 }

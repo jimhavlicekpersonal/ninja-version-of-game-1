@@ -1,6 +1,7 @@
 import { messageText as ownedText, labelText } from '../ui/i18n';
 import { provideBuildingLocator, type ScreenRect } from './anchors';
 import { scaledPx } from './textScale';
+import { panSpeed, pinchFactor, zoomStep } from './cameraSpeed';
 import Phaser from 'phaser';
 import { BODY_FONT, DISPLAY_FONT } from './fonts';
 import { queueArt } from './artManifest';
@@ -551,7 +552,7 @@ export class VillageScene extends Phaser.Scene {
     this.input.on('pointerupoutside', (p: Phaser.Input.Pointer) => this.onUp(p));
     this.input.on('wheel', (p: Phaser.Input.Pointer, _objs: unknown, _dx: number, dy: number) => {
       const base = this.wheelTarget?.zoom ?? this.userZoom;
-      const zoom = Phaser.Math.Clamp(base * (dy > 0 ? 0.85 : 1.18), this.minZoom(), MAX_ZOOM);
+      const zoom = Phaser.Math.Clamp(base * zoomStep(dy > 0 ? 0.85 : 1.18), this.minZoom(), MAX_ZOOM);
       this.wheelTarget = { zoom, x: p.x, y: p.y };
     });
     const kb = this.input.keyboard;
@@ -563,8 +564,8 @@ export class VillageScene extends Phaser.Scene {
       kb.on('keydown-ENTER', () => {
         if (this.placement) this.bus.emit('placement:confirm');
       });
-      kb.on('keydown-PLUS', () => this.zoomAt(this.scale.width / 2, this.scale.height / 2, this.userZoom * 1.15));
-      kb.on('keydown-MINUS', () => this.zoomAt(this.scale.width / 2, this.scale.height / 2, this.userZoom / 1.15));
+      kb.on('keydown-PLUS', () => this.zoomAt(this.scale.width / 2, this.scale.height / 2, this.userZoom * zoomStep(1.15)));
+      kb.on('keydown-MINUS', () => this.zoomAt(this.scale.width / 2, this.scale.height / 2, this.userZoom / zoomStep(1.15)));
     }
   }
 
@@ -612,8 +613,9 @@ export class VillageScene extends Phaser.Scene {
       this.moveGhost(Math.floor(t.tx) - d.grabDx, Math.floor(t.ty) - d.grabDy);
     } else {
       const cam = this.cameras.main;
-      const dx = (p.x - d.lastX) / cam.zoom;
-      const dy = (p.y - d.lastY) / cam.zoom;
+      const k = panSpeed();
+      const dx = ((p.x - d.lastX) / cam.zoom) * k;
+      const dy = ((p.y - d.lastY) / cam.zoom) * k;
       cam.scrollX -= dx;
       cam.scrollY -= dy;
       const dt = Math.max(1, this.time.now - d.lastTime);
@@ -646,7 +648,7 @@ export class VillageScene extends Phaser.Scene {
     const [a, b] = down;
     const dist = Phaser.Math.Distance.Between(a.x, a.y, b.x, b.y);
     if (this.pinch.startDist < 10) return;
-    const target = this.pinch.startZoom * (dist / this.pinch.startDist);
+    const target = this.pinch.startZoom * pinchFactor(dist / this.pinch.startDist);
     if (Math.abs(target - this.userZoom) > 0.001) this.zoomAt((a.x + b.x) / 2, (a.y + b.y) / 2, target);
   }
 

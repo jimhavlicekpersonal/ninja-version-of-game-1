@@ -372,6 +372,8 @@
   "store.buyNamed": { "en": "Buy {name} for {price}", "text": "{name} satın al: {price}" },
   "res.jadeOpenStore": { "en": "Jade: {n}. Open the Store", "text": "Yeşim: {n}. Mağazayı aç" },
   "settings.textSize": { "en": "Text size", "text": "Metin boyutu" },
+  "settings.panSpeed": { "en": "Map drag speed", "text": "Harita sürükleme hızı" },
+  "settings.zoomSpeed": { "en": "Zoom speed", "text": "Yakınlaştırma hızı" },
   "stake.recentHits": { "en": "Your last {raids} raids: 2★ or more in {two}, 3★ in {three}.", "text": "Son {raids} baskın: {two} tanesinde 2★ veya fazlası, {three} tanesinde 3★." },
   "whatsNew.0_2_0": { "en": "What's new: choose a larger text size, and turn screen shake and flashes down, in Settings. The stake picker shows how often your recent raids reached two and three stars. Shadow Trials climb more evenly, and raids at Keep 4 and Keep 15 meet fairer opponents.", "text": "Yenilikler: Ayarlar'dan daha büyük yazı seçebilir, ekran sarsıntısını ve parlamaları azaltabilirsin. Bahis seçici, son baskınlarının ne sıklıkla iki ve üç yıldıza ulaştığını gösterir. Gölge Sınavları daha dengeli zorlaşır, Kale 4 ve 15'teki baskınlar daha adil rakiplerle karşılaşır." }
 }

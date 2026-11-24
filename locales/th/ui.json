@@ -372,6 +372,8 @@
   "store.buyNamed": { "en": "Buy {name} for {price}", "text": "ซื้อ {name} ในราคา {price}" },
   "res.jadeOpenStore": { "en": "Jade: {n}. Open the Store", "text": "หยก: {n} เปิดร้านค้า" },
   "settings.textSize": { "en": "Text size", "text": "ขนาดตัวอักษร" },
+  "settings.panSpeed": { "en": "Map drag speed", "text": "ความเร็วในการลากแผนที่" },
+  "settings.zoomSpeed": { "en": "Zoom speed", "text": "ความเร็วในการซูม" },
   "stake.recentHits": { "en": "Your last {raids} raids: 2★ or more in {two}, 3★ in {three}.", "text": "การบุก {raids} ครั้งล่าสุด: 2★ ขึ้นไป {two} ครั้ง, 3★ {three} ครั้ง" },
   "whatsNew.0_2_0": { "en": "What's new: choose a larger text size, and turn screen shake and flashes down, in Settings. The stake picker shows how often your recent raids reached two and three stars. Shadow Trials climb more evenly, and raids at Keep 4 and Keep 15 meet fairer opponents.", "text": "มีอะไรใหม่: เลือกขนาดตัวอักษรที่ใหญ่ขึ้น และลดการสั่นของหน้าจอและแสงวาบได้ในการตั้งค่า ตัวเลือกเดิมพันจะแสดงว่าการบุกล่าสุดของคุณได้ 2★ และ 3★ บ่อยแค่ไหน ด่านทดสอบเงาไต่ระดับสม่ำเสมอขึ้น และการบุกที่ป้อม 4 และป้อม 15 จะเจอคู่ต่อสู้ที่ยุติธรรมกว่าเดิม" }
 }

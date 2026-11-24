@@ -372,6 +372,8 @@
   "store.buyNamed": { "en": "Buy {name} for {price}", "text": "Comprar {name} por {price}" },
   "res.jadeOpenStore": { "en": "Jade: {n}. Open the Store", "text": "Jade: {n}. Abrir a Loja" },
   "settings.textSize": { "en": "Text size", "text": "Tamanho do texto" },
+  "settings.panSpeed": { "en": "Map drag speed", "text": "Velocidade ao arrastar o mapa" },
+  "settings.zoomSpeed": { "en": "Zoom speed", "text": "Velocidade do zoom" },
   "stake.recentHits": { "en": "Your last {raids} raids: 2★ or more in {two}, 3★ in {three}.", "text": "Seus últimos {raids} ataques: 2★ ou mais em {two}, 3★ em {three}." },
   "whatsNew.0_2_0": { "en": "What's new: choose a larger text size, and turn screen shake and flashes down, in Settings. The stake picker shows how often your recent raids reached two and three stars. Shadow Trials climb more evenly, and raids at Keep 4 and Keep 15 meet fairer opponents.", "text": "Novidades: escolha um texto maior e reduza tremores e clarões da tela nas Configurações. O seletor de aposta mostra quantas vezes seus últimos ataques chegaram a duas e três estrelas. As Provas das Sombras sobem de forma mais regular, e os ataques na Fortaleza 4 e 15 encontram adversários mais justos." }
 }

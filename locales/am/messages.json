@@ -1270,7 +1270,7 @@
   "ui.player_id_for_support_and_for_deletion_209a9b611c": { "en": "Player ID (for support, and for deletion requests)", "text": "የተጫዋች መለያ (ለድጋፍና ለስረዛ ጥያቄዎች)" },
   "ui.players_under_13_can_only_be_found_by__f3c16e1ffc": { "en": "Players under 13 can only be found by friend code: share it only with people you know.", "text": "ከ13 ዓመት በታች ያሉ ተጫዋቾች ሊገኙ የሚችሉት በጓደኛ ኮድ ብቻ ነው፦ ለሚያውቋቸው ሰዎች ብቻ ያጋሩት።" },
   "ui.power_848e96567d": { "en": "Power", "text": "ኃይል" },
-  "ui.power_is_your_skill_as_an_attacker_plu_e58aae723f": { "en": "Power is your skill as an attacker from your rated raids, plus a little for your Keep, so it compares skill among players with Keeps close to yours.", "text": "ኃይል ከተገመገሙ ወረራዎችዎ የሚመጣ የአጥቂነት ችሎታዎ ሲሆን ለምሽግዎ ትንሽ ይጨመራል፤ በቅርብ ደረጃ ምሽግ ያላቸውን ተጫዋቾች ችሎታ ያወዳድራል።", "old": "ኃይል ከደረጃ ከተሰጣቸው ወረራዎችዎ የሚሰላ፣ እንደ አጥቂ ያለዎት ችሎታና የምሽግዎ ጥንካሬ ድምር ነው።" },
+  "ui.power_is_your_skill_as_an_attacker_plu_e58aae723f": { "en": "Power is your skill as an attacker from your rated raids, plus a little for your Keep, so it compares skill among players with Keeps close to yours.", "text": "ኃይል ከተገመገሙ ወረራዎችዎ የሚመጣ የአጥቂነት ችሎታዎ ሲሆን ለምሽግዎ ትንሽ ይጨመራል፤ በቅርብ ደረጃ ምሽግ ያላቸውን ተጫዋቾች ችሎታ ያወዳድራል።" },
   "ui.practice_battle_nothing_is_spent_or_wo_c68624fd43": { "en": "Practice battle · nothing is spent or won", "text": "የልምምድ ውጊያ · ምንም አይወጣም፣ ምንም አይገኝም" },
   "ui.practice_battle_nothing_spent_or_won_f8edd0efbf": { "en": "Practice battle (nothing spent or won)", "text": "የልምምድ ውጊያ (ምንም አይወጣም፣ ምንም አይገኝም)" },
   "ui.practice_battle_with_a_squad_of_nothin_bcdcdb0816": { "en": "Practice battle with a squad of {arg1}: nothing is spent or won", "text": "የልምምድ ውጊያ፣ ቡድን፦ {arg1}፤ ምንም አይወጣም፣ ምንም አይገኝም" },

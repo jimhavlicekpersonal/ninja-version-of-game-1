@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { setupTouchInput } from './touchInput';
+import { panSpeed, pinchFactor, zoomStep } from './cameraSpeed';
 
 const TAP_SLOP_CSS_PX = 10;
 const MAX_ZOOM = 2;
@@ -38,7 +39,7 @@ export class CameraControl {
     input.on('pointerupoutside', (p: Phaser.Input.Pointer) => this.up(p));
     input.on('wheel', (p: Phaser.Input.Pointer, _o: unknown, _dx: number, dy: number) => {
       const base = this.wheel?.zoom ?? this.userZoom;
-      this.wheel = { zoom: Phaser.Math.Clamp(base * (dy > 0 ? 0.85 : 1.18), this.minZoom(), MAX_ZOOM), x: p.x, y: p.y };
+      this.wheel = { zoom: Phaser.Math.Clamp(base * zoomStep(dy > 0 ? 0.85 : 1.18), this.minZoom(), MAX_ZOOM), x: p.x, y: p.y };
     });
     const onResize = () => this.zoomAt(scene.scale.width / 2, scene.scale.height / 2, this.userZoom);
     scene.scale.on(Phaser.Scale.Events.RESIZE, onResize);
@@ -101,7 +102,7 @@ export class CameraControl {
     if (this.pinch && down.length >= 2) {
       const [a, b] = down;
       const d = Phaser.Math.Distance.Between(a.x, a.y, b.x, b.y);
-      if (this.pinch.d0 > 10) this.zoomAt((a.x + b.x) / 2, (a.y + b.y) / 2, this.pinch.z0 * (d / this.pinch.d0));
+      if (this.pinch.d0 > 10) this.zoomAt((a.x + b.x) / 2, (a.y + b.y) / 2, this.pinch.z0 * pinchFactor(d / this.pinch.d0));
     }
     if (!this.drag && !this.pinch && (Math.abs(this.glide.vx) > 0.005 || Math.abs(this.glide.vy) > 0.005)) {
       cam.scrollX -= this.glide.vx * delta;
@@ -147,8 +148,9 @@ export class CameraControl {
     if (!d.moved && Phaser.Math.Distance.Between(p.x, p.y, d.sx, d.sy) > TAP_SLOP_CSS_PX * this.opts.renderScale) d.moved = true;
     if (!d.moved) return;
     const cam = this.scene.cameras.main;
-    const dx = (p.x - d.lx) / cam.zoom;
-    const dy = (p.y - d.ly) / cam.zoom;
+    const k = panSpeed();
+    const dx = ((p.x - d.lx) / cam.zoom) * k;
+    const dy = ((p.y - d.ly) / cam.zoom) * k;
     cam.scrollX -= dx;
     cam.scrollY -= dy;
     const now = this.scene.time.now;
