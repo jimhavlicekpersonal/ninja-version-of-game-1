@@ -10,18 +10,39 @@ export class MemoryOps extends MemoryBase implements OpsStore {
     for (const e of events) this.statsRows.push({ install, day: Math.floor(e.at / 86_400_000), name: e.name, at: e.at, props: clone(e.props), build, arm, receivedAt, seq });
     return events.length;
   }
+  async takeStatsQuota(install: string, day: number, want: number, cap: number): Promise<number> {
+    if (want <= 0) return 0;
+    const key = `${install}|${day}`;
+    const before = this.statsQuotaRows.get(key) ?? 0;
+    this.statsQuotaRows.set(key, before + want);
+    return Math.max(0, Math.min(want, cap - before));
+  }
+  async pruneStatsQuota(beforeDay: number): Promise<number> {
+    let n = 0;
+    for (const k of [...this.statsQuotaRows.keys()])
+      if (Number(k.slice(k.lastIndexOf('|') + 1)) < beforeDay) {
+        this.statsQuotaRows.delete(k);
+        n++;
+      }
+    return n;
+  }
   async deleteStats(install: string): Promise<number> {
+    for (const k of [...this.statsQuotaRows.keys()]) if (k.startsWith(`${install}|`)) this.statsQuotaRows.delete(k);
     const before = this.statsRows.length;
     this.statsRows = this.statsRows.filter((r) => r.install !== install);
     return before - this.statsRows.length;
   }
   async statsInstalls(fromDay: number, toDay: number): Promise<StatsInstallSummary[]> {
     const by = new Map<string, typeof this.statsRows>();
-    for (const r of this.statsRows) by.set(r.install, [...(by.get(r.install) ?? []), r]);
+    for (const r of this.statsRows) {
+      const list = by.get(r.install);
+      if (list) list.push(r);
+      else by.set(r.install, [r]);
+    }
     const out: StatsInstallSummary[] = [];
     for (const [install, rows] of by) {
       rows.sort((a, b) => a.at - b.at);
-      const firstDay = Math.min(...rows.map((r) => r.day));
+      const firstDay = rows.reduce((m, r) => Math.min(m, r.day), Infinity);
       if (firstDay < fromDay || firstDay > toDay) continue;
       const firstOf = (name: string) => rows.find((r) => r.name === name)?.at ?? null;
       out.push({

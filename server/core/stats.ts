@@ -13,7 +13,7 @@
  * - `statsReport` is the staff view (`GET /admin/v1/stats`).
  * Events are kept STATS_RETENTION_DAYS, then pruned (`retention.ts`).
  */
-import { cleanStatsBatch, INSTALL_ID } from '../../src/backend/net/stats';
+import { cleanStatsBatch, INSTALL_ID, STATS_DAILY_CAP } from '../../src/backend/net/stats';
 import type { StatsResponse } from '../../src/backend/net/protocol';
 import type { StatsDailyRow, StatsInstallSummary } from '../repo';
 import { HOUR, type ServerContext } from './context';
@@ -35,7 +35,12 @@ export async function postStats(ctx: ServerContext, body: unknown): Promise<Stat
   if ('error' in b) throw fail(400, 'bad_request', 'stats.refused', { detail: b.error });
   const now = ctx.now();
   // A wrong phone clock must not plant events years away; out of range means "when it arrived".
-  const events = b.events.map((e) => ({ ...e, at: e.at < now - OLDEST_EVENT_MS || e.at > now + FUTURE_EVENT_MS ? now : e.at }));
+  const all = b.events.map((e) => ({ ...e, at: e.at < now - OLDEST_EVENT_MS || e.at > now + FUTURE_EVENT_MS ? now : e.at }));
+  // Security fixes 2026-11-24 (SECR-01): at most STATS_DAILY_CAP events per statistics id per UTC day of arrival;
+  // the rest is answered as not accepted and dropped (a refusal would only make the game send it again).
+  const room = await ctx.repo.takeStatsQuota(b.install, utcDay(now), all.length, STATS_DAILY_CAP);
+  const events = room < all.length ? all.slice(0, room) : all;
+  if (room < all.length) ctx.metrics.count('tk_stats_capped_total', {}, all.length - room);
   if (events.length) await ctx.repo.addStatsEvents(b.install, b.build, b.arm ?? '', events, now);
   // Growth batch 2026-11-14: the offset for local-day counting (statsLocal.ts), kept per statistics id.
   if (events.length && b.tz !== undefined) await ctx.repo.setInstallTz(b.install, b.tz, now);

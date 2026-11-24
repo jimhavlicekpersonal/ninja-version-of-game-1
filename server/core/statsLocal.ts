@@ -20,7 +20,8 @@
  *   `server/routes/growth.ts` `/admin/stats`).
  * Still adults who opted in only: the client sends nothing otherwise (`analytics/share.ts`).
  */
-import type { InstallSummaryRow, StatsDailyRow, StatsEventRow, StatsInstallSummary } from '../repo';
+import type { InstallSummaryRow, StatsBattleCount, StatsDailyRow, StatsEventRow, StatsInstallSummary } from '../repo';
+import { battleCountKey } from '../stores/battleCounts';
 import type { ServerContext } from './context';
 import { cohortRows, DAY_MS, ROLLUP_DAYS, utcDay } from './stats';
 export { cleanTz } from '../../src/backend/net/stats';
@@ -35,7 +36,7 @@ export const localDay = (at: number, tz: number | null) => Math.floor((at + (tz 
 
 /** One statistics id's summary from its events (pure). */
 export function summarize(install: string, events: StatsEventRow[], tz: number | null, now: number): InstallSummaryRow {
-  const rows = [...events].sort((a, b) => a.at - b.at);
+  const rows = events.slice().sort((a, b) => a.at - b.at);
   const first = rows[0];
   const firstOf = (name: string) => rows.find((r) => r.name === name)?.at ?? null;
   const steps = rows.filter((r) => r.name === 'tutorial_step').map((r) => Number(r.props.step) || 0);
@@ -50,7 +51,8 @@ export function summarize(install: string, events: StatsEventRow[], tz: number |
     daysUtc: uniq(rows.map((r) => utcDay(r.at))),
     daysLocal: uniq(rows.map((r) => localDay(r.at, tz))),
     tutorialDone: rows.some((r) => r.name === 'tutorial_step' && r.props.done === true),
-    tutorialMax: steps.length ? Math.max(...steps) : 0,
+    // SECR-01: no spread (an argument list past ~125k items throws).
+    tutorialMax: steps.reduce((m, x) => Math.max(m, x), 0),
     firstRaidAt: firstOf('raid_end'),
     firstPurchaseAt: firstOf('purchase'),
     updatedAt: now,
@@ -85,7 +87,12 @@ export async function summarizeNew(ctx: ServerContext): Promise<{ installs: numb
       const events = await g.statsEventsOf(touched.installs);
       const tzs = await g.installTzs(touched.installs);
       const by = new Map<string, StatsEventRow[]>();
-      for (const e of events) by.set(e.install, [...(by.get(e.install) ?? []), e]);
+      // SECR-01: appended in place (a copy per event made one id with many events quadratic).
+      for (const e of events) {
+        const list = by.get(e.install);
+        if (list) list.push(e);
+        else by.set(e.install, [e]);
+      }
       const now = ctx.now();
       await g.putInstallSummaries([...by].map(([i, ev]) => summarize(i, ev, tzs.get(i) ?? null, now)));
       installs += by.size;
@@ -164,7 +171,7 @@ export interface FunnelView {
 
 /** The funnel for installs of the last `days` days (pure over summaries). */
 export function funnelOf(sums: InstallSummaryRow[], basis: 'utc' | 'local', today: number, days: number): FunnelView {
-  const top = Math.max(0, ...sums.map((s) => s.tutorialMax));
+  const top = sums.reduce((m, s) => Math.max(m, s.tutorialMax), 0);
   const ret = (after: number) => {
     const old = sums.filter((s) => (basis === 'utc' ? s.firstDayUtc : s.firstDayLocal) + after < today);
     const back = old.filter((s) => (basis === 'utc' ? s.daysUtc : s.daysLocal).includes((basis === 'utc' ? s.firstDayUtc : s.firstDayLocal) + after));
@@ -197,29 +204,42 @@ export async function statsFunnel(ctx: ServerContext, days: unknown, basisRaw: u
  * per Shadow Trial tier, attempts and clears; per Keep, raids and the share ended by surrender. A staff report;
  * it reads the raw events of those installs (statistics are an opted-in adult sample).
  */
-export function battleOutcomesOf(events: StatsEventRow[]): { tiers: { tier: number; attempts: number; clears: number; clearRate: number }[]; keeps: { keep: number; raids: number; surrenders: number; surrenderShare: number; scoutLeaves: number }[]; graphicsLost: { lost: number; stuck: number } } {
+type BattleOutcomes = { tiers: { tier: number; attempts: number; clears: number; clearRate: number }[]; keeps: { keep: number; raids: number; surrenders: number; surrenderShare: number; scoutLeaves: number }[]; graphicsLost: { lost: number; stuck: number } };
+
+export function battleOutcomesOf(events: StatsEventRow[]): BattleOutcomes {
+  const counts: StatsBattleCount[] = [];
+  for (const e of events) {
+    const k = battleCountKey(e.name, e.props);
+    if (k) counts.push({ ...k, n: 1 });
+  }
+  return battleOutcomesFromCounts(counts);
+}
+
+/** SECR-01: the report from counted events (`Repo.statsBattleCounts`), so the store never hands over every event. */
+function battleOutcomesFromCounts(counts: StatsBattleCount[]): BattleOutcomes {
   const tiers = new Map<number, { attempts: number; clears: number }>();
   const keeps = new Map<number, { raids: number; surrenders: number; scoutLeaves: number }>();
   const graphicsLost = { lost: 0, stuck: 0 };
-  for (const e of events) {
-    if (e.name === 'trial_end' && typeof e.props.tier === 'number') {
-      const t = tiers.get(e.props.tier) ?? { attempts: 0, clears: 0 };
-      t.attempts++;
-      if (e.props.cleared === true) t.clears++;
-      tiers.set(e.props.tier, t);
-    } else if (e.name === 'raid_end' && typeof e.props.keep === 'number') {
-      const k = keeps.get(e.props.keep) ?? { raids: 0, surrenders: 0, scoutLeaves: 0 };
-      k.raids++;
-      if (e.props.endReason === 'surrender') k.surrenders++;
-      keeps.set(e.props.keep, k);
-    } else if (e.name === 'scout_leave' && typeof e.props.keep === 'number') {
+  const keep = (n: number) => keeps.get(n) ?? { raids: 0, surrenders: 0, scoutLeaves: 0 };
+  for (const c of counts) {
+    if (c.name === 'trial_end' && c.num !== null) {
+      const t = tiers.get(c.num) ?? { attempts: 0, clears: 0 };
+      t.attempts += c.n;
+      if (c.flag) t.clears += c.n;
+      tiers.set(c.num, t);
+    } else if (c.name === 'raid_end' && c.num !== null) {
+      const k = keep(c.num);
+      k.raids += c.n;
+      if (c.flag) k.surrenders += c.n;
+      keeps.set(c.num, k);
+    } else if (c.name === 'scout_leave' && c.num !== null) {
       // Beast Mode OPS-06: a scouted base left before any deployment (the pre-battle quit).
-      const k = keeps.get(e.props.keep) ?? { raids: 0, surrenders: 0, scoutLeaves: 0 };
-      k.scoutLeaves++;
-      keeps.set(e.props.keep, k);
-    } else if (e.name === 'webgl_lost') {
-      if (e.props.stuck === true) graphicsLost.stuck++;
-      else graphicsLost.lost++;
+      const k = keep(c.num);
+      k.scoutLeaves += c.n;
+      keeps.set(c.num, k);
+    } else if (c.name === 'webgl_lost') {
+      if (c.flag) graphicsLost.stuck += c.n;
+      else graphicsLost.lost += c.n;
     }
   }
   const share = (a: number, b: number) => (b ? Math.round((a / b) * 1000) / 1000 : 0);
@@ -233,8 +253,7 @@ export function battleOutcomesOf(events: StatsEventRow[]): { tiers: { tier: numb
 export async function battleOutcomes(ctx: ServerContext, days: unknown) {
   const n = Math.max(1, Math.min(90, Math.floor(Number(days)) || 30));
   const today = utcDay(ctx.now());
-  const installs = (await ctx.repo.installSummaries('utc', today - n, today + 1)).map((s) => s.install);
-  const events: StatsEventRow[] = [];
-  for (let i = 0; i < installs.length; i += 500) events.push(...(await ctx.repo.statsEventsOf(installs.slice(i, i + 500))));
-  return { days: n, installs: installs.length, ...battleOutcomesOf(events) };
+  const installs = (await ctx.repo.installSummaries('utc', today - n, today + 1)).length;
+  // SECR-01: counted by the store (it used to read every event and spread them into one array, a RangeError past ~125k).
+  return { days: n, installs, ...battleOutcomesFromCounts(await ctx.repo.statsBattleCounts(today - n, today + 1)) };
 }

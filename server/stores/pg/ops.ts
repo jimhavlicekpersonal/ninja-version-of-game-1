@@ -18,7 +18,24 @@ export class PgOps extends PgBase implements OpsStore {
   }
 
   async deleteStats(install: string): Promise<number> {
+    await this.db.query('delete from stats_quota where install = $1', [install]);
     return (await this.db.query('delete from stats_events where install = $1', [install])).rowCount ?? 0;
+  }
+
+  async takeStatsQuota(install: string, day: number, want: number, cap: number): Promise<number> {
+    if (want <= 0) return 0;
+    // SECR-01: one upsert; concurrent batches of one id queue on its row, each seeing the total after its own.
+    const r = await this.db.query<Record<string, unknown>>(
+      `insert into stats_quota (install, day, n) values ($1, $2, $3)
+       on conflict (install, day) do update set n = stats_quota.n + excluded.n returning n`,
+      [install, day, want],
+    );
+    const before = num(r.rows[0]?.n) - want;
+    return Math.max(0, Math.min(want, cap - before));
+  }
+
+  async pruneStatsQuota(beforeDay: number): Promise<number> {
+    return (await this.db.query('delete from stats_quota where day < $1', [beforeDay])).rowCount ?? 0;
   }
 
   async statsInstalls(fromDay: number, toDay: number): Promise<StatsInstallSummary[]> {

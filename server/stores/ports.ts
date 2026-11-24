@@ -56,6 +56,7 @@ import type {
   SharedReplayRow,
   InstallSummaryRow,
   StatsEventRow,
+  StatsBattleCount,
 } from './types';
 
 /** Players, sessions, staff tools, account protections and deletion. Part of `Repo` (report section 5 step 10, quality 16: split by aggregate). */
@@ -230,8 +231,15 @@ export interface OpsStore {
   // shared play statistics (report section 5 step 5, migration 0027): no player id, no IP address
   /** Keep cleaned events under a statistics id; resolves how many were kept. */
   addStatsEvents(install: string, build: string, arm: string, events: import('../../src/backend/net/stats').StatsEvent[], receivedAt: number): Promise<number>;
-  /** Forget everything one statistics id sent; resolves how many events went. */
+  /** Forget everything one statistics id sent (its daily counts too); resolves how many events went. */
   deleteStats(install: string): Promise<number>;
+  /**
+   * Security fixes 2026-11-24 (SECR-01, migration 0048): count `want` events against the id's allowance for UTC
+   * `day` (atomic per id and day); resolves how many of them fit under `cap`.
+   */
+  takeStatsQuota(install: string, day: number, want: number, cap: number): Promise<number>;
+  /** Drop the daily counts of days before `beforeDay`. */
+  pruneStatsQuota(beforeDay: number): Promise<number>;
   /** Statistics ids whose first event fell on UTC days [fromDay, toDay]. */
   statsInstalls(fromDay: number, toDay: number): Promise<StatsInstallSummary[]>;
   /** Replace the daily table's rows for days [fromDay, toDay] with `rows`. */
@@ -528,6 +536,11 @@ export interface GrowthStore {
   /** Statistics ids with events at positions in (`after`, `before`), by their newest position, and the newest position among them. */
   statsTouched(after: number, limit: number, before: number): Promise<{ installs: string[]; maxSeq: number }>;
   statsEventsOf(installs: string[]): Promise<StatsEventRow[]>;
+  /**
+   * SECR-01: the battle events (`trial_end`, `raid_end`, `scout_leave`, `webgl_lost`) of the ids whose summary's
+   * first UTC day is in [fromDay, toDay], counted by their reported fields (one row per distinct combination).
+   */
+  statsBattleCounts(fromDay: number, toDay: number): Promise<StatsBattleCount[]>;
   installTzs(installs: string[]): Promise<Map<string, number>>;
   putInstallSummaries(rows: InstallSummaryRow[]): Promise<void>;
   /** Summaries whose first day (on that basis) is in [fromDay, toDay]. */

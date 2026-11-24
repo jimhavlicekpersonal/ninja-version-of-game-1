@@ -15,6 +15,14 @@
 
 /** Most events one batch may carry; the game sends smaller batches more often. */
 export const STATS_MAX_BATCH = 200;
+/**
+ * Security fixes 2026-11-24 (SECR-01): most events the server keeps from one statistics id per UTC day of
+ * arrival; the rest of a batch is answered (`accepted` says how many were kept) and dropped. A heavy day of
+ * play sends a few hundred events (sessions, raids, scouting, upgrades); a device holds at most 2,000 unsent
+ * (`analytics/share.ts` MAX_QUEUE, the 1,000-event backlog sent with the yes included), so 2,500 covers a
+ * full queue plus that day's play.
+ */
+export const STATS_DAILY_CAP = 2500;
 
 type Kind = 'number' | 'boolean' | 'id';
 

@@ -1,5 +1,6 @@
 /** In-memory referrals, shared replays and statistics summaries (`GrowthStore`, growth batch 2026-11-14). */
-import type { InstallSummaryRow, ReferralRow, SharedReplayRow } from '../types';
+import type { InstallSummaryRow, ReferralRow, SharedReplayRow, StatsBattleCount } from '../types';
+import { battleCountKey } from '../battleCounts';
 import type { GrowthStore } from '../ports';
 import { MemoryBase, clone } from './base';
 
@@ -94,6 +95,20 @@ export class MemoryGrowth extends MemoryBase implements GrowthStore {
   async statsEventsOf(installs: string[]) {
     const want = new Set(installs);
     return (this.statsRows).filter((r) => want.has(r.install)).map((r) => ({ install: r.install, name: r.name, at: r.at, props: clone(r.props), arm: r.arm }));
+  }
+  async statsBattleCounts(fromDay: number, toDay: number) {
+    const want = new Set(Object.values(this.installSummaryRows).filter((r) => r.firstDayUtc >= fromDay && r.firstDayUtc <= toDay).map((r) => r.install));
+    const by = new Map<string, StatsBattleCount>();
+    for (const r of this.statsRows) {
+      if (!want.has(r.install)) continue;
+      const k = battleCountKey(r.name, r.props);
+      if (!k) continue;
+      const id = `${k.name}|${k.num}|${k.flag}`;
+      const c = by.get(id);
+      if (c) c.n++;
+      else by.set(id, { ...k, n: 1 });
+    }
+    return [...by.values()];
   }
   async installTzs(installs: string[]) {
     return new Map(installs.filter((i) => this.installTzRows[i] !== undefined).map((i) => [i, this.installTzRows[i]]));

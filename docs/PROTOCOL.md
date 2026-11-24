@@ -454,6 +454,10 @@ Closure record: `docs/store/WORLDWIDE_AUDIT.md` "2026-11-20 security audit". Tes
 - **Per-pair daily loot cap (GT-17).** From a village the server holds, one attacker takes at most `PAIR_DAILY_LOOT_SHARE` (default 0.5) of the defender's Keep's `storageLootCapByHall` per resource per UTC day, counting the pair's earlier raids that day (`pairCapped` in `server/core/pvp.ts`). A raid past the cap still scores honor and ratings; its `result.loot` is what was paid. Behaviour only.
 - **Rating power from research (GT-12).** For a village the server holds, the Attack Rating's expected score and `match`'s rating order use the army's research strength (`attackerStrength`, Keep units, at least 1 and at most the Keep) instead of the bare Keep; a device village still counts at its Keep (`attackPower` in `server/core/pvp.ts`). The defender's power is still the base's Keep. Behaviour only.
 
+## Security fixes 2026-11-24 (behaviour only, no shape change, no protocol bump)
+
+- **Statistics per id per day (SECR-01).** `POST /v1/stats` keeps at most `STATS_DAILY_CAP` (2,500, `src/backend/net/stats.ts`) events from one statistics id per UTC day of arrival (`stats_quota`, migration 0048; atomic per id and day). Events past it are answered with the smaller `accepted` count (still `200`) and dropped, so the game does not send them again; `tk_stats_capped_total`. A real day of play sends a few hundred; a device holds at most 2,000 unsent. `DELETE /v1/stats` forgets the id's counts with its events. The hourly rollup and `GET /admin/v1/stats/battles` no longer copy or spread one id's events (the Battles report is counted by the store).
+
 ## Server-owned village (beta)
 
 | | request | response |

@@ -68,6 +68,8 @@ export abstract class MemoryBase {
   statsRows: { install: string; day: number; name: string; at: number; props: Record<string, unknown>; build: string; arm: string; receivedAt: number; seq: number }[] = [];
   /** Last gaps 2026-11-14: the commit-order number of the newest statistics event (stats_events.txid). */
   statsSeq = 0;
+  /** SECR-01 (migration 0048 stats_quota): events counted per `install|day`. */
+  statsQuotaRows = new Map<string, number>();
   statsDailyRows: StatsDailyRow[] = [];
   protected jobLeases = new Map<string, { holder: string; until: number }>();
   refundRows = new Map<string, { at: number; why: string }>();

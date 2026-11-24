@@ -137,6 +137,29 @@ export class PgGrowth extends PgBase implements GrowthStore {
       arm: String(r.arm ?? ''),
     }));
   }
+  async statsBattleCounts(fromDay: number, toDay: number) {
+    // SECR-01: counted in the database (a staff report over every event of up to 90 days of installs); the
+    // fields as battleCountKey (stores/battleCounts.ts) reads them.
+    const rows = (
+      await this.db.query<Record<string, unknown>>(
+        `select e.name,
+                case when e.name = 'trial_end' and jsonb_typeof(e.props->'tier') = 'number' then (e.props->>'tier')::float8
+                     when e.name in ('raid_end', 'scout_leave') and jsonb_typeof(e.props->'keep') = 'number' then (e.props->>'keep')::float8 end as num,
+                case e.name when 'trial_end' then coalesce(e.props->'cleared' = 'true'::jsonb, false)
+                            when 'raid_end' then coalesce(e.props->'endReason' = '"surrender"'::jsonb, false)
+                            when 'webgl_lost' then coalesce(e.props->'stuck' = 'true'::jsonb, false)
+                            else false end as flag,
+                count(*) as n
+         from stats_installs s join stats_events e on e.install = s.install
+         where s.first_day_utc between $1 and $2 and e.name in ('trial_end', 'raid_end', 'scout_leave', 'webgl_lost')
+         group by 1, 2, 3`,
+        [fromDay, toDay],
+      )
+    ).rows;
+    return rows
+      .map((r) => ({ name: String(r.name), num: r.num === null || r.num === undefined ? null : Number(r.num), flag: r.flag === true, n: num(r.n) }))
+      .filter((r) => r.name === 'webgl_lost' || r.num !== null);
+  }
   async installTzs(installs: string[]) {
     if (!installs.length) return new Map<string, number>();
     return new Map((await this.db.query<Record<string, unknown>>('select install, tz from stats_install_tz where install = any($1::text[])', [installs])).rows.map((r) => [String(r.install), num(r.tz)] as [string, number]));

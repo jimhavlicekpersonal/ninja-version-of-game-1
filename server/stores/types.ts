@@ -802,3 +802,15 @@ export interface StatsEventRow {
   props: Record<string, unknown>;
   arm: string;
 }
+
+/**
+ * Security fixes 2026-11-24 (SECR-01): battle events counted in the store instead of read one by one. `num` is
+ * a `trial_end` tier or a `raid_end`/`scout_leave` Keep (null when the event did not carry it as a number);
+ * `flag` is a cleared trial, a raid ended by surrender, or graphics that stayed lost.
+ */
+export interface StatsBattleCount {
+  name: string;
+  num: number | null;
+  flag: boolean;
+  n: number;
+}
