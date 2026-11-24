@@ -373,3 +373,41 @@ describe('worldwide audit: several devices and storage failures', () => {
     expect(s.conn.storageProblem).toBe(false);
   });
 });
+
+describe('F5 (2026-11-24): two tabs of one village on one device', () => {
+  it("the older tab stops recording once the newer one claims the queue; the newer tab's action reaches the server", async () => {
+    const w = world();
+    const kv = memoryKv();
+    const slot = { data: null as string | null };
+    const clock = { now: () => w.now() };
+    const tab = async () => (await GameController.start({ clock, store: new MemorySaveStore(slot), data: w.data, analytics: new Analytics(new MemoryEventStore(), clock, 'test'), botRaids: false })).controller;
+    const a = await tab();
+    const pa = new InProcessServerAdapter(w.core);
+    const ca = new Connection({ game: a, builtInUrl: 'test.server', kv, makePort: () => pa, log: () => undefined });
+    await ca.sync();
+    await ca.village!.enable();
+    await a.save();
+    // Tab B opens the same village (same storage, same queue).
+    const b = await tab();
+    const pb = new InProcessServerAdapter(w.core, pa.credentials);
+    const cb = new Connection({ game: b, builtInUrl: 'test.server', kv, makePort: () => pb, log: () => undefined });
+    await cb.sync();
+    expect(cb.village!.device).toBe(ca.village!.device);
+    const count = (list: string[], res: 'acorns' | 'dew') => list.filter((t) => w.data.buildings[t]?.produces === res).length;
+    const before = b.state.buildings.map((x) => x.type);
+    placeCollector(b, 'acorns'); // B acts
+    placeCollector(a, 'dew'); // A, stale, acts before it learns of the conflict
+    await new Promise((r) => setTimeout(r, 10));
+    await ca.village!.flush();
+    await cb.village!.flush();
+    expect(cb.village!.refused).toBe(0);
+    expect(cb.village!.pending).toBe(0);
+    const types = ((await pb.getVillage())!.file as { village: { buildings: { type: string }[] } }).village.buildings.map((x) => x.type);
+    const mine = b.state.buildings.map((x) => x.type);
+    expect(count(types, 'acorns')).toBe(count(before, 'acorns') + 1); // B's new collector is on the server
+    expect(count(types, 'dew')).toBe(count(before, 'dew')); // A's stale action never got there
+    expect(count(mine, 'acorns')).toBe(count(before, 'acorns') + 1); // and no correction took it back in B
+    expect(ca.village!.superseded).toBe(true);
+    expect(cb.village!.superseded).toBe(false);
+  });
+});

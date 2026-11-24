@@ -44,6 +44,8 @@ export interface SyncGame {
   adoptChestSalt?(salt: number): void;
   /** Put a village in place with no backup (the server's copy of the village that was just moved there). */
   replace?(state: VillageState): Promise<void>;
+  /** Save failures (GameController): a `SaveConflictError` means another tab took this village over (F5). */
+  onSaveError?(fn: (e: Error) => void): () => void;
 }
 
 export interface SyncStore {
@@ -75,6 +77,11 @@ interface Stored {
   /** The last command number used. */
   seq: number;
   queue: Queued[];
+  /**
+   * F5 (2026-11-24): the VillageSync (one per open tab) that last claimed this queue. A tab that finds another
+   * tab's claim stops recording and sending, so two tabs never number different actions alike.
+   */
+  writer?: string;
 }
 
 /**
@@ -128,6 +135,12 @@ export class VillageSync {
   storageProblem = false;
   /** Called after anything changes (Settings redraws). */
   onChange: () => void = () => undefined;
+  /** F5: another tab took this village (or its queue) over; this one records and sends nothing more. */
+  superseded = false;
+  /** This instance's claim on the stored queue, and the claim it found when it loaded (F5). */
+  private readonly writer = newDeviceId();
+  private loadedWriter: string | undefined;
+  private unsubscribeSaveErrors: (() => void) | null = null;
   /**
    * F1 (2026-11-24): the server held a battle back (the battle budget, `TOO_MANY_BATTLES`): it stays queued and is
    * sent again from this time (`Date.now()`), never dropped and never counted as refused.
@@ -141,7 +154,14 @@ export class VillageSync {
     private readonly key: string,
   ) {
     this.stored = this.load();
+    this.loadedWriter = this.stored.writer;
+    this.stored.writer = this.writer;
     this.unsubscribe = game.onCommand((cmd, at) => this.record(cmd, at));
+    this.unsubscribeSaveErrors = game.onSaveError?.((e) => {
+      if (e.name === 'SaveConflictError') this.halt('this village was opened in another tab');
+    }) ?? null;
+    // Claim the stored queue for this tab (the newest tab wins, as with the save itself).
+    if (this.kv.get(this.key) !== null) this.write(JSON.stringify(this.stored));
   }
 
   private load(): Stored {
@@ -156,20 +176,50 @@ export class VillageSync {
 
   /** A fresh queue for a village this device starts on (a new device id, so old numbers never clash). */
   private fresh(active: boolean, seq: number): Stored {
-    return { active, device: newDeviceId(), seq, queue: [] };
+    return { active, device: newDeviceId(), seq, queue: [], writer: this.writer };
+  }
+
+  private write(value: string | null): boolean {
+    if (this.kv.trySet) return this.kv.trySet(this.key, value);
+    try {
+      this.kv.set(this.key, value);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  /** Stop recording and sending here (F5): another tab holds this village now. */
+  private halt(why: string): void {
+    if (this.superseded) return;
+    this.superseded = true;
+    this.stop();
+    this.unsubscribeSaveErrors?.();
+    this.unsubscribeSaveErrors = null;
+    console.warn(`Online play: ${why}; this tab no longer sends its actions`);
+    this.onChange();
+  }
+
+  /** True (and halted) when another tab claimed the stored queue after this one loaded it (F5). */
+  private takenByAnotherTab(): boolean {
+    if (this.superseded) return true;
+    let writer: string | undefined;
+    try {
+      writer = (JSON.parse(this.kv.get(this.key) ?? 'null') as Stored | null)?.writer;
+    } catch {
+      return false;
+    }
+    if (writer && writer !== this.writer && writer !== this.loadedWriter) {
+      this.halt('the action queue was taken over by another tab');
+      return true;
+    }
+    return false;
   }
 
   private persist(): boolean {
+    if (this.takenByAnotherTab()) return false;
     const value = this.stored.active || this.stored.queue.length ? JSON.stringify(this.stored) : null;
-    let ok = true;
-    if (this.kv.trySet) ok = this.kv.trySet(this.key, value);
-    else {
-      try {
-        this.kv.set(this.key, value);
-      } catch {
-        ok = false;
-      }
-    }
+    const ok = this.write(value);
     const was = this.storageProblem;
     this.storageProblem = !ok;
     this.onChange();
@@ -205,7 +255,7 @@ export class VillageSync {
   }
 
   private record(cmd: Command, at: number): void {
-    if (!this.stored.active || !PLAYER_COMMANDS.has(cmd.type)) return;
+    if (!this.stored.active || !PLAYER_COMMANDS.has(cmd.type) || this.takenByAnotherTab()) return;
     this.stored.queue.push({ seq: ++this.stored.seq, t: at, command: JSON.parse(JSON.stringify(cmd)) as Command, hash: economyHash(this.game.state) });
     const stored = this.persist();
     if (stored && this.stored.queue.length >= FLUSH_AT) void this.flush().catch(() => undefined);
@@ -288,7 +338,7 @@ export class VillageSync {
 
   /** Send everything waiting, a batch at a time. Concurrent calls share one run. */
   flush(): Promise<void> {
-    if (!this.stored.active || !this.stored.queue.length) return Promise.resolve();
+    if (!this.stored.active || !this.stored.queue.length || this.superseded) return Promise.resolve();
     if (Date.now() < this.heldUntil) return this.sending ?? Promise.resolve();
     if (!this.sending) {
       this.sending = this.run().finally(() => {
@@ -302,6 +352,7 @@ export class VillageSync {
     const port = this.port();
     if (!port) return;
     while (this.stored.queue.length) {
+      if (this.takenByAnotherTab()) return;
       const batch = nextBatch(this.stored.queue);
       let r;
       try {
