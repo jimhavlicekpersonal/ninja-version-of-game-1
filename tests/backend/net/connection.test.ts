@@ -225,6 +225,38 @@ describe('Connection', () => {
     await restarted.report('attack', { ticket: m.ticket, seed: s1, ...rush(10) });
     expect(restarted.outbox()).toHaveLength(0);
   });
+
+  it('F2: with storage full, a new report and a pending attack still reach the server', async () => {
+    const w = world();
+    const game = village(w);
+    let full = false;
+    const map = new Map<string, string>();
+    const kv: KeyValue & { map: Map<string, string> } = { map, get: (k) => map.get(k) ?? null, set: (k, v) => void (!full && (v === null ? map.delete(k) : map.set(k, v))), trySet: (k, v) => (full ? false : (v === null ? map.delete(k) : map.set(k, v), true)) };
+    const { conn, port } = connect(w, game, kv);
+    await conn.sync();
+    const sent: string[] = [];
+    port.gangWarAttack = async (sub) => {
+      sent.push(sub.ticket);
+      return {} as never;
+    };
+    full = true;
+    await conn.report('gangwar', { ticket: 'war-ticket-1', seed: 1, army: {}, levels: {}, deployments: [], endTick: 1 } as never);
+    expect(sent).toEqual(['war-ticket-1']);
+    expect(conn.storageProblem).toBe(true);
+    expect(conn.outbox()).toHaveLength(0);
+    // An attack still pending in the battle log (its report missing from the outbox) is sent again, storage full.
+    const submit = port.submitAttack.bind(port);
+    port.submitAttack = async (sub) => {
+      sent.push(sub.ticket);
+      return submit(sub);
+    };
+    const m = (await port.match())!;
+    const seed = await startSeed(port, m.ticket);
+    const r = rush(10);
+    game.state.battleLog.push({ id: 'r1', at: w.now(), kind: 'attack', opponentName: 'x', ticket: m.ticket, settlement: 'pending', setup: { seed, base: m.base, army: r.army }, deployments: r.deployments, endTick: 0, result: { hash: '' } } as never);
+    await conn.flush();
+    expect(sent).toEqual(['war-ticket-1', m.ticket]);
+  });
 });
 
 describe('ledger audit A1: the game asks for the seed on Attack and sends waiting reports before the next match', () => {

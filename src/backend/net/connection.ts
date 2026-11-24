@@ -1421,6 +1421,9 @@ export class Connection {
   }
 
   outbox(): OutboxItem[] {
+    // F2 (2026-11-24): while the last write failed, the copy in memory is the outbox (storage holds an older one).
+    const unstored = this.outboxUnstored;
+    if (unstored && unstored.key === this.outboxKey) return [...unstored.items];
     try {
       const v = JSON.parse(this.kv.get(this.outboxKey) ?? '[]');
       return Array.isArray(v) ? v : [];
@@ -1428,6 +1431,9 @@ export class Connection {
       return [];
     }
   }
+
+  /** The outbox as last written, when that write failed (storage full or blocked): read instead of storage. */
+  private outboxUnstored: { key: string; items: OutboxItem[] } | null = null;
 
   /**
    * The outbox could not be written (storage full or blocked): battles waiting
@@ -1444,7 +1450,14 @@ export class Connection {
     const value = items.length ? JSON.stringify(items) : null;
     let ok = true;
     if (this.kv.trySet) ok = this.kv.trySet(this.outboxKey, value);
-    else this.kv.set(this.outboxKey, value);
+    else {
+      try {
+        this.kv.set(this.outboxKey, value);
+      } catch {
+        ok = false;
+      }
+    }
+    this.outboxUnstored = ok ? null : { key: this.outboxKey, items: [...items] };
     if (ok !== !this.outboxStorageProblem) {
       this.outboxStorageProblem = !ok;
       this.emit();
