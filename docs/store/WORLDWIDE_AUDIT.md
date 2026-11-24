@@ -1559,7 +1559,7 @@ Not run: devices, Postgres/Redis (`TEST_DATABASE_URL` unset), Xcode/Gradle build
 
 Tried and reverted: `heldHonorShare` 0.5 (Keep 15 honor did not move; stars fell to 1.32). Not changed: GT-07 (Watch has no lever left at its ceiling), GT-04's eight tier pairs (the rules-10 attempt made 16), deploySpread and partial 2-star pay (optional, would need a rules bump). Owner, device and player steps as listed in the ledger.
 
-### 2026-11-24 Beast Mode re-audit: what the 2026-11-21 document missed (integration session; ledger `docs/audit/bulletproof-2026-11-21/PROGRESS.md`, section "2026-11-24 re-audit"), commits `4f1d255` to the ledger commit on `claude/stoic-mayer-6tj5s8`
+### 2026-11-24 Beast Mode re-audit: what the 2026-11-21 document missed (integration session; ledger `docs/audit/bulletproof-2026-11-21/PROGRESS.md`, section "2026-11-24 re-audit"), commits `4f1d255` to `98e1672` on `claude/stoic-mayer-6tj5s8`
 
 Six independent auditors re-checked current code lane by lane and listed only defects not in the document; 33 were found, 31 fixed with regression tests that fail before the fix, 1 partly fixed, 1 left as backlog. Two new numbered migrations (0048 `stats_quota`, 0049 `reversed_attacks`; additive). No save, `SIM_RULES` or protocol-version change; additive protocol: `holdBattles`/`held` on village commands, `deploy` in /healthz (`docs/PROTOCOL.md`). Deploy the server before the game (the battle hold needs it). One new player-visible string ("Offensive name", 49 languages, machine-written, not native-reviewed).
 
