@@ -152,7 +152,8 @@ export class MemoryAlliances extends MemoryBase {
       .slice(0, limit);
   }
   async addRaidAttack(a: RaidAttack): Promise<void> {
-    this.raidAttackRows.push(clone(a));
+    // The Postgres store writes counts as a not-null column (a.counts !== false); match it so both stores return the same row.
+    this.raidAttackRows.push({ ...clone(a), counts: a.counts !== false });
   }
   async raidAttacks(week: number, groveId: string): Promise<RaidAttack[]> {
     return this.raidAttackRows.filter((a) => a.week === week && a.groveId === groveId).map(clone);

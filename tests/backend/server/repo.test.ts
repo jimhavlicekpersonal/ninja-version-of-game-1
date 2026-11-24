@@ -286,7 +286,7 @@ for (const [label, make] of repoFactories) {
       expect(await repo.unpairedGroves(3, 0, 10)).toEqual([]);
       expect((await repo.unpairedGroves(4, 0, 10)).length).toBe(2);
       await repo.addRaidAttack({ id: 'ra', week: 3, groveId: 'g1', attackerId: 'a', target: 0, stars: 2, destruction: 61.5, at: T });
-      expect(await repo.raidAttacks(3, 'g1')).toEqual([{ id: 'ra', week: 3, groveId: 'g1', attackerId: 'a', target: 0, stars: 2, destruction: 61.5, at: T }]);
+      expect(await repo.raidAttacks(3, 'g1')).toEqual([{ id: 'ra', week: 3, groveId: 'g1', attackerId: 'a', target: 0, stars: 2, destruction: 61.5, at: T, counts: true }]);
       expect(await repo.raidAttacks(3, 'g2')).toEqual([]);
       const claim = { week: 3, playerId: 'a', groveId: 'g1', outcome: 'win' as const, at: T };
       const claims = await Promise.all([repo.addClaim(claim), repo.addClaim(claim)]);
