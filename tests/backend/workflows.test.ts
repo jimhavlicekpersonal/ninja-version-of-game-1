@@ -80,3 +80,25 @@ describe('rollback check when the live side cannot be read', () => {
     expect(unreadableLive('server', false, [7, 8, 9]).liveRules).toEqual([7, 8, 9]);
   });
 });
+
+describe('local native builds ship no source maps', () => {
+  it('every cap:* script strips the maps between the build and the sync', async () => {
+    const scripts = (JSON.parse(readFileSync(new URL('../../package.json', import.meta.url), 'utf8')) as { scripts: Record<string, string> }).scripts;
+    const cap = Object.entries(scripts).filter(([k]) => k.startsWith('cap:'));
+    expect(cap.length).toBeGreaterThan(2);
+    for (const [k, v] of cap) expect(v, k).toMatch(/npm run build && node tools\/release\/strip-maps\.mjs && cap sync/);
+  });
+
+  it('strip-maps removes every .map file and nothing else', async () => {
+    const { mkdtempSync, mkdirSync, writeFileSync, readdirSync: ls } = await import('node:fs');
+    const { tmpdir } = await import('node:os');
+    const { join } = await import('node:path');
+    const { stripMaps } = await import('../../tools/release/strip-maps.mjs');
+    const d = mkdtempSync(join(tmpdir(), 'maps-'));
+    mkdirSync(join(d, 'assets'));
+    for (const f of ['index.html', 'assets/a.js', 'assets/a.js.map', 'b.css.map']) writeFileSync(join(d, f), 'x');
+    expect(stripMaps(d)).toBe(2);
+    expect(ls(join(d, 'assets'))).toEqual(['a.js']);
+    expect(ls(d).sort()).toEqual(['assets', 'index.html']);
+  });
+});
