@@ -29,7 +29,7 @@ for (const [label, factory] of repoFactories) {
       const total = 150_000;
       const chunk = 5_000;
       for (let i = 0; i < total; i += chunk) {
-        const events: StatsEvent[] = Array.from({ length: chunk }, (_, k) => {
+        const events: StatsEvent[] = Array.from({ length: chunk }, (_, k): StatsEvent => {
           const n = i + k;
           return n % 3 === 0
             ? { name: 'trial_end', at: T0 - 20 * DAY + n * 1000, props: { tier: n % 7, cleared: n % 2 === 0 } }

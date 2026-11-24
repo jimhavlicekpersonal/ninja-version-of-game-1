@@ -1558,3 +1558,21 @@ Not run: devices, Postgres/Redis (`TEST_DATABASE_URL` unset), Xcode/Gradle build
 | GT-05 / GT-08 | counters build in at most 4 days; league bonus shares 0.074-0.078 from Oak up | campaign gates (8 seeds) | regular Keep 15 at 1.38 stars (target 1.4) |
 
 Tried and reverted: `heldHonorShare` 0.5 (Keep 15 honor did not move; stars fell to 1.32). Not changed: GT-07 (Watch has no lever left at its ceiling), GT-04's eight tier pairs (the rules-10 attempt made 16), deploySpread and partial 2-star pay (optional, would need a rules bump). Owner, device and player steps as listed in the ledger.
+
+### 2026-11-24 Beast Mode re-audit: what the 2026-11-21 document missed (integration session; ledger `docs/audit/bulletproof-2026-11-21/PROGRESS.md`, section "2026-11-24 re-audit"), commits `4f1d255` to the ledger commit on `claude/stoic-mayer-6tj5s8`
+
+Six independent auditors re-checked current code lane by lane and listed only defects not in the document; 33 were found, 31 fixed with regression tests that fail before the fix, 1 partly fixed, 1 left as backlog. Two new numbered migrations (0048 `stats_quota`, 0049 `reversed_attacks`; additive). No save, `SIM_RULES` or protocol-version change; additive protocol: `holdBattles`/`held` on village commands, `deploy` in /healthz (`docs/PROTOCOL.md`). Deploy the server before the game (the battle hold needs it). One new player-visible string ("Offensive name", 49 languages, machine-written, not native-reviewed).
+
+| # | What changed | Proving test | Still open |
+|---|---|---|---|
+| N24-OPS-2 | **main has not deployed since 2026-11-21**: a Postgres-only repo test failed in CI; fixed | `repo.test.ts` on Postgres (run locally) | a green main run |
+| N24-OPS-1 | android.yml was not a valid workflow since 740099d (its `concurrency:` key was lost; no Android build ran); every workflow now parsed in tests | `workflows.test.ts` | an android.yml run on main |
+| N24-OPS-9 | CI contract server lacked `UPLOAD_ACCOUNT_AGE=0` (masked by OPS-2) | `workflows.test.ts` | — |
+| N24-OPS-3..8 | store builds need green tests; NODE_ENV=production needs DEPLOY_ENV; one Pages queue; rollbacks fail closed; CSP env; inputs/secrets via env; local builds strip maps | `workflows.test.ts`, config, csp tests | owner rehearsal OWN-31 |
+| N24-ECO-1..4 | store not trusted before the first hello; offers stop for minors; Sandbox caps under lock; age only stricter | money-audit tests (memory + Postgres) | StoreKit/Play launch replay on a device |
+| N24-SEC-1..4 | stats flood bounded (per-id daily cap); raid reversal durable and complete; duel report limits; staff log names removed on deletion | stats-abuse, admin-reverse-durable, duel-report-limits, deletion tests | staff notes and player id in staff_actions |
+| N24-SAV-1..7 | offline battles over the budget held not refused; outbox and token rotation survive full storage; one cached language pack; one sending tab; donations acked after save; more load repairs | battle-budget-hold, connection, session-control, villageSync, save-durability tests | device runs (SAV-15/16) |
+| N24-STB-1..4 | language change no longer breaks offline start; wheel zoom by distance; no mipmaps on low; What-if run stops | serviceWorker, wheelZoom, smoothing, what-if-cancel tests | real browser/device/trackpad runs |
+| N24-UX-1..3 | report reason translated; names isolated in moderation; Settings selects keep their value | label-tables, moderation-names, toggle-select tests | Graphics "Automatic (now: Sharp)" too long at 130 % on phones; ICU plurals (N24-UX-4) |
+
+Checks on the merged tree: see the ledger section (npm test with Postgres and Redis, lint, both typechecks, build, bundle budget, server build, i18n check, version guard). Not run: devices, store sandboxes, Xcode/Gradle, players. Nothing here establishes release readiness.

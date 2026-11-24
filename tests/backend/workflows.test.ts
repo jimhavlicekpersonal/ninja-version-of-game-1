@@ -69,6 +69,13 @@ describe('GitHub workflows', () => {
   });
 });
 
+describe('the CI contract server', () => {
+  it('starts like a staging contract server (no account-age wait for the fresh test accounts)', () => {
+    const start = wf('deploy.yml').jobs.server.steps!.find((s) => s.name?.startsWith('Start the built server'));
+    expect(start?.env?.UPLOAD_ACCOUNT_AGE).toBe('0');
+  });
+});
+
 describe('rollback check when the live side cannot be read', () => {
   it('refuses a web rollback unless the operator allows it', () => {
     expect(unreadableLive('web', false).problem).toMatch(/could not be read/);

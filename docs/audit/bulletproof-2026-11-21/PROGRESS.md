@@ -118,3 +118,58 @@ New player-visible strings are translated into all 49 other ready languages in t
 | UX-09 | LOW | 1 | CODE | done | fa6cf91 | tests/presentation/dom/army-preset-delete.dom.test.ts | A danger confirm (existing strings: 'Delete saved army {name}', the army's contents, Remove / Cancel) instead of the 5 s undo toast: the toast has no action buttons, and a confirm needs no new text in 49 languages. The preset is found again by name+army when confirmed. |
 | UX-10 | LOW | 6 | CODE | done |  | tests/presentation/ui/reviewPrompt.test.ts | countBattleResult when the result opens, maybeAskForReview when it closes through any button (Return home, next actions, Watch replay); practice/trial/replay/war never count |
 | UX-11 | LOW | 6 | DEVICE | blocked-device |  |  | needs a device run (Control Center, notification shade, call) before code; Playwright cannot reproduce iOS Control Center |
+
+## 2026-11-24 re-audit: what the document missed
+
+Six independent read-only auditors (money/store, server security, saves/network, stability/render, UX/i18n, release/CI)
+re-checked current code (`4273566`, which includes the post-audit commits 77b20c0 mipmaps and 4273566 camera speed)
+against the document's lanes and listed only defects the rows above do not. Each was reproduced (scratch test,
+Playwright or a CI log) or traced end to end, revalidated before its fix, and fixed with a regression test that fails
+on the code before it. IDs are `N24-<lane>-<n>`; the commit subjects use the auditors' working names (in brackets).
+Branch `claude/stoic-mayer-6tj5s8`. This pass ran the Postgres and Redis tests locally (Postgres 16, Redis in the
+container), which earlier passes could not.
+
+| ID | Sev | Status | Commit | Test | Notes and limits |
+|---|---|---|---|---|---|
+| N24-OPS-1 | HIGH | done | 81bea13 | tests/backend/workflows.test.ts (every workflow parsed with a real YAML parser) | android.yml lost its `concurrency:` key in 740099d: GitHub refused every run since 2026-11-22, so none of the Android steps OPS-01/02/03/04 and STB-10 rely on ran. The text-only release-config tests stayed green. A CI run of android.yml happens only on main or by hand: not observed here |
+| N24-OPS-2 | HIGH | done | 4f1d255 | tests/backend/server/repo.test.ts on Postgres (passes locally with TEST_DATABASE_URL) | The Postgres-only repo test expected a raid attack without `counts`; it failed in CI's deploy.yml server job and Server release test job, so **main has not deployed (Pages or staging) since 2026-11-21**. Closure records after that date describe code, not deployed builds |
+| N24-OPS-9 | HIGH | done | (this ledger's commit) | workflows.test.ts 'the CI contract server' | Hidden behind N24-OPS-2: the built contract server in deploy.yml started without `UPLOAD_ACCOUNT_AGE=0`, so the stake and fifty-warrior contract tests got 403 `pvp.base_too_new` (seen in the branch's CI run 45447108186). Now set like a staging contract server |
+| N24-OPS-3 | MEDIUM | done | 81bea13 | workflows.test.ts 'store builds run lint, tests and the bundle budget' | The aab and TestFlight jobs built signed store builds with no lint/tests; iOS had no bundle budget |
+| N24-OPS-4 | MEDIUM | done | 33d23c2 | beast-mode-2026-11-21-config.test.ts, observability.test.ts | NODE_ENV=production (the Dockerfile) without DEPLOY_ENV ran as development (no production checks, Google test purchases credited). Now refuses to start; /healthz reports `deploy`; deploy.mjs fails on the wrong environment |
+| N24-OPS-5 | MEDIUM | done | 81bea13 | workflows.test.ts 'one queue' | The Pages deploy and rollback-web.yml used different concurrency groups (a push could cancel or race a rollback). A deploy queued behind a rollback still publishes after it: stop pushes to main during an incident |
+| N24-OPS-6 | LOW-MEDIUM | done | 81bea13 | workflows.test.ts 'rollback check when the live side cannot be read' | rollback-check passed when the live site/server was unreachable (exactly when rollbacks happen). Web now refuses unless `allow_unverified`; server compares with the workflow commit's rules |
+| N24-OPS-7 | LOW | done | c63b472 | tests/backend/csp.test.ts; a real build with a .env.production.local | The CSP read process.env only (a VITE_SERVER_URL from a .env file was blocked); VITE_ALLOW_SERVER_CHOICE=1 builds could not reach a typed server |
+| N24-OPS-8 | LOW | done | 81bea13, 8caf3c7 | workflows.test.ts (no inputs/secrets interpolated in run scripts; cap:* strip maps) | server.yml put `image_tag` (and the registry login a secret) straight into the shell; ios-testflight did the same with ASC_KEY_P8_BASE64. Local `npm run cap:*` copied 18 source maps into the app |
+| N24-ECO-1 [MONEY-01] | HIGH | done | 1909b8e | tests/backend/net/money-audit.test.ts | Before the first hello a device-held village trusted the store: a receipt the server held over the under-18 cap was granted and finished at launch, refunds of such purchases were never recorded. Now the last hello's features are kept per server; with none the receipt waits; the trusted path applies the minor cap. **Behaviour change:** a build with a server refuses a purchase on a device that has never reached it. StoreKit/Play launch replay simulated only |
+| N24-ECO-2 [MONEY-02] | MEDIUM | done | 098eea3 | tests/gameplay/sim/money-audit.test.ts, tests/backend/server/money-audit-2026-11-24.test.ts | An offer shown to an adult stayed listed and buyable after the age changed to 13-17 (client and server) |
+| N24-ECO-3 [MONEY-03] | MEDIUM | done | 6181d9c | money-audit-2026-11-24.test.ts (memory and Postgres) | Parallel Sandbox redeems got past the per-buyer and daily test-credit caps (6 × $4.99 credited against $10). Checks now inside the locked transaction |
+| N24-ECO-4 [MONEY-04] | LOW | done | 67f348d | money-audit-2026-11-24.test.ts | A stated under-18 answer was outvoted by an adult server village; age now only gets stricter |
+| N24-SEC-1 [SECR-01] | MEDIUM-HIGH | done | 2afba07 | tests/backend/server/stats-abuse.test.ts | Anonymous /v1/stats: one id with 140k events froze the hourly rollup (130 s, quadratic) and the staff Battles panel threw RangeError. Linear rollup, counted in the store, per-id daily cap 2,500 (migration 0048 `stats_quota`, `tk_stats_capped_total`). An id can still hold 2,500/day for its retention; the rollup still loads up to 500 ids' events per step |
+| N24-SEC-2 [SECR-02] | LOW-MEDIUM | done | 7085edd | admin-reverse-durable.test.ts (memory and Postgres) | Reversing a cheater's raids (SEC-07) could credit defenders twice after 200 staff actions and never reached raids past the newest 500. Durable `reversed_attacks` (migration 0049, backfilled from staff log rows; backfill checked by hand on a sample) |
+| N24-SEC-3 [SECR-03] | LOW | done | a089d0a | tests/backend/server/duel-report-limits.test.ts | Duel reports did not count refused reports against the ticket and skipped requireArmyOnServer |
+| N24-SEC-4 | LOW | done | 317306b | tests/backend/server/deletion-shared-rows.test.ts | Account deletion left a staff rename's old/new names in staff_actions (privacy.html promises the name is removed). Free-text staff notes and the player id remain (PRIVACY.md follow-up) |
+| N24-SAV-1 [F1] | HIGH | done | 813e89b | tests/backend/net/battle-budget-hold.test.ts | Offline battles past 6 a minute were refused for good on reconnect and their rewards taken back. Opt-in `holdBattles` keeps them queued (`held.retryAfterMs`); older games keep the old answer, older servers ignore the flag: deploy the server first |
+| N24-SAV-2 [F2] | HIGH | done | 05ccd3c | connection.test.ts 'F2' | With storage full a new battle report was never sent (the outbox was re-read from storage). Kept in memory until a write succeeds; lost if the app closes while storage stays full |
+| N24-SAV-3 [F3] | HIGH | done | 17bed03 | session-control.test.ts 'F3' | The 30-day token rotation with full storage left the device with a revoked token. Rotation now needs the new token stored and read back |
+| N24-SAV-4 [F4] | MEDIUM | done | 1ca8f96 | tests/presentation/dom/language-pack-cache.dom.test.ts | Every deploy left another 190-275 KB language pack in localStorage (the cause of the full storage above). One pack kept |
+| N24-SAV-5 [F5] | MEDIUM | done | 51aaab0 | villageSync.test.ts 'F5' | Two tabs shared one action queue and device id: the newer tab's action was silently dropped. The newest tab claims the queue; best effort when storage is full |
+| N24-SAV-6 [F6] | LOW | done | ab13c01 | connection.test.ts 'F6' | Donations were acknowledged before the save holding them landed |
+| N24-SAV-7 [F7] | LOW | done | 5dd7bd1 | save-durability.test.ts 'F7' | Load repairs (SAV-03) missed upgrades past a lowered cap, research above a troop's levels and unknown troops in presets/training/the Lodge: the village was replaced. A dropped upgrade's cost is not refunded |
+| N24-STB-1 | HIGH | done | c7625b7 | tests/backend/pwa/serviceWorker.test.ts | A language change installed into the active worker's cache, deleting the offline page first; a failed install left the game unable to start offline. Cache per language. Fake worker only, no browser/device run |
+| N24-STB-2 | MEDIUM | done | 44594b3 | tests/presentation/render/wheelZoom.test.ts; Chromium 0.909→0.857 (was →0.385) | One trackpad swipe zoomed end to end (sign only, made worse by 4273566's speed). No real trackpad run |
+| N24-STB-3 | MEDIUM | done | 4c87247 | smoothing.test.ts | 77b20c0 turned mipmaps on for the low profile: +33 % GPU texture memory (27→36 MB at 360×640 DPR 3). Off on low; STB-11's device runs should cover WebGL2 with mipmaps on high |
+| N24-STB-4 | LOW | done | ac71fad | tests/presentation/dom/what-if-cancel.dom.test.ts | A "What if" simulation kept running after its dialog closed by X/Escape or the battle ended |
+| N24-UX-1 | MEDIUM | done | 40e49ee | tests/presentation/ui/label-tables.test.ts (every label table resolves to a key) | "Offensive name" report reason was English in every language. Translated by the coding session into 49 languages (not native-reviewed) |
+| N24-UX-2 | MEDIUM | done | 17197c8 | moderation-names.dom.test.ts | Alliance moderation put names into sentences without isolateName (Text invariant) |
+| N24-UX-3 | LOW-MEDIUM | partial | 3331a5b | toggle-select.test.ts; tools/ui/surfaces.mjs `settings` surface and `--text` | 4273566's German "Zoom speed" select showed no value at 130 % on 320 px; fixed. **Open:** the Graphics quality option "Automatic (now: Sharp)" does not fit at 130 % on 320-360 px in en/de/fi: needs shorter wording (the surface check flags it) |
+| N24-UX-4 | LOW | open | — | — | Count messages that are not ICU plurals (e.g. `ui.days_d7f711040e` "{arg1} days" is singular in ar). Already the open ICU step in docs/localization/README.md; not changed here |
+
+Checks on the merged tree (container, 2026-11-24): `npm test` with TEST_DATABASE_URL (Postgres 16) and TEST_REDIS_URL:
+334 files, 2817 passed, 5 expected fail, 1 skipped. `npm run lint`, `tsc --noEmit`, `npm run typecheck:server`,
+`npm run build`, bundle budget (633 KB of 645 KB gzip; index.html 12 KB), `npm run server:build`, `npm run i18n:check`,
+`check-version.mjs` (0.2.0, save 24, rules 9, protocol 11, migrations 49): pass. `npm run test:contract` against the
+built server on a migrated Postgres with UPLOAD_ACCOUNT_AGE=0: 23 passed. previous-client-contract: no `v*` tag yet
+(SAV-08, owner). `npm run test:slow` and the balance campaigns were not re-run (no cost, loot or combat number changed).
+
+Not run in this pass: devices, store sandboxes, Xcode/Gradle builds, android.yml and ios-testflight.yml on GitHub
+(main-only or manual), players. Machine translations are not native-reviewed.
