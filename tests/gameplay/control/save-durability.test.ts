@@ -6,7 +6,7 @@ import { describe, expect, it } from 'vitest';
 import { Analytics, MemoryEventStore } from '../../../src/backend/analytics/events';
 import { GENERATION_EVERY_MS, MemorySaveStore } from '../../../src/backend/persist/saveStore';
 import { GameController } from '../../../src/gameplay/control/controller';
-import { defaultData as data } from '../../../src/gameplay/sim/data';
+import { defaultData as data, maxDefinedLevel } from '../../../src/gameplay/sim/data';
 import { deserialize, serialize } from '../../../src/gameplay/sim/save';
 import { createNewVillage, hallLevel } from '../../../src/gameplay/sim/village';
 
@@ -93,5 +93,54 @@ describe('SAV-03: rolling copies and load-time repairs', () => {
     expect(s.buildings.find((b) => b.id === 'b-gone')).toBeUndefined();
     expect(hallLevel(s, data)).toBe(data.hall.levels.length);
     expect(s.army).toEqual({});
+  });
+});
+
+describe('F7 (2026-11-24): more load-time repairs instead of a new village', () => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const load = (edit: (v: Record<string, any>) => void) => {
+    const file = structuredClone(serialize(createNewVillage(T, data), T)) as unknown as { village: Record<string, never> };
+    edit(file.village);
+    return deserialize(file, data);
+  };
+  const troop = Object.keys(data.troops)[0];
+
+  it('an upgrade to a level above the cap is dropped; the building keeps its level', () => {
+    let id = '';
+    const out = load((x) => {
+      const b = x.buildings.find((b: { type: string }) => !['hall', 'obstacle'].includes(data.buildings[b.type].category));
+      const max = maxDefinedLevel(data, b.type);
+      id = b.id;
+      b.level = max;
+      b.upgrade = { toLevel: max + 1, startedAt: T, endsAt: T + 1000 };
+    });
+    const b = out.buildings.find((b) => b.id === id)!;
+    expect(b.level).toBe(maxDefinedLevel(data, b.type));
+    expect(b.upgrade ?? null).toBeNull();
+  });
+
+  it("a research level above the warrior's levels is lowered to the top one; others stay", () => {
+    const [a, b] = Object.keys(data.troops);
+    const out = load((x) => {
+      x.research.levels[a] = data.troops[a].levels.length + 3;
+      x.research.levels[b] = 2;
+    });
+    expect(out.research.levels[a]).toBe(data.troops[a].levels.length);
+    expect(out.research.levels[b]).toBe(2);
+  });
+
+  it('unknown warriors leave presets, training, research timers and the Lodge; known ones stay', () => {
+    const out = load((x) => {
+      x.armyPresets = [{ name: 'p', army: { gone_troop: 3, [troop]: 2 } }];
+      x.training = [{ troop: 'gone_troop', startedAt: T, endsAt: T + 5, cost: {} }, { troop, startedAt: T, endsAt: T + 5, cost: {} }];
+      x.research.active = [{ troop: 'gone_troop', toLevel: 2, startedAt: T, endsAt: T + 5, cost: {} }];
+      x.grove.reinforcements = { gone_troop: 2, [troop]: 1 };
+      x.grove.reinforcementLevels = { gone_troop: 2, [troop]: 1 };
+    });
+    expect(out.armyPresets).toEqual([{ name: 'p', army: { [troop]: 2 } }]);
+    expect(out.training.map((q) => q.troop)).toEqual([troop]);
+    expect(out.research.active).toEqual([]);
+    expect(out.grove.reinforcements).toEqual({ [troop]: 1 });
+    expect(out.grove.reinforcementLevels).toEqual({ [troop]: 1 });
   });
 });

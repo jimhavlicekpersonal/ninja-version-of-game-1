@@ -329,6 +329,11 @@ function repairFields(v: Record<string, unknown> | undefined, data: GameData): v
         b.level = max;
         delete b.upgrade;
         fixed.push(`level of ${b.type}`);
+      } else if (b.upgrade && Number.isInteger(b.level) && b.level! >= 1 && Number.isInteger(b.upgrade.toLevel) && b.upgrade.toLevel! > max) {
+        // F7 (2026-11-24): an upgrade to a level this build does not define (a lowered cap): the building keeps
+        // its level and the impossible timer goes (`null`, as a finished upgrade leaves it).
+        (b as { upgrade?: unknown }).upgrade = null;
+        fixed.push(`upgrade of ${b.type}`);
       }
     }
     if (kept.length !== v.buildings.length) v.buildings = kept;
@@ -339,6 +344,62 @@ function repairFields(v: Record<string, unknown> | undefined, data: GameData): v
       if (!data.troops[t] || !Number.isInteger(n) || (n as number) < 0) {
         delete army[t];
         fixed.push(`army ${t}`);
+      }
+    }
+  }
+  // F7 (2026-11-24): warriors this build does not know (a removed or renamed one) are dropped from training, the
+  // Lodge, army presets and research, and a research level above a warrior's defined levels is lowered to the top
+  // one. Everything else in those lists is kept as it was.
+  const known = (t: unknown): t is string => typeof t === 'string' && Object.hasOwn(data.troops, t);
+  if (Array.isArray(v.training)) {
+    const kept = (v.training as { troop?: unknown }[]).filter((q) => !q || typeof q !== 'object' || known(q.troop));
+    if (kept.length !== v.training.length) {
+      fixed.push(`training of unknown warriors (${v.training.length - kept.length})`);
+      v.training = kept;
+    }
+  }
+  if (Array.isArray(v.armyPresets)) {
+    for (const p of v.armyPresets as { army?: Record<string, unknown> }[]) {
+      if (!p || !p.army || typeof p.army !== 'object') continue;
+      for (const [t, n] of Object.entries(p.army)) {
+        if (!known(t) || !Number.isInteger(n) || (n as number) < 0) {
+          delete p.army[t];
+          fixed.push(`preset ${t}`);
+        }
+      }
+    }
+  }
+  const research = v.research as { levels?: Record<string, unknown>; active?: { troop?: unknown }[] } | undefined;
+  if (research && typeof research === 'object') {
+    if (research.levels && typeof research.levels === 'object') {
+      for (const [t, n] of Object.entries(research.levels)) {
+        if (!known(t)) {
+          delete research.levels[t];
+          fixed.push(`research ${t}`);
+        } else if (Number.isInteger(n) && (n as number) > data.troops[t].levels.length) {
+          research.levels[t] = data.troops[t].levels.length;
+          fixed.push(`research level ${t}`);
+        }
+      }
+    }
+    if (Array.isArray(research.active)) {
+      const kept = research.active.filter((a) => !a || typeof a !== 'object' || known(a.troop));
+      if (kept.length !== research.active.length) {
+        fixed.push('research timer of an unknown warrior');
+        research.active = kept;
+      }
+    }
+  }
+  const grove = v.grove as { reinforcements?: Record<string, unknown>; reinforcementLevels?: Record<string, unknown> } | undefined;
+  if (grove && typeof grove === 'object') {
+    for (const field of ['reinforcements', 'reinforcementLevels'] as const) {
+      const lodge = grove[field];
+      if (!lodge || typeof lodge !== 'object') continue;
+      for (const t of Object.keys(lodge)) {
+        if (!known(t)) {
+          delete lodge[t];
+          fixed.push(`lodge ${t}`);
+        }
       }
     }
   }
