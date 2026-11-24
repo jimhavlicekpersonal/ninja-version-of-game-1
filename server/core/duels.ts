@@ -17,7 +17,7 @@ import type { BaseLayout } from '../../src/gameplay/sim/battle/types';
 import type { DuelChallenge, DuelTally, Player, Ticket } from '../repo';
 import type { ClientInfo } from '../rules/registry';
 import { HOUR, type ServerContext } from './context';
-import { battleSeed, capBaseLoot, checkArmy, engineForClient, engineForTicket, normalizeBase, resimulate, takeTicket, TICKET_TTL_MS, type BattleReport } from './pvp';
+import { battleSeed, burnAfterFailures, capBaseLoot, checkArmy, engineForClient, engineForTicket, normalizeBase, requireArmyOnServer, resimulate, takeTicket, TICKET_TTL_MS, type BattleReport } from './pvp';
 import { fail, detailError, requireFeature } from './errors';
 import { requireHeldVillage } from './village';
 
@@ -117,7 +117,13 @@ export async function reportDuel(ctx: ServerContext, me: Player, sub: BattleRepo
   const { army, levels, reinforcements, hero } = checkArmy(sub, me, engine.data);
   const deployments = Array.isArray(sub.deployments) ? sub.deployments.slice(0, 2000) : [];
   const setup = { seed, base: ticket.base, army, levels, infiltration: true, ...(Object.keys(reinforcements).length ? { reinforcements } : {}), ...(hero ? { hero } : {}) };
-  const { result } = await resimulate(ctx, 'duel', setup, deployments, sub, engine);
+  // Security fixes 2026-11-24 (SECR-03): as every other report kind, a server-held village's warriors are checked
+  // before re-simulating, and a refused report counts against the ticket (MAX_TICKET_FAILURES closes it).
+  await requireArmyOnServer(ctx, me, army);
+  const { result } = await resimulate(ctx, 'duel', setup, deployments, sub, engine).catch(async (e) => {
+    await burnAfterFailures(ctx, ticket, e);
+    throw e;
+  });
   const defenderId = ticket.defenderId!;
   const t = ctx.now();
   const won = result.stars >= 1;

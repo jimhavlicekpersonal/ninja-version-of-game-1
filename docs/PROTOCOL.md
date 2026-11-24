@@ -457,6 +457,7 @@ Closure record: `docs/store/WORLDWIDE_AUDIT.md` "2026-11-20 security audit". Tes
 ## Security fixes 2026-11-24 (behaviour only, no shape change, no protocol bump)
 
 - **Statistics per id per day (SECR-01).** `POST /v1/stats` keeps at most `STATS_DAILY_CAP` (2,500, `src/backend/net/stats.ts`) events from one statistics id per UTC day of arrival (`stats_quota`, migration 0048; atomic per id and day). Events past it are answered with the smaller `accepted` count (still `200`) and dropped, so the game does not send them again; `tk_stats_capped_total`. A real day of play sends a few hundred; a device holds at most 2,000 unsent. `DELETE /v1/stats` forgets the id's counts with its events. The hourly rollup and `GET /admin/v1/stats/battles` no longer copy or spread one id's events (the Battles report is counted by the store).
+- **Duel reports (SECR-03).** `POST /v1/duels` follows the other report kinds: a server-held village reporting warriors it does not have gets `400 bad_request` (`pvp.fewer_troops`) before any re-simulation, and a refused report counts against the ticket, so after `MAX_TICKET_FAILURES` (3) the ticket answers `409 conflict` (`battle.already_reported`). Existing codes.
 
 ## Server-owned village (beta)
 
