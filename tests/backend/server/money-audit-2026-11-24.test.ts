@@ -5,6 +5,7 @@
  * - MONEY-03: Sandbox redeems read the per-buyer test credit and the server-wide daily cap outside the transaction
  *   that writes the row, so parallel redeems all passed the same headroom. Memory, and Postgres with
  *   TEST_DATABASE_URL (where the advisory locks matter).
+ * - MONEY-04: `ageGroupFor` took the server-held village's "adult" over the game's stated "under 18".
  */
 import { createHash, sign as cryptoSign, X509Certificate } from 'node:crypto';
 import { readFileSync } from 'node:fs';
@@ -54,6 +55,22 @@ describe('MONEY-02: an offer is not sold after the player says they are under 18
     await expect(p.purchaseIntent({ store: 'apple', productId: 'offer_starter', under18: true })).rejects.toMatchObject({ code: 'purchase_refused' });
     // A Jade pack within the cap still sells.
     await expect(p.purchaseIntent({ store: 'apple', productId: 'moonstones_0', under18: true })).resolves.toBeTruthy();
+  });
+});
+
+describe('MONEY-04: a stated under 18 is never outvoted by the village', () => {
+  it('a server village that says adult, with an intent that says under 18, is held to the minor cap', async () => {
+    const { p } = await adultWithVillage();
+    expect(deserialize((await p.getVillage())!.file, data).profile.under18).toBe(false);
+    // $99.99 is above the $50 monthly cap.
+    await expect(p.purchaseIntent({ store: 'apple', productId: 'moonstones_6', under18: true })).rejects.toMatchObject({ code: 'purchase_refused', parts: [expect.objectContaining({ key: 'purchase.minor_cap' })] });
+    // And the answer is kept: a later "adult" does not lift it.
+    await expect(p.purchaseIntent({ store: 'apple', productId: 'moonstones_6', under18: false })).rejects.toMatchObject({ code: 'purchase_refused', parts: [expect.objectContaining({ key: 'purchase.minor_cap' })] });
+  });
+
+  it('an adult village with an adult answer is unchanged', async () => {
+    const { p } = await adultWithVillage();
+    await expect(p.purchaseIntent({ store: 'apple', productId: 'moonstones_6', under18: false })).resolves.toBeTruthy();
   });
 });
 

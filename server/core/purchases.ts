@@ -75,7 +75,11 @@ export async function ageGroupFor(repo: Repo, ctx: ServerContext, playerId: stri
   const kept = await repo.getAgeGroup(playerId);
   if (kept?.under18) return true;
   const held = await serverVillageProfile(repo, ctx, playerId);
-  const said = held && held.under18 !== null ? held.under18 : typeof stated === 'boolean' ? stated : null;
+  // Money audit 2026-11-24 (MONEY-04): age bands only get stricter, so under 18 from either the server-held village
+  // or the game's own answer wins; the village's "adult" no longer outvoted a stated "under 18".
+  const fromVillage = held ? held.under18 : null;
+  const fromGame = typeof stated === 'boolean' ? stated : null;
+  const said = fromVillage === true || fromGame === true ? true : (fromVillage ?? fromGame);
   if (said === true || (said === false && !kept)) await repo.setAgeGroup(playerId, said, ctx.now());
   if (said === null) return kept ? kept.under18 : null;
   return said;
