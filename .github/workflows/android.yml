@@ -31,6 +31,7 @@ on:
         options: [staging, production]
         default: staging
 
+concurrency:
   group: android-${{ github.ref }}
   cancel-in-progress: true
 
@@ -158,6 +159,11 @@ jobs:
       # Beast Mode OPS-01: a save, rules, protocol or migration change needs a greater version.
       - if: steps.key.outputs.ready == 'true'
         run: node tools/release/check-version.mjs
+      # A store build never comes from a commit whose checks fail (deploy.yml's tests are not a dependency here).
+      - if: steps.key.outputs.ready == 'true'
+        run: npm run lint
+      - if: steps.key.outputs.ready == 'true'
+        run: npm test
       - name: Server first (roadmap step 74)
         if: steps.key.outputs.ready == 'true'
         run: node tools/release/check-server-rules.mjs
@@ -196,6 +202,10 @@ jobs:
           VITE_APPLE_SERVICES_ID: ${{ vars.VITE_APPLE_SERVICES_ID }}
           # P7-11 (PUB-14): local-day statistics; the owner's switch (repository variable VITE_STATS_TZ=1), off by default.
           VITE_STATS_TZ: ${{ vars.VITE_STATS_TZ || '0' }}
+      # Beast Mode STB-10 on the store build too.
+      - name: Bundle size budget
+        if: steps.key.outputs.ready == 'true'
+        run: node tools/perf/bundle-budget.mjs
       # Beast Mode OPS-02/STB-02: source maps go privately to Sentry (when configured) and never ship.
       - name: Source maps (private upload, then removed)
         if: steps.key.outputs.ready == 'true'

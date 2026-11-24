@@ -29,20 +29,58 @@ export function rulesAtCommit(commit) {
   return [...new Set([live, ...dirs])].filter((n) => Number.isFinite(n));
 }
 
+/**
+ * What to compare against when the live site or server could not be read (rollbacks happen during outages).
+ * Web: refused unless the operator says so (`ROLLBACK_ALLOW_UNVERIFIED=1`); a 404 for version.json is not this case
+ * (a live build from before version.json existed). Server: the rules of the commit the workflow runs on, which is at
+ * least as new as the live server, so an image missing any of them is refused.
+ */
+export function unreadableLive(kind, allowUnverified, headRules) {
+  if (kind === 'server') return { liveRules: headRules, problem: null };
+  return allowUnverified ? { problem: null } : { problem: 'the live version.json could not be read, so the save and rules versions cannot be compared (set allow_unverified to roll back anyway)' };
+}
+
 if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
   const [kind, target, url] = process.argv.slice(2);
+  const allowUnverified = process.env.ROLLBACK_ALLOW_UNVERIFIED === '1' || process.env.ROLLBACK_ALLOW_UNVERIFIED === 'true';
+  const NOT_FOUND = Symbol('not found');
   const get = async (u) => {
     const res = await fetch(u, { cache: 'no-store', signal: AbortSignal.timeout(15_000) });
+    if (res.status === 404) return NOT_FOUND;
     if (!res.ok) throw new Error(`${u}: HTTP ${res.status}`);
     return res.json();
   };
+  const warn = (what, e) => console.warn(`::warning::Rollback check could not read the live ${what}: ${e instanceof Error ? e.message : (e ?? 'no URL given')}`);
   let problem;
   if (kind === 'web') {
-    const live = url ? await get(new URL('version.json', url.endsWith('/') ? url : `${url}/`).href).catch(() => null) : null;
-    problem = webRollbackProblem(live, JSON.parse(readFileSync(target, 'utf8')));
+    let live = null;
+    let unreadable = !url;
+    if (url) {
+      try {
+        const got = await get(new URL('version.json', url.endsWith('/') ? url : `${url}/`).href);
+        live = got === NOT_FOUND ? null : got;
+      } catch (e) {
+        unreadable = true;
+        warn('version.json', e);
+      }
+    } else warn('version.json');
+    problem = unreadable ? unreadableLive('web', allowUnverified).problem : null;
+    problem ??= webRollbackProblem(live, JSON.parse(readFileSync(target, 'utf8')));
   } else if (kind === 'server') {
-    const hello = url ? await get(`${url.replace(/\/+$/, '')}/v1/hello`).catch(() => null) : null;
-    problem = serverRollbackProblem(hello?.supportedRules ?? [], rulesAtCommit(target));
+    let liveRules = null;
+    if (url) {
+      try {
+        const hello = await get(`${url.replace(/\/+$/, '')}/v1/hello`);
+        if (hello !== NOT_FOUND && Array.isArray(hello?.supportedRules)) liveRules = hello.supportedRules;
+      } catch (e) {
+        warn('server', e);
+      }
+    } else warn('server');
+    if (!liveRules) {
+      liveRules = unreadableLive('server', allowUnverified, rulesAtCommit('HEAD')).liveRules;
+      console.warn(`::warning::Comparing against this workflow's commit instead (rules ${liveRules.join(', ')}).`);
+    }
+    problem = serverRollbackProblem(liveRules, rulesAtCommit(target));
   } else problem = 'usage: rollback-check.mjs web <version.json> <GAME_URL> | server <commit> <SERVER_URL>';
   if (problem) {
     console.error(`::error::Rollback refused: ${problem}`);

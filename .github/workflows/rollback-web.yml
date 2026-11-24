@@ -13,6 +13,10 @@ on:
         description: 'Run id of the earlier Deploy run whose build goes back live'
         required: true
         type: string
+      allow_unverified:
+        description: 'Roll back even when the live version.json cannot be read (the save/rules comparison is skipped)'
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -45,6 +49,7 @@ jobs:
       - name: Refuse a build that would move saves backwards
         env:
           GH_TOKEN: ${{ github.token }}
+          ROLLBACK_ALLOW_UNVERIFIED: ${{ github.event.inputs.allow_unverified }}
         run: |
           LIVE_URL=$(gh api "repos/$GITHUB_REPOSITORY/pages" --jq .html_url)
           node tools/release/rollback-check.mjs web target/version.json "$LIVE_URL"

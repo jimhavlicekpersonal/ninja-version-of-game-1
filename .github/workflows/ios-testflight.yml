@@ -37,6 +37,9 @@ jobs:
       - run: npm ci
       # Beast Mode OPS-01: a save, rules, protocol or migration change needs a greater version.
       - run: node tools/release/check-version.mjs
+      # A TestFlight build never comes from a commit whose checks fail.
+      - run: npm run lint
+      - run: npm test
       # PUB-05 (P7-02): the bundle id is the owner's choice; refuse the legacy one unless allowed on purpose.
       # PUB-04 (P7-01): a store build needs the publisher facts, dated terms and the app id; the preflight lists
       # everything still open and stops here on the blocking ones (docs/store/OWNER_CHECKLIST.md).
@@ -77,6 +80,9 @@ jobs:
           VITE_APPLE_SERVICES_ID: ${{ vars.VITE_APPLE_SERVICES_ID }}
           # P7-11 (PUB-14): local-day statistics; the owner's switch (repository variable VITE_STATS_TZ=1), off by default.
           VITE_STATS_TZ: ${{ vars.VITE_STATS_TZ || '0' }}
+      # Beast Mode STB-10 on the iPhone build too.
+      - name: Bundle size budget
+        run: node tools/perf/bundle-budget.mjs
       # Beast Mode OPS-02/STB-02: source maps go privately to Sentry (when configured) and never ship.
       - name: Source maps (private upload, then removed)
         run: |
@@ -105,9 +111,11 @@ jobs:
           # P7-06: below the required SDK the upload would be refused, so the job stops here instead of warning.
           if [ "${sdk%%.*}" -lt 26 ]; then echo "::error::iOS SDK $sdk is older than 26: App Store Connect refuses this upload. Use a runner image with Xcode 26."; exit 1; fi
       - name: Install the App Store Connect API key
+        env:
+          ASC_KEY_P8_BASE64: ${{ secrets.ASC_KEY_P8_BASE64 }}
         run: |
           mkdir -p "$RUNNER_TEMP/keys"
-          echo "${{ secrets.ASC_KEY_P8_BASE64 }}" | base64 --decode > "$RUNNER_TEMP/keys/AuthKey_${ASC_KEY_ID}.p8"
+          printf '%s' "$ASC_KEY_P8_BASE64" | base64 --decode > "$RUNNER_TEMP/keys/AuthKey_${ASC_KEY_ID}.p8"
       - name: Archive
         run: |
           # The version players and App Store Connect see comes from package.json, like Android's versionName

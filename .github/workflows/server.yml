@@ -108,7 +108,9 @@ jobs:
       - id: tag
         run: echo "tag=${GITHUB_SHA::12}" >> "$GITHUB_OUTPUT"
       - name: Log in to GitHub Container Registry
-        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+        env:
+          REGISTRY_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: printf '%s' "$REGISTRY_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
       - name: Build and push
         run: |
           IMAGE_LC=$(echo "$IMAGE" | tr '[:upper:]' '[:lower:]')
@@ -131,7 +133,13 @@ jobs:
       - run: npm ci
       - name: Rollback check (the target image must check every battle-rules version the live server does)
         if: github.event.inputs.image_tag != ''
-        run: node tools/release/rollback-check.mjs server "${{ github.event.inputs.image_tag }}" "${{ vars.SERVER_URL }}"
+        env:
+          IMAGE_TAG: ${{ github.event.inputs.image_tag }}
+          LIVE_SERVER_URL: ${{ vars.SERVER_URL }}
+        # The input reaches the shell only through env, and only as a 12-character commit (the image tags' form).
+        run: |
+          if ! printf '%s' "$IMAGE_TAG" | grep -Eqx '[0-9a-f]{12}'; then echo "::error::image_tag must be a 12-character commit"; exit 1; fi
+          node tools/release/rollback-check.mjs server "$IMAGE_TAG" "$LIVE_SERVER_URL"
       - name: Deploy
         env:
           DEPLOY_HOOK: ${{ secrets.DEPLOY_HOOK }}
@@ -169,7 +177,13 @@ jobs:
           node-version-file: .node-version
       - name: Rollback check (the target image must check every battle-rules version the live server does)
         if: github.event.inputs.image_tag != ''
-        run: node tools/release/rollback-check.mjs server "${{ github.event.inputs.image_tag }}" "${{ vars.SERVER_URL }}"
+        env:
+          IMAGE_TAG: ${{ github.event.inputs.image_tag }}
+          LIVE_SERVER_URL: ${{ vars.SERVER_URL }}
+        # The input reaches the shell only through env, and only as a 12-character commit (the image tags' form).
+        run: |
+          if ! printf '%s' "$IMAGE_TAG" | grep -Eqx '[0-9a-f]{12}'; then echo "::error::image_tag must be a 12-character commit"; exit 1; fi
+          node tools/release/rollback-check.mjs server "$IMAGE_TAG" "$LIVE_SERVER_URL"
       - name: Deploy
         env:
           DEPLOY_HOOK: ${{ secrets.DEPLOY_HOOK }}

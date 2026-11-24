@@ -166,6 +166,12 @@ jobs:
     if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
     needs: [build, server]
     runs-on: ubuntu-latest
+    # One queue with rollback-web.yml (actions/deploy-pages guidance): a push to main never cancels a rollback and the
+    # two never publish at the same time. A deploy queued behind a rollback still publishes after it, so pushes to
+    # main stop during an incident (docs/ops/RUNBOOK.md).
+    concurrency:
+      group: pages
+      cancel-in-progress: false
     permissions:
       contents: read
       pages: write
