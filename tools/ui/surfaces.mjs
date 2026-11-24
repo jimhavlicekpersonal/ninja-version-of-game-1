@@ -2,10 +2,12 @@
 // four device sizes and in the given languages, with touch, and reports what a player cannot reach.
 //
 // Usage: node tools/ui/surfaces.mjs [--url=http://localhost:5173/] [--langs=en,ar,de] [--sizes=320x568,360x640,390x844,844x390]
-//                                   [--shots=docs/audit/understand-2026-11-16/phase6/shots] [--only=army,store]
+//                                   [--shots=docs/audit/understand-2026-11-16/phase6/shots] [--only=army,store] [--text=1.3]
 // Start the dev server first (`npm run dev`). Needs Playwright with Chromium (a development tool, never shipped).
 // Checks per surface: every listed target's centre is inside the viewport and a hit test there lands on it (not on
-// the canvas or a covering element); text boxes that are cut (scrollWidth > clientWidth with an ellipsis) are listed.
+// the canvas or a covering element); text boxes that are cut (scrollWidth > clientWidth with an ellipsis) are listed, and
+// so is every select whose chosen value does not fit inside it (UX-N3: German "Zoom speed" at 130 % text on 320 px was
+// squeezed to a bare chevron). --text sets the player's text size (Settings → Text size, e.g. 1.3).
 // Chromium emulation: an estimate of a phone, not a device certification.
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -19,6 +21,7 @@ const LANGS = arg('langs', 'en').split(',');
 const SIZES = arg('sizes', '320x568,360x640,390x844,844x390').split(',').map((s) => s.split('x').map(Number));
 const SHOTS = arg('shots', '');
 const ONLY = arg('only', '').split(',').filter(Boolean);
+const TEXT = arg('text', '');
 
 /** Surfaces: how to open each one from the village, and the elements a player must be able to tap there. */
 const SURFACES = [
@@ -28,6 +31,7 @@ const SURFACES = [
   { id: 'store', open: (tk) => tk.hud.openShortcut('store'), targets: ['.modal .shop-tabs button'] },
   { id: 'daily', open: (tk) => tk.hud.openShortcut('daily'), targets: ['.daily > .actions .btn'] },
   { id: 'news', open: (tk) => tk.hud.openShortcut('news'), targets: ['.modal .modal-close, .modal button[aria-label]'] },
+  { id: 'settings', open: (tk) => tk.hud.openSettings(), targets: ['.modal .modal-head .icon-btn'] },
   {
     id: 'keep-sheet',
     open: (tk) => {
@@ -89,9 +93,10 @@ if (SHOTS) mkdirSync(SHOTS, { recursive: true });
 for (const lang of LANGS) {
   for (const [w, hgt] of SIZES) {
     const ctx = await browser.newContext({ viewport: { width: w, height: hgt }, deviceScaleFactor: 1, isMobile: true, hasTouch: true, locale: lang });
-    await ctx.addInitScript((l) => {
+    await ctx.addInitScript(([l, text]) => {
       try {
         localStorage.setItem('tk.lang', l);
+        if (text) localStorage.setItem('tk.textScale', text);
         // One-time questions answered, so they do not cover the panels under test.
         localStorage.setItem('tk.ageAskedAfterTutorial', JSON.stringify({ count: 3, last: Date.now() }));
         localStorage.setItem('tk.notifyAsked', '1');
@@ -100,7 +105,7 @@ for (const lang of LANGS) {
       } catch {
         /* storage blocked */
       }
-    }, lang);
+    }, [lang, TEXT]);
     const page = await ctx.newPage();
     const errors = [];
     page.on('pageerror', (e) => errors.push(String(e)));
@@ -264,6 +269,19 @@ for (const lang of LANGS) {
         for (const el of scope.querySelectorAll('b, span, button, .chip, h2, h3, p')) {
           const cs = getComputedStyle(el);
           if (el.offsetParent !== null && cs.textOverflow === 'ellipsis' && el.scrollWidth > el.clientWidth + 1) out.push({ sel: 'cut text', label: el.textContent.trim().slice(0, 40), problem: `${el.clientWidth}/${el.scrollWidth}px` });
+        }
+        // A select must show its chosen value: the value's width fits inside the box (minus the chevron's padding).
+        for (const el of scope.querySelectorAll('select')) {
+          if (el.offsetParent === null) continue;
+          const cs = getComputedStyle(el);
+          const probe = document.createElement('span');
+          probe.style.cssText = `font:${cs.font};white-space:pre;position:absolute;visibility:hidden`;
+          probe.textContent = el.selectedOptions[0]?.textContent ?? '';
+          document.body.append(probe);
+          const need = Math.ceil(probe.getBoundingClientRect().width);
+          probe.remove();
+          const room = Math.floor(el.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight));
+          if (need > room + 1 || el.scrollWidth > el.clientWidth + 1) out.push({ sel: 'cut select', label: el.dataset.id ?? el.getAttribute('aria-label') ?? '', problem: `"${probe.textContent}" ${need}px in ${room}px` });
         }
         return out;
       }, s.targets);

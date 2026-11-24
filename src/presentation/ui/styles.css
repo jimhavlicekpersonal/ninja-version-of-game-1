@@ -372,6 +372,12 @@ html.q-low .modal-backdrop { backdrop-filter: none; -webkit-backdrop-filter: non
 .settings textarea.code { font: 400 max(16px, 1em)/1.3 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; word-break: break-all; }
 .toggle { display: flex; align-items: center; gap: 8px; font-weight: 700; margin: 6px 0; }
 .toggle input { width: 22px; height: 22px; accent-color: var(--leaf-dark); }
+/* UX-N3: a select beside its label keeps room for its value. A long one-word label (German "Zoomgeschwindigkeit" at
+   130 % text on 320 px) used to squeeze it to a bare chevron: now the select keeps at least its value's width and,
+   when label and value do not fit on one line, moves under the label at full width; the label may hyphenate. */
+.toggle { overflow-wrap: anywhere; -webkit-hyphens: auto; hyphens: auto; }
+.toggle:has(> select) { flex-wrap: wrap; }
+.toggle > select { flex: 1 0 auto; width: auto; min-width: 6.5em; max-width: 100%; }
 .events { max-height: 220px; overflow: auto; font-size: 0.75rem; background: #fff; border-radius: 12px; padding: 6px 8px; }
 .event { padding: 3px 0; border-bottom: 1px dashed #eadcc2; word-break: break-all; }
 .event code { font-size: 0.75rem; color: var(--ink-soft); }
