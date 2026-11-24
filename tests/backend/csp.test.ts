@@ -25,6 +25,17 @@ describe('SEC-10: Content-Security-Policy', () => {
     expect(csp).not.toContain('key@');
   });
 
+  it('a server-choice test build may reach a typed server address; a release build may not', () => {
+    const connect = (env: Record<string, string>) => /connect-src ([^;]*)/.exec(cspContent('', env))![1].split(' ');
+    expect(connect({ VITE_ALLOW_SERVER_CHOICE: '1' })).toEqual(expect.arrayContaining(['https:', 'http:']));
+    expect(connect({})).not.toContain('https:');
+    expect(connect({ VITE_ALLOW_SERVER_CHOICE: '0' })).not.toContain('http:');
+  });
+
+  it('the build reads the same env as the bundle (.env files too), not process.env alone', () => {
+    expect(read('vite.config.ts')).toMatch(/configResolved\(config\) \{\s*env = \{ \.\.\.process\.env, \.\.\.config\.env \}/);
+  });
+
   it('the build adds it, and no inline event handler remains in index.html or the build plugins', () => {
     const config = read('vite.config.ts');
     expect(config).toMatch(/cspMeta\(\)\]/);

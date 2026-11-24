@@ -121,14 +121,20 @@ const CSS_SWITCH = "(function(l){function a(){l.media='all'}if(l.sheet)a();else{
  * from a meta tag.
  */
 function cspMeta(): Plugin {
+  // The env the bundle sees (import.meta.env: .env files and the shell), so a VITE_SERVER_URL set in .env.production
+  // reaches the policy as well as the game.
+  let env: Record<string, string | undefined> = process.env;
   return {
     name: 'tk-csp',
     apply: 'build',
     enforce: 'post',
+    configResolved(config) {
+      env = { ...process.env, ...config.env };
+    },
     transformIndexHtml: {
       order: 'post',
       handler(html) {
-        const content = cspContent(html, process.env);
+        const content = cspContent(html, env);
         return html.replace(/<head>/, `<head>\n    <meta http-equiv="Content-Security-Policy" content="${content}" />`);
       },
     },

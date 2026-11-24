@@ -19,7 +19,10 @@ export function cspContent(html, env) {
     }
   };
   const sentry = origin(env.VITE_SENTRY_DSN ? env.VITE_SENTRY_DSN.replace(/\/\/[^@/]*@/, '//') : undefined);
-  const connect = ["'self'", origin(env.VITE_SERVER_URL), sentry, 'https://oauth2.googleapis.com', 'https://accounts.google.com', 'https://appleid.apple.com'].filter(Boolean);
+  // A VITE_ALLOW_SERVER_CHOICE=1 test build lets testers type a server address (main.ts, SEC-03): any https server,
+  // or http on a LAN. Store and web release builds never set it, so their policy stays the fixed list.
+  const chosen = env.VITE_ALLOW_SERVER_CHOICE === '1' ? ['https:', 'http:'] : [];
+  const connect = ["'self'", origin(env.VITE_SERVER_URL), ...chosen, sentry, 'https://oauth2.googleapis.com', 'https://accounts.google.com', 'https://appleid.apple.com'].filter(Boolean);
   return [
     "default-src 'self'",
     `script-src 'self' ${[...new Set(hashes)].join(' ')} https://accounts.google.com/gsi/client https://appleid.cdn-apple.com`,
