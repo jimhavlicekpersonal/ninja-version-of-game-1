@@ -298,6 +298,9 @@ export class PgPlayers extends PgBase implements PlayerStore {
       await q('update purchases set player_id = $2 where player_id = $1', [id, D.id]);
       await q('delete from ledger where player_id = $1', [id]);
       await q('delete from command_log where player_id = $1', [id]);
+      // Security fixes 2026-11-24: the staff log keeps its rows (accountability), but a rename's old and new names go
+      // (deletion removes the player's name, public/privacy.html).
+      await q(`update staff_actions set detail = detail || jsonb_build_object('from', $2::text, 'to', $2::text) where player_id = $1 and action = 'rename'`, [id, D.name]);
       await q('delete from players where id = $1', [id]);
     });
   }

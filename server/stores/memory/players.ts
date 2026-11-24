@@ -88,6 +88,8 @@ export class MemoryPlayers extends MemoryBase implements PlayerStore {
     // (it names only the inviter), so deleting recruits does not reopen the monthly cap; the inviter's own
     // rows go with the inviter. A recruit's own row stays when only the inviter is deleted (marked deleted),
     // so the recruit cannot enter a second code and be paid twice.
+    // Security fixes 2026-11-24: a rename's names leave the staff log; the row stays.
+    for (const a of this.staffRows) if (a.playerId === id && a.action === 'rename') a.detail = { ...a.detail, from: D.name, to: D.name };
     this.referralRows = this.referralRows.filter((x) => x.recruitId !== id);
     for (const r of this.referralRows) if (r.inviterId === id) r.inviterId = D.id;
     this.referralRewardRows = this.referralRewardRows.filter((x) => x.inviterId !== id);

@@ -29,5 +29,22 @@ for (const [label, makeRepo] of repoFactories) {
       const relay = (await w.repo.getRelay('war1', 'b', 0))!;
       expect([relay.lastBy, relay.holder]).toEqual([DELETED_PLAYER.id, null]);
     });
+
+    it('security fixes 2026-11-24: the staff log keeps a rename of a deleted player without either name', async () => {
+      const w = world({ repo: await makeRepo() });
+      const d = await w.player('Rude Name', baseAt(1));
+      const other = await w.player('Other One', baseAt(1, 9));
+      await w.repo.addStaffAction({ id: 's1', at: w.now(), actor: 'Sam', action: 'rename', playerId: d.id, detail: { from: 'Rude Name', to: 'Calm Name', reason: 'offensive' } });
+      await w.repo.addStaffAction({ id: 's2', at: w.now() + 1, actor: 'Sam', action: 'mute', playerId: d.id, detail: { hours: 1 } });
+      await w.repo.addStaffAction({ id: 's3', at: w.now() + 2, actor: 'Sam', action: 'rename', playerId: other.id, detail: { from: 'Other One', to: 'Other Two', reason: 'x' } });
+      await w.repo.deletePlayer(d.id, 'Calm Name', w.now());
+      const rows = await w.repo.staffActions(d.id, 10);
+      expect(rows.map((r) => r.action).sort()).toEqual(['mute', 'rename']); // the audit rows stay
+      const rename = rows.find((r) => r.action === 'rename')!;
+      expect(rename.detail).toEqual({ from: DELETED_PLAYER.name, to: DELETED_PLAYER.name, reason: 'offensive' });
+      expect(JSON.stringify(rows)).not.toMatch(/Rude Name|Calm Name/);
+      // Another player's rename is untouched.
+      expect((await w.repo.staffActions(other.id, 10))[0].detail).toMatchObject({ from: 'Other One', to: 'Other Two' });
+    });
   });
 }
