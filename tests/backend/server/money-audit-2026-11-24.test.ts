@@ -2,6 +2,9 @@
  * Money audit 2026-11-24, server side.
  * - MONEY-02: an offer shown to an adult stayed buyable on the server after the player said they are under 18
  *   (`purchaseIntent` ran `canPurchase`, which did not check `offersAllowed`).
+ * - MONEY-03: Sandbox redeems read the per-buyer test credit and the server-wide daily cap outside the transaction
+ *   that writes the row, so parallel redeems all passed the same headroom. Memory, and Postgres with
+ *   TEST_DATABASE_URL (where the advisory locks matter).
  */
 import { createHash, sign as cryptoSign, X509Certificate } from 'node:crypto';
 import { readFileSync } from 'node:fs';
@@ -11,6 +14,7 @@ import { AppleVerifier } from '../../../server/payments/apple';
 import { defaultData as data } from '../../../src/gameplay/sim/data';
 import { deserialize, serialize } from '../../../src/gameplay/sim/save';
 import { world } from './harness';
+import { repoFactories } from './pg';
 
 const dir = resolve(__dirname, '../fixtures/appstore');
 const pem = (f: string) => readFileSync(resolve(dir, f), 'utf8');
@@ -51,4 +55,30 @@ describe('MONEY-02: an offer is not sold after the player says they are under 18
     // A Jade pack within the cap still sells.
     await expect(p.purchaseIntent({ store: 'apple', productId: 'moonstones_0', under18: true })).resolves.toBeTruthy();
   });
+});
+
+describe('MONEY-03: parallel Sandbox redeems keep the test-credit caps', () => {
+  for (const [name, makeRepo] of repoFactories) {
+    it(`six parallel jade_bag redeems against a $10 per-buyer cap credit exactly two (${name})`, async () => {
+      const w = world({ repo: await makeRepo(), shared: { payments: { apple: apple(), google: null, testCreditCapUsd: 10 } } as never });
+      const p = await w.player('Ann');
+      const intents = [];
+      for (let i = 0; i < 6; i++) intents.push(await p.purchaseIntent({ store: 'apple', productId: 'moonstones_2', under18: false, device: 'device-money003' }));
+      const out = await Promise.allSettled(intents.map((i) => p.redeem({ store: 'apple', storeProductId: 'jade_bag', receipt: appleTxn('jade_bag', i.accountToken, 'Sandbox') })));
+      expect(out.filter((r) => r.status === 'fulfilled')).toHaveLength(2);
+      for (const r of out) if (r.status === 'rejected') expect(r.reason).toMatchObject({ code: 'purchase_refused' });
+      expect((await p.purchaseHistory()).purchases).toHaveLength(2);
+    });
+
+    it(`six players redeeming at once against a $10 server-wide daily cap credit exactly two (${name})`, async () => {
+      const w = world({ repo: await makeRepo(), shared: { payments: { apple: apple(), google: null, testCreditCapUsd: 100 }, policy: { sandboxDailyCapUsd: 10 } } as never });
+      const buyers = [];
+      for (let i = 0; i < 6; i++) {
+        const p = await w.player(`Buyer ${i}`);
+        buyers.push({ p, intent: await p.purchaseIntent({ store: 'apple', productId: 'moonstones_2', under18: false, device: `device-money3${i}0` }) });
+      }
+      const out = await Promise.allSettled(buyers.map(({ p, intent }) => p.redeem({ store: 'apple', storeProductId: 'jade_bag', receipt: appleTxn('jade_bag', intent.accountToken, 'Sandbox') })));
+      expect(out.filter((r) => r.status === 'fulfilled')).toHaveLength(2);
+    });
+  }
 });

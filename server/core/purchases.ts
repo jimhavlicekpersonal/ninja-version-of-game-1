@@ -81,6 +81,13 @@ export async function ageGroupFor(repo: Repo, ctx: ServerContext, playerId: stri
   return said;
 }
 
+/**
+ * MONEY-03: the purchase lock every test-credited (Sandbox, Xcode, TestFlight) redeem takes after its player's, so
+ * the per-buyer credit (several accounts on one device) and the server-wide daily cap are read and written one at
+ * a time. Not a player id (those are UUIDs). Taken last, after the player's lock, so no two locks wait on each other.
+ */
+const TEST_CREDIT_LOCK = 'test-credit';
+
 /** A device id as the game sends it (CommandBatch.device, PurchaseIntentRequest.device); anything else is ignored. */
 export function deviceId(v: unknown): string | null {
   return typeof v === 'string' && /^[A-Za-z0-9_-]{8,64}$/.test(v) ? v : null;
@@ -90,13 +97,13 @@ export function deviceId(v: unknown): string | null {
  * Backend A5/A24: the devices this player plays on, as the server knows them: the one asking now, the
  * devices that sent commands to their server-held village, and those that asked for their recent purchases.
  */
-async function devicesOf(ctx: ServerContext, me: Player, asking: string | null): Promise<string[]> {
+async function devicesOf(ctx: ServerContext, me: Player, asking: string | null, repo: Repo = ctx.repo): Promise<string[]> {
   const out = new Set<string>(asking ? [asking] : []);
-  const v = await ctx.repo.getVillage(me.id);
+  const v = await repo.getVillage(me.id);
   for (const d of Object.keys(v?.deviceSeqs ?? {})) out.add(d);
-  for (const p of await ctx.repo.purchasesOf(me.id, 100)) if (p.device) out.add(p.device);
+  for (const p of await repo.purchasesOf(me.id, 100)) if (p.device) out.add(p.device);
   // Third verification fixes 2026-11-14: the stable installation ids this player's game named.
-  for (const d of await ctx.repo.installsOf(me.id)) out.add(d);
+  for (const d of await repo.installsOf(me.id)) out.add(d);
   return [...out];
 }
 
@@ -397,24 +404,27 @@ export async function redeem(ctx: ServerContext, me: Player, body: { store?: unk
   // The intent this receipt names (its device: backend A5/A24).
   const named = c.accountToken ? await ctx.repo.getIntent(c.accountToken) : null;
   const device = named && named.playerId === me.id ? (named.device ?? null) : null;
-  // Re-audit: Sandbox/test purchases cost nothing; on production only a small total is credited per player
-  // (App Review needs purchases to work; public TestFlight must not mint Jade for the live ladder).
-  // Backend A24: per buyer (every free account on the same devices together), and per day for the whole server.
-  const testCap = ctx.payments.testCreditCapUsd;
-  if (testCap !== undefined && c.environment !== 'Production' && c.environment !== 'Promo') {
-    const testSpent = (await ctx.repo.linkedPurchases(me.id, await devicesOf(ctx, me, device), 0)).filter((p) => p.environment !== 'Production').reduce((sum, p) => sum + p.cents, 0);
-    const daily = ctx.policy.sandboxDailyCapUsd;
-    const today = daily !== null ? await ctx.repo.testCentsSince(now - (now % (24 * HOUR))) : 0;
-    if (testSpent + cents(product.usd) > cents(testCap) || (daily !== null && today + cents(product.usd) > cents(daily))) {
-      ctx.metrics.count('tk_refused_total', { reason: 'test_purchase_cap' });
-      throw fail(403, 'purchase_refused', 'purchase.test_limited');
-    }
-  }
   const result = await ctx.repo.transaction(async (tx) => {
     // Ledger audit A4: the under-18 cap is checked here too, not only at the intent. A receipt with no
     // intent of this player still open (no token: a modified game, a purchase started from the store page;
     // a token already used by an earlier purchase; a pruned one) reserved nothing, so it counts now.
     await tx.lockPurchases(me.id);
+    // Re-audit: Sandbox/test purchases cost nothing; on production only a small total is credited per player
+    // (App Review needs purchases to work; public TestFlight must not mint Jade for the live ladder).
+    // Backend A24: per buyer (every free account on the same devices together), and per day for the whole server.
+    // Money audit 2026-11-24 (MONEY-03): checked here, under the player's lock and one server-wide lock for test
+    // credit, in the transaction that writes the row: read before it, parallel redeems all passed the same headroom.
+    const testCap = ctx.payments.testCreditCapUsd;
+    if (testCap !== undefined && c.environment !== 'Production' && c.environment !== 'Promo') {
+      await tx.lockPurchases(TEST_CREDIT_LOCK);
+      const testSpent = (await tx.linkedPurchases(me.id, await devicesOf(ctx, me, device, tx), 0)).filter((p) => p.environment !== 'Production').reduce((sum, p) => sum + p.cents, 0);
+      const daily = ctx.policy.sandboxDailyCapUsd;
+      const today = daily !== null ? await tx.testCentsSince(now - (now % (24 * HOUR))) : 0;
+      if (testSpent + cents(product.usd) > cents(testCap) || (daily !== null && today + cents(product.usd) > cents(daily))) {
+        ctx.metrics.count('tk_refused_total', { reason: 'test_purchase_cap' });
+        throw fail(403, 'purchase_refused', 'purchase.test_limited');
+      }
+    }
     const intent = c.accountToken ? await tx.getIntent(c.accountToken) : null;
     if (intent && intent.playerId !== me.id) throw fail(409, 'conflict', 'purchase.other_player');
     // GLOBAL-005: an intent the game released (or whose hold ran out) reserves nothing any more, so the
