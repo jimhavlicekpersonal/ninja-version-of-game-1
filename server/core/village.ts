@@ -195,7 +195,13 @@ export async function applyCommands(ctx: ServerContext, me: Player, body: Partia
   // repeated conflicts, a busy pool), so the game's retry is not charged again (2026-11-14 verification fix).
   let charged = 0;
   const replayed = new Map<number, Command>();
+  // F1 (2026-11-24): a game that sends `holdBattles` gets a battle over the budget held back instead of refused:
+  // the batch stops there, that command and the ones after it stay unacknowledged, and `held` says when to retry.
+  // Without the flag (older games) a battle over the budget is refused and acknowledged, as before.
+  const holdBattles = body!.holdBattles === true;
+  let held: { seq: number; error: 'TOO_MANY_BATTLES'; retryAfterMs: number } | null = null;
   const plan = async (repo: Repo, row: VillageRow) => {
+    held = null;
     if (!device && row.deviceSeqs && Object.keys(row.deviceSeqs).length) {
       ctx.metrics.count('tk_refused_total', { reason: 'commands_without_device', rules: '?' });
       throw fail(426, 'version_mismatch', 'version.village_newer');
@@ -221,8 +227,20 @@ export async function applyCommands(ctx: ServerContext, me: Player, body: Partia
         else if (type === 'setProfile' && (c.command as { under18?: unknown }).under18 !== true && (await repo.getAgeGroup(me.id))?.under18) error = 'LOCKED'; // GLOBAL-006: under 18 stays (staff can reset)
         else if (battle && ++battles > MAX_BATTLES_PER_BATCH) error = 'TOO_MANY_BATTLES';
         else if (battle) {
-          if ((await limiterOf(ctx).hit('battleCommands', me.id, now)).ok) charged++;
-          else error = 'TOO_MANY_BATTLES';
+          const hit = await limiterOf(ctx).hit('battleCommands', me.id, now);
+          if (hit.ok) charged++;
+          else {
+            error = 'TOO_MANY_BATTLES';
+            if (holdBattles) {
+              held = { seq: c.seq, error: 'TOO_MANY_BATTLES', retryAfterMs: Math.max(0, hit.retryAfterMs) };
+              break;
+            }
+          }
+        }
+        if (error === 'TOO_MANY_BATTLES' && holdBattles) {
+          // The per-batch cap: the next batch may carry it at once.
+          held = { seq: c.seq, error: 'TOO_MANY_BATTLES', retryAfterMs: 0 };
+          break;
         }
         decided.set(c.seq, error);
       }
@@ -341,6 +359,7 @@ export async function applyCommands(ctx: ServerContext, me: Player, body: Partia
       if (out.applied && out.file) await refreshBase(tx, ctx, me, deserialize(out.file, ctx.data), at);
     }
     const res: CommandBatchResponse = { ackSeq: device ? deviceSeq : Math.max(seq, row.seq), revision: results.length ? row.revision + 1 : row.revision, stateHash, results };
+    if (held) res.held = held;
     if (typeof body!.stateHash !== 'string' || body!.stateHash !== stateHash) {
       res.corrections = { economy: out.economy, at };
       ctx.metrics.count('tk_village_corrections_total');

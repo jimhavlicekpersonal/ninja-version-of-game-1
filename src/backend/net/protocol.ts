@@ -981,6 +981,12 @@ export interface CommandBatch {
    * compared with the village's single counter, as before.
    */
   device?: string;
+  /**
+   * F1 (2026-11-24, additive): a battle command over the battle budget (`TOO_MANY_BATTLES`) is held back instead
+   * of refused: the batch stops at it, it and the commands after it are left out of `ackSeq`, and the answer's
+   * `held` says when to send it again. Older servers ignore it (and refuse the battle); older games leave it out.
+   */
+  holdBattles?: boolean;
 }
 
 export interface CommandOutcome {
@@ -1016,6 +1022,12 @@ export interface CommandBatchResponse {
    * it has queued since.
    */
   corrections?: { economy: Economy; at: number };
+  /**
+   * F1 (2026-11-24, additive, with `holdBattles` only): the first command the batch stopped at because the
+   * battle budget was spent. It and every later command were not processed (not in `results` or `ackSeq`); the
+   * game keeps them and sends them again after `retryAfterMs` (0: the per-batch cap, the next batch may carry it).
+   */
+  held?: { seq: number; error: 'TOO_MANY_BATTLES'; retryAfterMs: number };
 }
 
 export interface LedgerEntryView {

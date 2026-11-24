@@ -81,7 +81,7 @@ export function playerRoutes({ open, player, core }: RouteKit): void {
   player('POST', Routes.village, {}, async (me) => core.startVillage(me));
   player('POST', Routes.villageImport, { body: body(fields<{ file: object }>()({ file: object() })), rate: 'villageImport', bodyLimit: BODY_LIMITS.battle * 4 }, async (me, { body }) => core.importVillage(me, body));
   // Each command stays an object here: the core refuses a malformed one by itself and applies the rest.
-  player('POST', Routes.villageCommands, { body: body(fields<CommandBatch>()({ stateHash: string(), commands: array(object()), device: string() })), rate: 'commands', bodyLimit: BODY_LIMITS.battle }, async (me, { body }) => core.villageCommands(me, body));
+  player('POST', Routes.villageCommands, { body: body(fields<CommandBatch>()({ stateHash: string(), commands: array(object()), device: string(), holdBattles: boolean() })), rate: 'commands', bodyLimit: BODY_LIMITS.battle }, async (me, { body }) => core.villageCommands(me, body));
   player('GET', Routes.villageLedger, { query: query('limit') }, async (me, { query }) => core.ledger(me, query.limit));
 
   // Purchases (roadmap Phase 4): ask, redeem once, history; store notifications carry their own signatures.

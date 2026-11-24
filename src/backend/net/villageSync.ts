@@ -106,6 +106,9 @@ export function nextBatch<T extends { command: { type: string } }>(queue: readon
   const battle = head.findIndex((q) => BATTLE_COMMANDS.has(q.command.type as never));
   return battle < 0 ? head : head.slice(0, battle);
 }
+/** The longest a held battle waits before it is offered again (the server's window is a minute). */
+export const HOLD_MAX_MS = 2 * 60_000;
+
 /** Send at once when this many are waiting (otherwise every 15 s). */
 export const FLUSH_AT = 20;
 
@@ -125,6 +128,11 @@ export class VillageSync {
   storageProblem = false;
   /** Called after anything changes (Settings redraws). */
   onChange: () => void = () => undefined;
+  /**
+   * F1 (2026-11-24): the server held a battle back (the battle budget, `TOO_MANY_BATTLES`): it stays queued and is
+   * sent again from this time (`Date.now()`), never dropped and never counted as refused.
+   */
+  heldUntil = 0;
 
   constructor(
     private readonly game: SyncGame,
@@ -281,6 +289,7 @@ export class VillageSync {
   /** Send everything waiting, a batch at a time. Concurrent calls share one run. */
   flush(): Promise<void> {
     if (!this.stored.active || !this.stored.queue.length) return Promise.resolve();
+    if (Date.now() < this.heldUntil) return this.sending ?? Promise.resolve();
     if (!this.sending) {
       this.sending = this.run().finally(() => {
         this.sending = null;
@@ -296,7 +305,7 @@ export class VillageSync {
       const batch = nextBatch(this.stored.queue);
       let r;
       try {
-        r = await port.sendCommands({ stateHash: batch[batch.length - 1].hash, commands: batch.map(({ seq, t, command }) => ({ seq, t, command })), ...(this.stored.device ? { device: this.stored.device } : {}) });
+        r = await port.sendCommands({ stateHash: batch[batch.length - 1].hash, commands: batch.map(({ seq, t, command }) => ({ seq, t, command })), ...(this.stored.device ? { device: this.stored.device } : {}), holdBattles: true });
       } catch (e) {
         if (e instanceof ServerError && e.code === 'no_village') {
           // The server no longer keeps this village: it lives here again.
@@ -309,9 +318,15 @@ export class VillageSync {
         if (!x.ok) this.noteRefused(x, batch.find((q) => q.seq === x.seq));
         else if (typeof x.chestSalt === 'number') this.game.adoptChestSalt?.(x.chestSalt);
       }
+      const before = this.stored.queue.length;
       this.stored.queue = this.stored.queue.filter((q) => q.seq > r.ackSeq);
       if (r.corrections) this.adopt(r.corrections.economy);
       this.persist();
+      if (r.held) {
+        // F1: the battle budget is spent. The held command and those after it stay queued for the next try.
+        if (r.held.retryAfterMs > 0) this.heldUntil = Date.now() + Math.min(r.held.retryAfterMs, HOLD_MAX_MS);
+        if (r.held.retryAfterMs > 0 || this.stored.queue.length >= before) return;
+      }
     }
   }
 
