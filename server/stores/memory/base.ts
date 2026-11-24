@@ -70,6 +70,8 @@ export abstract class MemoryBase {
   statsSeq = 0;
   /** SECR-01 (migration 0048 stats_quota): events counted per `install|day`. */
   statsQuotaRows = new Map<string, number>();
+  /** SECR-02 (migration 0049 reversed_attacks): attack id → when staff reversed it. */
+  reversedAttackRows = new Map<string, number>();
   statsDailyRows: StatsDailyRow[] = [];
   protected jobLeases = new Map<string, { holder: string; until: number }>();
   refundRows = new Map<string, { at: number; why: string }>();

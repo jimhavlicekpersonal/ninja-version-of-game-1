@@ -310,6 +310,15 @@ export interface AttackRecord {
   defenderTrophies: number;
 }
 
+/** Security fixes 2026-11-24 (SECR-02): what reversing a raid needs from its record. */
+export interface RaidHonorRow {
+  id: string;
+  at: number;
+  defenderId: string | null;
+  attackerTrophies: number;
+  defenderTrophies: number;
+}
+
 export interface Grove {
   id: string;
   name: string;

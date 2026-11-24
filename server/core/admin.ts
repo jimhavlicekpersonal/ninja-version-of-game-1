@@ -14,6 +14,7 @@ import { holdNameAndLookalikes, nameFree, nameProblem, suggestNames } from './na
 import { HOUR, type ServerContext } from './context';
 import { notify } from './moderation';
 import { applyServerResult } from './village';
+import { lockPlayers } from './pvp';
 import { appeal, msg, staffError, utcDate } from './errors';
 
 const text = (v: unknown, max: number) => String(v ?? '').trim().slice(0, max);
@@ -96,27 +97,49 @@ export async function nameClashes(ctx: ServerContext, actor: string) {
   return { groups };
 }
 
+/** SECR-02: raids read per page when reversing. */
+const REVERSE_PAGE = 500;
+
 /**
  * Beast Mode SEC-07: POST /admin/v1/players/:id/reverse-raids { days, note }: for the player's recorded raids in the
  * last `days` (default 7, at most 30), each defender gets back the honor the raid took and the player loses what
- * it gained (never below 0). A raid is reversed once (earlier runs' attack ids are in the staff log). Logged.
+ * it gained (never below 0). A raid is reversed once. Logged.
+ * Security fixes 2026-11-24 (SECR-02): each reversed raid is marked (`reversed_attacks`, migration 0049) in the same
+ * transaction as the honor it gives back, first writer wins, so a second run (or two at once) gives nothing twice
+ * however many staff actions came between; every raid in the window is read, in pages.
  */
 export async function reverseRaids(ctx: ServerContext, actor: string, id: string, body: { days?: unknown; note?: unknown } | undefined) {
   const p = await playerOr404(ctx, id);
   const note = text(body?.note, 500);
   if (!note) throw staffError(400, 'bad_request', 'Say why (a note for the staff log).');
   const d = Math.max(1, Math.min(30, Math.floor(Number(body?.days)) || 7));
-  const done = new Set((await ctx.repo.staffActions(p.id, 200)).filter((a) => a.action === 'reverse-raids').flatMap((a) => (Array.isArray(a.detail.attacks) ? (a.detail.attacks as string[]) : [])));
-  const raids = (await ctx.repo.attacksBy(p.id, ctx.now() - d * 24 * HOUR, 500)).filter((a) => !done.has(a.id));
+  const since = ctx.now() - d * 24 * HOUR;
+  const at = ctx.now();
   const back = new Map<string, number>();
   let taken = 0;
-  for (const a of raids) {
-    taken += Math.max(0, a.attackerTrophies ?? 0);
-    const lost = Math.max(0, -(a.defenderTrophies ?? 0));
-    if (lost && a.defenderId) back.set(a.defenderId, (back.get(a.defenderId) ?? 0) + lost);
-  }
   let returned = 0;
+  const reversed: string[] = [];
   await ctx.repo.transaction(async (tx) => {
+    back.clear();
+    taken = 0;
+    returned = 0;
+    reversed.length = 0;
+    // Marks first (row locks on the attack ids only), then the players, all locked in id order as attacks do.
+    for (let after: { at: number; id: string } | null = null; ; ) {
+      const page = await tx.raidHonorPage(p.id, since, after, REVERSE_PAGE);
+      if (!page.length) break;
+      const fresh = new Set(await tx.markAttacksReversed(page.map((a) => a.id), at));
+      for (const a of page) {
+        if (!fresh.has(a.id)) continue;
+        reversed.push(a.id);
+        taken += Math.max(0, a.attackerTrophies);
+        const lost = Math.max(0, -a.defenderTrophies);
+        if (lost && a.defenderId) back.set(a.defenderId, (back.get(a.defenderId) ?? 0) + lost);
+      }
+      if (page.length < REVERSE_PAGE) break;
+      after = { at: page[page.length - 1].at, id: page[page.length - 1].id };
+    }
+    await lockPlayers(tx, [p.id, ...back.keys()]);
     for (const [defId, lost] of back) {
       const def = await tx.getPlayer(defId);
       if (!def) continue;
@@ -130,8 +153,8 @@ export async function reverseRaids(ctx: ServerContext, actor: string, id: string
     const q = await ctx.repo.getPlayer(defId);
     if (q?.base && !q.bannedUntil) await ctx.board.set(q.id, q.trophies, q.createdAt);
   }
-  await audit(ctx, actor, 'reverse-raids', p.id, { note, days: d, attacks: raids.map((a) => a.id), returned, taken });
-  return { raids: raids.length, returned, taken };
+  await audit(ctx, actor, 'reverse-raids', p.id, { note, days: d, attacks: reversed, returned, taken });
+  return { raids: reversed.length, returned, taken };
 }
 
 /**

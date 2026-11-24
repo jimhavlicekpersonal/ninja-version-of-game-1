@@ -57,6 +57,7 @@ import type {
   InstallSummaryRow,
   StatsEventRow,
   StatsBattleCount,
+  RaidHonorRow,
 } from './types';
 
 /** Players, sessions, staff tools, account protections and deletion. Part of `Repo` (report section 5 step 10, quality 16: split by aggregate). */
@@ -297,6 +298,15 @@ export interface BattleStore {
   defensesFor(defenderId: string, since: number, limit: number): Promise<AttackRecord[]>;
   /** Beast Mode SEC-07 (staff suspects view): raids this player made since a time, oldest first. */
   attacksBy(attackerId: string, since: number, limit: number): Promise<AttackRecord[]>;
+  /**
+   * Security fixes 2026-11-24 (SECR-02): this attacker's raids after `since`, oldest first by (at, id), after the
+   * cursor `after`, without their bases (staff reversal pages through all of them).
+   */
+  raidHonorPage(attackerId: string, since: number, after: { at: number; id: string } | null, limit: number): Promise<RaidHonorRow[]>;
+  /** SECR-02 (migration 0049): mark raids reversed; resolves the ids that were not marked before (first writer wins). */
+  markAttacksReversed(ids: string[], at: number): Promise<string[]>;
+  /** Drop reversal marks made before `before`. */
+  pruneReversedAttacks(before: number): Promise<number>;
   /** Third verification fixes 2026-11-14 (8c): the defender of this attacker's raid played with `seed` after `since`, if recorded. */
   attackDefenderBySeed(attackerId: string, seed: number, since: number): Promise<string | null>;
   /** Last gaps 2026-11-14: whether a recorded raid on this defender since `since` had this seed (a shared defense replay). */

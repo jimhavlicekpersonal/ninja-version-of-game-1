@@ -78,6 +78,28 @@ export class PgBattles extends PgBase implements BattleStore {
     return r.map(toAttack).reverse();
   }
 
+  async raidHonorPage(attackerId: string, since: number, after: { at: number; id: string } | null, limit: number) {
+    // SECR-02: keyset pages on attacks_attacker_idx; only the honor fields of the record, never the base.
+    const r = await this.rows(
+      `select id, at, defender_id, record->'attackerTrophies' as gained, record->'defenderTrophies' as lost from attacks
+       where attacker_id = $1 and at > $2 and ($3::bigint is null or (at, id) > ($3::bigint, $4::text))
+       order by at, id limit $5`,
+      [attackerId, since, after?.at ?? null, after?.id ?? '', limit],
+    );
+    return r.map((x) => ({ id: String(x.id), at: num(x.at), defenderId: x.defender_id === null || x.defender_id === undefined ? null : String(x.defender_id), attackerTrophies: Number(x.gained) || 0, defenderTrophies: Number(x.lost) || 0 }));
+  }
+
+  async markAttacksReversed(ids: string[], at: number) {
+    if (!ids.length) return [];
+    // First writer wins: a concurrent reversal waits on the same keys and then marks none of them.
+    const r = await this.rows('insert into reversed_attacks (attack_id, reversed_at) select unnest($1::text[]), $2 on conflict (attack_id) do nothing returning attack_id', [[...new Set(ids)], at]);
+    return r.map((x) => String(x.attack_id));
+  }
+
+  async pruneReversedAttacks(before: number) {
+    return (await this.db.query('delete from reversed_attacks where reversed_at < $1', [before])).rowCount ?? 0;
+  }
+
   async defensesFor(defenderId: string, since: number, limit: number): Promise<AttackRecord[]> {
     const r = await this.rows(
       `select a.id, a.record, b.base as stored_base from attacks a left join base_versions b on b.hash = a.base_hash

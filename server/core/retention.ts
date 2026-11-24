@@ -73,6 +73,8 @@ export async function prune(ctx: ServerContext, stillHeld?: StillHeld): Promise<
   const stats = await ctx.repo.pruneStats(t - STATS_RETENTION_DAYS * 24 * HOUR);
   // SECR-01: the per-id daily counts are needed only for today (yesterday kept for a run near midnight).
   await ctx.repo.pruneStatsQuota(Math.floor(t / (24 * HOUR)) - 1);
+  // SECR-02: reversal marks outlive the longest reversal window (30 days) by a day; older raids cannot be reversed.
+  await ctx.repo.pruneReversedAttacks(t - 31 * 24 * HOUR);
   // Growth batch 2026-11-14: expired shared replays, and statistics summaries of ids past retention.
   const g = ctx.repo;
   const sharedReplays = await g.pruneSharedReplays(t);

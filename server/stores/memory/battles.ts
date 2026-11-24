@@ -81,6 +81,32 @@ export class MemoryBattles extends MemoryBase implements BattleStore {
       .slice(-limit)
       .map((a) => this.withBase(a));
   }
+  async raidHonorPage(attackerId: string, since: number, after: { at: number; id: string } | null, limit: number) {
+    const later = (a: { at: number; id: string }) => !after || a.at > after.at || (a.at === after.at && a.id > after.id);
+    return this.attacks
+      .filter((a) => a.attackerId === attackerId && a.at > since && later(a))
+      .sort((x, y) => x.at - y.at || (x.id < y.id ? -1 : x.id > y.id ? 1 : 0))
+      .slice(0, limit)
+      .map((a) => ({ id: a.id, at: a.at, defenderId: a.defenderId, attackerTrophies: a.attackerTrophies ?? 0, defenderTrophies: a.defenderTrophies ?? 0 }));
+  }
+  async markAttacksReversed(ids: string[], at: number) {
+    const fresh: string[] = [];
+    for (const id of new Set(ids))
+      if (!this.reversedAttackRows.has(id)) {
+        this.reversedAttackRows.set(id, at);
+        fresh.push(id);
+      }
+    return fresh;
+  }
+  async pruneReversedAttacks(before: number) {
+    let n = 0;
+    for (const [id, at] of [...this.reversedAttackRows])
+      if (at < before) {
+        this.reversedAttackRows.delete(id);
+        n++;
+      }
+    return n;
+  }
   async defensesFor(defenderId: string, since: number, limit: number): Promise<AttackRecord[]> {
     return this.attacks
       .filter((a) => a.defenderId === defenderId && a.at > since)
