@@ -60,6 +60,8 @@ export async function installSecureTokens(o: Options = {}): Promise<boolean> {
         () => fallback.set(key, null),
         () => fallback.set(key, value),
       );
+      // Kept in memory now and written to the Keychain (or localStorage when that refuses) in the background.
+      return true;
     },
     keys: () => [...mem.keys()],
   };

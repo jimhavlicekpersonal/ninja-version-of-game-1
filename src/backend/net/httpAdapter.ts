@@ -91,7 +91,8 @@ import { tokenVault } from './tokenVault';
 /** Where this device keeps its player token for a server. */
 interface TokenStore {
   get(): string | null;
-  set(token: string | null): void;
+  /** False when the token could not be stored beyond this session (F3: storage full); optional for older stores. */
+  set(token: string | null): boolean | void;
 }
 
 /** One token per server address (a token is never sent to a different server), kept in the token vault (SEC-11). */
@@ -105,7 +106,13 @@ function localTokenStore(serverUrl: string, prefix = 'tk.net.token:'): TokenStor
 
 export function memoryTokenStore(initial: string | null = null): TokenStore {
   let t = initial;
-  return { get: () => t, set: (v) => (t = v) };
+  return {
+    get: () => t,
+    set: (v) => {
+      t = v;
+      return true;
+    },
+  };
 }
 
 interface HttpAdapterOptions {
@@ -573,7 +580,12 @@ export class HttpServerAdapter implements ServerPort {
   async rotateToken(): Promise<boolean> {
     const r = await this.req<RegisterResponse>('POST', Routes.sessionsRotate, {});
     if (!r?.token) return false;
-    this.nextTokens.set(r.token);
+    // F3 (2026-11-24): the new token is used (and the old one lapses) only once it is stored and reads back. With
+    // storage full it is never used: the rotation lapses on the server and the old token keeps working.
+    if (this.nextTokens.set(r.token) === false || this.nextTokens.get() !== r.token) {
+      this.nextTokens.set(null);
+      return false;
+    }
     try {
       await this.once<PlayerView>('GET', Routes.me, undefined, r.token);
     } catch (e) {
@@ -581,7 +593,10 @@ export class HttpServerAdapter implements ServerPort {
       if (e instanceof ServerError && e.status === 401) this.nextTokens.set(null);
       return false;
     }
-    this.setToken(r.token);
+    // The new token is the key now. If it cannot replace the old one in storage, it stays aside as well: after a
+    // restart the old token's 401 switches to it (`req`).
+    if (this.tokens.set(r.token) === false) return true;
+    this.nextTokens.set(null);
     return true;
   }
 

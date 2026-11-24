@@ -13,6 +13,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { InProcessServerAdapter } from '../../../server/inProcess';
 import { Connection, ROTATE_EVERY_MS, type GameLink, type KeyValue } from '../../../src/backend/net/connection';
 import { HttpServerAdapter } from '../../../src/backend/net/httpAdapter';
+import { localTokenVault, useTokenVault } from '../../../src/backend/net/tokenVault';
 import { ServerError } from '../../../src/backend/net/ports';
 import { Routes } from '../../../src/backend/net/protocol';
 import { applyCommand, createNewVillage, type Command } from '../../../src/gameplay/sim/village';
@@ -54,7 +55,12 @@ function injectFetch(s: ReturnType<typeof setup>, opts: { dropAnswer?: (path: st
 
 const tokenStore = (initial: string | null = null) => {
   let t = initial;
-  return { get: () => t, set: (v: string | null) => (t = v) };
+  return {
+    get: () => t,
+    set: (v: string | null) => {
+      t = v;
+    },
+  };
 };
 
 describe('A16: rotating this device token (HTTP adapter)', () => {
@@ -67,6 +73,48 @@ describe('A16: rotating this device token (HTTP adapter)', () => {
     expect(tokens.get()).not.toBe(reg.token);
     expect((await port.me()).id).toBe(reg.playerId);
     expect((await s.call('GET', Routes.me, reg.token)).status).toBe(401);
+  });
+
+  it('F3: with storage full, the rotation is skipped and the old token keeps working, after a restart too', async () => {
+    const s = setup();
+    const reg = await s.register('Quota');
+    const m = new Map<string, string>();
+    let full = false;
+    const storage = {
+      getItem: (k: string) => m.get(k) ?? null,
+      setItem: (k: string, v: string) => {
+        if (full) throw Object.assign(new Error('quota'), { name: 'QuotaExceededError' });
+        m.set(k, v);
+      },
+      removeItem: (k: string) => void m.delete(k),
+      key: (i: number) => [...m.keys()][i] ?? null,
+      get length() {
+        return m.size;
+      },
+    } as unknown as Storage;
+    useTokenVault(localTokenVault(() => storage));
+    try {
+      const port = new HttpServerAdapter('http://game.test', { fetch: injectFetch(s), retries: 0, retryDelayMs: 0 });
+      storage.setItem(`tk.net.token:${port.baseUrl}`, reg.token);
+      full = true;
+      expect(await port.rotateToken()).toBe(false);
+      expect((await port.me()).id).toBe(reg.playerId);
+      // The app restarts: storage still holds the old token, and the server still takes it.
+      useTokenVault(localTokenVault(() => storage));
+      const again = new HttpServerAdapter('http://game.test', { fetch: injectFetch(s), retries: 0, retryDelayMs: 0 });
+      expect((await again.me()).id).toBe(reg.playerId);
+      expect((await s.call('GET', Routes.me, reg.token)).status).toBe(200);
+    } finally {
+      useTokenVault(localTokenVault());
+    }
+  });
+
+  it('F3: a token write that fails is still answered for this session, and reported', () => {
+    const storage = { getItem: () => null, setItem: () => { throw new Error('quota'); }, removeItem: () => undefined, key: () => null, length: 0 } as unknown as Storage;
+    const vault = localTokenVault(() => storage);
+    expect(vault.set('tk.net.token:x', 'abc')).toBe(false);
+    expect(vault.get('tk.net.token:x')).toBe('abc');
+    expect(vault.keys()).toEqual(['tk.net.token:x']);
   });
 
   it('a lost confirmation keeps the old token; if the server did swap, the next 401 switches to the new one', async () => {

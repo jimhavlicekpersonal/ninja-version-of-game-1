@@ -6,7 +6,12 @@
  */
 export interface TokenVault {
   get(key: string): string | null;
-  set(key: string, value: string | null): void;
+  /**
+   * False when the value could not be kept beyond this session (storage full or blocked, F3 2026-11-24): the
+   * vault still answers it from memory until the app closes, but a caller that would lose an identity
+   * without it (a token rotation) must not rely on it.
+   */
+  set(key: string, value: string | null): boolean;
   /** Every key that holds a token. */
   keys(): string[];
 }
@@ -19,8 +24,11 @@ export function isTokenKey(key: string): boolean {
 }
 
 export function localTokenVault(storage: () => Storage = () => localStorage): TokenVault {
+  // F3: values whose write failed (storage full, private mode), answered from memory for this session.
+  const unstored = new Map<string, string | null>();
   return {
     get(key) {
+      if (unstored.has(key)) return unstored.get(key) ?? null;
       try {
         return storage().getItem(key);
       } catch {
@@ -31,8 +39,12 @@ export function localTokenVault(storage: () => Storage = () => localStorage): To
       try {
         if (value) storage().setItem(key, value);
         else storage().removeItem(key);
+        unstored.delete(key);
+        return true;
       } catch {
-        /* private mode: the token lasts for this session only */
+        /* storage full or private mode: the value lasts for this session only */
+        unstored.set(key, value || null);
+        return false;
       }
     },
     keys() {
@@ -41,11 +53,12 @@ export function localTokenVault(storage: () => Storage = () => localStorage): To
         const s = storage();
         for (let i = 0; i < s.length; i++) {
           const k = s.key(i);
-          if (k && isTokenKey(k) && s.getItem(k)) out.push(k);
+          if (k && isTokenKey(k) && s.getItem(k) && !unstored.has(k)) out.push(k);
         }
       } catch {
         /* storage blocked: nothing to list */
       }
+      for (const [k, v] of unstored) if (v && isTokenKey(k)) out.push(k);
       return out;
     },
   };
