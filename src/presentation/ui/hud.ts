@@ -2333,7 +2333,7 @@ export class Hud {
         ? h('button', { class: 'btn ghost', type: 'button', 'data-id': 'practice-against', onclick: () => { this.closeAllModals(); this.deps.onPracticeAgainst?.(r); } }, t('defense.practiceAgainst'))
         : null;
       const settle = answerable.has(r.id)
-        ? h('button', { class: 'btn danger', type: 'button', title: i18nText("ui.attack_s_own_base_a_simulated_raider_n_0be62cf5a4", { arg1: r.opponentName }), onclick: () => { this.closeAllModals(); this.deps.onRematch?.(r.id); } }, i18nText("ui.settle_the_score_819ad8b9c9"))
+        ? h('button', { class: 'btn danger', type: 'button', title: i18nText("ui.attack_s_own_base_a_simulated_raider_n_0be62cf5a4", { arg1: isolateName(r.opponentName) }), onclick: () => { this.closeAllModals(); this.deps.onRematch?.(r.id); } }, i18nText("ui.settle_the_score_819ad8b9c9"))
         : null;
       body.append(
         h(

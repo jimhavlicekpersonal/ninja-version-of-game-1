@@ -208,7 +208,7 @@ export class GroveUi {
       const owned = chatText(m, snap.kind === 'local' && !m.mine);
       const text = snap.kind === 'local' && m.kind !== 'chat' ? owned.replaceAll(snap.name, () => generatedName(snap.name, 'grove')) : owned;
       // Report or block another player's message (Apple 1.2); never on your own, system lines or bots.
-      const more = snap.moderation && m.fromId && !m.mine ? h('button', { class: 'chat-more', type: 'button', title: i18nText("ui.report_or_block_82eba729f4"), 'aria-label': i18nText("ui.report_or_block_b1e0527c7b", { arg1: m.who }) }, '⋯') : null;
+      const more = snap.moderation && m.fromId && !m.mine ? h('button', { class: 'chat-more', type: 'button', title: i18nText("ui.report_or_block_82eba729f4"), 'aria-label': i18nText("ui.report_or_block_b1e0527c7b", { arg1: isolateName(m.who) }) }, '⋯') : null;
       more?.addEventListener('click', () => this.moderate({ playerId: m.fromId, name: m.who, messageId: m.id }, m.text, false, redraw));
       list.append(
         h(
@@ -297,7 +297,7 @@ export class GroveUi {
 
   private membersTab(body: HTMLElement, snap: GroveSnapshot, redraw: () => void): void {
     snap.members.forEach((r, i) => {
-      const more = snap.moderation && !r.you ? h('button', { class: 'chat-more', type: 'button', title: i18nText("ui.report_or_block_82eba729f4"), 'aria-label': i18nText("ui.report_or_block_b1e0527c7b", { arg1: r.name }) }, '⋯') : null;
+      const more = snap.moderation && !r.you ? h('button', { class: 'chat-more', type: 'button', title: i18nText("ui.report_or_block_82eba729f4"), 'aria-label': i18nText("ui.report_or_block_b1e0527c7b", { arg1: isolateName(r.name) }) }, '⋯') : null;
       more?.addEventListener('click', () => this.moderate({ playerId: r.id, name: r.name }, null, r.blocked, redraw));
       body.append(
         h(
@@ -324,17 +324,17 @@ export class GroveUi {
    */
   private moderate(target: ReportTarget, quote: string | null, blocked: boolean, redraw: () => void): void {
     const body = h('div', { class: 'report-form' });
-    if (quote) body.append(h('blockquote', { class: 'report-quote' }, h('b', {}, target.name), ' ', quote));
-    body.append(h('p', { class: 'muted small' }, quote ? i18nText("ui.moderators_see_the_message_exactly_as__ca99ff4fef") : i18nText("ui.tell_the_moderators_what_did_0abde97331", { arg1: target.name })));
+    if (quote) body.append(h('blockquote', { class: 'report-quote' }, h('b', {}, h('bdi', {}, target.name)), ' ', quote));
+    body.append(h('p', { class: 'muted small' }, quote ? i18nText("ui.moderators_see_the_message_exactly_as__ca99ff4fef") : i18nText("ui.tell_the_moderators_what_did_0abde97331", { arg1: isolateName(target.name) })));
     const reasons = h('div', { class: 'report-reasons', role: 'radiogroup', 'aria-label': i18nText("ui.reason_f81ab834de") });
     for (const r of REPORT_REASONS) reasons.append(h('label', { class: 'report-reason' }, h('input', { type: 'radio', name: 'report-reason', value: r }), i18nLabel(REASON_LABELS[r])));
     const note = h('textarea', { class: 'text', maxlength: 500, rows: 2, placeholder: i18nText("ui.anything_else_they_should_know_optiona_1ecfe6847d") }) as HTMLTextAreaElement;
     note.addEventListener('keydown', (e) => e.stopPropagation());
     const also = h('input', { type: 'checkbox' }) as HTMLInputElement;
     body.append(reasons, note);
-    if (!blocked) body.append(h('label', { class: 'report-block' }, also, i18nText("ui.also_block_87576e2627", { arg1: target.name })));
+    if (!blocked) body.append(h('label', { class: 'report-block' }, also, i18nText("ui.also_block_87576e2627", { arg1: isolateName(target.name) })));
     const close = this.d.kit.modal(
-      quote ? i18nText("ui.report_message_0a1e3c5275") : i18nText("ui.report_e70c48c496", { arg1: target.name }),
+      quote ? i18nText("ui.report_message_0a1e3c5275") : i18nText("ui.report_e70c48c496", { arg1: isolateName(target.name) }),
       body,
       [
         blocked
