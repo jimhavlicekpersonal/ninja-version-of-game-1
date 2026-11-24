@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 // Phaser needs a browser: only the names smoothing.ts reads.
@@ -130,5 +131,29 @@ describe('smoothArtTextures (art polish: mipmaps on WebGL2)', () => {
     f.gl.lost = true;
     f.textures.emit('addtexture', 'p', { key: 'p', source: [source('p', new FakeImage())] });
     expect(f.gl.calls).toEqual([]);
+  });
+
+  it('the low quality profile never mipmaps: mipFactor() stays 1 (STB-N3)', async () => {
+    const { resolveQuality } = await import('../../../src/presentation/render/quality');
+    const low = resolveQuality('?quality=low', 'auto', {});
+    const high = resolveQuality('?quality=high', 'auto', {});
+    expect(low.mipmaps).toBe(false);
+    expect(high.mipmaps).toBe(true);
+    // A WebGL2 game first (mipmaps on), then a low-profile start in the same module.
+    smoothArtTextures(fakeGame(new FakeGL2()).game, high.mipmaps);
+    expect(mipFactor()).toBeCloseTo(4 / 3);
+    const f = fakeGame(new FakeGL2());
+    smoothArtTextures(f.game, low.mipmaps);
+    expect(mipFactor()).toBe(1);
+    const painted = source('painted', new FakeCanvas(), 300, 150);
+    f.textures.emit('addtexture', 'building.keep.lv1', { key: 'building.keep.lv1', source: [painted] });
+    f.events.emit('ready');
+    expect(f.gl.calls).toEqual([]);
+    expect(gpuBytes(painted as never)).toBe(300 * 150 * 4);
+  });
+
+  it('by default follows this session\'s quality profile', () => {
+    const src = readFileSync('src/presentation/render/smoothing.ts', 'utf8');
+    expect(src).toMatch(/mipmaps = quality\(\)\.mipmaps/);
   });
 });

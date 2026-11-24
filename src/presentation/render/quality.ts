@@ -81,6 +81,12 @@ interface QualitySettings {
    * and painted again if needed (report section 5 step 3).
    */
   paintedBudgetMB: number;
+  /**
+   * Mipmapped image textures on WebGL2 (`render/smoothing.ts`, art polish 2026-11-24): smoother shrunk art for a
+   * third more GPU memory per texture. Off on low (STB-N3): a cheap phone keeps the memory (27 MB of GPU textures
+   * instead of 36 MB at `?quality=low`) and its building budget is not counted 4/3.
+   */
+  mipmaps: boolean;
 }
 
 /** Cheap signals about the device, read once. Each is optional: browsers expose different ones. */
@@ -136,6 +142,7 @@ const HIGH: Omit<QualitySettings, 'profile' | 'reason'> = {
   particleScale: 1,
   wispCount: 60,
   paintedBudgetMB: 64,
+  mipmaps: true,
 };
 
 const LOW: Omit<QualitySettings, 'profile' | 'reason'> = {
@@ -150,6 +157,7 @@ const LOW: Omit<QualitySettings, 'profile' | 'reason'> = {
   particleScale: 0.5,
   wispCount: 24,
   paintedBudgetMB: 24,
+  mipmaps: false,
 };
 
 function isProfile(v: unknown): v is QualityProfile {

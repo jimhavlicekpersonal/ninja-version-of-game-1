@@ -21,10 +21,12 @@
  *
  * Memory: a full mipmap chain is a third more GPU memory per texture. `mipFactor` lets the texture
  * sums and the building budget (`render/textureBudget.ts`) count it, so building art stays within
- * the same budget and the island costs a third more.
+ * the same budget and the island costs a third more. The low quality profile has no mipmaps
+ * (`quality().mipmaps`, STB-N3): cheap phones keep the old memory use.
  */
 
 import Phaser from 'phaser';
+import { quality } from './quality';
 
 /** GPU bytes of a mipmapped texture per byte of its full-size level (1 + 1/4 + 1/16 + ... = 4/3). */
 const MIP_OVERHEAD = 4 / 3;
@@ -105,14 +107,16 @@ function mipmap(gl: WebGL2RenderingContext, texture: Phaser.Textures.Texture): v
 
 /**
  * Mipmap every image texture added from now on (and those already there) when the game runs on
- * WebGL2. Call right after `new Phaser.Game`, before any art is painted or loaded.
+ * WebGL2 and the quality profile asks for it (never on low). Call right after `new Phaser.Game`,
+ * before any art is painted or loaded.
  */
-export function smoothArtTextures(game: Phaser.Game): void {
+export function smoothArtTextures(game: Phaser.Game, mipmaps = quality().mipmaps): void {
   const gl = () => {
     const r = game.renderer as Phaser.Renderer.WebGL.WebGLRenderer | undefined;
     return r && r.type === Phaser.WEBGL && isWebGL2(r.gl) && !r.gl.isContextLost() ? r.gl : null;
   };
-  if (!game.config.context || !isWebGL2(game.config.context)) return;
+  active = false;
+  if (!mipmaps || !game.config.context || !isWebGL2(game.config.context)) return;
   active = true;
   game.textures.on(Phaser.Textures.Events.ADD, (_key: string, texture: Phaser.Textures.Texture) => {
     const g = gl();
