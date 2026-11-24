@@ -3,7 +3,7 @@
    which fills in the build id and the precache list).
 
    Rules (worldwide audit GLOBAL-018):
-   - Each build installs into its own cache. The install succeeds only when every
+   - Each build (and each selected language of it) installs into its own cache. The install succeeds only when every
      file arrived with a good answer (200, same origin, not redirected); the app
      shell goes in last, so a cache that holds it is complete. If anything fails,
      the install fails, the previous worker keeps serving its own complete cache,
@@ -25,9 +25,15 @@
      with the same hash is copied, not downloaded; the rest are revalidated with the server
      (`no-cache`: a 304 costs a few hundred bytes), never re-downloaded blindly (`reload`). The
      512 px and Apple touch icons are not precached at all (the OS fetches them at install). */
-const CACHE = 'tk-__BUILD_ID__';
 const LANGUAGE_FILES = /*__LANGUAGE_FILES__*/ {};
-const selectedLanguage = new URL(self.location.href).searchParams.get('lang') || 'en';
+const selectedLanguage = (new URL(self.location.href).searchParams.get('lang') || 'en').replace(/[^A-Za-z0-9-]/g, '') || 'en';
+/**
+ * This worker's own cache. A language change registers `sw.js?lang=<code>`: a new worker of the
+ * same build. It installs into a cache of its own (`tk-<build>-<lang>`; English keeps `tk-<build>`),
+ * so its install, and a failed install's cleanup, never touch the cache the active worker is
+ * serving from (STB-N1). Activate then keeps only the new one.
+ */
+const CACHE = 'tk-__BUILD_ID__' + (selectedLanguage === 'en' ? '' : '-' + selectedLanguage);
 const PRECACHE = __PRECACHE__.concat(LANGUAGE_FILES[selectedLanguage] || []);
 /** Content hash per public (unhashed) file, from the build: same hash, same bytes. */
 const HASHES = /*__HASHES__*/ {};

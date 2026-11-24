@@ -66,14 +66,17 @@ class FakeCacheStorage {
 type Net = (url: string, req: ReqLike) => Promise<Response>;
 
 /** One worker script instance (one build) in a fake global. */
-function worker(opts: { build: string; files: string[]; caches: FakeCacheStorage; net: Net; hashes?: Record<string, string> }) {
-  const source = TEMPLATE.replace('__BUILD_ID__', opts.build).replace('__PRECACHE__', JSON.stringify(opts.files)).replace('/*__HASHES__*/ {}', JSON.stringify(opts.hashes ?? {}));
+function worker(opts: { build: string; files: string[]; caches: FakeCacheStorage; net: Net; hashes?: Record<string, string>; lang?: string; languageFiles?: Record<string, string[]> }) {
+  const source = TEMPLATE.replace('__BUILD_ID__', opts.build)
+    .replace('__PRECACHE__', JSON.stringify(opts.files))
+    .replace('/*__HASHES__*/ {}', JSON.stringify(opts.hashes ?? {}))
+    .replace('/*__LANGUAGE_FILES__*/ {}', JSON.stringify(opts.languageFiles ?? {}));
   const listeners = new Map<string, (e: unknown) => void>();
   const log: { url: string; cache?: string }[] = [];
   let skipped = false;
   let updates = 0;
   const self = {
-    location: new URL(`${SCOPE}sw.js`),
+    location: new URL(opts.lang ? `${SCOPE}sw.js?lang=${opts.lang}` : `${SCOPE}sw.js`),
     registration: { update: async () => void updates++ },
     addEventListener: (t: string, f: (e: unknown) => void) => listeners.set(t, f),
     skipWaiting: async () => {
@@ -391,5 +394,38 @@ describe('install and update', () => {
     const sw = worker({ build: 'b1', files: FILES, caches, net: serve('b1', (path) => (path === '(shell)' ? Promise.resolve(redirected) : null)) });
     await expect(sw.install()).rejects.toThrow();
     expect(caches.map.get('tk-b1')?.entries.has(SCOPE)).toBeFalsy();
+  });
+
+  it('a language change (same build, ?lang=) never touches the cache the active worker serves (STB-N1)', async () => {
+    const caches = new FakeCacheStorage();
+    const languageFiles = { de: ['./lang/de-123.json', './privacy.de.html'] };
+    const en = worker({ build: 'b1', files: FILES, caches, net: serve('b1'), languageFiles });
+    await en.install();
+    await en.activate();
+    const before = [...caches.map.get('tk-b1')!.entries.keys()].sort();
+    // The player picks German: the page registers ./sw.js?lang=de, a new worker of the same build.
+    // Its language pack fails to download, so its install fails.
+    const de = worker({ build: 'b1', files: FILES, caches, net: serve('b1', (path) => (path === 'lang/de-123.json' ? Promise.reject(new TypeError('offline')) : null)), lang: 'de', languageFiles });
+    await expect(de.install()).rejects.toThrow(/offline/);
+    // The English worker's cache is complete and untouched, so it still opens offline.
+    expect([...caches.map.get('tk-b1')!.entries.keys()].sort()).toEqual(before);
+    const offline = worker({
+      build: 'b1',
+      files: FILES,
+      caches,
+      net: async () => {
+        throw new TypeError('offline');
+      },
+      languageFiles,
+    });
+    expect(await ((await within(offline.request('./', 'navigate'), 0)) as Response).text()).toBe('b1:(shell)');
+    // A German install that works goes into its own cache and, on activate, is the only one left.
+    const de2 = worker({ build: 'b1', files: FILES, caches, net: serve('b1'), lang: 'de', languageFiles });
+    await de2.install();
+    expect(caches.map.has('tk-b1')).toBe(true);
+    await de2.activate();
+    expect([...caches.map.keys()]).toEqual(['tk-b1-de']);
+    expect(await caches.map.get('tk-b1-de')!.text('./lang/de-123.json')).toBe('b1:lang/de-123.json');
+    expect(await caches.map.get('tk-b1-de')!.text('./')).toBe('b1:(shell)');
   });
 });
