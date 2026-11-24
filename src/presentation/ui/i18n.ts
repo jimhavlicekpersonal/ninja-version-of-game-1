@@ -28,6 +28,15 @@ function validPack(value: unknown): value is Catalog {
   const pack = value as Record<string, unknown>;
   return Object.keys(pack).length === Object.keys(ENGLISH).length && Object.keys(ENGLISH).every(key => typeof pack[key] === 'string' && pack[key] !== '');
 }
+/** F4 (2026-11-24): one cached pack at a time (each is ~200-275 KB; older deploys' hashes filled the quota). */
+function dropOtherPacks(keep: string): void {
+  const stale: string[] = [];
+  for (let i = 0; i < localStorage.length; i++) {
+    const k = localStorage.key(i);
+    if (k && k.startsWith('tk.lang.pack:') && k !== keep) stale.push(k);
+  }
+  for (const k of stale) localStorage.removeItem(k);
+}
 async function load(code: string): Promise<void> {
   if (code === 'en' || Object.keys(catalogFor(code)).length >= (AVAILABLE[code]?.keys ?? Infinity) || !AVAILABLE[code]?.ready) return;
   // Tests of formatting in unshipped locales need no filesystem/network loader.
@@ -50,7 +59,7 @@ async function load(code: string): Promise<void> {
     })();
     if (!validPack(value) || Object.keys(value).length !== meta.keys) throw new Error('invalid language catalog');
     installCatalog(code, value);
-    try { localStorage.setItem(cacheKey, JSON.stringify(value)); } catch { /* SW/native assets remain available */ }
+    try { dropOtherPacks(cacheKey); localStorage.setItem(cacheKey, JSON.stringify(value)); } catch { /* SW/native assets remain available */ }
   } finally { clearTimeout(timer); }
 }
 export async function useLanguage(code: string): Promise<void> {
