@@ -1,6 +1,7 @@
 /** Real-money products and the rules around buying them. Payment itself happens outside the sim. */
 import { topUpOne, topUpScale } from './economy';
 import { passSaleOpen } from './pass';
+import { offersAllowed } from './offers';
 import { capacity } from './resources';
 import { stipendStatus } from './stipend';
 import type { Cost, GameData, ResourceKind, VillageState } from './types';
@@ -139,7 +140,9 @@ export function canPurchase(state: VillageState, productId: string, now: number,
   if (product.kind === 'offer') {
     const rule = data.offers.rules.find((o) => o.productId === productId)!;
     const active = state.offers.active.find((a) => a.id === rule.id && a.expiresAt > now);
-    if (!active) return { ok: false, code: 'OFFER_EXPIRED', message: 'This offer has ended.' };
+    // MONEY-02: offers are only for stated adults (offersAllowed); one activated before the player said they are
+    // under 18 (or a stricter band) is no longer sold.
+    if (!active || !offersAllowed(state)) return { ok: false, code: 'OFFER_EXPIRED', message: 'This offer has ended.' };
   }
   const capped = minorCapRefusal(state, product.usd, now, data);
   if (capped) return capped;

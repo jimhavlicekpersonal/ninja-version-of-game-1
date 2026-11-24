@@ -434,7 +434,8 @@ export class EconomyUi {
 
   private offersList(): HTMLElement {
     const wrap = h('div', {});
-    const list = activeOffers(this.c.state, this.c.now());
+    // MONEY-02: an offer shown while the player was an adult is not sold once they say they are under 18.
+    const list = offersAllowed(this.c.state) ? activeOffers(this.c.state, this.c.now()) : [];
     // Economy E02: say why the tab stays empty, instead of a "right now" that never changes.
     const p = this.c.state.profile;
     const why = offersAllowed(this.c.state) ? t('offers.none') : p.under18 === null ? t('offers.noAge') : t('offers.minor');
