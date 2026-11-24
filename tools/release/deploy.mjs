@@ -34,6 +34,11 @@ while (Date.now() < deadline) {
   try {
     const h = await (await fetch(`${SERVER_URL}/healthz`)).json();
     const ready = await fetch(`${SERVER_URL}/readyz`);
+    // A server that reports another DEPLOY_ENV (e.g. a production host started without it) is not this release.
+    if (String(h.version).endsWith(TAG) && TARGET && h.deploy !== undefined && h.deploy !== TARGET) {
+      ciNote('error', 'Wrong environment', `${SERVER_URL} runs ${h.version} as ${h.deploy}, not ${TARGET}: check DEPLOY_ENV on the host.`);
+      process.exit(1);
+    }
     if (String(h.version).endsWith(TAG) && ready.ok) {
       console.log(`${SERVER_URL} runs ${h.version} and is ready.`);
       process.exit(0);

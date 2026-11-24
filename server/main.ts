@@ -314,6 +314,7 @@ async function main(): Promise<void> {
     readiness,
     metrics,
     environment: config.deploy === 'production' ? undefined : config.deploy,
+    deploy: config.deploy,
     notice: process.env.SERVER_NOTICE?.slice(0, SERVER_NOTICE_MAX) || undefined,
   });
   const port = Number(process.env.PORT ?? DEFAULT_PORT);

@@ -80,6 +80,8 @@ export interface ServerOptions {
   readiness?: Record<string, () => Promise<unknown>>;
   /** DEPLOY_ENV (step 42): told to the game in /v1/hello so a test server says so. */
   environment?: string;
+  /** DEPLOY_ENV as configured, shown by /healthz so a deploy can check it reached the right environment. */
+  deploy?: string;
   /** SERVER_NOTICE (step 47): a message for every player in /v1/hello (maintenance, an incident). */
   notice?: string;
 }
@@ -480,7 +482,7 @@ export function buildServer(opts: ServerOptions): FastifyInstance & { core: Serv
   const kit = routeKit(app, core, verified);
 
   // Liveness: the process answers (no dependencies, so a database outage never restarts every instance).
-  app.get('/healthz', async () => ({ ok: true, version: opts.version ?? 'dev', uptimeS: Math.floor((Date.now() - started) / 1000) }));
+  app.get('/healthz', async () => ({ ok: true, version: opts.version ?? 'dev', deploy: opts.deploy ?? 'development', uptimeS: Math.floor((Date.now() - started) / 1000) }));
   // Readiness: the database (and Redis, …) answer within 2 s each; 503 otherwise.
   app.get('/readyz', async (req, reply) => {
     const checks: Record<string, () => Promise<unknown>> = { db: () => opts.repo.ping(), ...opts.readiness };

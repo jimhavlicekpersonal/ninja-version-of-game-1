@@ -23,7 +23,10 @@ import { DEFAULT_POLICY as DEFAULT_POLICY_FOR_LOG } from './core/context';
 export type DeployEnv = 'development' | 'staging' | 'production';
 
 export function deployEnv(env: Record<string, string | undefined>): DeployEnv {
-  const v = env.DEPLOY_ENV ?? 'development';
+  // A container built for release (the Dockerfile sets NODE_ENV=production) without DEPLOY_ENV would otherwise run as
+  // development: every production check skipped, memory storage allowed, Google test purchases credited.
+  if ((env.DEPLOY_ENV === undefined || env.DEPLOY_ENV === '') && env.NODE_ENV === 'production') throw new Error('DEPLOY_ENV must be set (staging or production) when NODE_ENV=production: the release image never defaults to development.');
+  const v = env.DEPLOY_ENV || 'development';
   if (v !== 'development' && v !== 'staging' && v !== 'production') throw new Error(`DEPLOY_ENV must be development, staging or production (got "${v}").`);
   return v;
 }

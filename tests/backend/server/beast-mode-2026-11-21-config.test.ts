@@ -35,3 +35,13 @@ describe('SEC-17: production names every security switch', () => {
     expect(JSON.stringify(line)).not.toContain('db.internal');
   });
 });
+
+describe('the release image never runs as development by accident', () => {
+  it('NODE_ENV=production without DEPLOY_ENV refuses to start; a set DEPLOY_ENV or a dev shell is unchanged', () => {
+    expect(() => checkConfig({ NODE_ENV: 'production' })).toThrow(/DEPLOY_ENV must be set/);
+    expect(() => checkConfig({ NODE_ENV: 'production', DEPLOY_ENV: '' })).toThrow(/DEPLOY_ENV must be set/);
+    expect(checkConfig({ ...prod, NODE_ENV: 'production' }).deploy).toBe('production');
+    expect(checkConfig({ NODE_ENV: 'production', DEPLOY_ENV: 'staging' }).deploy).toBe('staging');
+    expect(checkConfig({}).deploy).toBe('development');
+  });
+});

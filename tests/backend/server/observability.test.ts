@@ -145,7 +145,7 @@ describe('observability over HTTP', () => {
 
   it('/healthz is liveness only; /readyz checks the database and other dependencies', async () => {
     const s = await setup({ readiness: { redis: async () => 'PONG' } });
-    expect((await s.call('GET', '/healthz')).body).toMatchObject({ ok: true, version: 'test-1' });
+    expect((await s.call('GET', '/healthz')).body).toMatchObject({ ok: true, version: 'test-1', deploy: 'development' });
     expect((await s.call('GET', '/readyz')).body).toEqual({ ok: true, checks: { db: 'ok', redis: 'ok' } });
     const down = await setup({ readiness: { redis: async () => Promise.reject(new Error('connection refused')) } });
     const r = await down.call('GET', '/readyz');
