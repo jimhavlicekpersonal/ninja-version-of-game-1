@@ -45,6 +45,8 @@ export interface GameLink {
   adoptEconomy?: SyncGame['adoptEconomy'];
   adoptVillage?: SyncGame['adoptVillage'];
   replace?: SyncGame['replace'];
+  /** Save now; true once the save landed (GameController.persist). Without it, results are acknowledged at once. */
+  persist?(): Promise<boolean>;
 }
 
 /** Where the stable installation id lives (third verification fixes 2026-11-14; `Connection.installId`). */
@@ -1364,6 +1366,12 @@ export class Connection {
     const { donations } = await port.inbox();
     if (!donations.length) return;
     this.o.game.dispatch({ type: 'receiveDonations', items: donations });
+    // F6 (2026-11-24): acknowledged only once the save that holds them landed (as store purchases, GLOBAL-003).
+    // Otherwise the server keeps them and the next sync brings them again (the village skips ids it has).
+    if (this.o.game.persist && !(await this.o.game.persist())) {
+      this.log('Online play: donations not acknowledged, the save did not land');
+      return;
+    }
     await port.ackInbox(donations.map((d) => d.id));
   }
 

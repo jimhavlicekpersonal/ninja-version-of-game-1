@@ -226,6 +226,24 @@ describe('Connection', () => {
     expect(restarted.outbox()).toHaveLength(0);
   });
 
+  it('F6: donations are acknowledged only after the save that holds them landed', async () => {
+    const w = world();
+    let saves = false;
+    const game = Object.assign(village(w), { persist: async () => saves });
+    const { conn, port } = connect(w, game);
+    await conn.sync();
+    const gift = { id: 'don-1', at: w.now(), fromName: 'Ann', troop: 'hedgehog_roller', count: 2, level: 1 };
+    port.inbox = async () => ({ donations: [gift] });
+    const acked: string[][] = [];
+    port.ackInbox = async (ids) => void acked.push(ids);
+    await conn.sync();
+    expect(game.state.net.donations).toContain('don-1'); // received here
+    expect(acked).toEqual([]); // but the save failed: the server keeps them
+    saves = true;
+    await conn.sync();
+    expect(acked).toEqual([['don-1']]);
+  });
+
   it('F2: with storage full, a new report and a pending attack still reach the server', async () => {
     const w = world();
     const game = village(w);
