@@ -34,7 +34,7 @@ describe('camera speed', () => {
     for (const f of ['src/presentation/render/cameraControl.ts', 'src/presentation/render/VillageScene.ts']) {
       const src = readFileSync(f, 'utf8');
       expect(src, f).toContain('panSpeed()');
-      expect(src, f).toContain('zoomStep(');
+      expect(src, f).toMatch(/zoomStep\(|wheelZoomFactor\(/); // wheelZoomFactor applies zoomStep
       expect(src, f).toContain('pinchFactor(');
     }
   });

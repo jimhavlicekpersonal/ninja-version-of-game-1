@@ -1,7 +1,7 @@
 import { messageText as ownedText, labelText } from '../ui/i18n';
 import { provideBuildingLocator, type ScreenRect } from './anchors';
 import { scaledPx } from './textScale';
-import { panSpeed, pinchFactor, zoomStep } from './cameraSpeed';
+import { panSpeed, pinchFactor, wheelMode, wheelPinch, wheelZoomFactor, zoomStep } from './cameraSpeed';
 import Phaser from 'phaser';
 import { BODY_FONT, DISPLAY_FONT } from './fonts';
 import { queueArt } from './artManifest';
@@ -552,7 +552,7 @@ export class VillageScene extends Phaser.Scene {
     this.input.on('pointerupoutside', (p: Phaser.Input.Pointer) => this.onUp(p));
     this.input.on('wheel', (p: Phaser.Input.Pointer, _objs: unknown, _dx: number, dy: number) => {
       const base = this.wheelTarget?.zoom ?? this.userZoom;
-      const zoom = Phaser.Math.Clamp(base * zoomStep(dy > 0 ? 0.85 : 1.18), this.minZoom(), MAX_ZOOM);
+      const zoom = Phaser.Math.Clamp(base * wheelZoomFactor(dy, wheelMode(p), wheelPinch(p)), this.minZoom(), MAX_ZOOM);
       this.wheelTarget = { zoom, x: p.x, y: p.y };
     });
     const kb = this.input.keyboard;

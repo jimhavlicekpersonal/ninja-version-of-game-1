@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import { setupTouchInput } from './touchInput';
-import { panSpeed, pinchFactor, zoomStep } from './cameraSpeed';
+import { panSpeed, pinchFactor, wheelMode, wheelPinch, wheelZoomFactor } from './cameraSpeed';
 
 const TAP_SLOP_CSS_PX = 10;
 const MAX_ZOOM = 2;
@@ -39,7 +39,7 @@ export class CameraControl {
     input.on('pointerupoutside', (p: Phaser.Input.Pointer) => this.up(p));
     input.on('wheel', (p: Phaser.Input.Pointer, _o: unknown, _dx: number, dy: number) => {
       const base = this.wheel?.zoom ?? this.userZoom;
-      this.wheel = { zoom: Phaser.Math.Clamp(base * zoomStep(dy > 0 ? 0.85 : 1.18), this.minZoom(), MAX_ZOOM), x: p.x, y: p.y };
+      this.wheel = { zoom: Phaser.Math.Clamp(base * wheelZoomFactor(dy, wheelMode(p), wheelPinch(p)), this.minZoom(), MAX_ZOOM), x: p.x, y: p.y };
     });
     const onResize = () => this.zoomAt(scene.scale.width / 2, scene.scale.height / 2, this.userZoom);
     scene.scale.on(Phaser.Scale.Events.RESIZE, onResize);
