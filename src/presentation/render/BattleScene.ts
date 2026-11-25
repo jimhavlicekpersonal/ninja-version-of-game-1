@@ -153,6 +153,16 @@ const BATTLE_BOUNDS_PAD = 2800;
 /** A tap this close (CSS px) to an open point's ring still counts: the warriors go to the nearest free tile inside it. */
 const SNAP_CSS_PX = 26;
 
+/**
+ * How hard the battle music drives (`sound.musicIntensity`): 0 while scouting, 1 once the battle
+ * starts, 2 after the first star, 3 for the last stand (two stars, or the last 30 seconds).
+ */
+function battleMusicLevel(scouting: boolean, stars: number, secondsLeft: number): number {
+  if (scouting) return 0;
+  if (stars >= 2 || secondsLeft <= 30) return 3;
+  return stars >= 1 ? 2 : 1;
+}
+
 export class BattleScene extends Phaser.Scene {
   private session!: BattleSession;
   private hooks!: BattleHooks;
@@ -1088,6 +1098,7 @@ export class BattleScene extends Phaser.Scene {
     const sim = s.sim;
     const a = s.alpha();
     this.celebrate();
+    sound.musicIntensity(battleMusicLevel(s.mode === 'scout', starsOf(sim), s.secondsLeft()));
     this.drawEntry();
 
     this.syncSmoke();

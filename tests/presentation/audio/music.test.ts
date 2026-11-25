@@ -11,14 +11,20 @@ class FakeParam {
   exponentialRampToValueAtTime() {}
   setTargetAtTime() {}
 }
+let started = 0;
 class FakeNode {
   gain = new FakeParam();
   frequency = new FakeParam();
+  detune = new FakeParam();
+  playbackRate = new FakeParam();
   Q = new FakeParam();
   connect() {
     return this;
   }
-  start() {}
+  disconnect() {}
+  start() {
+    started++;
+  }
   stop() {}
 }
 let contexts = 0;
@@ -114,6 +120,46 @@ describe('audio context (device F9/F18)', () => {
     sound.unlock();
     expect(resumed).toBe(0);
     sound.suspend(false);
+  });
+});
+
+describe('music engine (score.ts played by music.ts)', () => {
+  type Player = { intensity: number; playing: string | null; pump(until: number): void };
+  const player = () => (sound as unknown as { player: Player }).player;
+  const ctxOf = () => (sound as unknown as { ctx: FakeAudioContext }).ctx;
+
+  it('plays notes, moves intensity on the next bar line, and ends a battle with a coda', () => {
+    sound.setMusic(true);
+    sound.suspend(false);
+    sound.unlock();
+    sound.music('battle');
+    const ctx = ctxOf();
+    const p = player();
+    expect(p.playing).toBe('battle');
+    // Scouting: notes are booked as the clock runs.
+    const before = started;
+    ctx.currentTime = 4;
+    p.pump(4.4);
+    expect(started).toBeGreaterThan(before);
+    // The battle starts: the music waits for the bar line (a bar at 132 BPM is 1.82 s).
+    sound.musicIntensity(2);
+    expect(p.intensity).toBe(0);
+    ctx.currentTime = 6.5;
+    p.pump(6.9);
+    expect(p.intensity).toBe(2);
+    // The result sting ends the track; the same battle again (a rematch) starts it over.
+    sound.play('victory');
+    expect(p.playing).toBeNull();
+    sound.music('battle');
+    expect(player().playing).toBe('battle');
+    // The village has no coda; the defeat sting there leaves its music playing.
+    sound.music('village');
+    sound.play('defeat');
+    expect(player().playing).toBe('village');
+    sound.music('trial');
+    expect(player().playing).toBe('trial');
+    sound.music(null);
+    expect(sound.musicRunning).toBe(false);
   });
 });
 

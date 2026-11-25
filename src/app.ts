@@ -564,7 +564,8 @@ export class App {
       }
     };
     this.d.hudRoot.hidden = true;
-    sound.music('battle');
+    // The Shadow Trials have their own theme; every other raid plays the battle theme.
+    sound.music(trialTier !== undefined ? 'trial' : 'battle');
     const sm = this.d.game.scene;
     if (sm.isActive('village')) sm.sleep('village');
     const hudHooks = this.battleHud.hooks();
