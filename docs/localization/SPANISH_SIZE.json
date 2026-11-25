@@ -845,12 +845,12 @@
       }
     },
     "yo": {
-      "ready": false,
-      "strings": 3311,
-      "installedUtf8": 311365,
-      "gzip": 89362,
-      "brotli": 72404,
-      "zipDeflatePayload": 89344,
+      "ready": true,
+      "strings": 3355,
+      "installedUtf8": 318123,
+      "gzip": 91295,
+      "brotli": 73916,
+      "zipDeflatePayload": 91277,
       "namespaces": {
         "boot": {
           "total": 17,
@@ -870,7 +870,7 @@
         },
         "ui": {
           "total": 421,
-          "translated": 377
+          "translated": 421
         }
       }
     },
@@ -935,12 +935,12 @@
       }
     },
     "ig": {
-      "ready": false,
-      "strings": 3311,
-      "installedUtf8": 284363,
-      "gzip": 83928,
-      "brotli": 69447,
-      "zipDeflatePayload": 83910,
+      "ready": true,
+      "strings": 3355,
+      "installedUtf8": 289934,
+      "gzip": 85527,
+      "brotli": 70735,
+      "zipDeflatePayload": 85509,
       "namespaces": {
         "boot": {
           "total": 17,
@@ -960,7 +960,7 @@
         },
         "ui": {
           "total": 421,
-          "translated": 377
+          "translated": 421
         }
       }
     },
@@ -1598,7 +1598,7 @@
   "projections": {
     "50_languages_at_1x_spanish": {
       "estimate": true,
-      "basis": "Complete Spanish client text pack, six public pages, PWA manifest and locale resources multiplied by 50 and the stated expansion factor. English is already embedded, so this intentionally overestimates 49 added packs. The other 2 target languages are not ready or measured; fonts use the existing OS fallback policy.",
+      "basis": "Complete Spanish client text pack, six public pages, PWA manifest and locale resources multiplied by 50 and the stated expansion factor. English is already embedded, so this intentionally overestimates 49 added packs. The other 0 target languages are not ready or measured; fonts use the existing OS fallback policy.",
       "installedUtf8": 16885700,
       "gzip": 5511600,
       "brotli": 4552550,
@@ -1606,7 +1606,7 @@
     },
     "50_languages_at_1.5x_spanish": {
       "estimate": true,
-      "basis": "Complete Spanish client text pack, six public pages, PWA manifest and locale resources multiplied by 50 and the stated expansion factor. English is already embedded, so this intentionally overestimates 49 added packs. The other 2 target languages are not ready or measured; fonts use the existing OS fallback policy.",
+      "basis": "Complete Spanish client text pack, six public pages, PWA manifest and locale resources multiplied by 50 and the stated expansion factor. English is already embedded, so this intentionally overestimates 49 added packs. The other 0 target languages are not ready or measured; fonts use the existing OS fallback policy.",
       "installedUtf8": 25328550,
       "gzip": 8267400,
       "brotli": 6828825,
@@ -1614,7 +1614,7 @@
     },
     "50_languages_at_2x_spanish": {
       "estimate": true,
-      "basis": "Complete Spanish client text pack, six public pages, PWA manifest and locale resources multiplied by 50 and the stated expansion factor. English is already embedded, so this intentionally overestimates 49 added packs. The other 2 target languages are not ready or measured; fonts use the existing OS fallback policy.",
+      "basis": "Complete Spanish client text pack, six public pages, PWA manifest and locale resources multiplied by 50 and the stated expansion factor. English is already embedded, so this intentionally overestimates 49 added packs. The other 0 target languages are not ready or measured; fonts use the existing OS fallback policy.",
       "installedUtf8": 33771400,
       "gzip": 11023200,
       "brotli": 9105100,
