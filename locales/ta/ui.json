@@ -376,7 +376,7 @@
   "settings.zoomSpeed": { "en": "Zoom speed", "text": "பெரிதாக்கும் வேகம்" },
   "stake.recentHits": { "en": "Your last {raids} raids: 2★ or more in {two}, 3★ in {three}.", "text": "உங்கள் கடைசி {raids} தாக்குதல்கள்: {two} இல் 2★ அல்லது அதற்கு மேல், {three} இல் 3★." },
   "whatsNew.0_2_0": { "en": "What's new: choose a larger text size, and turn screen shake and flashes down, in Settings. The stake picker shows how often your recent raids reached two and three stars. Shadow Trials climb more evenly, and raids at Keep 4 and Keep 15 meet fairer opponents.", "text": "புதியது: அமைப்புகளில் பெரிய உரை அளவைத் தேர்ந்தெடுங்கள், திரை அதிர்வையும் ஒளிர்வுகளையும் குறையுங்கள். உங்கள் சமீபத்திய தாக்குதல்கள் எத்தனை முறை இரண்டு மற்றும் மூன்று நட்சத்திரங்களை எட்டின என்பதை பந்தயத் தேர்வு காட்டுகிறது. நிழல் சோதனைகள் இன்னும் சீராக உயர்கின்றன, கோட்டை 4 மற்றும் 15 தாக்குதல்கள் நியாயமான எதிரிகளைச் சந்திக்கின்றன." },
-  "army.buyCount": { "en": "Buy & +{n}", "text": "வாங்கு · +{n}" },
+  "army.buyCount": { "en": "Buy +{n}", "text": "வாங்கு +{n}" },
   "strategy.title": { "en": "{n, plural, one {Prebuilt strategies (#)} other {Prebuilt strategies (#)}}", "text": "{n, plural, one {தயார் உத்திகள் (#)} other {தயார் உத்திகள் (#)}}" },
   "strategy.intro": { "en": "Each strategy fills your Squad Courtyards from the warriors you can train now. Train queues what you can pay for.", "text": "ஒவ்வொரு உத்தியும் நீங்கள் இப்போது பயிற்றுவிக்கக்கூடிய வீரர்களால் உங்கள் அணி முற்றங்களை நிரப்புகிறது. பயிற்றுவி என்பதைத் தட்டினால், செலவைச் சமாளிக்க முடிந்த அளவு வீரர்கள் வரிசையில் சேர்வார்கள்." },
   "strategy.bladeRush.name": { "en": "Blade Rush", "text": "வாள் பாய்ச்சல்" },

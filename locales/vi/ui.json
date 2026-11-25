@@ -376,7 +376,7 @@
   "settings.zoomSpeed": { "en": "Zoom speed", "text": "Tốc độ thu phóng" },
   "stake.recentHits": { "en": "Your last {raids} raids: 2★ or more in {two}, 3★ in {three}.", "text": "{raids} trận đột kích gần nhất: 2★ trở lên trong {two} trận, 3★ trong {three} trận." },
   "whatsNew.0_2_0": { "en": "What's new: choose a larger text size, and turn screen shake and flashes down, in Settings. The stake picker shows how often your recent raids reached two and three stars. Shadow Trials climb more evenly, and raids at Keep 4 and Keep 15 meet fairer opponents.", "text": "Có gì mới: chọn cỡ chữ lớn hơn, và giảm rung màn hình cùng chớp sáng trong Cài đặt. Phần chọn cược cho thấy các trận đột kích gần đây của bạn đạt hai và ba sao thường xuyên đến mức nào. Thử thách Bóng tối tăng độ khó đều hơn, và các trận đột kích ở Thành 4 và 15 gặp đối thủ công bằng hơn." },
-  "army.buyCount": { "en": "Buy & +{n}", "text": "Mua & +{n}" },
+  "army.buyCount": { "en": "Buy +{n}", "text": "Mua +{n}" },
   "strategy.title": { "en": "{n, plural, one {Prebuilt strategies (#)} other {Prebuilt strategies (#)}}", "text": "{n, plural, other {Chiến thuật dựng sẵn (#)}}" },
   "strategy.intro": { "en": "Each strategy fills your Squad Courtyards from the warriors you can train now. Train queues what you can pay for.", "text": "Mỗi chiến thuật lấp đầy Sân Tập Kết bằng những chiến binh bạn huấn luyện được ngay bây giờ. Huấn luyện sẽ xếp hàng phần bạn trả được." },
   "strategy.bladeRush.name": { "en": "Blade Rush", "text": "Kiếm Xung Phong" },

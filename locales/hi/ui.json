@@ -376,7 +376,7 @@
   "settings.zoomSpeed": { "en": "Zoom speed", "text": "ज़ूम की गति" },
   "stake.recentHits": { "en": "Your last {raids} raids: 2★ or more in {two}, 3★ in {three}.", "text": "आपके पिछले {raids} छापे: {two} में 2★ या ज़्यादा, {three} में 3★।" },
   "whatsNew.0_2_0": { "en": "What's new: choose a larger text size, and turn screen shake and flashes down, in Settings. The stake picker shows how often your recent raids reached two and three stars. Shadow Trials climb more evenly, and raids at Keep 4 and Keep 15 meet fairer opponents.", "text": "नया क्या है: सेटिंग्स में बड़ा टेक्स्ट चुनें, और स्क्रीन का हिलना और चमक कम करें। दांव चुनने पर दिखता है कि आपके हाल के छापों में कितनी बार दो और तीन सितारे मिले। शैडो ट्रायल अब ज़्यादा समान रूप से कठिन होते हैं, और कीप 4 और कीप 15 के छापों को ज़्यादा उचित विरोधी मिलते हैं।" },
-  "army.buyCount": { "en": "Buy & +{n}", "text": "ख़रीदें और +{n}" },
+  "army.buyCount": { "en": "Buy +{n}", "text": "ख़रीदें +{n}" },
   "strategy.title": { "en": "{n, plural, one {Prebuilt strategies (#)} other {Prebuilt strategies (#)}}", "text": "{n, plural, one {तैयार रणनीतियाँ (#)} other {तैयार रणनीतियाँ (#)}}" },
   "strategy.intro": { "en": "Each strategy fills your Squad Courtyards from the warriors you can train now. Train queues what you can pay for.", "text": "हर रणनीति आपके दस्ते के आँगन उन योद्धाओं से भरती है जिन्हें आप अभी प्रशिक्षित कर सकते हैं। प्रशिक्षित करें दबाने पर उतने योद्धा कतार में जुड़ते हैं जितनों का ख़र्च आप उठा सकते हैं।" },
   "strategy.bladeRush.name": { "en": "Blade Rush", "text": "तलवार धावा" },

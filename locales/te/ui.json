@@ -376,7 +376,7 @@
   "settings.zoomSpeed": { "en": "Zoom speed", "text": "జూమ్ వేగం" },
   "stake.recentHits": { "en": "Your last {raids} raids: 2★ or more in {two}, 3★ in {three}.", "text": "మీ చివరి {raids} దాడులు: {two}లో 2★ లేదా అంతకంటే ఎక్కువ, {three}లో 3★." },
   "whatsNew.0_2_0": { "en": "What's new: choose a larger text size, and turn screen shake and flashes down, in Settings. The stake picker shows how often your recent raids reached two and three stars. Shadow Trials climb more evenly, and raids at Keep 4 and Keep 15 meet fairer opponents.", "text": "కొత్తవి: సెట్టింగ్‌లలో పెద్ద అక్షరాలు ఎంచుకోండి, స్క్రీన్ కదలికలు మరియు మెరుపులను తగ్గించండి. మీ ఇటీవలి దాడులు ఎన్నిసార్లు రెండు, మూడు నక్షత్రాలు పొందాయో పందెం ఎంపిక చూపిస్తుంది. నీడ పరీక్షలు మరింత సమంగా పెరుగుతాయి, కోట 4 మరియు 15 దాడులకు న్యాయమైన ప్రత్యర్థులు ఎదురవుతారు." },
-  "army.buyCount": { "en": "Buy & +{n}", "text": "కొని & +{n}" },
+  "army.buyCount": { "en": "Buy +{n}", "text": "కొనండి +{n}" },
   "strategy.title": { "en": "{n, plural, one {Prebuilt strategies (#)} other {Prebuilt strategies (#)}}", "text": "{n, plural, one {సిద్ధ వ్యూహాలు (#)} other {సిద్ధ వ్యూహాలు (#)}}" },
   "strategy.intro": { "en": "Each strategy fills your Squad Courtyards from the warriors you can train now. Train queues what you can pay for.", "text": "ప్రతి వ్యూహం మీరు ఇప్పుడు శిక్షణ ఇవ్వగల యోధులతో మీ దళ ప్రాంగణాలను నింపుతుంది. శిక్షణ నొక్కితే మీరు చెల్లించగలిగినవి వరుసలో చేరతాయి." },
   "strategy.bladeRush.name": { "en": "Blade Rush", "text": "ఖడ్గ దూకుడు" },

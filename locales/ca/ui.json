@@ -376,7 +376,7 @@
   "settings.zoomSpeed": { "en": "Zoom speed", "text": "Velocitat del zoom" },
   "stake.recentHits": { "en": "Your last {raids} raids: 2★ or more in {two}, 3★ in {three}.", "text": "Les teves últimes {raids} incursions: 2★ o més en {two}, 3★ en {three}." },
   "whatsNew.0_2_0": { "en": "What's new: choose a larger text size, and turn screen shake and flashes down, in Settings. The stake picker shows how often your recent raids reached two and three stars. Shadow Trials climb more evenly, and raids at Keep 4 and Keep 15 meet fairer opponents.", "text": "Novetats: tria una mida de text més gran i redueix les sacsejades i els flaixos de la pantalla a la Configuració. El selector d'apostes mostra quantes vegades les teves últimes incursions han arribat a dues i tres estrelles. Les Proves de les Ombres pugen de manera més uniforme i les incursions a la Fortalesa 4 i 15 troben rivals més justos." },
-  "army.buyCount": { "en": "Buy & +{n}", "text": "Compra i +{n}" },
+  "army.buyCount": { "en": "Buy +{n}", "text": "Compra +{n}" },
   "strategy.title": { "en": "{n, plural, one {Prebuilt strategies (#)} other {Prebuilt strategies (#)}}", "text": "{n, plural, one {Estratègies predefinides (#)} other {Estratègies predefinides (#)}}" },
   "strategy.intro": { "en": "Each strategy fills your Squad Courtyards from the warriors you can train now. Train queues what you can pay for.", "text": "Cada estratègia omple els teus Patis dels Esquadrons amb els guerrers que pots entrenar ara. Entrena posa a la cua el que pots pagar." },
   "strategy.bladeRush.name": { "en": "Blade Rush", "text": "Càrrega de fulles" },

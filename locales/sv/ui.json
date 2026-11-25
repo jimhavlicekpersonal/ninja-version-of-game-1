@@ -376,7 +376,7 @@
   "settings.zoomSpeed": { "en": "Zoom speed", "text": "Zoomhastighet" },
   "stake.recentHits": { "en": "Your last {raids} raids: 2★ or more in {two}, 3★ in {three}.", "text": "Dina senaste {raids} räder: 2★ eller mer i {two}, 3★ i {three}." },
   "whatsNew.0_2_0": { "en": "What's new: choose a larger text size, and turn screen shake and flashes down, in Settings. The stake picker shows how often your recent raids reached two and three stars. Shadow Trials climb more evenly, and raids at Keep 4 and Keep 15 meet fairer opponents.", "text": "Nytt: välj större text och minska skärmskakningar och blixtar i Inställningar. Insatsväljaren visar hur ofta dina senaste räder nådde två och tre stjärnor. Skuggprövningarna stiger jämnare, och räder vid Borg 4 och Borg 15 möter rättvisare motståndare." },
-  "army.buyCount": { "en": "Buy & +{n}", "text": "Köp & +{n}" },
+  "army.buyCount": { "en": "Buy +{n}", "text": "Köp +{n}" },
   "strategy.title": { "en": "{n, plural, one {Prebuilt strategies (#)} other {Prebuilt strategies (#)}}", "text": "{n, plural, one {Färdiga strategier (#)} other {Färdiga strategier (#)}}" },
   "strategy.intro": { "en": "Each strategy fills your Squad Courtyards from the warriors you can train now. Train queues what you can pay for.", "text": "Varje strategi fyller dina Truppgårdar med de krigare du kan träna nu. Träna köar det du har råd med." },
   "strategy.bladeRush.name": { "en": "Blade Rush", "text": "Klingstorm" },

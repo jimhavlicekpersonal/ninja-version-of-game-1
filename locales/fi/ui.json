@@ -376,7 +376,7 @@
   "settings.zoomSpeed": { "en": "Zoom speed", "text": "Zoomauksen nopeus" },
   "stake.recentHits": { "en": "Your last {raids} raids: 2★ or more in {two}, 3★ in {three}.", "text": "Viimeiset {raids} ryöstöretkeäsi: 2★ tai enemmän {two} kertaa, 3★ {three} kertaa." },
   "whatsNew.0_2_0": { "en": "What's new: choose a larger text size, and turn screen shake and flashes down, in Settings. The stake picker shows how often your recent raids reached two and three stars. Shadow Trials climb more evenly, and raids at Keep 4 and Keep 15 meet fairer opponents.", "text": "Uutta: valitse asetuksista suurempi tekstikoko ja vähennä näytön tärinää ja välähdyksiä. Panoksen valinta näyttää, kuinka usein viimeisimmät ryöstöretkesi saivat kaksi ja kolme tähteä. Varjokoetukset vaikeutuvat tasaisemmin, ja ryöstöt Linnoituksissa 4 ja 15 kohtaavat reilumpia vastustajia." },
-  "army.buyCount": { "en": "Buy & +{n}", "text": "Osta ja +{n}" },
+  "army.buyCount": { "en": "Buy +{n}", "text": "Osta +{n}" },
   "strategy.title": { "en": "{n, plural, one {Prebuilt strategies (#)} other {Prebuilt strategies (#)}}", "text": "{n, plural, one {Valmiit strategiat (#)} other {Valmiit strategiat (#)}}" },
   "strategy.intro": { "en": "Each strategy fills your Squad Courtyards from the warriors you can train now. Train queues what you can pay for.", "text": "Jokainen strategia täyttää Joukkopihasi sotureilla, joita voit kouluttaa nyt. Kouluta asettaa jonoon sen, mihin sinulla on varaa." },
   "strategy.bladeRush.name": { "en": "Blade Rush", "text": "Teräryntäys" },

@@ -376,7 +376,7 @@
   "settings.zoomSpeed": { "en": "Zoom speed", "text": "Zoomgeschwindigkeit" },
   "stake.recentHits": { "en": "Your last {raids} raids: 2★ or more in {two}, 3★ in {three}.", "text": "Deine letzten {raids} Überfälle: 2★ oder mehr in {two}, 3★ in {three}." },
   "whatsNew.0_2_0": { "en": "What's new: choose a larger text size, and turn screen shake and flashes down, in Settings. The stake picker shows how often your recent raids reached two and three stars. Shadow Trials climb more evenly, and raids at Keep 4 and Keep 15 meet fairer opponents.", "text": "Neu: Wähle in den Einstellungen eine größere Schrift und verringere Bildschirmwackeln und Blitze. Die Einsatzauswahl zeigt, wie oft deine letzten Überfälle zwei und drei Sterne erreicht haben. Die Schattenprüfungen steigen gleichmäßiger an, und Überfälle auf Burg 4 und Burg 15 treffen auf fairere Gegner." },
-  "army.buyCount": { "en": "Buy & +{n}", "text": "Kaufen & +{n}" },
+  "army.buyCount": { "en": "Buy +{n}", "text": "Kaufen +{n}" },
   "strategy.title": { "en": "{n, plural, one {Prebuilt strategies (#)} other {Prebuilt strategies (#)}}", "text": "{n, plural, one {Fertige Strategien (#)} other {Fertige Strategien (#)}}" },
   "strategy.intro": { "en": "Each strategy fills your Squad Courtyards from the warriors you can train now. Train queues what you can pay for.", "text": "Jede Strategie füllt deine Truppenhöfe mit den Kriegern, die du jetzt ausbilden kannst. Ausbilden reiht ein, was du bezahlen kannst." },
   "strategy.bladeRush.name": { "en": "Blade Rush", "text": "Klingensturm" },

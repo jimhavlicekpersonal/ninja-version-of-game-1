@@ -376,7 +376,7 @@
   "settings.zoomSpeed": { "en": "Zoom speed", "text": "Ταχύτητα ζουμ" },
   "stake.recentHits": { "en": "Your last {raids} raids: 2★ or more in {two}, 3★ in {three}.", "text": "Οι τελευταίες {raids} επιδρομές σου: 2★ ή περισσότερα σε {two}, 3★ σε {three}." },
   "whatsNew.0_2_0": { "en": "What's new: choose a larger text size, and turn screen shake and flashes down, in Settings. The stake picker shows how often your recent raids reached two and three stars. Shadow Trials climb more evenly, and raids at Keep 4 and Keep 15 meet fairer opponents.", "text": "Τι νέο: επίλεξε μεγαλύτερο μέγεθος κειμένου και μείωσε το κούνημα της οθόνης και τις λάμψεις από τις Ρυθμίσεις. Η επιλογή πονταρίσματος δείχνει πόσο συχνά οι πρόσφατες επιδρομές σου έφτασαν τα δύο και τρία αστέρια. Οι Δοκιμασίες Σκιάς ανεβαίνουν πιο ομαλά και οι επιδρομές στο Φρούριο 4 και 15 βρίσκουν πιο δίκαιους αντιπάλους." },
-  "army.buyCount": { "en": "Buy & +{n}", "text": "Αγορά & +{n}" },
+  "army.buyCount": { "en": "Buy +{n}", "text": "Αγορά +{n}" },
   "strategy.title": { "en": "{n, plural, one {Prebuilt strategies (#)} other {Prebuilt strategies (#)}}", "text": "{n, plural, one {Έτοιμες στρατηγικές (#)} other {Έτοιμες στρατηγικές (#)}}" },
   "strategy.intro": { "en": "Each strategy fills your Squad Courtyards from the warriors you can train now. Train queues what you can pay for.", "text": "Κάθε στρατηγική γεμίζει τις Αυλές Ομάδας σου με τους πολεμιστές που μπορείς να εκπαιδεύσεις τώρα. Η Εκπαίδευση βάζει σε σειρά όσους μπορείς να πληρώσεις." },
   "strategy.bladeRush.name": { "en": "Blade Rush", "text": "Έφοδος Λεπίδων" },

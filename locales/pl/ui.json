@@ -376,7 +376,7 @@
   "settings.zoomSpeed": { "en": "Zoom speed", "text": "Szybkość przybliżania" },
   "stake.recentHits": { "en": "Your last {raids} raids: 2★ or more in {two}, 3★ in {three}.", "text": "Twoje ostatnie najazdy ({raids}): 2★ lub więcej w {two}, 3★ w {three}." },
   "whatsNew.0_2_0": { "en": "What's new: choose a larger text size, and turn screen shake and flashes down, in Settings. The stake picker shows how often your recent raids reached two and three stars. Shadow Trials climb more evenly, and raids at Keep 4 and Keep 15 meet fairer opponents.", "text": "Nowości: w Ustawieniach wybierz większy tekst i ogranicz wstrząsy ekranu oraz błyski. Wybór stawki pokazuje, jak często twoje ostatnie najazdy zdobyły dwie i trzy gwiazdki. Próby Cienia rosną równiej, a najazdy przy Twierdzy 4 i 15 trafiają na uczciwszych rywali." },
-  "army.buyCount": { "en": "Buy & +{n}", "text": "Kup i +{n}" },
+  "army.buyCount": { "en": "Buy +{n}", "text": "Kup +{n}" },
   "strategy.title": { "en": "{n, plural, one {Prebuilt strategies (#)} other {Prebuilt strategies (#)}}", "text": "{n, plural, one {Gotowe strategie (#)} few {Gotowe strategie (#)} many {Gotowe strategie (#)} other {Gotowe strategie (#)}}" },
   "strategy.intro": { "en": "Each strategy fills your Squad Courtyards from the warriors you can train now. Train queues what you can pay for.", "text": "Każda strategia wypełnia twoje Dziedzińce Oddziałów wojownikami, których możesz teraz szkolić. Szkol dodaje do kolejki to, na co cię stać." },
   "strategy.bladeRush.name": { "en": "Blade Rush", "text": "Szarża ostrzy" },

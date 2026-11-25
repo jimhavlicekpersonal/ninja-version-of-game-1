@@ -376,7 +376,7 @@
   "settings.zoomSpeed": { "en": "Zoom speed", "text": "Hitrost povečave" },
   "stake.recentHits": { "en": "Your last {raids} raids: 2★ or more in {two}, 3★ in {three}.", "text": "Tvojih zadnjih {raids} napadov: 2★ ali več v {two}, 3★ v {three}." },
   "whatsNew.0_2_0": { "en": "What's new: choose a larger text size, and turn screen shake and flashes down, in Settings. The stake picker shows how often your recent raids reached two and three stars. Shadow Trials climb more evenly, and raids at Keep 4 and Keep 15 meet fairer opponents.", "text": "Novosti: v Nastavitvah izberi večje besedilo in zmanjšaj tresenje zaslona in bliske. Izbira stave pokaže, kako pogosto so tvoji zadnji napadi dosegli dve in tri zvezdice. Preizkušnje senc se stopnjujejo bolj enakomerno, napadi pri Trdnjavi 4 in 15 pa srečajo pravičnejše nasprotnike." },
-  "army.buyCount": { "en": "Buy & +{n}", "text": "Kupi · +{n}" },
+  "army.buyCount": { "en": "Buy +{n}", "text": "Kupi +{n}" },
   "strategy.title": { "en": "{n, plural, one {Prebuilt strategies (#)} other {Prebuilt strategies (#)}}", "text": "{n, plural, one {Pripravljene strategije (#)} two {Pripravljene strategije (#)} few {Pripravljene strategije (#)} other {Pripravljene strategije (#)}}" },
   "strategy.intro": { "en": "Each strategy fills your Squad Courtyards from the warriors you can train now. Train queues what you can pay for.", "text": "Vsaka strategija napolni tvoja Dvorišča odredov z bojevniki, ki jih lahko uriš že zdaj. Uri doda v vrsto toliko, kolikor lahko plačaš." },
   "strategy.bladeRush.name": { "en": "Blade Rush", "text": "Naval rezil" },

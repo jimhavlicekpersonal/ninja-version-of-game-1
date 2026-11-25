@@ -376,7 +376,7 @@
   "settings.zoomSpeed": { "en": "Zoom speed", "text": "ଜୁମ୍ ବେଗ" },
   "stake.recentHits": { "en": "Your last {raids} raids: 2★ or more in {two}, 3★ in {three}.", "text": "ତୁମର ଶେଷ {raids}ଟି ଆକ୍ରମଣ: {two}ଟିରେ 2★ ବା ଅଧିକ, {three}ଟିରେ 3★।" },
   "whatsNew.0_2_0": { "en": "What's new: choose a larger text size, and turn screen shake and flashes down, in Settings. The stake picker shows how often your recent raids reached two and three stars. Shadow Trials climb more evenly, and raids at Keep 4 and Keep 15 meet fairer opponents.", "text": "ନୂଆ କଣ: ସେଟିଂସରେ ବଡ଼ ଲେଖା ବାଛନ୍ତୁ, ଏବଂ ସ୍କ୍ରିନ୍ ହଲିବା ଓ ଝଲକ କମାନ୍ତୁ। ବାଜି ବାଛିବାରେ ଦେଖାଯାଏ ଆପଣଙ୍କ ସାମ୍ପ୍ରତିକ ଆକ୍ରମଣ କେତେ ଥର ଦୁଇ ଓ ତିନି ତାରା ପାଇଲା। ଛାୟା ପରୀକ୍ଷା ଅଧିକ ସମାନ ଭାବେ ଚଢ଼େ, ଏବଂ ଦୁର୍ଗ 4 ଓ 15ର ଆକ୍ରମଣ ଅଧିକ ନ୍ୟାୟପୂର୍ଣ୍ଣ ପ୍ରତିଦ୍ୱନ୍ଦ୍ୱୀ ପାଏ।" },
-  "army.buyCount": { "en": "Buy & +{n}", "text": "କିଣି +{n}" },
+  "army.buyCount": { "en": "Buy +{n}", "text": "କିଣନ୍ତୁ +{n}" },
   "strategy.title": { "en": "{n, plural, one {Prebuilt strategies (#)} other {Prebuilt strategies (#)}}", "text": "{n, plural, one {ପ୍ରସ୍ତୁତ ରଣନୀତି (#)} other {ପ୍ରସ୍ତୁତ ରଣନୀତି (#)}}" },
   "strategy.intro": { "en": "Each strategy fills your Squad Courtyards from the warriors you can train now. Train queues what you can pay for.", "text": "ପ୍ରତ୍ୟେକ ରଣନୀତି ଆପଣ ଏବେ ପ୍ରଶିକ୍ଷଣ ଦେଇପାରୁଥିବା ଯୋଦ୍ଧାଙ୍କ ଦ୍ୱାରା ଆପଣଙ୍କ ଦଳ ପ୍ରାଙ୍ଗଣ ଭରିଦିଏ। ପ୍ରଶିକ୍ଷଣ ଦବାଇଲେ ଯେତେଜଣଙ୍କ ଖର୍ଚ୍ଚ ଆପଣ ଦେଇପାରିବେ, ସେତେଜଣ ଧାଡ଼ିରେ ଯୋଗ ହୁଅନ୍ତି।" },
   "strategy.bladeRush.name": { "en": "Blade Rush", "text": "ଖଣ୍ଡା ଝଡ଼" },

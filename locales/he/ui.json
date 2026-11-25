@@ -376,7 +376,7 @@
   "settings.zoomSpeed": { "en": "Zoom speed", "text": "מהירות הזום" },
   "stake.recentHits": { "en": "Your last {raids} raids: 2★ or more in {two}, 3★ in {three}.", "text": "{raids} הפשיטות האחרונות שלך: 2★ ומעלה ב-{two}, 3★ ב-{three}." },
   "whatsNew.0_2_0": { "en": "What's new: choose a larger text size, and turn screen shake and flashes down, in Settings. The stake picker shows how often your recent raids reached two and three stars. Shadow Trials climb more evenly, and raids at Keep 4 and Keep 15 meet fairer opponents.", "text": "מה חדש: בחרו גודל טקסט גדול יותר והפחיתו רעידות מסך והבזקים בהגדרות. בוחר ההימור מראה כמה פעמים הפשיטות האחרונות שלכם הגיעו לשני כוכבים ולשלושה. מבחני הצל מטפסים בצורה אחידה יותר, ופשיטות במבצר 4 ובמבצר 15 פוגשות יריבים הוגנים יותר." },
-  "army.buyCount": { "en": "Buy & +{n}", "text": "קנייה +{n}" },
+  "army.buyCount": { "en": "Buy +{n}", "text": "קנייה +{n}" },
   "strategy.title": { "en": "{n, plural, one {Prebuilt strategies (#)} other {Prebuilt strategies (#)}}", "text": "{n, plural, one {אסטרטגיה מוכנה (#)} two {אסטרטגיות מוכנות (#)} other {אסטרטגיות מוכנות (#)}}" },
   "strategy.intro": { "en": "Each strategy fills your Squad Courtyards from the warriors you can train now. Train queues what you can pay for.", "text": "כל אסטרטגיה ממלאת את חצרות החוליות שלך בלוחמים שאפשר לאמן עכשיו. אימון מכניס לתור את מה שאפשר לשלם עליו." },
   "strategy.bladeRush.name": { "en": "Blade Rush", "text": "הסתערות להבים" },

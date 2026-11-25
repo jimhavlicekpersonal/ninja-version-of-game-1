@@ -376,7 +376,7 @@
   "settings.zoomSpeed": { "en": "Zoom speed", "text": "സൂം വേഗം" },
   "stake.recentHits": { "en": "Your last {raids} raids: 2★ or more in {two}, 3★ in {three}.", "text": "നിങ്ങളുടെ അവസാന {raids} റെയ്ഡുകൾ: {two} എണ്ണത്തിൽ 2★ അല്ലെങ്കിൽ കൂടുതൽ, {three} എണ്ണത്തിൽ 3★." },
   "whatsNew.0_2_0": { "en": "What's new: choose a larger text size, and turn screen shake and flashes down, in Settings. The stake picker shows how often your recent raids reached two and three stars. Shadow Trials climb more evenly, and raids at Keep 4 and Keep 15 meet fairer opponents.", "text": "പുതിയത്: ക്രമീകരണങ്ങളിൽ വലിയ അക്ഷര വലുപ്പം തിരഞ്ഞെടുക്കാം, സ്ക്രീൻ കുലുക്കവും മിന്നലുകളും കുറയ്ക്കാം. സമീപകാല റെയ്ഡുകൾ എത്ര തവണ രണ്ടും മൂന്നും നക്ഷത്രം നേടി എന്ന് പന്തയം തിരഞ്ഞെടുക്കുമ്പോൾ കാണാം. നിഴൽ പരീക്ഷണങ്ങൾ കൂടുതൽ ക്രമമായി കയറുന്നു, കോട്ട 4-ലും 15-ലും ഉള്ള റെയ്ഡുകൾക്ക് കൂടുതൽ ന്യായമായ എതിരാളികളെ ലഭിക്കും." },
-  "army.buyCount": { "en": "Buy & +{n}", "text": "വാങ്ങി +{n}" },
+  "army.buyCount": { "en": "Buy +{n}", "text": "വാങ്ങുക +{n}" },
   "strategy.title": { "en": "{n, plural, one {Prebuilt strategies (#)} other {Prebuilt strategies (#)}}", "text": "{n, plural, one {തയ്യാർ തന്ത്രങ്ങൾ (#)} other {തയ്യാർ തന്ത്രങ്ങൾ (#)}}" },
   "strategy.intro": { "en": "Each strategy fills your Squad Courtyards from the warriors you can train now. Train queues what you can pay for.", "text": "ഓരോ തന്ത്രവും ഇപ്പോൾ പരിശീലിപ്പിക്കാവുന്ന യോദ്ധാക്കളെക്കൊണ്ട് നിങ്ങളുടെ സംഘമുറ്റങ്ങൾ നിറയ്ക്കുന്നു. പരിശീലിപ്പിക്കുക അമർത്തിയാൽ പണം തികയുന്നത്രയും ക്യൂവിൽ ചേരും." },
   "strategy.bladeRush.name": { "en": "Blade Rush", "text": "വാൾപ്പാച്ചിൽ" },

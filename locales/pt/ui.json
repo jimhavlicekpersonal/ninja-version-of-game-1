@@ -376,7 +376,7 @@
   "settings.zoomSpeed": { "en": "Zoom speed", "text": "Velocidade do zoom" },
   "stake.recentHits": { "en": "Your last {raids} raids: 2★ or more in {two}, 3★ in {three}.", "text": "Seus últimos {raids} ataques: 2★ ou mais em {two}, 3★ em {three}." },
   "whatsNew.0_2_0": { "en": "What's new: choose a larger text size, and turn screen shake and flashes down, in Settings. The stake picker shows how often your recent raids reached two and three stars. Shadow Trials climb more evenly, and raids at Keep 4 and Keep 15 meet fairer opponents.", "text": "Novidades: escolha um texto maior e reduza tremores e clarões da tela nas Configurações. O seletor de aposta mostra quantas vezes seus últimos ataques chegaram a duas e três estrelas. As Provas das Sombras sobem de forma mais regular, e os ataques na Fortaleza 4 e 15 encontram adversários mais justos." },
-  "army.buyCount": { "en": "Buy & +{n}", "text": "Comprar e +{n}" },
+  "army.buyCount": { "en": "Buy +{n}", "text": "Comprar +{n}" },
   "strategy.title": { "en": "{n, plural, one {Prebuilt strategies (#)} other {Prebuilt strategies (#)}}", "text": "{n, plural, one {Estratégias prontas (#)} other {Estratégias prontas (#)}}" },
   "strategy.intro": { "en": "Each strategy fills your Squad Courtyards from the warriors you can train now. Train queues what you can pay for.", "text": "Cada estratégia enche seus Pátios dos Esquadrões com os guerreiros que você pode treinar agora. Treinar põe na fila o que você pode pagar." },
   "strategy.bladeRush.name": { "en": "Blade Rush", "text": "Avanço de Lâminas" },

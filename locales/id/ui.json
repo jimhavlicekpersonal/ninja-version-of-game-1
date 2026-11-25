@@ -376,7 +376,7 @@
   "settings.zoomSpeed": { "en": "Zoom speed", "text": "Kecepatan zoom" },
   "stake.recentHits": { "en": "Your last {raids} raids: 2★ or more in {two}, 3★ in {three}.", "text": "{raids} serbuan terakhirmu: 2★ atau lebih di {two}, 3★ di {three}." },
   "whatsNew.0_2_0": { "en": "What's new: choose a larger text size, and turn screen shake and flashes down, in Settings. The stake picker shows how often your recent raids reached two and three stars. Shadow Trials climb more evenly, and raids at Keep 4 and Keep 15 meet fairer opponents.", "text": "Yang baru: pilih ukuran teks lebih besar, dan kurangi guncangan layar serta kilatan di Pengaturan. Pemilih taruhan menunjukkan seberapa sering serbuan terakhirmu mencapai dua dan tiga bintang. Ujian Bayangan naik lebih merata, dan serbuan di Benteng 4 dan 15 menghadapi lawan yang lebih adil." },
-  "army.buyCount": { "en": "Buy & +{n}", "text": "Beli & +{n}" },
+  "army.buyCount": { "en": "Buy +{n}", "text": "Beli +{n}" },
   "strategy.title": { "en": "{n, plural, one {Prebuilt strategies (#)} other {Prebuilt strategies (#)}}", "text": "{n, plural, other {Strategi siap pakai (#)}}" },
   "strategy.intro": { "en": "Each strategy fills your Squad Courtyards from the warriors you can train now. Train queues what you can pay for.", "text": "Setiap strategi mengisi Halaman Regu-mu dengan prajurit yang bisa kamu latih sekarang. Latih mengantrekan yang mampu kamu bayar." },
   "strategy.bladeRush.name": { "en": "Blade Rush", "text": "Serbuan Pedang" },

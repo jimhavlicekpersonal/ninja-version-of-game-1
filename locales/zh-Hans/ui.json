@@ -376,7 +376,7 @@
   "settings.zoomSpeed": { "en": "Zoom speed", "text": "缩放速度" },
   "stake.recentHits": { "en": "Your last {raids} raids: 2★ or more in {two}, 3★ in {three}.", "text": "最近 {raids} 次突袭：{two} 次达到 2★ 或以上，{three} 次 3★。" },
   "whatsNew.0_2_0": { "en": "What's new: choose a larger text size, and turn screen shake and flashes down, in Settings. The stake picker shows how often your recent raids reached two and three stars. Shadow Trials climb more evenly, and raids at Keep 4 and Keep 15 meet fairer opponents.", "text": "新内容：可在设置中选择更大的文字，并减少屏幕震动和闪光。押注选择会显示你最近的突袭达到两星和三星的次数。暗影试炼的难度上升更平稳，天守 4 和天守 15 的突袭会遇到更公平的对手。" },
-  "army.buyCount": { "en": "Buy & +{n}", "text": "购买并 +{n}" },
+  "army.buyCount": { "en": "Buy +{n}", "text": "购买 +{n}" },
   "strategy.title": { "en": "{n, plural, one {Prebuilt strategies (#)} other {Prebuilt strategies (#)}}", "text": "{n, plural, other {预设战术（#）}}" },
   "strategy.intro": { "en": "Each strategy fills your Squad Courtyards from the warriors you can train now. Train queues what you can pay for.", "text": "每种战术都会用你现在能训练的战士填满集结庭院。点“训练”会把你付得起的部分加入队列。" },
   "strategy.bladeRush.name": { "en": "Blade Rush", "text": "利刃冲锋" },

@@ -376,7 +376,7 @@
   "settings.zoomSpeed": { "en": "Zoom speed", "text": "झूमचा वेग" },
   "stake.recentHits": { "en": "Your last {raids} raids: 2★ or more in {two}, 3★ in {three}.", "text": "तुमचे शेवटचे {raids} छापे: {two} मध्ये 2★ किंवा जास्त, {three} मध्ये 3★." },
   "whatsNew.0_2_0": { "en": "What's new: choose a larger text size, and turn screen shake and flashes down, in Settings. The stake picker shows how often your recent raids reached two and three stars. Shadow Trials climb more evenly, and raids at Keep 4 and Keep 15 meet fairer opponents.", "text": "नवीन काय: सेटिंग्जमध्ये मोठा मजकूर निवडा, आणि स्क्रीन हलणे आणि चमक कमी करा. पैज निवडताना तुमच्या अलीकडच्या छाप्यांनी किती वेळा दोन आणि तीन तारे मिळवले ते दिसते. छाया परीक्षा अधिक समानपणे कठीण होतात, आणि किल्ला 4 आणि 15 वरील छाप्यांना अधिक न्याय्य विरोधक मिळतात." },
-  "army.buyCount": { "en": "Buy & +{n}", "text": "खरेदी करा व +{n}" },
+  "army.buyCount": { "en": "Buy +{n}", "text": "खरेदी करा +{n}" },
   "strategy.title": { "en": "{n, plural, one {Prebuilt strategies (#)} other {Prebuilt strategies (#)}}", "text": "{n, plural, one {तयार रणनीती (#)} other {तयार रणनीती (#)}}" },
   "strategy.intro": { "en": "Each strategy fills your Squad Courtyards from the warriors you can train now. Train queues what you can pay for.", "text": "प्रत्येक रणनीती आत्ता प्रशिक्षण देता येणाऱ्या योद्ध्यांनी तुमची पथकाची अंगणे भरते. प्रशिक्षण द्या दाबल्यावर जितक्यांचा खर्च परवडतो तितके रांगेत जातात." },
   "strategy.bladeRush.name": { "en": "Blade Rush", "text": "पात्यांची धडक" },

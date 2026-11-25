@@ -376,7 +376,7 @@
   "settings.zoomSpeed": { "en": "Zoom speed", "text": "زوم کی رفتار" },
   "stake.recentHits": { "en": "Your last {raids} raids: 2★ or more in {two}, 3★ in {three}.", "text": "آپ کے آخری {raids} چھاپے: {two} میں 2★ یا زیادہ، {three} میں 3★۔" },
   "whatsNew.0_2_0": { "en": "What's new: choose a larger text size, and turn screen shake and flashes down, in Settings. The stake picker shows how often your recent raids reached two and three stars. Shadow Trials climb more evenly, and raids at Keep 4 and Keep 15 meet fairer opponents.", "text": "نیا کیا ہے: سیٹنگز میں بڑا متن منتخب کریں، اور اسکرین کا ہلنا اور چمک کم کریں۔ شرط کے انتخاب میں دکھتا ہے کہ آپ کے حالیہ چھاپوں نے کتنی بار دو اور تین ستارے حاصل کیے۔ سایہ آزمائشیں زیادہ ہموار انداز میں مشکل ہوتی ہیں، اور قلعہ 4 اور 15 کے چھاپوں کو زیادہ منصفانہ مخالف ملتے ہیں۔" },
-  "army.buyCount": { "en": "Buy & +{n}", "text": "خریدیں اور +{n}" },
+  "army.buyCount": { "en": "Buy +{n}", "text": "خریدیں +{n}" },
   "strategy.title": { "en": "{n, plural, one {Prebuilt strategies (#)} other {Prebuilt strategies (#)}}", "text": "{n, plural, one {تیار حکمت عملی (#)} other {تیار حکمت عملیاں (#)}}" },
   "strategy.intro": { "en": "Each strategy fills your Squad Courtyards from the warriors you can train now. Train queues what you can pay for.", "text": "ہر حکمت عملی آپ کے دستے کے صحنوں کو ان جنگجوؤں سے بھرتی ہے جن کی تربیت ابھی ممکن ہے۔ تربیت بٹن اتنے جنگجو قطار میں لگاتا ہے جتنوں کی قیمت ادا ہو سکے۔" },
   "strategy.bladeRush.name": { "en": "Blade Rush", "text": "تیغوں کا دھاوا" },
