@@ -654,6 +654,9 @@ details summary { cursor: pointer; font-weight: 800; margin: 8px 0 4px; }
 .army-actions .btn { min-height: 44px; padding: 4px 2px; font-size: 0.8125rem; white-space: nowrap; }
 .army-actions .btn.buy { grid-column: 1 / -1; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
 .army-actions.research-actions { grid-template-columns: minmax(0, 1fr); }
+/* Jade batches (+1, +5, +10, Fill) on their own full-width line under the free buttons; each wraps its label. */
+.army-actions .army-buys { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 7.5rem), 1fr)); gap: 6px; margin-top: 2px; }
+.army-actions .army-buys .btn.buy { grid-column: auto; white-space: normal; line-height: 1.15; min-width: 0; }
 .army-actions.research-actions .btn { min-height: 44px; white-space: normal; }
 .army-setup { padding: 10px 12px; border-radius: 16px; background: #fff; box-shadow: 0 2px 0 rgba(38, 48, 61, .12); }
 .army-setup ul { list-style: none; padding: 0; margin: 8px 0; }

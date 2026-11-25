@@ -748,6 +748,7 @@ async function boot(): Promise<void> {
     onNotificationsChanged: () => void syncPush(),
     reminderNote: reminders.note,
     onReplayTutorial: () => tutorial?.restart(),
+    onReplayLessons: () => tutorial?.restartLessons(),
     debugTime,
     sandbox,
     allowServerChoice,

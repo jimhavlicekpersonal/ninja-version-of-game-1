@@ -61,6 +61,8 @@ export interface HudDeps {
   onNotificationsChanged?(): void;
   reminderNote: string;
   onReplayTutorial(): void;
+  /** Settings → replay Sensei's lessons (the tutorial's second chapter) only. */
+  onReplayLessons?(): void;
   /** Where the Grove screen gets its Grove: the bot Grove offline, a real one online. */
   groveSource: GroveSource;
   /** Online play (status 'off' when no server is configured). */

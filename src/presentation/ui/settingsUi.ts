@@ -122,7 +122,12 @@ export class SettingsUi {
       typeBox,
       h('label', { class: 'toggle' }, breakToggle, i18nText("ui.suggest_a_break_after_an_hour_of_play_7a4f7f2842")),
       h('p', { class: 'muted small' }, i18nMessage(this.deps.reminderNote)),
-      h('div', { class: 'actions' }, h('button', { class: 'btn ghost', type: 'button', onclick: () => { this.closeAllModals(); this.deps.onReplayTutorial(); } }, i18nText("ui.replay_the_tutorial_fd4b665fc3"))),
+      h(
+        'div',
+        { class: 'actions' },
+        h('button', { class: 'btn ghost', type: 'button', onclick: () => { this.closeAllModals(); this.deps.onReplayTutorial(); } }, i18nText("ui.replay_the_tutorial_fd4b665fc3")),
+        this.deps.onReplayLessons ? h('button', { class: 'btn ghost', type: 'button', 'data-id': 'replay-lessons', onclick: () => { this.closeAllModals(); this.deps.onReplayLessons?.(); } }, t('lesson.replay')) : null,
+      ),
     );
 
     // Graphics

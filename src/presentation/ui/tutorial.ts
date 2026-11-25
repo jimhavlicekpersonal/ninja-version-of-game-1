@@ -118,6 +118,71 @@ const STEPS: Step[] = [
   },
 ];
 
+/**
+ * Chapter 2, Sensei's lessons (2026-11-25): after the nine guided steps, short lessons on what the first steps leave
+ * out. They never block the game (every lesson has a button), point only at things that are on screen, and keep their
+ * progress on this device (`tk.lessons`), not in the save: the nine steps above and the save format stay as they are.
+ */
+const TREASURY = 'acorn_silo';
+const STOREHOUSE = 'dew_cistern';
+const levelOf = (s: VillageState, type: string) => Math.max(0, ...s.buildings.filter((b) => b.type === type).map((b) => b.level));
+const defenses = (s: VillageState, c: GameController) => s.buildings.filter((b) => c.data.buildings[b.type]?.category === 'defense').length;
+const next = () => t('lesson.next');
+const RAIL = (id: string) => [`.side-rail .round-btn[data-id="${id}"]:not([hidden])`];
+const LESSONS: Step[] = [
+  { id: 'lessons', text: () => t('lesson.intro'), button: () => t('lesson.intro.button'), mood: 'smile' },
+  {
+    id: 'storage',
+    text: () => t('lesson.storage'),
+    targets: [`.sheet[data-type="${TREASURY}"] .btn.upgrade:not(:disabled)`, `.sheet[data-type="${STOREHOUSE}"] .btn.upgrade:not(:disabled)`],
+    mapTarget: TREASURY,
+    done: (s) => levelOf(s, TREASURY) >= 2 && levelOf(s, STOREHOUSE) >= 2,
+    button: next,
+  },
+  { id: 'collectAll', text: () => t('lesson.collectAll'), targets: ['[data-id="collect-all"]'], mapTarget: MINT, button: next },
+  { id: 'artisans', text: () => t('lesson.artisans'), targets: ['.res-builders'], button: next, mood: 'calm' },
+  { id: 'defenses', text: () => t('lesson.defenses'), targets: ['.round-btn.build'], done: (s, c) => defenses(s, c) >= 3, button: next, mood: 'stern' },
+  { id: 'walls', text: () => t('lesson.walls'), targets: ['.round-btn.build'], button: next },
+  { id: 'research', text: () => t('lesson.research'), targets: ['.army-tabs [role="tab"]:last-child', '.round-btn[data-id="army"]'], done: (s) => s.research.active.length > 0, button: next },
+  { id: 'strategies', text: () => t('lesson.strategies'), targets: ['[data-id="strategies"] summary', '.round-btn[data-id="army"]'], button: next },
+  { id: 'jade', text: () => t('lesson.jade'), targets: ['.army-buys .btn.buy', '.round-btn[data-id="army"]'], button: next, mood: 'calm' },
+  { id: 'saveArmy', text: () => t('lesson.saveArmy'), targets: ['.round-btn[data-id="army"]'], done: (s) => s.armyPresets.length > 0, button: next },
+  { id: 'scout', text: () => t('lesson.scout'), targets: ['.round-btn.attack'], button: next, mood: 'stern' },
+  { id: 'abilities', text: () => t('lesson.abilities'), button: next, mood: 'stern' },
+  { id: 'shield', text: () => t('lesson.shield'), button: next, mood: 'calm' },
+  { id: 'defenseLog', text: () => t('lesson.defenseLog'), targets: ['.round-btn[data-id="log"]'], button: next },
+  { id: 'daily', text: () => t('lesson.daily'), targets: RAIL('daily'), button: next, mood: 'smile' },
+  { id: 'trials', text: () => t('lesson.trials'), targets: RAIL('trials'), button: next },
+  { id: 'alliance', text: () => t('lesson.alliance'), targets: RAIL('alliance'), button: next, mood: 'smile' },
+  { id: 'lessonsEnd', text: () => t('lesson.end'), button: () => t('lesson.end.button'), mood: 'smile' },
+];
+
+/** Lessons start by themselves only for a young village; an older one can start them from Settings. */
+const LESSONS_AUTO_MAX_KEEP = 4;
+const LESSONS_KEY = 'tk.lessons';
+interface LessonProgress {
+  step: number;
+  done: boolean;
+}
+function loadLessons(): LessonProgress | null {
+  try {
+    const v = JSON.parse(localStorage.getItem(LESSONS_KEY) ?? 'null') as LessonProgress | null;
+    return v && Number.isInteger(v.step) && v.step >= 0 ? { step: v.step, done: Boolean(v.done) } : null;
+  } catch {
+    return null;
+  }
+}
+function storeLessons(p: LessonProgress): void {
+  try {
+    localStorage.setItem(LESSONS_KEY, JSON.stringify(p));
+  } catch {
+    /* private mode: the lessons run for this session only */
+  }
+}
+
+/** For tests: the lesson ids in order. */
+export const LESSON_IDS = LESSONS.map((l) => l.id);
+
 const overlaps = (a0: number, a1: number, b0: number, b1: number) => a0 < b1 && b0 < a1;
 
 /** Guided first steps. Points at buttons and moves on when the player has done each thing. */
@@ -128,6 +193,8 @@ export class Tutorial {
   private text = h('p', {});
   private lastStep = -1;
   private scrolledFor = -1;
+  /** Chapter 2 progress (null: not started on this device). */
+  private lessons: LessonProgress | null = loadLessons();
 
   constructor(
     private readonly c: GameController,
@@ -141,12 +208,27 @@ export class Tutorial {
     root.append(this.ring, this.bubble);
   }
 
-  private get index(): number {
-    return this.c.state.tutorial.step;
+  /** The running chapter: the nine guided steps (in the save), then the lessons (on this device), else nothing. */
+  private get phase(): { steps: Step[]; index: number; lessons: boolean } | null {
+    const tut = this.c.state.tutorial;
+    if (!tut.done) return { steps: STEPS, index: tut.step, lessons: false };
+    if (this.lessons && !this.lessons.done) return { steps: LESSONS, index: this.lessons.step, lessons: true };
+    return null;
+  }
+
+  /** A finished first chapter starts the lessons once, for a young village. */
+  private maybeBeginLessons(): void {
+    if (this.lessons || !this.c.state.tutorial.done) return;
+    const keep = this.c.state.buildings.find((b) => b.type === HALL)?.level ?? 1;
+    if (keep > LESSONS_AUTO_MAX_KEEP) return;
+    this.lessons = { step: 0, done: false };
+    storeLessons(this.lessons);
   }
 
   start(): void {
-    if (this.c.state.tutorial.done) return;
+    this.maybeBeginLessons();
+    if (!this.phase) return;
+    this.lastStep = -1;
     this.render();
     window.clearInterval(this.timer);
     this.timer = window.setInterval(() => this.tick(), 400);
@@ -154,41 +236,73 @@ export class Tutorial {
 
   restart(): void {
     this.c.dispatch({ type: 'tutorial', step: 0, done: false });
+    this.lessons = null;
+    try {
+      localStorage.removeItem(LESSONS_KEY);
+    } catch {
+      /* nothing stored */
+    }
+    this.start();
+  }
+
+  /** Settings → replay only the lessons (any village, the first chapter left as it is). */
+  restartLessons(): void {
+    if (!this.c.state.tutorial.done) return this.start();
+    this.lessons = { step: 0, done: false };
+    storeLessons(this.lessons);
     this.start();
   }
 
   private go(step: number): void {
-    const done = step >= STEPS.length;
-    this.c.dispatch({ type: 'tutorial', step, done });
-    this.analytics.log('tutorial_step', { step, id: STEPS[step]?.id ?? 'done', done });
-    if (done) {
+    const ph = this.phase;
+    if (ph?.lessons) {
+      const done = step >= LESSONS.length;
+      this.lessons = { step, done };
+      storeLessons(this.lessons);
+      // No analytics event: the server reads `tutorial_step` as the first chapter's funnel (done = tutorial done).
+    } else {
+      const done = step >= STEPS.length;
+      this.c.dispatch({ type: 'tutorial', step, done });
+      this.analytics.log('tutorial_step', { step, id: STEPS[step]?.id ?? 'done', done });
+      if (done) this.maybeBeginLessons();
+    }
+    this.scrolledFor = -1;
+    if (!this.phase) {
       window.clearInterval(this.timer);
       this.bubble.hidden = true;
       this.ring.hidden = true;
       return;
     }
+    this.lastStep = -1;
     this.render();
   }
 
   private render(): void {
-    const tut = this.c.state.tutorial;
-    const i = this.index;
-    const step = STEPS[i];
-    if (!step || tut.done) {
+    const ph = this.phase;
+    const step = ph?.steps[ph.index];
+    if (!ph || !step) {
       this.bubble.hidden = true;
       this.ring.hidden = true;
       return;
     }
+    const i = ph.index;
+    const steps = ph.steps;
     this.lastStep = i;
     clear(this.bubble);
     this.bubble.hidden = false;
     // P6-09 (PLY-01): the skip link sits in the bubble's top corner, away from the bottom bar, and asks once (it was one
     // tap over the Army button, and a playtester skipped the whole tutorial twice by accident).
-    const skip = h('button', { class: 'tut-skip corner', type: 'button', 'data-id': 'tutorial-skip' }, t('tutorial.skip'));
+    const skipLabel = ph.lessons ? t('lesson.skip') : t('tutorial.skip');
+    const skip = h('button', { class: 'tut-skip corner', type: 'button', 'data-id': ph.lessons ? 'lessons-skip' : 'tutorial-skip' }, skipLabel);
     skip.addEventListener('click', () => {
-      if (!this.ask) return this.go(STEPS.length);
-      void this.ask(t('tutorial.skip'), t('tutorial.skipAsk'), t('tutorial.skip')).then((yes) => {
-        if (yes) this.go(STEPS.length);
+      if (!this.ask) return this.go(steps.length);
+      void this.ask(skipLabel, ph.lessons ? t('lesson.skipAsk') : t('tutorial.skipAsk'), skipLabel).then((yes) => {
+        // Skipping the first chapter also skips the lessons that would follow it.
+        if (yes && !ph.lessons) {
+          this.lessons = { step: LESSONS.length, done: true };
+          storeLessons(this.lessons);
+        }
+        if (yes) this.go(steps.length);
       });
     });
     const actions = h('div', { class: 'tut-actions' });
@@ -208,7 +322,8 @@ export class Tutorial {
     else face.append(icon(icons.toadstool));
     // Beast Mode UX-08: the step label and Skip share one row that wraps, so a long translation or a larger text
     // size never draws one over the other (Skip used to sit absolutely in the corner).
-    const head = h('div', { class: 'tut-head' }, h('p', { class: 'tut-step' }, t('tutorial.step', { n: i + 1, total: STEPS.length })), i < STEPS.length - 1 ? skip : '');
+    const label = ph.lessons ? t('lesson.step', { n: i + 1, total: steps.length }) : t('tutorial.step', { n: i + 1, total: steps.length });
+    const head = h('div', { class: 'tut-head' }, h('p', { class: 'tut-step' }, label), i < steps.length - 1 ? skip : '');
     this.bubble.append(face, h('div', { class: 'tut-body' }, head, this.text, extra ? h('p', { class: 'tut-extra' }, extra) : null, actions));
   }
 
@@ -217,14 +332,14 @@ export class Tutorial {
   }
 
   private tick(): void {
-    const t = this.c.state.tutorial;
-    if (t.done) {
+    const ph = this.phase;
+    if (!ph) {
       this.bubble.hidden = true;
       this.ring.hidden = true;
       return;
     }
-    const i = this.index;
-    const step = STEPS[i];
+    const i = ph.index;
+    const step = ph.steps[i];
     if (!step) return;
     if (step.done?.(this.c.state, this.c)) {
       this.go(i + 1);

@@ -11,7 +11,7 @@ import { t as i18nText } from './i18n';
  * the scroll position stays where the player left it.
  */
 import { fmtPercent, t } from './i18n';
-import { suggestedArmy } from '../../gameplay/sim/suggest';
+import { availableStrategies, suggestedArmy } from '../../gameplay/sim/suggest';
 import { armyDiversity, diversityShare, trainableRoles } from '../../gameplay/sim/carry';
 import { troopLevelOf, researchLanes } from '../../gameplay/sim/research';
 import { troopLevel } from '../../gameplay/sim/data';
@@ -152,12 +152,14 @@ export class ArmyUi {
       (scope.options[0] as HTMLOptionElement).textContent = i18nText("ui.unlocked_a4d304f69f", { arg1: scopeCount });
       const rows = troops.map((t) => {
         const row = trainRow(v, t, now, gd);
-        const sig = JSON.stringify([t, row.quote.ok, !row.quote.ok && row.quote.message, row.quote.quote, row.fill, row.ahead, v.state.resources.dew >= (row.quote.quote?.cost.dew ?? 0), row.topUp]);
+        const sig = JSON.stringify([t, row.quote.ok, !row.quote.ok && row.quote.message, row.quote.quote, row.fill, row.ahead, v.state.resources.dew >= (row.quote.quote?.cost.dew ?? 0), row.topUp, row.topUps]);
         return { t, row, sig };
       });
       // A one-tap army that fills the camps from warriors trainable now (sim/suggest.ts).
       const suggestion = ready ? suggestedArmy(v.state, gd) : {};
-      const sig = JSON.stringify(['train', v.dojo, v.camp, rows.map((r) => r.sig), ready, suggestion, scopeCount >= 5]);
+      // Prebuilt strategies (sim/suggest.ts `STRATEGIES`): named mixes from the warriors trainable now, folded by default.
+      const strategies = ready ? availableStrategies(v.state, gd) : [];
+      const sig = JSON.stringify(['train', v.dojo, v.camp, rows.map((r) => r.sig), ready, suggestion, strategies, scopeCount >= 5]);
       if (sig === paneSig) return;
       paneSig = sig;
       const list: HTMLElement[] = rows.map(({ t, row, sig: cardSig }) => {
@@ -174,6 +176,7 @@ export class ArmyUi {
         ...[
           !ready ? this.setupCard(v) : null,
           Object.values(suggestion).some((n) => n > 0) ? this.refillRow(i18nText("ui.suggested_army_5963c5c4f7"), suggestion, draw) : null,
+          strategies.length ? this.strategiesBox(strategies, draw) : null,
           // Filters only once there is something to filter (re-audit design item 4: 5 tiers and 10 roles for 2 warriors).
           v.dojo === 'ready' && scopeCount >= 5 ? filters : null,
           speed > 1 ? h('p', { class: 'muted small dojo-speed' }, i18nText("ui.your_training_dojo_trains_faster_than__0f817a20eb", { arg1: speed })) : null,
@@ -346,17 +349,28 @@ export class ArmyUi {
         this.d.onPractice(practiceArmy(c.state, t, gd));
       }, i18nText("ui.practice_battle_with_a_squad_of_nothin_bcdcdb0816", { arg1: def.name }));
     }
-    // Below the row, full width, so a stray tap on +1 or Fill never lands on a purchase.
-    const tu = row.topUp;
-    if (tu) {
-      const what = i18nText("ui.the_missing_and_queue_5af8353596", { arg1: missingText(tu.missing), arg2: tu.count, arg3: def.name });
-      const b = h('button', { class: 'btn gold buy', type: 'button', title: i18nText("ui.buy_a95681848f", { arg1: what }) }, i18nText(ahead ? 'common.buyNext' : 'common.buyFill', { n: tu.count }), h('span', { class: 'chip' }, icon(icons.moonstones), String(tu.moonstones)));
+    // Below the row, full width, so a stray tap on +1 or Fill never lands on a purchase. Jade can buy a small batch
+    // (+1, +5, +10: `row.topUps`) or the full Fill (`row.topUp`); each one asks first.
+    const buy = (count: number, moonstones: number, missing: TrainRow['topUps'][number]['missing'], label: string) => {
+      const what = i18nText("ui.the_missing_and_queue_5af8353596", { arg1: missingText(missing), arg2: count, arg3: def.name });
+      const b = h('button', { class: 'btn gold buy', type: 'button', 'data-id': `buy-train-${count}`, title: i18nText("ui.buy_a95681848f", { arg1: what }) }, label, h('span', { class: 'chip' }, icon(icons.moonstones), String(moonstones)));
       b.addEventListener('click', () => {
-        const action = { type: 'train', troop: t, count: tu.count } as const;
-        const price = topUpQuote(c.state, action, c.now(), gd)?.moonstones ?? tu.moonstones;
+        const action = { type: 'train', troop: t, count } as const;
+        const price = topUpQuote(c.state, action, c.now(), gd)?.moonstones ?? moonstones;
         void this.d.econ.spendMoonstones(i18nText("ui.buy_missing_provisions_afac263163"), i18nText("ui.buy_a95681848f", { arg1: what }), price, () => c.dispatch({ type: 'topUp', then: action }).ok).then(draw);
       });
-      buttons.append(b);
+      return b;
+    };
+    const tu = row.topUp;
+    if (row.topUps.length || tu) {
+      buttons.append(
+        h(
+          'div',
+          { class: 'army-buys' },
+          ...row.topUps.map((x) => buy(x.count, x.moonstones, x.missing, i18nText('army.buyCount', { n: x.count }))),
+          tu ? buy(tu.count, tu.moonstones, tu.missing, i18nText(ahead ? 'common.buyNext' : 'common.buyFill', { n: tu.count })) : null,
+        ),
+      );
     }
     return h(
       'div',
@@ -493,7 +507,30 @@ export class ArmyUi {
     );
   }
 
-  private refillRow(name: string, army: Record<string, number>, redraw: () => void, extra?: HTMLElement): HTMLElement {
+  /** The prebuilt strategies, folded under one line so the warrior list stays near the top (open state kept per device). */
+  private strategiesBox(list: { id: string; army: Record<string, number> }[], redraw: () => void): HTMLElement {
+    const box = h('details', { class: 'strategies', 'data-id': 'strategies' }) as HTMLDetailsElement;
+    try {
+      box.open = localStorage.getItem('tk.strategiesOpen') === '1';
+    } catch {
+      /* private mode: folded */
+    }
+    box.addEventListener('toggle', () => {
+      try {
+        localStorage.setItem('tk.strategiesOpen', box.open ? '1' : '0');
+      } catch {
+        /* nothing to remember */
+      }
+    });
+    box.append(
+      h('summary', {}, t('strategy.title', { n: list.length })),
+      h('p', { class: 'muted small' }, t('strategy.intro')),
+      ...list.map((st) => this.refillRow(t(`strategy.${st.id}.name`), st.army, redraw, undefined, t(`strategy.${st.id}.text`), st.id)),
+    );
+    return box;
+  }
+
+  private refillRow(name: string, army: Record<string, number>, redraw: () => void, extra?: HTMLElement, note?: string, id?: string): HTMLElement {
     const go = h('button', { class: 'btn sky', type: 'button' }, i18nText("ui.train_e99c90db87"));
     go.addEventListener('click', () => {
       const r = this.c.dispatch({ type: 'trainArmy', army });
@@ -507,7 +544,12 @@ export class ArmyUi {
       }
       redraw();
     });
-    return h('div', { class: 'stack-row refill' }, h('div', { class: 'grow' }, h('b', {}, name), h('div', { class: 'muted small' }, this.armyText(army))), h('span', { class: 'row' }, go, extra ?? null));
+    return h(
+      'div',
+      { class: 'stack-row refill', 'data-id': id ? `strategy-${id}` : undefined },
+      h('div', { class: 'grow' }, h('b', {}, name), note ? h('div', { class: 'small strategy-note' }, note) : null, h('div', { class: 'muted small' }, this.armyText(army))),
+      h('span', { class: 'row' }, go, extra ?? null),
+    );
   }
 
   /** Send warriors home, one or all of a kind, with the refund and space shown first. */

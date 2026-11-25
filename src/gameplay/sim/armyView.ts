@@ -125,7 +125,15 @@ export interface TrainRow {
   ahead: boolean;
   /** Jade to buy the Provisions missing for a full Fill (`count` warriors) and queue them; null when resources aren't what stops it. */
   topUp: { count: number; missing: Cost; moonstones: number } | null;
+  /**
+   * Jade top-ups for smaller batches too (2026-11-25): +1, +5 and +10 warriors, each only where it fits and something
+   * is missing for it, smallest first. The full Fill stays in `topUp`; a count equal to it is left out here.
+   */
+  topUps: { count: number; missing: Cost; moonstones: number }[];
 }
+
+/** The batch sizes the Army panel offers to buy with Jade, besides the full Fill. */
+export const TOP_UP_BATCHES: readonly number[] = [1, 5, 10];
 
 /** The train list's quote for one warrior, on a view's settled village. */
 export function trainRow(view: ArmyView, troop: string, now: number, data: GameData): TrainRow {
@@ -137,7 +145,15 @@ export function trainRow(view: ArmyView, troop: string, now: number, data: GameD
   const committed = view.readyHousing + view.trainingHousing + view.nextHousing + view.waitingHousing;
   const room = fillCount(view.state, troop, data);
   const tq = room > fill && quote.quote && (quote.ok || quote.code === 'NOT_ENOUGH_RESOURCES') ? topUpQuoteOn(view.state, { type: 'train', troop, count: room }, now, data) : null;
-  return { quote, fill, ahead: committed + (data.troops[troop]?.housing ?? 0) > view.capacity, topUp: tq ? { count: room, ...tq } : null };
+  const topUps: TrainRow['topUps'] = [];
+  if (room > fill && quote.quote && (quote.ok || quote.code === 'NOT_ENOUGH_RESOURCES')) {
+    for (const n of TOP_UP_BATCHES) {
+      if (n <= fill || n >= room) continue;
+      const q = topUpQuoteOn(view.state, { type: 'train', troop, count: n }, now, data);
+      if (q) topUps.push({ count: n, ...q });
+    }
+  }
+  return { quote, fill, ahead: committed + (data.troops[troop]?.housing ?? 0) > view.capacity, topUp: tq ? { count: room, ...tq } : null, topUps };
 }
 
 /** The research list's quote for one warrior, on a view's settled village. */
