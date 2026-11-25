@@ -368,7 +368,7 @@ export class ArmyUi {
           'div',
           { class: 'army-buys' },
           ...row.topUps.map((x) => buy(x.count, x.moonstones, x.missing, i18nText('army.buyCount', { n: x.count }))),
-          tu ? buy(tu.count, tu.moonstones, tu.missing, i18nText(ahead ? 'common.buyNext' : 'common.buyFill', { n: tu.count })) : null,
+          tu ? buy(tu.count, tu.moonstones, tu.missing, i18nText('army.buyAll')) : null,
         ),
       );
     }

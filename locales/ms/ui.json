@@ -419,5 +419,6 @@
   "lesson.trials": { "en": "Shadow Trials are an endless ladder of generated fortresses. Clear a tier to climb; after a failed attempt you can try a different fortress.", "text": "Ujian Bayang ialah tangga tanpa penghujung berisi kubu pertahanan yang dijana komputer. Tamatkan satu tingkat untuk naik; selepas cubaan gagal, kamu boleh mencuba kubu pertahanan yang lain." },
   "lesson.alliance": { "en": "Join an Alliance: allies send warriors who fight first in your next raid, and you can chat with them.", "text": "Sertai Perikatan: sekutu menghantar pahlawan yang bertarung dahulu dalam serbuan kamu yang seterusnya, dan kamu boleh bersembang dengan mereka." },
   "lesson.end": { "en": "That is all I can teach for now. Collect, upgrade, raid and grow your clan. You can replay these lessons from Settings.", "text": "Itu sahaja yang dapat saya ajarkan buat masa ini. Kutip, naik taraf, serbu dan kembangkan klan kamu. Kamu boleh mengulangi pelajaran ini dari Tetapan." },
-  "lesson.end.button": { "en": "Finish", "text": "Selesai" }
+  "lesson.end.button": { "en": "Finish", "text": "Selesai" },
+  "army.buyAll": { "en": "Buy all", "text": "Beli semua" }
 }

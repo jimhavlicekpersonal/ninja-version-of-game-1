@@ -419,5 +419,6 @@
   "lesson.trials": { "en": "Shadow Trials are an endless ladder of generated fortresses. Clear a tier to climb; after a failed attempt you can try a different fortress.", "text": "Οι Δοκιμασίες Σκιάς είναι μια ατελείωτη κλίμακα από φρούρια φτιαγμένα από υπολογιστή. Πέρασε μια βαθμίδα για να ανέβεις· μετά από μια αποτυχημένη προσπάθεια μπορείς να δοκιμάσεις ένα άλλο φρούριο." },
   "lesson.alliance": { "en": "Join an Alliance: allies send warriors who fight first in your next raid, and you can chat with them.", "text": "Μπες σε μια Συμμαχία: οι σύμμαχοι στέλνουν πολεμιστές που πολεμούν πρώτοι στην επόμενη επιδρομή σου, και μπορείς να συνομιλείς μαζί τους." },
   "lesson.end": { "en": "That is all I can teach for now. Collect, upgrade, raid and grow your clan. You can replay these lessons from Settings.", "text": "Αυτά μπορώ να σου διδάξω προς το παρόν. Συλλέγε, αναβάθμιζε, κάνε επιδρομές και μεγάλωσε τη φατρία σου. Μπορείς να ξαναπαίξεις αυτά τα μαθήματα από τις Ρυθμίσεις." },
-  "lesson.end.button": { "en": "Finish", "text": "Τέλος" }
+  "lesson.end.button": { "en": "Finish", "text": "Τέλος" },
+  "army.buyAll": { "en": "Buy all", "text": "Αγορά όλων" }
 }

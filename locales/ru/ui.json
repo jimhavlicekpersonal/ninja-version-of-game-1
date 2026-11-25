@@ -419,5 +419,6 @@
   "lesson.trials": { "en": "Shadow Trials are an endless ladder of generated fortresses. Clear a tier to climb; after a failed attempt you can try a different fortress.", "text": "Испытания Тени — бесконечная лестница крепостей, созданных компьютером. Пройди ступень, чтобы подняться выше; после неудачной попытки можно выбрать другую крепость." },
   "lesson.alliance": { "en": "Join an Alliance: allies send warriors who fight first in your next raid, and you can chat with them.", "text": "Вступи в альянс: союзники присылают воинов, которые первыми вступают в бой в твоём следующем набеге, и с ними можно общаться в чате." },
   "lesson.end": { "en": "That is all I can teach for now. Collect, upgrade, raid and grow your clan. You can replay these lessons from Settings.", "text": "Пока это всё, чему я могу научить. Собирай, улучшай, совершай набеги и развивай свой клан. Эти уроки можно пройти снова в настройках." },
-  "lesson.end.button": { "en": "Finish", "text": "Завершить" }
+  "lesson.end.button": { "en": "Finish", "text": "Завершить" },
+  "army.buyAll": { "en": "Buy all", "text": "Купить всё" }
 }

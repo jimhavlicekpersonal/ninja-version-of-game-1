@@ -2109,8 +2109,6 @@
   "srv.import.sandbox": { "en": "This village cannot move to the server: it was played in the testing sandbox (time skips and test purchases).", "text": "இந்தக் கிராமம் சர்வருக்கு நகர முடியாது: இது சோதனைக் களத்தில் விளையாடப்பட்டது (நேரத் தாவல்கள், சோதனை வாங்குதல்கள்)." },
   "srv.import.refused": { "en": "This village cannot move to the server: {detail}", "text": "இந்தக் கிராமம் சர்வருக்கு நகர முடியாது: {detail}" },
   "srv.import.too_new": { "en": "A village at Keep {keep} can move to the server once this online account is {days} days old (in {wait, plural, one {# day} other {# days}}). It stays on this device meanwhile: keep playing, and the game tries again each day.", "text": "கோட்டை நிலை {keep} கொண்ட கிராமம், இந்த ஆன்லைன் கணக்கின் வயது {days} நாட்கள் ஆனதும் சர்வருக்கு நகரலாம் (இன்னும் {wait, plural, one {# நாள்} other {# நாட்கள்}}). அதுவரை இந்தச் சாதனத்திலேயே இருக்கும்: தொடர்ந்து விளையாடுங்கள், ஆட்டம் ஒவ்வொரு நாளும் மீண்டும் முயலும்." },
-  "common.buyNext": { "en": "Buy & Next {n} ", "text": "வாங்கு · அடுத்து {n} " },
-  "common.buyFill": { "en": "Buy & Fill {n} ", "text": "வாங்கு · நிரப்பு {n} " },
   "sim.only_walls_and_traps_can_be_paid_in_prov_e809aeabdf": { "en": "Only walls and traps can be paid in Provisions.", "text": "சுவர்களுக்கும் பொறிகளுக்கும் மட்டுமே உணவால் செலுத்த முடியும்." },
   "sim.choosing_a_hero_is_not_available_yet_27abc790aa": { "en": "Choosing a hero is not available yet.", "text": "நாயகரைத் தேர்ந்தெடுப்பது இன்னும் கிடைக்கவில்லை." },
   "sim.unknown_hero_6cc0c367da": { "en": "Unknown hero.", "text": "தெரியாத நாயகர்." },

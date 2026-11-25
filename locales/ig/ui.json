@@ -419,5 +419,6 @@
   "lesson.trials": { "en": "Shadow Trials are an endless ladder of generated fortresses. Clear a tier to climb; after a failed attempt you can try a different fortress.", "text": "Ule Onyinyo bụ ubube na-enweghị njedebe nke ebe ike kọmputa mere. Merie otu ọkwa ka ị rịgoo; mgbe mgbalị dara, ị nwere ike ịnwale ebe ike ọzọ." },
   "lesson.alliance": { "en": "Join an Alliance: allies send warriors who fight first in your next raid, and you can chat with them.", "text": "Sonye na Njikọ: ndị mmekọ na-ezite ndị dike ga-ebu ụzọ lụọ ọgụ na mwakpo gị na-esote, ị nwekwara ike iso ha kparịta ụka." },
   "lesson.end": { "en": "That is all I can teach for now. Collect, upgrade, raid and grow your clan. You can replay these lessons from Settings.", "text": "Ọ bụ naanị ihe ahụ ka m nwere ike ịkụzi ugbu a. Nara, kwalite, wakpo ma too agbụrụ gị. Ị nwere ike ịmegharị ihe ọmụmụ ndị a site na Ntọala." },
-  "lesson.end.button": { "en": "Finish", "text": "Mechaa" }
+  "lesson.end.button": { "en": "Finish", "text": "Mechaa" },
+  "army.buyAll": { "en": "Buy all", "text": "Zụta ha niile" }
 }

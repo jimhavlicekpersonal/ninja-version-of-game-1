@@ -419,5 +419,6 @@
   "lesson.trials": { "en": "Shadow Trials are an endless ladder of generated fortresses. Clear a tier to climb; after a failed attempt you can try a different fortress.", "text": "Skúšky tieňa sú nekonečný rebríček generovaných pevností. Prejdi stupeň a postúp vyššie; po neúspešnom pokuse môžeš skúsiť inú pevnosť." },
   "lesson.alliance": { "en": "Join an Alliance: allies send warriors who fight first in your next raid, and you can chat with them.", "text": "Pridaj sa k Aliancii: spojenci posielajú bojovníkov, ktorí v tvojom ďalšom nájazde bojujú ako prví, a môžeš s nimi chatovať." },
   "lesson.end": { "en": "That is all I can teach for now. Collect, upgrade, raid and grow your clan. You can replay these lessons from Settings.", "text": "To je zatiaľ všetko, čo ťa môžem naučiť. Zbieraj, vylepšuj, podnikaj nájazdy a rozvíjaj svoj klan. Tieto lekcie si môžeš znova prejsť v Nastaveniach." },
-  "lesson.end.button": { "en": "Finish", "text": "Dokončiť" }
+  "lesson.end.button": { "en": "Finish", "text": "Dokončiť" },
+  "army.buyAll": { "en": "Buy all", "text": "Kúpiť všetko" }
 }

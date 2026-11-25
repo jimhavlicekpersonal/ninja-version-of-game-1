@@ -2109,8 +2109,6 @@
   "srv.import.sandbox": { "en": "This village cannot move to the server: it was played in the testing sandbox (time skips and test purchases).", "text": "ఈ గ్రామం సర్వర్‌కు మారలేదు: ఇది టెస్టింగ్ శాండ్‌బాక్స్‌లో ఆడబడింది (సమయ దాటవేతలు, పరీక్ష కొనుగోళ్లు)." },
   "srv.import.refused": { "en": "This village cannot move to the server: {detail}", "text": "ఈ గ్రామం సర్వర్‌కు మారలేదు: {detail}" },
   "srv.import.too_new": { "en": "A village at Keep {keep} can move to the server once this online account is {days} days old (in {wait, plural, one {# day} other {# days}}). It stays on this device meanwhile: keep playing, and the game tries again each day.", "text": "కోట {keep} వద్ద ఉన్న గ్రామం, ఈ ఆన్‌లైన్ ఖాతా {days} రోజుల పాతదైనప్పుడు సర్వర్‌కు మారగలదు ({wait, plural, one {# రోజులో} other {# రోజుల్లో}}). అప్పటి వరకు ఇది ఈ పరికరంలోనే ఉంటుంది: ఆడుతూ ఉండండి, ఆట ప్రతిరోజూ మళ్లీ ప్రయత్నిస్తుంది." },
-  "common.buyNext": { "en": "Buy & Next {n} ", "text": "కొని & తదుపరి {n} " },
-  "common.buyFill": { "en": "Buy & Fill {n} ", "text": "కొని & నింపు {n} " },
   "sim.only_walls_and_traps_can_be_paid_in_prov_e809aeabdf": { "en": "Only walls and traps can be paid in Provisions.", "text": "గోడలు, ఉచ్చులకు మాత్రమే సరుకులతో చెల్లించవచ్చు." },
   "sim.choosing_a_hero_is_not_available_yet_27abc790aa": { "en": "Choosing a hero is not available yet.", "text": "వీరుడిని ఎంచుకోవడం ఇంకా అందుబాటులో లేదు." },
   "sim.unknown_hero_6cc0c367da": { "en": "Unknown hero.", "text": "తెలియని వీరుడు." },

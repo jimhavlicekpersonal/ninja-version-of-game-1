@@ -2109,8 +2109,6 @@
   "srv.import.sandbox": { "en": "This village cannot move to the server: it was played in the testing sandbox (time skips and test purchases).", "text": "ഈ ഗ്രാമം സെർവറിലേക്ക് മാറ്റാനാകില്ല: ഇത് ടെസ്റ്റിങ് സാൻഡ്ബോക്സിലാണ് കളിച്ചത് (സമയം മുന്നോട്ടാക്കലും ടെസ്റ്റ് വാങ്ങലുകളും)." },
   "srv.import.refused": { "en": "This village cannot move to the server: {detail}", "text": "ഈ ഗ്രാമം സെർവറിലേക്ക് മാറ്റാനാകില്ല: {detail}" },
   "srv.import.too_new": { "en": "A village at Keep {keep} can move to the server once this online account is {days} days old (in {wait, plural, one {# day} other {# days}}). It stays on this device meanwhile: keep playing, and the game tries again each day.", "text": "കോട്ട {keep} ലെവലിലുള്ള ഗ്രാമം, ഈ ഓൺലൈൻ അക്കൗണ്ടിന് {days} ദിവസം പഴക്കമായാൽ സെർവറിലേക്ക് മാറ്റാം ({wait, plural, one {# ദിവസത്തിനകം} other {# ദിവസത്തിനകം}}). അതുവരെ ഇത് ഈ ഉപകരണത്തിൽ തുടരും: കളി തുടരുക, ഗെയിം ദിവസവും വീണ്ടും ശ്രമിക്കും." },
-  "common.buyNext": { "en": "Buy & Next {n} ", "text": "വാങ്ങി അടുത്തത് {n} " },
-  "common.buyFill": { "en": "Buy & Fill {n} ", "text": "വാങ്ങി നിറയ്ക്കുക {n} " },
   "sim.only_walls_and_traps_can_be_paid_in_prov_e809aeabdf": { "en": "Only walls and traps can be paid in Provisions.", "text": "മതിലുകൾക്കും കെണികൾക്കും മാത്രമേ ധാന്യം കൊണ്ട് പണം നൽകാനാകൂ." },
   "sim.choosing_a_hero_is_not_available_yet_27abc790aa": { "en": "Choosing a hero is not available yet.", "text": "വീരനെ തിരഞ്ഞെടുക്കാൻ ഇപ്പോൾ കഴിയില്ല." },
   "sim.unknown_hero_6cc0c367da": { "en": "Unknown hero.", "text": "അജ്ഞാത വീരൻ." },

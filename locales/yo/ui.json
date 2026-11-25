@@ -419,5 +419,6 @@
   "lesson.trials": { "en": "Shadow Trials are an endless ladder of generated fortresses. Clear a tier to climb; after a failed attempt you can try a different fortress.", "text": "Ìdánwò Òjìji jẹ́ àkàbà àìlópin ti àwọn ibi olódi tí kọ̀ǹpútà ṣe. Borí ìpele kan láti gòkè; lẹ́yìn ìgbìyànjú tí kò yọrí sí rere, o lè gbìyànjú ibi olódi mìíràn." },
   "lesson.alliance": { "en": "Join an Alliance: allies send warriors who fight first in your next raid, and you can chat with them.", "text": "Darapọ̀ mọ́ Àjọṣepọ̀ kan: àwọn alájọṣepọ̀ ń fi jagunjagun ránṣẹ́ tí yóò kọ́kọ́ jà nínú ìgbógunti rẹ tí ó kàn, o sì lè bá wọn sọ̀rọ̀." },
   "lesson.end": { "en": "That is all I can teach for now. Collect, upgrade, raid and grow your clan. You can replay these lessons from Settings.", "text": "Ìyẹn ni gbogbo ohun tí mo lè kọ́ ọ báyìí. Kó jọ, ṣe àgbéga, gbógun ti, kí o sì mú ìdílé rẹ dàgbà. O lè tún àwọn ẹ̀kọ́ wọ̀nyí wò láti inú Ètò." },
-  "lesson.end.button": { "en": "Finish", "text": "Parí" }
+  "lesson.end.button": { "en": "Finish", "text": "Parí" },
+  "army.buyAll": { "en": "Buy all", "text": "Rà gbogbo rẹ̀" }
 }

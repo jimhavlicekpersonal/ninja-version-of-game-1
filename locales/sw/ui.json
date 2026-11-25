@@ -419,5 +419,6 @@
   "lesson.trials": { "en": "Shadow Trials are an endless ladder of generated fortresses. Clear a tier to climb; after a failed attempt you can try a different fortress.", "text": "Majaribio ya Kivuli ni ngazi isiyo na mwisho ya kambi zilizotengenezwa na kompyuta. Vuka daraja ili kupanda; baada ya jaribio lililoshindwa unaweza kujaribu kambi nyingine." },
   "lesson.alliance": { "en": "Join an Alliance: allies send warriors who fight first in your next raid, and you can chat with them.", "text": "Jiunge na Muungano: washirika hutuma wapiganaji wanaopigana kwanza katika uvamizi wako unaofuata, na unaweza kuzungumza nao." },
   "lesson.end": { "en": "That is all I can teach for now. Collect, upgrade, raid and grow your clan. You can replay these lessons from Settings.", "text": "Hayo ndiyo yote ninayoweza kukufundisha kwa sasa. Kusanya, boresha, vamia na ukuze ukoo wako. Unaweza kurudia masomo haya kutoka Mipangilio." },
-  "lesson.end.button": { "en": "Finish", "text": "Maliza" }
+  "lesson.end.button": { "en": "Finish", "text": "Maliza" },
+  "army.buyAll": { "en": "Buy all", "text": "Nunua zote" }
 }

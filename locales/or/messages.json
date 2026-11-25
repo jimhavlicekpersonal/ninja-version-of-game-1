@@ -2109,8 +2109,6 @@
   "srv.import.sandbox": { "en": "This village cannot move to the server: it was played in the testing sandbox (time skips and test purchases).", "text": "ଏହି ଗାଁ ସର୍ଭରକୁ ଯାଇପାରିବ ନାହିଁ: ଏହା ପରୀକ୍ଷା ସ୍ୟାଣ୍ଡବକ୍ସରେ ଖେଳାଯାଇଥିଲା (ସମୟ ଡେଇଁବା ଓ ପରୀକ୍ଷା କ୍ରୟ)।" },
   "srv.import.refused": { "en": "This village cannot move to the server: {detail}", "text": "ଏହି ଗାଁ ସର୍ଭରକୁ ଯାଇପାରିବ ନାହିଁ: {detail}" },
   "srv.import.too_new": { "en": "A village at Keep {keep} can move to the server once this online account is {days} days old (in {wait, plural, one {# day} other {# days}}). It stays on this device meanwhile: keep playing, and the game tries again each day.", "text": "ଦୁର୍ଗ {keep} ରେ ଥିବା ଗାଁ ସର୍ଭରକୁ ଯାଇପାରିବ ଯେତେବେଳେ ଏହି ଅନଲାଇନ୍ ଆକାଉଣ୍ଟ୍ {days} ଦିନ ପୁରୁଣା ହେବ ({wait, plural, one {# ଦିନରେ} other {# ଦିନରେ}})। ସେପର୍ଯ୍ୟନ୍ତ ଏହା ଏହି ଡିଭାଇସରେ ରହେ: ଖେଳିଚାଲନ୍ତୁ, ଖେଳ ପ୍ରତିଦିନ ପୁଣି ଚେଷ୍ଟା କରେ।" },
-  "common.buyNext": { "en": "Buy & Next {n} ", "text": "କିଣି ପରବର୍ତ୍ତୀ {n} " },
-  "common.buyFill": { "en": "Buy & Fill {n} ", "text": "କିଣି ଭରନ୍ତୁ {n} " },
   "sim.only_walls_and_traps_can_be_paid_in_prov_e809aeabdf": { "en": "Only walls and traps can be paid in Provisions.", "text": "କେବଳ ପ୍ରାଚୀର ଓ ଫାନ୍ଦର ଦାମ୍ ରସଦରେ ଦିଆଯାଇପାରେ।" },
   "sim.choosing_a_hero_is_not_available_yet_27abc790aa": { "en": "Choosing a hero is not available yet.", "text": "ବୀର ବାଛିବା ଏପର୍ଯ୍ୟନ୍ତ ଉପଲବ୍ଧ ନାହିଁ।" },
   "sim.unknown_hero_6cc0c367da": { "en": "Unknown hero.", "text": "ଅଜଣା ବୀର।" },

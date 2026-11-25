@@ -2109,8 +2109,6 @@
   "srv.import.sandbox": { "en": "This village cannot move to the server: it was played in the testing sandbox (time skips and test purchases).", "text": "ಈ ಗ್ರಾಮ ಸರ್ವರ್‌ಗೆ ಹೋಗಲು ಸಾಧ್ಯವಿಲ್ಲ: ಇದನ್ನು ಪರೀಕ್ಷಾ ಸ್ಯಾಂಡ್‌ಬಾಕ್ಸ್‌ನಲ್ಲಿ ಆಡಲಾಗಿದೆ (ಸಮಯ ಜಿಗಿತ ಮತ್ತು ಪರೀಕ್ಷಾ ಖರೀದಿಗಳು)." },
   "srv.import.refused": { "en": "This village cannot move to the server: {detail}", "text": "ಈ ಗ್ರಾಮ ಸರ್ವರ್‌ಗೆ ಹೋಗಲು ಸಾಧ್ಯವಿಲ್ಲ: {detail}" },
   "srv.import.too_new": { "en": "A village at Keep {keep} can move to the server once this online account is {days} days old (in {wait, plural, one {# day} other {# days}}). It stays on this device meanwhile: keep playing, and the game tries again each day.", "text": "ಈ ಆನ್‌ಲೈನ್ ಖಾತೆಗೆ {days} ದಿನಗಳು ತುಂಬಿದ ನಂತರ ಕೋಟೆ ಮಟ್ಟ {keep} ರ ಗ್ರಾಮ ಸರ್ವರ್‌ಗೆ ಹೋಗಬಹುದು ({wait, plural, one {# ದಿನದಲ್ಲಿ} other {# ದಿನಗಳಲ್ಲಿ}}). ಅಲ್ಲಿಯವರೆಗೆ ಅದು ಈ ಸಾಧನದಲ್ಲೇ ಇರುತ್ತದೆ: ಆಡುತ್ತಿರಿ, ಆಟ ಪ್ರತಿದಿನ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸುತ್ತದೆ." },
-  "common.buyNext": { "en": "Buy & Next {n} ", "text": "ಖರೀದಿಸಿ & ಮುಂದಿನದು {n} " },
-  "common.buyFill": { "en": "Buy & Fill {n} ", "text": "ಖರೀದಿಸಿ & ತುಂಬಿಸಿ {n} " },
   "sim.only_walls_and_traps_can_be_paid_in_prov_e809aeabdf": { "en": "Only walls and traps can be paid in Provisions.", "text": "ಗೋಡೆಗಳು ಮತ್ತು ಬಲೆಗಳಿಗೆ ಮಾತ್ರ ಪಡಿತರದಲ್ಲಿ ಪಾವತಿಸಬಹುದು." },
   "sim.choosing_a_hero_is_not_available_yet_27abc790aa": { "en": "Choosing a hero is not available yet.", "text": "ವೀರನನ್ನು ಆಯ್ಕೆ ಮಾಡುವುದು ಇನ್ನೂ ಲಭ್ಯವಿಲ್ಲ." },
   "sim.unknown_hero_6cc0c367da": { "en": "Unknown hero.", "text": "ಅಪರಿಚಿತ ವೀರ." },

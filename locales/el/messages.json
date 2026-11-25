@@ -2109,8 +2109,6 @@
   "srv.import.sandbox": { "en": "This village cannot move to the server: it was played in the testing sandbox (time skips and test purchases).", "text": "Αυτό το χωριό δεν μπορεί να μεταφερθεί στον διακομιστή: παίχτηκε στο δοκιμαστικό περιβάλλον (άλματα χρόνου και δοκιμαστικές αγορές)." },
   "srv.import.refused": { "en": "This village cannot move to the server: {detail}", "text": "Αυτό το χωριό δεν μπορεί να μεταφερθεί στον διακομιστή: {detail}" },
   "srv.import.too_new": { "en": "A village at Keep {keep} can move to the server once this online account is {days} days old (in {wait, plural, one {# day} other {# days}}). It stays on this device meanwhile: keep playing, and the game tries again each day.", "text": "Ένα χωριό με Ακρόπυργο {keep} μπορεί να μεταφερθεί στον διακομιστή όταν αυτός ο διαδικτυακός λογαριασμός γίνει {days} ημερών (σε {wait, plural, one {# ημέρα} other {# ημέρες}}). Στο μεταξύ μένει σε αυτή τη συσκευή: συνέχισε να παίζεις, και το παιχνίδι θα ξαναδοκιμάζει κάθε μέρα." },
-  "common.buyNext": { "en": "Buy & Next {n} ", "text": "Αγορά & Επόμενο {n} " },
-  "common.buyFill": { "en": "Buy & Fill {n} ", "text": "Αγορά & Γέμισμα {n} " },
   "sim.only_walls_and_traps_can_be_paid_in_prov_e809aeabdf": { "en": "Only walls and traps can be paid in Provisions.", "text": "Μόνο τείχη και παγίδες πληρώνονται με Προμήθειες." },
   "sim.choosing_a_hero_is_not_available_yet_27abc790aa": { "en": "Choosing a hero is not available yet.", "text": "Η επιλογή ήρωα δεν είναι ακόμα διαθέσιμη." },
   "sim.unknown_hero_6cc0c367da": { "en": "Unknown hero.", "text": "Άγνωστος ήρωας." },

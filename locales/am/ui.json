@@ -419,5 +419,6 @@
   "lesson.trials": { "en": "Shadow Trials are an endless ladder of generated fortresses. Clear a tier to climb; after a failed attempt you can try a different fortress.", "text": "የጥላ ፈተናዎች በኮምፒውተር የተፈጠሩ ምሽጎች ማለቂያ የሌለው መሰላል ናቸው። ለመውጣት አንድ እርከን ያሸንፉ፤ ሙከራ ካልተሳካ ሌላ ምሽግ መሞከር ይችላሉ።" },
   "lesson.alliance": { "en": "Join an Alliance: allies send warriors who fight first in your next raid, and you can chat with them.", "text": "ኅብረት ይቀላቀሉ፦ አጋሮች በሚቀጥለው ወረራዎ መጀመሪያ የሚዋጉ ተዋጊዎችን ይልካሉ፣ ከእነሱ ጋርም መወያየት ይችላሉ።" },
   "lesson.end": { "en": "That is all I can teach for now. Collect, upgrade, raid and grow your clan. You can replay these lessons from Settings.", "text": "ለአሁን የማስተምረው ይህ ብቻ ነው። ይሰብስቡ፣ ያሻሽሉ፣ ይውረሩ፣ ጎሳዎንም ያሳድጉ። እነዚህን ትምህርቶች ከቅንብሮች እንደገና ማየት ይችላሉ።" },
-  "lesson.end.button": { "en": "Finish", "text": "ይጨርሱ" }
+  "lesson.end.button": { "en": "Finish", "text": "ይጨርሱ" },
+  "army.buyAll": { "en": "Buy all", "text": "ሁሉንም ይግዙ" }
 }

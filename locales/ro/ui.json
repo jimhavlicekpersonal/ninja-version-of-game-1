@@ -419,5 +419,6 @@
   "lesson.trials": { "en": "Shadow Trials are an endless ladder of generated fortresses. Clear a tier to climb; after a failed attempt you can try a different fortress.", "text": "Încercările Umbrei sunt o scară fără sfârșit de fortărețe generate. Trece o treaptă ca să urci; după o încercare eșuată poți încerca altă fortăreață." },
   "lesson.alliance": { "en": "Join an Alliance: allies send warriors who fight first in your next raid, and you can chat with them.", "text": "Intră într-o Alianță: aliații trimit războinici care luptă primii în următoarea ta incursiune și poți vorbi cu ei pe chat." },
   "lesson.end": { "en": "That is all I can teach for now. Collect, upgrade, raid and grow your clan. You can replay these lessons from Settings.", "text": "Asta e tot ce te pot învăța deocamdată. Colectează, îmbunătățește, atacă și fă-ți clanul să crească. Poți relua aceste lecții din Setări." },
-  "lesson.end.button": { "en": "Finish", "text": "Termină" }
+  "lesson.end.button": { "en": "Finish", "text": "Termină" },
+  "army.buyAll": { "en": "Buy all", "text": "Cumpără tot" }
 }

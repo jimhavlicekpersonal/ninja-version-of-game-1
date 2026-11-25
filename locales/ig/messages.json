@@ -2109,8 +2109,6 @@
   "srv.import.sandbox": { "en": "This village cannot move to the server: it was played in the testing sandbox (time skips and test purchases).", "text": "Obodo a enweghị ike ịkwaga na sava: e gwuru ya n'ebe nnwale (mwụfe oge na ịzụ ahịa nnwale)." },
   "srv.import.refused": { "en": "This village cannot move to the server: {detail}", "text": "Obodo a enweghị ike ịkwaga na sava: {detail}" },
   "srv.import.too_new": { "en": "A village at Keep {keep} can move to the server once this online account is {days} days old (in {wait, plural, one {# day} other {# days}}). It stays on this device meanwhile: keep playing, and the game tries again each day.", "text": "Obodo nọ n'Obi ọkwa {keep} nwere ike ịkwaga na sava mgbe akaụntụ ịntanetị a gbara ụbọchị {days} (n'ime {wait, plural, other {ụbọchị #}}). Ọ ga-anọ na ngwaọrụ a ka ọ dị ugbu a: gaa n'ihu na-egwu, egwuregwu ahụ ga-anwa ọzọ kwa ụbọchị." },
-  "common.buyNext": { "en": "Buy & Next {n} ", "text": "Zụta & Nke ọzọ {n} " },
-  "common.buyFill": { "en": "Buy & Fill {n} ", "text": "Zụta & Mejupụta {n} " },
   "sim.only_walls_and_traps_can_be_paid_in_prov_e809aeabdf": { "en": "Only walls and traps can be paid in Provisions.", "text": "Ọ bụ naanị mgbidi na ọnya ka e nwere ike iji Nri kwụọ ụgwọ ha." },
   "sim.choosing_a_hero_is_not_available_yet_27abc790aa": { "en": "Choosing a hero is not available yet.", "text": "Ịhọrọ dike agbụrụ adịbeghị." },
   "sim.unknown_hero_6cc0c367da": { "en": "Unknown hero.", "text": "Dike agbụrụ a na-amaghị." },

@@ -419,5 +419,6 @@
   "lesson.trials": { "en": "Shadow Trials are an endless ladder of generated fortresses. Clear a tier to climb; after a failed attempt you can try a different fortress.", "text": "Próby Cienia to niekończąca się drabina wygenerowanych fortec. Ukończ poziom, aby wspiąć się wyżej; po nieudanej próbie możesz spróbować innej fortecy." },
   "lesson.alliance": { "en": "Join an Alliance: allies send warriors who fight first in your next raid, and you can chat with them.", "text": "Dołącz do Sojuszu: sojusznicy wysyłają wojowników, którzy walczą jako pierwsi w twoim następnym najeździe, a ty możesz z nimi czatować." },
   "lesson.end": { "en": "That is all I can teach for now. Collect, upgrade, raid and grow your clan. You can replay these lessons from Settings.", "text": "Na razie to wszystko, czego mogę cię nauczyć. Zbieraj, ulepszaj, najeżdżaj i rozwijaj swój klan. Te lekcje możesz powtórzyć w Ustawieniach." },
-  "lesson.end.button": { "en": "Finish", "text": "Zakończ" }
+  "lesson.end.button": { "en": "Finish", "text": "Zakończ" },
+  "army.buyAll": { "en": "Buy all", "text": "Kup wszystko" }
 }

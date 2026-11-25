@@ -419,5 +419,6 @@
   "lesson.trials": { "en": "Shadow Trials are an endless ladder of generated fortresses. Clear a tier to climb; after a failed attempt you can try a different fortress.", "text": "छाया परीक्षा म्हणजे संगणक-निर्मित गडांची कधीही न संपणारी शिडी. वर चढण्यासाठी एक टप्पा जिंका; अपयशी प्रयत्नानंतर तुम्ही वेगळा गड वापरून पाहू शकता." },
   "lesson.alliance": { "en": "Join an Alliance: allies send warriors who fight first in your next raid, and you can chat with them.", "text": "युतीत सामील व्हा: सोबती योद्धे पाठवतात जे तुमच्या पुढच्या छाप्यात सर्वात आधी लढतात, आणि तुम्ही त्यांच्याशी गप्पा मारू शकता." },
   "lesson.end": { "en": "That is all I can teach for now. Collect, upgrade, raid and grow your clan. You can replay these lessons from Settings.", "text": "सध्या इतकेच शिकवण्यासारखे होते. गोळा करा, अपग्रेड करा, छापे घाला आणि तुमचे कूळ वाढवा. हे धडे तुम्ही सेटिंग्जमधून पुन्हा पाहू शकता." },
-  "lesson.end.button": { "en": "Finish", "text": "समाप्त" }
+  "lesson.end.button": { "en": "Finish", "text": "समाप्त" },
+  "army.buyAll": { "en": "Buy all", "text": "सर्व खरेदी करा" }
 }

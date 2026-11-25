@@ -419,5 +419,6 @@
   "lesson.trials": { "en": "Shadow Trials are an endless ladder of generated fortresses. Clear a tier to climb; after a failed attempt you can try a different fortress.", "text": "నీడ పరీక్షలు కంప్యూటర్ సృష్టించిన కోటల అంతులేని నిచ్చెన. పైకి ఎక్కడానికి ఒక అంచెను గెలవండి; ప్రయత్నం విఫలమైతే వేరే కోటను ప్రయత్నించవచ్చు." },
   "lesson.alliance": { "en": "Join an Alliance: allies send warriors who fight first in your next raid, and you can chat with them.", "text": "ఒక కూటమిలో చేరండి: మిత్రులు యోధులను పంపుతారు, వారు మీ తదుపరి దాడిలో ముందుగా పోరాడతారు, మీరు వారితో చాట్ కూడా చేయవచ్చు." },
   "lesson.end": { "en": "That is all I can teach for now. Collect, upgrade, raid and grow your clan. You can replay these lessons from Settings.", "text": "ప్రస్తుతానికి నేను నేర్పగలిగేది ఇంతే. సేకరించండి, అప్‌గ్రేడ్ చేయండి, దాడి చేయండి, మీ వంశాన్ని పెంచండి. ఈ పాఠాలను సెట్టింగ్‌ల నుండి మళ్లీ చూడవచ్చు." },
-  "lesson.end.button": { "en": "Finish", "text": "ముగించు" }
+  "lesson.end.button": { "en": "Finish", "text": "ముగించు" },
+  "army.buyAll": { "en": "Buy all", "text": "అన్నీ కొనండి" }
 }

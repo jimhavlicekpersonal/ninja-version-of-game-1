@@ -2109,8 +2109,6 @@
   "srv.import.sandbox": { "en": "This village cannot move to the server: it was played in the testing sandbox (time skips and test purchases).", "text": "Ta wioska nie może przenieść się na serwer: była rozgrywana w piaskownicy testowej (przeskoki czasu i zakupy testowe)." },
   "srv.import.refused": { "en": "This village cannot move to the server: {detail}", "text": "Ta wioska nie może przenieść się na serwer: {detail}" },
   "srv.import.too_new": { "en": "A village at Keep {keep} can move to the server once this online account is {days} days old (in {wait, plural, one {# day} other {# days}}). It stays on this device meanwhile: keep playing, and the game tries again each day.", "text": "Wioska z Twierdzą {keep} może przenieść się na serwer, gdy to konto online będzie miało {days} dni (za {wait, plural, one {# dzień} few {# dni} many {# dni} other {# dnia}}). Do tego czasu zostaje na tym urządzeniu: graj dalej, a gra będzie próbować codziennie." },
-  "common.buyNext": { "en": "Buy & Next {n} ", "text": "Kup i Dalej {n} " },
-  "common.buyFill": { "en": "Buy & Fill {n} ", "text": "Kup i Uzupełnij {n} " },
   "sim.only_walls_and_traps_can_be_paid_in_prov_e809aeabdf": { "en": "Only walls and traps can be paid in Provisions.", "text": "Prowiantem można płacić tylko za mury i pułapki." },
   "sim.choosing_a_hero_is_not_available_yet_27abc790aa": { "en": "Choosing a hero is not available yet.", "text": "Wybór bohatera nie jest jeszcze dostępny." },
   "sim.unknown_hero_6cc0c367da": { "en": "Unknown hero.", "text": "Nieznany bohater." },

@@ -419,5 +419,6 @@
   "lesson.trials": { "en": "Shadow Trials are an endless ladder of generated fortresses. Clear a tier to climb; after a failed attempt you can try a different fortress.", "text": "Las Pruebas de las Sombras son una escalera sin fin de fortalezas generadas. Supera un nivel para subir; tras un intento fallido puedes probar con otra fortaleza." },
   "lesson.alliance": { "en": "Join an Alliance: allies send warriors who fight first in your next raid, and you can chat with them.", "text": "Únete a una Alianza: tus aliados envían guerreros que luchan primero en tu próximo saqueo, y puedes chatear con ellos." },
   "lesson.end": { "en": "That is all I can teach for now. Collect, upgrade, raid and grow your clan. You can replay these lessons from Settings.", "text": "Eso es todo lo que puedo enseñarte por ahora. Recoge, mejora, saquea y haz crecer tu clan. Puedes repetir estas lecciones desde Ajustes." },
-  "lesson.end.button": { "en": "Finish", "text": "Terminar" }
+  "lesson.end.button": { "en": "Finish", "text": "Terminar" },
+  "army.buyAll": { "en": "Buy all", "text": "Comprar todo" }
 }

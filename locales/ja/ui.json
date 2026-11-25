@@ -419,5 +419,6 @@
   "lesson.trials": { "en": "Shadow Trials are an endless ladder of generated fortresses. Clear a tier to climb; after a failed attempt you can try a different fortress.", "text": "影の試練は、自動生成の砦がどこまでも続くはしごです。層をクリアすると上に進めます。失敗したあとは、別の砦に挑むこともできます。" },
   "lesson.alliance": { "en": "Join an Alliance: allies send warriors who fight first in your next raid, and you can chat with them.", "text": "同盟に入りましょう。仲間が送ってくれた戦士は次の襲撃で最初に戦い、仲間とチャットもできます。" },
   "lesson.end": { "en": "That is all I can teach for now. Collect, upgrade, raid and grow your clan. You can replay these lessons from Settings.", "text": "今教えられるのはここまでです。回収し、強化し、襲撃して、一族を大きくしましょう。このレッスンは「設定」からもう一度受けられます。" },
-  "lesson.end.button": { "en": "Finish", "text": "完了" }
+  "lesson.end.button": { "en": "Finish", "text": "完了" },
+  "army.buyAll": { "en": "Buy all", "text": "まとめて購入" }
 }

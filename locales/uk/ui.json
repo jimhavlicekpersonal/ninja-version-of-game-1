@@ -419,5 +419,6 @@
   "lesson.trials": { "en": "Shadow Trials are an endless ladder of generated fortresses. Clear a tier to climb; after a failed attempt you can try a different fortress.", "text": "Тіньові випробування — нескінченна драбина згенерованих фортець. Пройди рівень, щоб піднятися вище; після невдалої спроби можна обрати іншу фортецю." },
   "lesson.alliance": { "en": "Join an Alliance: allies send warriors who fight first in your next raid, and you can chat with them.", "text": "Вступи до Альянсу: союзники надсилають воїнів, які першими б’ються у твоєму наступному набігу, і з ними можна спілкуватися в чаті." },
   "lesson.end": { "en": "That is all I can teach for now. Collect, upgrade, raid and grow your clan. You can replay these lessons from Settings.", "text": "Поки що це все, чого я можу навчити. Збирай, покращуй, нападай і розвивай свій клан. Ці уроки можна пройти знову в Налаштуваннях." },
-  "lesson.end.button": { "en": "Finish", "text": "Завершити" }
+  "lesson.end.button": { "en": "Finish", "text": "Завершити" },
+  "army.buyAll": { "en": "Buy all", "text": "Купити все" }
 }

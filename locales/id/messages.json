@@ -2109,8 +2109,6 @@
   "srv.import.sandbox": { "en": "This village cannot move to the server: it was played in the testing sandbox (time skips and test purchases).", "text": "Desa ini tidak bisa dipindahkan ke server: desa ini dimainkan di sandbox pengujian (lompatan waktu dan pembelian uji coba)." },
   "srv.import.refused": { "en": "This village cannot move to the server: {detail}", "text": "Desa ini tidak bisa dipindahkan ke server: {detail}" },
   "srv.import.too_new": { "en": "A village at Keep {keep} can move to the server once this online account is {days} days old (in {wait, plural, one {# day} other {# days}}). It stays on this device meanwhile: keep playing, and the game tries again each day.", "text": "Desa dengan Benteng {keep} bisa dipindahkan ke server setelah akun online ini berumur {days} hari (dalam {wait, plural, other {# hari}}). Sementara itu desamu tetap di perangkat ini: terus bermain, dan game akan mencoba lagi setiap hari." },
-  "common.buyNext": { "en": "Buy & Next {n} ", "text": "Beli & Berikutnya {n} " },
-  "common.buyFill": { "en": "Buy & Fill {n} ", "text": "Beli & Isi {n} " },
   "sim.only_walls_and_traps_can_be_paid_in_prov_e809aeabdf": { "en": "Only walls and traps can be paid in Provisions.", "text": "Hanya tembok dan jebakan yang bisa dibayar dengan Perbekalan." },
   "sim.choosing_a_hero_is_not_available_yet_27abc790aa": { "en": "Choosing a hero is not available yet.", "text": "Memilih pahlawan belum tersedia." },
   "sim.unknown_hero_6cc0c367da": { "en": "Unknown hero.", "text": "Pahlawan tidak dikenal." },

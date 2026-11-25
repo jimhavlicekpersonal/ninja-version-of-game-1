@@ -2109,8 +2109,6 @@
   "srv.import.sandbox": { "en": "This village cannot move to the server: it was played in the testing sandbox (time skips and test purchases).", "text": "Wannan ƙauye ba zai iya komawa sabar ba: an buga shi a filin gwaji (tsallake lokaci da sayayyar gwaji)." },
   "srv.import.refused": { "en": "This village cannot move to the server: {detail}", "text": "Wannan ƙauye ba zai iya komawa sabar ba: {detail}" },
   "srv.import.too_new": { "en": "A village at Keep {keep} can move to the server once this online account is {days} days old (in {wait, plural, one {# day} other {# days}}). It stays on this device meanwhile: keep playing, and the game tries again each day.", "text": "Ƙauye a Fada {keep} zai iya komawa sabar da zarar wannan asusun intanet ya kai kwanaki {days} (cikin {wait, plural, one {kwana #} other {kwanaki #}}). Kafin nan yana nan a wannan na'urar: ku ci gaba da wasa, wasan zai sake gwadawa kowace rana." },
-  "common.buyNext": { "en": "Buy & Next {n} ", "text": "Saya & Na gaba {n} " },
-  "common.buyFill": { "en": "Buy & Fill {n} ", "text": "Saya & Cika {n} " },
   "sim.only_walls_and_traps_can_be_paid_in_prov_e809aeabdf": { "en": "Only walls and traps can be paid in Provisions.", "text": "Ganuwa da tarkuna ne kawai za a iya biya da Guzuri." },
   "sim.choosing_a_hero_is_not_available_yet_27abc790aa": { "en": "Choosing a hero is not available yet.", "text": "Ba a iya zaɓar gwarzo tukuna." },
   "sim.unknown_hero_6cc0c367da": { "en": "Unknown hero.", "text": "Gwarzo da ba a sani ba." },

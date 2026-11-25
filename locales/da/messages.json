@@ -2109,8 +2109,6 @@
   "srv.import.sandbox": { "en": "This village cannot move to the server: it was played in the testing sandbox (time skips and test purchases).", "text": "Denne landsby kan ikke flytte til serveren: den blev spillet i testsandkassen (tidsspring og testkøb)." },
   "srv.import.refused": { "en": "This village cannot move to the server: {detail}", "text": "Denne landsby kan ikke flytte til serveren: {detail}" },
   "srv.import.too_new": { "en": "A village at Keep {keep} can move to the server once this online account is {days} days old (in {wait, plural, one {# day} other {# days}}). It stays on this device meanwhile: keep playing, and the game tries again each day.", "text": "En landsby med Borg {keep} kan flytte til serveren, når denne onlinekonto er {days} dage gammel (om {wait, plural, one {# dag} other {# dage}}). Indtil da bliver den på denne enhed: bliv ved med at spille, spillet prøver igen hver dag." },
-  "common.buyNext": { "en": "Buy & Next {n} ", "text": "Køb & Næste {n} " },
-  "common.buyFill": { "en": "Buy & Fill {n} ", "text": "Køb & Fyld {n} " },
   "sim.only_walls_and_traps_can_be_paid_in_prov_e809aeabdf": { "en": "Only walls and traps can be paid in Provisions.", "text": "Kun mure og fælder kan betales med Proviant." },
   "sim.choosing_a_hero_is_not_available_yet_27abc790aa": { "en": "Choosing a hero is not available yet.", "text": "Valg af helt er ikke tilgængeligt endnu." },
   "sim.unknown_hero_6cc0c367da": { "en": "Unknown hero.", "text": "Ukendt helt." },

@@ -419,5 +419,6 @@
   "lesson.trials": { "en": "Shadow Trials are an endless ladder of generated fortresses. Clear a tier to climb; after a failed attempt you can try a different fortress.", "text": "그림자 시련은 자동 생성된 요새가 끝없이 이어지는 사다리예요. 한 층을 깨면 위로 올라가고, 실패한 뒤에는 다른 요새에 도전할 수 있어요." },
   "lesson.alliance": { "en": "Join an Alliance: allies send warriors who fight first in your next raid, and you can chat with them.", "text": "동맹에 가입하세요. 동맹원이 보낸 전사가 다음 습격에서 가장 먼저 싸우고, 동맹원과 대화도 할 수 있어요." },
   "lesson.end": { "en": "That is all I can teach for now. Collect, upgrade, raid and grow your clan. You can replay these lessons from Settings.", "text": "지금 가르쳐 줄 수 있는 건 여기까지예요. 수집하고, 업그레이드하고, 습격하며 가문을 키우세요. 이 수업은 설정에서 다시 볼 수 있어요." },
-  "lesson.end.button": { "en": "Finish", "text": "마치기" }
+  "lesson.end.button": { "en": "Finish", "text": "마치기" },
+  "army.buyAll": { "en": "Buy all", "text": "모두 구매" }
 }

@@ -419,5 +419,6 @@
   "lesson.trials": { "en": "Shadow Trials are an endless ladder of generated fortresses. Clear a tier to climb; after a failed attempt you can try a different fortress.", "text": "Les Proves de l'Ombra són una escala sense fi de fortaleses generades. Supera un graó per pujar; després d'un intent fallit pots provar una altra fortalesa." },
   "lesson.alliance": { "en": "Join an Alliance: allies send warriors who fight first in your next raid, and you can chat with them.", "text": "Uneix-te a una Aliança: els aliats envien guerrers que lluiten primer a la teva propera incursió, i hi pots xatejar." },
   "lesson.end": { "en": "That is all I can teach for now. Collect, upgrade, raid and grow your clan. You can replay these lessons from Settings.", "text": "Això és tot el que et puc ensenyar de moment. Recull, millora, assalta i fes créixer el teu clan. Pots tornar a fer aquestes lliçons des de Configuració." },
-  "lesson.end.button": { "en": "Finish", "text": "Acaba" }
+  "lesson.end.button": { "en": "Finish", "text": "Acaba" },
+  "army.buyAll": { "en": "Buy all", "text": "Compra-ho tot" }
 }

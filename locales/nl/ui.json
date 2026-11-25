@@ -419,5 +419,6 @@
   "lesson.trials": { "en": "Shadow Trials are an endless ladder of generated fortresses. Clear a tier to climb; after a failed attempt you can try a different fortress.", "text": "De Schaduwbeproevingen zijn een eindeloze ladder van gegenereerde vestingen. Voltooi een trede om te klimmen; na een mislukte poging kun je een andere vesting proberen." },
   "lesson.alliance": { "en": "Join an Alliance: allies send warriors who fight first in your next raid, and you can chat with them.", "text": "Word lid van een Alliantie: bondgenoten sturen krijgers die als eerste vechten in je volgende overval, en je kunt met ze chatten." },
   "lesson.end": { "en": "That is all I can teach for now. Collect, upgrade, raid and grow your clan. You can replay these lessons from Settings.", "text": "Meer kan ik je voorlopig niet leren. Innen, verbeteren, overvallen en laat je clan groeien. Je kunt deze lessen opnieuw volgen via Instellingen." },
-  "lesson.end.button": { "en": "Finish", "text": "Voltooien" }
+  "lesson.end.button": { "en": "Finish", "text": "Voltooien" },
+  "army.buyAll": { "en": "Buy all", "text": "Alles kopen" }
 }

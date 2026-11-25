@@ -2109,8 +2109,6 @@
   "srv.import.sandbox": { "en": "This village cannot move to the server: it was played in the testing sandbox (time skips and test purchases).", "text": "Ngôi làng này không chuyển lên máy chủ được: nó đã được chơi trong hộp cát thử nghiệm (tua thời gian và mua thử)." },
   "srv.import.refused": { "en": "This village cannot move to the server: {detail}", "text": "Ngôi làng này không chuyển lên máy chủ được: {detail}" },
   "srv.import.too_new": { "en": "A village at Keep {keep} can move to the server once this online account is {days} days old (in {wait, plural, one {# day} other {# days}}). It stays on this device meanwhile: keep playing, and the game tries again each day.", "text": "Ngôi làng ở Thành {keep} có thể chuyển lên máy chủ khi tài khoản trực tuyến này được {days} ngày (còn {wait, plural, other {# ngày}}). Trong lúc đó làng vẫn ở trên thiết bị này: cứ chơi tiếp, trò chơi sẽ thử lại mỗi ngày." },
-  "common.buyNext": { "en": "Buy & Next {n} ", "text": "Mua & Tiếp {n} " },
-  "common.buyFill": { "en": "Buy & Fill {n} ", "text": "Mua & Bổ sung {n} " },
   "sim.only_walls_and_traps_can_be_paid_in_prov_e809aeabdf": { "en": "Only walls and traps can be paid in Provisions.", "text": "Chỉ tường và bẫy mới có thể trả bằng Lương Thực." },
   "sim.choosing_a_hero_is_not_available_yet_27abc790aa": { "en": "Choosing a hero is not available yet.", "text": "Chưa thể chọn anh hùng." },
   "sim.unknown_hero_6cc0c367da": { "en": "Unknown hero.", "text": "Anh hùng không xác định." },

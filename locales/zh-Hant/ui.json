@@ -419,5 +419,6 @@
   "lesson.trials": { "en": "Shadow Trials are an endless ladder of generated fortresses. Clear a tier to climb; after a failed attempt you can try a different fortress.", "text": "暗影試煉是由電腦生成的要塞組成的無盡階梯。通過一層就能往上爬；挑戰失敗後可以換一座要塞再試。" },
   "lesson.alliance": { "en": "Join an Alliance: allies send warriors who fight first in your next raid, and you can chat with them.", "text": "加入同盟：盟友派來的戰士會在你下一次突襲中率先出戰，你也能和他們聊天。" },
   "lesson.end": { "en": "That is all I can teach for now. Collect, upgrade, raid and grow your clan. You can replay these lessons from Settings.", "text": "我現在能教你的就這些了。收集、升級、突襲，壯大你的一族吧。你可以在「設定」中重溫這些課程。" },
-  "lesson.end.button": { "en": "Finish", "text": "完成" }
+  "lesson.end.button": { "en": "Finish", "text": "完成" },
+  "army.buyAll": { "en": "Buy all", "text": "全部購買" }
 }

@@ -419,5 +419,6 @@
   "lesson.trials": { "en": "Shadow Trials are an endless ladder of generated fortresses. Clear a tier to climb; after a failed attempt you can try a different fortress.", "text": "Izivivinyo Zesithunzi ziyisitebhisi esingapheli sezinqaba ezenziwe yikhompyutha. Qeda izinga ukuze ukhuphuke; ngemuva komzamo ongaphumelelanga ungazama inqaba ehlukile." },
   "lesson.alliance": { "en": "Join an Alliance: allies send warriors who fight first in your next raid, and you can chat with them.", "text": "Joyina Umfelandawonye: ozakwenu bathumela amaqhawe alwa kuqala ekugaseleni kwakho okulandelayo, futhi ungaxoxa nabo." },
   "lesson.end": { "en": "That is all I can teach for now. Collect, upgrade, raid and grow your clan. You can replay these lessons from Settings.", "text": "Yilokho kuphela engingakufundisa okwamanje. Qoqa, thuthukisa, gasela futhi ukhulise isizwe sakho. Ungaphinda lezi zifundo ezilungiselelweni." },
-  "lesson.end.button": { "en": "Finish", "text": "Qeda" }
+  "lesson.end.button": { "en": "Finish", "text": "Qeda" },
+  "army.buyAll": { "en": "Buy all", "text": "Thenga konke" }
 }

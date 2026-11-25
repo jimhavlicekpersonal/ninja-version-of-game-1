@@ -2109,8 +2109,6 @@
   "srv.import.sandbox": { "en": "This village cannot move to the server: it was played in the testing sandbox (time skips and test purchases).", "text": "此村庄无法迁移到服务器：它曾在测试沙盒中游玩过（跳过时间和测试购买）。" },
   "srv.import.refused": { "en": "This village cannot move to the server: {detail}", "text": "此村庄无法迁移到服务器：{detail}" },
   "srv.import.too_new": { "en": "A village at Keep {keep} can move to the server once this online account is {days} days old (in {wait, plural, one {# day} other {# days}}). It stays on this device meanwhile: keep playing, and the game tries again each day.", "text": "天守阁 {keep} 级的村庄需要在此在线账号注册满 {days} 天后（{wait, plural, other {还需 # 天}}）才能迁移到服务器。在此期间村庄仍保存在此设备上：继续玩吧，游戏每天都会重试。" },
-  "common.buyNext": { "en": "Buy & Next {n} ", "text": "购买并下一批 {n} " },
-  "common.buyFill": { "en": "Buy & Fill {n} ", "text": "购买并补满 {n} " },
   "sim.only_walls_and_traps_can_be_paid_in_prov_e809aeabdf": { "en": "Only walls and traps can be paid in Provisions.", "text": "只有城墙和陷阱可以用粮草支付。" },
   "sim.choosing_a_hero_is_not_available_yet_27abc790aa": { "en": "Choosing a hero is not available yet.", "text": "目前还不能选择英雄。" },
   "sim.unknown_hero_6cc0c367da": { "en": "Unknown hero.", "text": "未知的英雄。" },

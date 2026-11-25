@@ -419,5 +419,6 @@
   "lesson.trials": { "en": "Shadow Trials are an endless ladder of generated fortresses. Clear a tier to climb; after a failed attempt you can try a different fortress.", "text": "Thử Thách Bóng Tối là chiếc thang vô tận gồm những pháo đài do máy tạo. Vượt qua một tầng để leo lên; sau một lần thất bại, bạn có thể thử một pháo đài khác." },
   "lesson.alliance": { "en": "Join an Alliance: allies send warriors who fight first in your next raid, and you can chat with them.", "text": "Hãy gia nhập một Liên Minh: đồng minh gửi chiến binh chiến đấu trước tiên trong trận đột kích tiếp theo của bạn, và bạn có thể trò chuyện với họ." },
   "lesson.end": { "en": "That is all I can teach for now. Collect, upgrade, raid and grow your clan. You can replay these lessons from Settings.", "text": "Ta chỉ dạy được đến đây thôi. Hãy thu thập, nâng cấp, đột kích và phát triển gia tộc. Bạn có thể học lại các bài này trong Cài đặt." },
-  "lesson.end.button": { "en": "Finish", "text": "Hoàn tất" }
+  "lesson.end.button": { "en": "Finish", "text": "Hoàn tất" },
+  "army.buyAll": { "en": "Buy all", "text": "Mua tất cả" }
 }

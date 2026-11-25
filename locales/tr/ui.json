@@ -419,5 +419,6 @@
   "lesson.trials": { "en": "Shadow Trials are an endless ladder of generated fortresses. Clear a tier to climb; after a failed attempt you can try a different fortress.", "text": "Gölge Sınavları, bilgisayar üretimi üslerden oluşan sonsuz bir merdivendir. Tırmanmak için bir katı geç; başarısız bir denemeden sonra farklı bir üs deneyebilirsin." },
   "lesson.alliance": { "en": "Join an Alliance: allies send warriors who fight first in your next raid, and you can chat with them.", "text": "Bir İttifak'a katıl: müttefiklerin, bir sonraki baskınında ilk savaşan savaşçıları gönderir ve onlarla sohbet edebilirsin." },
   "lesson.end": { "en": "That is all I can teach for now. Collect, upgrade, raid and grow your clan. You can replay these lessons from Settings.", "text": "Şimdilik öğretebileceklerim bu kadar. Topla, geliştir, baskın yap ve klanını büyüt. Bu dersleri Ayarlar'dan yeniden oynayabilirsin." },
-  "lesson.end.button": { "en": "Finish", "text": "Bitir" }
+  "lesson.end.button": { "en": "Finish", "text": "Bitir" },
+  "army.buyAll": { "en": "Buy all", "text": "Tümünü satın al" }
 }

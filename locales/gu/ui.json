@@ -419,5 +419,6 @@
   "lesson.trials": { "en": "Shadow Trials are an endless ladder of generated fortresses. Clear a tier to climb; after a failed attempt you can try a different fortress.", "text": "છાયા કસોટીઓ કમ્પ્યુટર-નિર્મિત ગઢની અનંત સીડી છે. ઉપર ચઢવા માટે પડાવ પાર કરો; નિષ્ફળ પ્રયાસ પછી તમે બીજો ગઢ અજમાવી શકો છો." },
   "lesson.alliance": { "en": "Join an Alliance: allies send warriors who fight first in your next raid, and you can chat with them.", "text": "કોઈ ગઠબંધનમાં જોડાઓ: સાથીઓ યોદ્ધા મોકલે છે જે તમારી આગલી ધાડમાં સૌથી પહેલાં લડે છે, અને તમે તેમની સાથે ચૅટ કરી શકો છો." },
   "lesson.end": { "en": "That is all I can teach for now. Collect, upgrade, raid and grow your clan. You can replay these lessons from Settings.", "text": "હમણાં માટે આટલું જ શીખવવાનું હતું. એકત્ર કરો, અપગ્રેડ કરો, ધાડ પાડો અને તમારું કુળ મોટું કરો. આ પાઠ તમે સેટિંગ્સમાંથી ફરી જોઈ શકો છો." },
-  "lesson.end.button": { "en": "Finish", "text": "પૂરું કરો" }
+  "lesson.end.button": { "en": "Finish", "text": "પૂરું કરો" },
+  "army.buyAll": { "en": "Buy all", "text": "બધું ખરીદો" }
 }

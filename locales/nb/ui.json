@@ -419,5 +419,6 @@
   "lesson.trials": { "en": "Shadow Trials are an endless ladder of generated fortresses. Clear a tier to climb; after a failed attempt you can try a different fortress.", "text": "Skyggeprøvene er en endeløs stige av genererte festninger. Fullfør et trinn for å klatre; etter et mislykket forsøk kan du prøve en annen festning." },
   "lesson.alliance": { "en": "Join an Alliance: allies send warriors who fight first in your next raid, and you can chat with them.", "text": "Bli med i en Allianse: allierte sender krigere som kjemper først i ditt neste tokt, og du kan chatte med dem." },
   "lesson.end": { "en": "That is all I can teach for now. Collect, upgrade, raid and grow your clan. You can replay these lessons from Settings.", "text": "Det er alt jeg kan lære deg for nå. Samle inn, oppgrader, dra på tokt og la klanen din vokse. Du kan spille disse leksjonene på nytt fra Innstillinger." },
-  "lesson.end.button": { "en": "Finish", "text": "Fullfør" }
+  "lesson.end.button": { "en": "Finish", "text": "Fullfør" },
+  "army.buyAll": { "en": "Buy all", "text": "Kjøp alle" }
 }

@@ -62,7 +62,7 @@ Time stays the better buy at every Keep: the tests require a ratio between 1 and
 
 - **Building sheet:** "Buy missing" starts the upgrade.
 - **Build menu:** a card short only of resources shows "Buy missing" with its Jade price. The player picks a spot; on confirm, the HUD asks before spending (`placement:buy`), then buys and places in one step.
-- **Army panel, Train tab:** "Buy & Fill N" (or "Buy & Next N"), full width below the normal buttons.
+- **Army panel, Train tab:** "Buy +1", "Buy +5", "Buy +10" and "Buy all" (the full Fill, or the next army when the Courtyards are full), on their own line below the normal buttons.
 - **Army panel, Research tab:** "Buy missing".
 - **Every buy** goes through the Jade confirm step, which names what is bought and the price.
 

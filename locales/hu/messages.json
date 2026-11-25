@@ -2109,8 +2109,6 @@
   "srv.import.sandbox": { "en": "This village cannot move to the server: it was played in the testing sandbox (time skips and test purchases).", "text": "Ez a falu nem költözhet a szerverre: a tesztkörnyezetben játszották (időugrások és tesztvásárlások)." },
   "srv.import.refused": { "en": "This village cannot move to the server: {detail}", "text": "Ez a falu nem költözhet a szerverre: {detail}" },
   "srv.import.too_new": { "en": "A village at Keep {keep} can move to the server once this online account is {days} days old (in {wait, plural, one {# day} other {# days}}). It stays on this device meanwhile: keep playing, and the game tries again each day.", "text": "Egy {keep}. szintű Várral rendelkező falu akkor költözhet a szerverre, ha ez az online fiók legalább {days} napos (még {wait, plural, one {# nap} other {# nap}}). Addig ezen az eszközön marad: játssz tovább, a játék naponta újrapróbálja." },
-  "common.buyNext": { "en": "Buy & Next {n} ", "text": "Vétel + Következő {n} " },
-  "common.buyFill": { "en": "Buy & Fill {n} ", "text": "Vétel + Feltöltés {n} " },
   "sim.only_walls_and_traps_can_be_paid_in_prov_e809aeabdf": { "en": "Only walls and traps can be paid in Provisions.", "text": "Élelemmel csak falak és csapdák fizethetők." },
   "sim.choosing_a_hero_is_not_available_yet_27abc790aa": { "en": "Choosing a hero is not available yet.", "text": "A hős kiválasztása még nem érhető el." },
   "sim.unknown_hero_6cc0c367da": { "en": "Unknown hero.", "text": "Ismeretlen hős." },

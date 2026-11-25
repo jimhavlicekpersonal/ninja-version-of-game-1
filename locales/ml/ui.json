@@ -419,5 +419,6 @@
   "lesson.trials": { "en": "Shadow Trials are an endless ladder of generated fortresses. Clear a tier to climb; after a failed attempt you can try a different fortress.", "text": "നിഴൽ പരീക്ഷകൾ കമ്പ്യൂട്ടർ നിർമ്മിത കോട്ടകളുടെ അവസാനമില്ലാത്ത ഏണിയാണ്. മുകളിലേക്ക് കയറാൻ ഒരു ഘട്ടം ജയിക്കുക; ഒരു ശ്രമം പരാജയപ്പെട്ടാൽ മറ്റൊരു കോട്ട പരീക്ഷിക്കാം." },
   "lesson.alliance": { "en": "Join an Alliance: allies send warriors who fight first in your next raid, and you can chat with them.", "text": "ഒരു സഖ്യത്തിൽ ചേരുക: സഖ്യകക്ഷികൾ യോദ്ധാക്കളെ അയയ്ക്കും, അവർ നിങ്ങളുടെ അടുത്ത റെയ്ഡിൽ ആദ്യം പൊരുതും, അവരുമായി ചാറ്റ് ചെയ്യുകയുമാകാം." },
   "lesson.end": { "en": "That is all I can teach for now. Collect, upgrade, raid and grow your clan. You can replay these lessons from Settings.", "text": "തൽക്കാലം എനിക്ക് പഠിപ്പിക്കാനുള്ളത് ഇത്രയുമാണ്. ശേഖരിക്കുക, അപ്ഗ്രേഡ് ചെയ്യുക, റെയ്ഡ് ചെയ്യുക, നിങ്ങളുടെ കുലം വളർത്തുക. ഈ പാഠങ്ങൾ ക്രമീകരണങ്ങളിൽ നിന്ന് വീണ്ടും കാണാം." },
-  "lesson.end.button": { "en": "Finish", "text": "പൂർത്തിയാക്കുക" }
+  "lesson.end.button": { "en": "Finish", "text": "പൂർത്തിയാക്കുക" },
+  "army.buyAll": { "en": "Buy all", "text": "എല്ലാം വാങ്ങുക" }
 }

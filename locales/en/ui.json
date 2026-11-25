@@ -419,5 +419,6 @@
   "lesson.trials": "Shadow Trials are an endless ladder of generated fortresses. Clear a tier to climb; after a failed attempt you can try a different fortress.",
   "lesson.alliance": "Join an Alliance: allies send warriors who fight first in your next raid, and you can chat with them.",
   "lesson.end": "That is all I can teach for now. Collect, upgrade, raid and grow your clan. You can replay these lessons from Settings.",
-  "lesson.end.button": "Finish"
+  "lesson.end.button": "Finish",
+  "army.buyAll": "Buy all"
 }

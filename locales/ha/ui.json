@@ -419,5 +419,6 @@
   "lesson.trials": { "en": "Shadow Trials are an endless ladder of generated fortresses. Clear a tier to climb; after a failed attempt you can try a different fortress.", "text": "Gwaje-gwajen Inuwa matakala ce marar ƙarewa ta sansanonin kwamfuta. Ku ci mataki don hawa; bayan gwajin da bai yi nasara ba, kuna iya gwada wani sansani daban." },
   "lesson.alliance": { "en": "Join an Alliance: allies send warriors who fight first in your next raid, and you can chat with them.", "text": "Ku shiga Ƙawance: abokan tarayya suna aiko da mayaƙan da ke fara yaƙi a harinku na gaba, kuma kuna iya hira da su." },
   "lesson.end": { "en": "That is all I can teach for now. Collect, upgrade, raid and grow your clan. You can replay these lessons from Settings.", "text": "Abin da zan iya koya muku yanzu ke nan. Ku karɓa, ku inganta, ku kai hari, ku bunƙasa danginku. Kuna iya sake kunna waɗannan darussa daga Saituna." },
-  "lesson.end.button": { "en": "Finish", "text": "Gama" }
+  "lesson.end.button": { "en": "Finish", "text": "Gama" },
+  "army.buyAll": { "en": "Buy all", "text": "Saya duka" }
 }

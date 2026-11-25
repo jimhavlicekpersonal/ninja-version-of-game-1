@@ -419,5 +419,6 @@
   "lesson.trials": { "en": "Shadow Trials are an endless ladder of generated fortresses. Clear a tier to climb; after a failed attempt you can try a different fortress.", "text": "Az Árnypróbák gépi erődök végtelen létrája. Teljesíts egy fokozatot, hogy feljebb lépj; egy sikertelen próbálkozás után másik erődöt is választhatsz." },
   "lesson.alliance": { "en": "Join an Alliance: allies send warriors who fight first in your next raid, and you can chat with them.", "text": "Csatlakozz egy Szövetséghez: a szövetségesek harcosokat küldenek, akik a következő portyádon elsőként harcolnak, és csetelhetsz is velük." },
   "lesson.end": { "en": "That is all I can teach for now. Collect, upgrade, raid and grow your clan. You can replay these lessons from Settings.", "text": "Egyelőre ennyit taníthatok. Gyűjts, fejlessz, portyázz, és erősítsd a klánodat. Ezeket a leckéket a Beállításokban újra lejátszhatod." },
-  "lesson.end.button": { "en": "Finish", "text": "Befejezés" }
+  "lesson.end.button": { "en": "Finish", "text": "Befejezés" },
+  "army.buyAll": { "en": "Buy all", "text": "Összes megvétele" }
 }

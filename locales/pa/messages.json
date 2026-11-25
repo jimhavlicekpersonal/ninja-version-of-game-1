@@ -2109,8 +2109,6 @@
   "srv.import.sandbox": { "en": "This village cannot move to the server: it was played in the testing sandbox (time skips and test purchases).", "text": "ਇਹ ਪਿੰਡ ਸਰਵਰ 'ਤੇ ਨਹੀਂ ਜਾ ਸਕਦਾ: ਇਹ ਟੈਸਟਿੰਗ ਸੈਂਡਬੌਕਸ ਵਿੱਚ ਖੇਡਿਆ ਗਿਆ ਸੀ (ਸਮੇਂ ਦੀਆਂ ਛਾਲਾਂ ਅਤੇ ਟੈਸਟ ਖ਼ਰੀਦਾਂ)।" },
   "srv.import.refused": { "en": "This village cannot move to the server: {detail}", "text": "ਇਹ ਪਿੰਡ ਸਰਵਰ 'ਤੇ ਨਹੀਂ ਜਾ ਸਕਦਾ: {detail}" },
   "srv.import.too_new": { "en": "A village at Keep {keep} can move to the server once this online account is {days} days old (in {wait, plural, one {# day} other {# days}}). It stays on this device meanwhile: keep playing, and the game tries again each day.", "text": "ਕਿਲ੍ਹਾ {keep} ਵਾਲਾ ਪਿੰਡ ਸਰਵਰ 'ਤੇ ਤਦ ਜਾ ਸਕਦਾ ਹੈ ਜਦੋਂ ਇਹ ਔਨਲਾਈਨ ਖਾਤਾ {days} ਦਿਨ ਪੁਰਾਣਾ ਹੋ ਜਾਵੇ ({wait, plural, one {# ਦਿਨ ਵਿੱਚ} other {# ਦਿਨਾਂ ਵਿੱਚ}})। ਉਦੋਂ ਤੱਕ ਇਹ ਇਸ ਡਿਵਾਈਸ 'ਤੇ ਰਹਿੰਦਾ ਹੈ: ਖੇਡਦੇ ਰਹੋ, ਖੇਡ ਹਰ ਰੋਜ਼ ਮੁੜ ਕੋਸ਼ਿਸ਼ ਕਰਦੀ ਹੈ।" },
-  "common.buyNext": { "en": "Buy & Next {n} ", "text": "ਖ਼ਰੀਦੋ ਅਤੇ ਅਗਲਾ {n} " },
-  "common.buyFill": { "en": "Buy & Fill {n} ", "text": "ਖ਼ਰੀਦੋ ਅਤੇ ਭਰੋ {n} " },
   "sim.only_walls_and_traps_can_be_paid_in_prov_e809aeabdf": { "en": "Only walls and traps can be paid in Provisions.", "text": "ਰਸਦ ਨਾਲ ਸਿਰਫ਼ ਕੰਧਾਂ ਅਤੇ ਫਾਹੀਆਂ ਦਾ ਭੁਗਤਾਨ ਹੋ ਸਕਦਾ ਹੈ।" },
   "sim.choosing_a_hero_is_not_available_yet_27abc790aa": { "en": "Choosing a hero is not available yet.", "text": "ਨਾਇਕ ਚੁਣਨ ਦੀ ਸਹੂਲਤ ਅਜੇ ਉਪਲਬਧ ਨਹੀਂ।" },
   "sim.unknown_hero_6cc0c367da": { "en": "Unknown hero.", "text": "ਅਣਜਾਣ ਨਾਇਕ।" },

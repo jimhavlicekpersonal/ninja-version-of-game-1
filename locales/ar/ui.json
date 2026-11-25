@@ -419,5 +419,6 @@
   "lesson.trials": { "en": "Shadow Trials are an endless ladder of generated fortresses. Clear a tier to climb; after a failed attempt you can try a different fortress.", "text": "اختبارات الظل سلّم لا نهاية له من حصون مولَّدة آليًا. اجتياز مرتبة يرفعك إلى التالية، وبعد محاولة فاشلة يمكنك تجربة حصن مختلف." },
   "lesson.alliance": { "en": "Join an Alliance: allies send warriors who fight first in your next raid, and you can chat with them.", "text": "الانضمام إلى تحالف يجلب لك حلفاء يرسلون محاربين يقاتلون أولًا في غارتك القادمة، ويمكنك الدردشة معهم." },
   "lesson.end": { "en": "That is all I can teach for now. Collect, upgrade, raid and grow your clan. You can replay these lessons from Settings.", "text": "هذا كل ما يمكنني تعليمه الآن. والآن: الجمع، والترقية، والإغارة، وتنمية عشيرتك. يمكنك إعادة هذه الدروس من الإعدادات." },
-  "lesson.end.button": { "en": "Finish", "text": "إنهاء" }
+  "lesson.end.button": { "en": "Finish", "text": "إنهاء" },
+  "army.buyAll": { "en": "Buy all", "text": "شراء الكل" }
 }

@@ -2109,8 +2109,6 @@
   "srv.import.sandbox": { "en": "This village cannot move to the server: it was played in the testing sandbox (time skips and test purchases).", "text": "Abúlé yìí kò lè lọ sí sáfà: a ṣe é nínú àyè ìdánwò (ìfò àkókò àti rírà ìdánwò)." },
   "srv.import.refused": { "en": "This village cannot move to the server: {detail}", "text": "Abúlé yìí kò lè lọ sí sáfà: {detail}" },
   "srv.import.too_new": { "en": "A village at Keep {keep} can move to the server once this online account is {days} days old (in {wait, plural, one {# day} other {# days}}). It stays on this device meanwhile: keep playing, and the game tries again each day.", "text": "Abúlé kan ní Ilé Olódi {keep} lè lọ sí sáfà ní kété tí àkáǹtì orí ayélujára yìí bá ti pé ọjọ́ {days} (ní {wait, plural, other {ọjọ́ #}}). Ó wà lórí ẹ̀rọ yìí ní báyìí ná: máa ṣeré lọ, eré náà yóò sì tún gbìyànjú lójoojúmọ́." },
-  "common.buyNext": { "en": "Buy & Next {n} ", "text": "Rà kí o sì Èyí tó kàn {n} " },
-  "common.buyFill": { "en": "Buy & Fill {n} ", "text": "Rà kí o sì Kún un {n} " },
   "sim.only_walls_and_traps_can_be_paid_in_prov_e809aeabdf": { "en": "Only walls and traps can be paid in Provisions.", "text": "Odi àti pańpẹ́ nìkan ni a lè fi Oúnjẹ sanwó fún." },
   "sim.choosing_a_hero_is_not_available_yet_27abc790aa": { "en": "Choosing a hero is not available yet.", "text": "Yíyan akọni kò tíì sí báyìí." },
   "sim.unknown_hero_6cc0c367da": { "en": "Unknown hero.", "text": "Akọni tí a kò mọ̀." },

@@ -419,5 +419,6 @@
   "lesson.trials": { "en": "Shadow Trials are an endless ladder of generated fortresses. Clear a tier to climb; after a failed attempt you can try a different fortress.", "text": "Les Épreuves de l'Ombre sont une échelle sans fin de forteresses générées. Réussis un palier pour monter ; après un échec, tu peux essayer une autre forteresse." },
   "lesson.alliance": { "en": "Join an Alliance: allies send warriors who fight first in your next raid, and you can chat with them.", "text": "Rejoins une Alliance : tes alliés envoient des guerriers qui combattent en premier lors de ton prochain raid, et tu peux discuter avec eux." },
   "lesson.end": { "en": "That is all I can teach for now. Collect, upgrade, raid and grow your clan. You can replay these lessons from Settings.", "text": "C'est tout ce que je peux t'apprendre pour l'instant. Récolte, améliore, attaque et fais grandir ton clan. Tu peux rejouer ces leçons depuis les Paramètres." },
-  "lesson.end.button": { "en": "Finish", "text": "Terminer" }
+  "lesson.end.button": { "en": "Finish", "text": "Terminer" },
+  "army.buyAll": { "en": "Buy all", "text": "Tout acheter" }
 }

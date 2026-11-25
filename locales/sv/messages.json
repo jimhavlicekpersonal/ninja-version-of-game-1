@@ -2109,8 +2109,6 @@
   "srv.import.sandbox": { "en": "This village cannot move to the server: it was played in the testing sandbox (time skips and test purchases).", "text": "Den här byn kan inte flytta till servern: den spelades i testsandlådan (tidshopp och testköp)." },
   "srv.import.refused": { "en": "This village cannot move to the server: {detail}", "text": "Den här byn kan inte flytta till servern: {detail}" },
   "srv.import.too_new": { "en": "A village at Keep {keep} can move to the server once this online account is {days} days old (in {wait, plural, one {# day} other {# days}}). It stays on this device meanwhile: keep playing, and the game tries again each day.", "text": "En by med Borg {keep} kan flytta till servern när det här onlinekontot är {days} dagar gammalt (om {wait, plural, one {# dag} other {# dagar}}). Under tiden stannar den på den här enheten: fortsätt spela, spelet försöker igen varje dag." },
-  "common.buyNext": { "en": "Buy & Next {n} ", "text": "Köp & Nästa {n} " },
-  "common.buyFill": { "en": "Buy & Fill {n} ", "text": "Köp & Fyll {n} " },
   "sim.only_walls_and_traps_can_be_paid_in_prov_e809aeabdf": { "en": "Only walls and traps can be paid in Provisions.", "text": "Bara murar och fällor kan betalas med Proviant." },
   "sim.choosing_a_hero_is_not_available_yet_27abc790aa": { "en": "Choosing a hero is not available yet.", "text": "Det går inte att välja hjälte än." },
   "sim.unknown_hero_6cc0c367da": { "en": "Unknown hero.", "text": "Okänd hjälte." },

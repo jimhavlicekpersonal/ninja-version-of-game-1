@@ -31,7 +31,7 @@ describe('Army panel Jade batches', () => {
     const ids = buys.map((b) => b.dataset.id);
     expect(ids).toContain('buy-train-1');
     expect(ids).toContain('buy-train-5');
-    expect(buys.at(-1)!.textContent).toMatch(/Fill|Next/);
+    expect(buys.at(-1)!.textContent).toMatch(/^Buy all/);
     const jade = controller.state.resources.moonstones;
     card.querySelector<HTMLButtonElement>('[data-id="buy-train-1"]')!.click();
     await settle();

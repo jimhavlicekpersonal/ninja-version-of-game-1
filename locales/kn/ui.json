@@ -419,5 +419,6 @@
   "lesson.trials": { "en": "Shadow Trials are an endless ladder of generated fortresses. Clear a tier to climb; after a failed attempt you can try a different fortress.", "text": "ನೆರಳು ಪರೀಕ್ಷೆಗಳು ಕಂಪ್ಯೂಟರ್ ರಚಿತ ದುರ್ಗಗಳ ಕೊನೆಯಿಲ್ಲದ ಏಣಿ. ಮೇಲೇರಲು ಒಂದು ಹಂತವನ್ನು ಗೆಲ್ಲಿ; ಪ್ರಯತ್ನ ವಿಫಲವಾದರೆ ಬೇರೆ ದುರ್ಗವನ್ನು ಪ್ರಯತ್ನಿಸಬಹುದು." },
   "lesson.alliance": { "en": "Join an Alliance: allies send warriors who fight first in your next raid, and you can chat with them.", "text": "ಒಂದು ಮೈತ್ರಿಕೂಟ ಸೇರಿ: ಮಿತ್ರರು ಯೋಧರನ್ನು ಕಳುಹಿಸುತ್ತಾರೆ, ಅವರು ನಿಮ್ಮ ಮುಂದಿನ ದಾಳಿಯಲ್ಲಿ ಮೊದಲು ಹೋರಾಡುತ್ತಾರೆ, ಮತ್ತು ನೀವು ಮಿತ್ರರೊಂದಿಗೆ ಚಾಟ್ ಮಾಡಬಹುದು." },
   "lesson.end": { "en": "That is all I can teach for now. Collect, upgrade, raid and grow your clan. You can replay these lessons from Settings.", "text": "ಸದ್ಯಕ್ಕೆ ನಾನು ಕಲಿಸಬಲ್ಲದು ಇಷ್ಟೇ. ಸಂಗ್ರಹಿಸಿ, ಅಪ್‌ಗ್ರೇಡ್ ಮಾಡಿ, ದಾಳಿ ಮಾಡಿ, ನಿಮ್ಮ ಕುಲವನ್ನು ಬೆಳೆಸಿ. ಈ ಪಾಠಗಳನ್ನು ಸೆಟ್ಟಿಂಗ್‌ಗಳಿಂದ ಮತ್ತೆ ನೋಡಬಹುದು." },
-  "lesson.end.button": { "en": "Finish", "text": "ಮುಗಿಸಿ" }
+  "lesson.end.button": { "en": "Finish", "text": "ಮುಗಿಸಿ" },
+  "army.buyAll": { "en": "Buy all", "text": "ಎಲ್ಲವನ್ನೂ ಖರೀದಿಸಿ" }
 }

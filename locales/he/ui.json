@@ -419,5 +419,6 @@
   "lesson.trials": { "en": "Shadow Trials are an endless ladder of generated fortresses. Clear a tier to climb; after a failed attempt you can try a different fortress.", "text": "מבחני הצל הם סולם אינסופי של מבצרים שנוצרו על ידי המחשב. עברו קומה כדי לטפס; אחרי ניסיון כושל אפשר לנסות מבצר אחר." },
   "lesson.alliance": { "en": "Join an Alliance: allies send warriors who fight first in your next raid, and you can chat with them.", "text": "הצטרפו לברית: בעלי הברית שולחים לוחמים שנלחמים ראשונים בפשיטה הבאה שלך, ואפשר לשוחח איתם בצ'אט." },
   "lesson.end": { "en": "That is all I can teach for now. Collect, upgrade, raid and grow your clan. You can replay these lessons from Settings.", "text": "זה כל מה שיש לי ללמד כרגע. אספו, שדרגו, פשטו והגדילו את השבט שלכם. אפשר לחזור על השיעורים האלה מההגדרות." },
-  "lesson.end.button": { "en": "Finish", "text": "סיום" }
+  "lesson.end.button": { "en": "Finish", "text": "סיום" },
+  "army.buyAll": { "en": "Buy all", "text": "קניית הכול" }
 }

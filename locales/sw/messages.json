@@ -2109,8 +2109,6 @@
   "srv.import.sandbox": { "en": "This village cannot move to the server: it was played in the testing sandbox (time skips and test purchases).", "text": "Kijiji hiki hakiwezi kuhamia kwenye seva: kilichezwa katika eneo la majaribio (kuruka muda na manunuzi ya majaribio)." },
   "srv.import.refused": { "en": "This village cannot move to the server: {detail}", "text": "Kijiji hiki hakiwezi kuhamia kwenye seva: {detail}" },
   "srv.import.too_new": { "en": "A village at Keep {keep} can move to the server once this online account is {days} days old (in {wait, plural, one {# day} other {# days}}). It stays on this device meanwhile: keep playing, and the game tries again each day.", "text": "Kijiji chenye Ngome {keep} kinaweza kuhamia kwenye seva akaunti hii ya mtandaoni ikishafikisha siku {days} (baada ya {wait, plural, one {siku #} other {siku #}}). Kwa sasa kinabaki kwenye kifaa hiki: endelea kucheza, na mchezo utajaribu tena kila siku." },
-  "common.buyNext": { "en": "Buy & Next {n} ", "text": "Nunua na Inayofuata {n} " },
-  "common.buyFill": { "en": "Buy & Fill {n} ", "text": "Nunua na Jaza {n} " },
   "sim.only_walls_and_traps_can_be_paid_in_prov_e809aeabdf": { "en": "Only walls and traps can be paid in Provisions.", "text": "Kuta na mitego pekee ndivyo vinaweza kulipiwa kwa Chakula." },
   "sim.choosing_a_hero_is_not_available_yet_27abc790aa": { "en": "Choosing a hero is not available yet.", "text": "Kuchagua shujaa bado hakupatikani." },
   "sim.unknown_hero_6cc0c367da": { "en": "Unknown hero.", "text": "Shujaa asiyejulikana." },

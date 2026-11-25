@@ -2109,8 +2109,6 @@
   "srv.import.sandbox": { "en": "This village cannot move to the server: it was played in the testing sandbox (time skips and test purchases).", "text": "ይህ መንደር ወደ አገልጋዩ መዛወር አይችልም፦ በሙከራ ማጠሪያው ውስጥ ተጫውቷል (የጊዜ ዝላይዎችና የሙከራ ግዢዎች)።" },
   "srv.import.refused": { "en": "This village cannot move to the server: {detail}", "text": "ይህ መንደር ወደ አገልጋዩ መዛወር አይችልም፦ {detail}" },
   "srv.import.too_new": { "en": "A village at Keep {keep} can move to the server once this online account is {days} days old (in {wait, plural, one {# day} other {# days}}). It stays on this device meanwhile: keep playing, and the game tries again each day.", "text": "ምሽግ ደረጃ {keep} ላይ ያለ መንደር ወደ አገልጋዩ መዛወር የሚችለው ይህ የመስመር ላይ መለያ {days} ቀን ሲሞላው ነው (የቀረው፦ {wait, plural, one {# ቀን} other {# ቀን}})። እስከዚያው በዚህ መሣሪያ ላይ ይቆያል፦ መጫወትዎን ይቀጥሉ፣ ጨዋታውም በየቀኑ እንደገና ይሞክራል።" },
-  "common.buyNext": { "en": "Buy & Next {n} ", "text": "ይግዙና ቀጣይ {n} " },
-  "common.buyFill": { "en": "Buy & Fill {n} ", "text": "ይግዙና ይሙሉ {n} " },
   "sim.only_walls_and_traps_can_be_paid_in_prov_e809aeabdf": { "en": "Only walls and traps can be paid in Provisions.", "text": "በስንቅ ሊከፈልባቸው የሚችሉት ቅጥሮችና ወጥመዶች ብቻ ናቸው።" },
   "sim.choosing_a_hero_is_not_available_yet_27abc790aa": { "en": "Choosing a hero is not available yet.", "text": "ጀግና መምረጥ ገና አልተከፈተም።" },
   "sim.unknown_hero_6cc0c367da": { "en": "Unknown hero.", "text": "ያልታወቀ ጀግና።" },

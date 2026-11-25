@@ -2109,8 +2109,6 @@
   "srv.import.sandbox": { "en": "This village cannot move to the server: it was played in the testing sandbox (time skips and test purchases).", "text": "Эта деревня не может переехать на сервер: в неё играли в тестовой песочнице (перемотка времени и тестовые покупки)." },
   "srv.import.refused": { "en": "This village cannot move to the server: {detail}", "text": "Эта деревня не может переехать на сервер: {detail}" },
   "srv.import.too_new": { "en": "A village at Keep {keep} can move to the server once this online account is {days} days old (in {wait, plural, one {# day} other {# days}}). It stays on this device meanwhile: keep playing, and the game tries again each day.", "text": "Деревня с Замком {keep} сможет переехать на сервер, когда этому онлайн-аккаунту исполнится {days} дн. (через {wait, plural, one {# день} few {# дня} many {# дней} other {# дня}}). А пока она остаётся на этом устройстве: продолжай играть, игра будет пробовать снова каждый день." },
-  "common.buyNext": { "en": "Buy & Next {n} ", "text": "Купить и Далее {n} " },
-  "common.buyFill": { "en": "Buy & Fill {n} ", "text": "Купить и заполнить {n} " },
   "sim.only_walls_and_traps_can_be_paid_in_prov_e809aeabdf": { "en": "Only walls and traps can be paid in Provisions.", "text": "Провизией можно оплатить только стены и ловушки." },
   "sim.choosing_a_hero_is_not_available_yet_27abc790aa": { "en": "Choosing a hero is not available yet.", "text": "Выбор героя пока недоступен." },
   "sim.unknown_hero_6cc0c367da": { "en": "Unknown hero.", "text": "Неизвестный герой." },
