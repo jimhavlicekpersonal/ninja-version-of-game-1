@@ -855,8 +855,11 @@ const ROLE_STYLE: Record<string, RoleStyle> = {
   shadow: { look: { hat: 'hood' } },
 };
 
+/** The pose fields of a walk or strike frame (art audit F6); none is the standing sprite. */
+export interface WarriorPoseFields { stride?: number; strike?: number }
+
 /** Draw one warrior in the ninja's local space (facing right, feet at y = 0): role silhouette, look and signature prop. */
-export function paintWarriorFigure(ctx: Ctx, def: WarriorIconDef): void {
+export function paintWarriorFigure(ctx: Ctx, def: WarriorIconDef, pose: WarriorPoseFields = {}): void {
   const style = ROLE_STYLE[def.role] ?? { look: {} };
   ctx.save();
   if (style.crouch) ctx.scale(1 + style.crouch * 0.12, 1 - style.crouch * 0.2);
@@ -865,7 +868,7 @@ export function paintWarriorFigure(ctx: Ctx, def: WarriorIconDef): void {
   def.back?.(ctx);
   ctx.save();
   if (def.alpha !== undefined) ctx.globalAlpha = def.alpha;
-  const look: NinjaLook = { ...def.look, ...style.look, eyes: def.role === 'shadow' ? def.look.band : def.look.eyes };
+  const look: NinjaLook = { ...def.look, ...style.look, eyes: def.role === 'shadow' ? def.look.band : def.look.eyes, ...pose };
   // A role hat wins over an older per-warrior one; a guardian keeps its own armour colour on the kabuto.
   if (def.role === 'guardian') look.armor = def.look.armor ?? def.look.band;
   ninja(ctx, look);
@@ -970,14 +973,13 @@ export const warriorIconArt: Record<string, WarriorIconArt> = Object.fromEntries
  * so the strongest warriors stand out. The canvas leaves room for props and kites; scenes size
  * sprites from `w`/`h`, so figures keep the same on-screen scale as before.
  */
-export const warriorSpriteArt: Record<string, WarriorIconArt> = Object.fromEntries(
-  Object.entries(warriorIconDefs).map(([id, def]) => {
+function spriteArt(def: WarriorIconDef, pose: WarriorPoseFields = {}): WarriorIconArt {
     const big = def.tier >= 4 ? 1.15 : 1;
     const k = (def.role === 'guardian' ? 1.22 : 1) * big;
     const sky = def.role === 'sky';
     const w = Math.ceil((sky ? 68 : 64) * k);
     const h = Math.ceil((sky ? 66 : 64) * k);
-    return [LIVE_ID[id] ?? id, {
+    return {
       w, h,
       paint(ctx: Ctx) {
         ctx.save();
@@ -993,12 +995,31 @@ export const warriorSpriteArt: Record<string, WarriorIconArt> = Object.fromEntri
           ctx.ellipse(0, -24, 26, 30, 0, 0, Math.PI * 2);
           ctx.fill();
         }
-        paintWarriorFigure(ctx, def);
+        paintWarriorFigure(ctx, def, pose);
         ctx.restore();
       },
-    }];
-  }),
+    };
+}
+
+export const warriorSpriteArt: Record<string, WarriorIconArt> = Object.fromEntries(
+  Object.entries(warriorIconDefs).map(([id, def]) => [LIVE_ID[id] ?? id, spriteArt(def)]),
 );
+
+/**
+ * Art audit F6: painted frames on top of the standing sprite. `stepA`/`stepB` are the two strides of a walk (the
+ * standing sprite is the passing pose between them), `strike` the weapon arm at the end of its swing. Same canvas
+ * size and origin as `troop.<id>`, so a scene swaps the texture without moving the warrior. Flyers have none (their
+ * kite floats). Painted by the scene only for the warriors in a battle, never at start-up.
+ */
+export type WarriorFrame = 'stepA' | 'stepB' | 'strike';
+export const WARRIOR_FRAMES: readonly WarriorFrame[] = ['stepA', 'stepB', 'strike'];
+const FRAME_POSE: Record<WarriorFrame, WarriorPoseFields> = { stepA: { stride: 1 }, stepB: { stride: -1 }, strike: { strike: 1 } };
+export function warriorFrameArt(troopId: string, frame: WarriorFrame): WarriorIconArt | undefined {
+  const rosterId = Object.keys(LIVE_ID).find((k) => LIVE_ID[k] === troopId) ?? troopId;
+  const def = warriorIconDefs[rosterId];
+  if (!def || def.role === 'sky') return undefined;
+  return spriteArt(def, FRAME_POSE[frame]);
+}
 // The battle sprite registry (`troopArt`, ninja.ts) takes these in place of the shared template;
 // `registerWarriorArt` then only adds what is still missing (beast companions).
 Object.assign(troopArt, warriorSpriteArt);

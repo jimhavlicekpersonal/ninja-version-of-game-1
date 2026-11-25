@@ -98,6 +98,28 @@ export function warriorPose(state: PoseState, now: number, phase: number, opts: 
   return { dx: 0, dy: 0, sx: 1 - b * 0.006, sy: 1 + b * 0.015, lean: 0 };
 }
 
+/** A painted frame to show over the standing sprite (art audit F6), or null for the standing sprite itself. */
+export type WarriorFrameName = 'stepA' | 'stepB' | 'strike';
+
+/**
+ * Which painted frame a warrior shows now, on the same clocks as `warriorPose` (so a stride lands with its hop and the
+ * strike frame with the lunge). Walk: stride A, standing, stride B, standing, one step each half. Attack: the strike
+ * frame from the lunge to early recovery. Reduced motion keeps the walk still and shows only the strike, which is a
+ * change of picture, not movement.
+ */
+export function warriorFrame(state: PoseState, now: number, phase: number, opts: { reduced?: boolean } = {}): WarriorFrameName | null {
+  if (state === 'walk') {
+    if (opts.reduced) return null;
+    const p = (now / STEP_MS + phase * 0.37) % 2;
+    return p < 0.5 ? 'stepA' : p >= 1 && p < 1.5 ? 'stepB' : null;
+  }
+  if (state === 'attack') {
+    const p = (now / SWING_MS + phase * 0.29) % 1;
+    return p >= 0.55 && p < 0.85 ? 'strike' : null;
+  }
+  return null;
+}
+
 /** Building damage stage (art audit F7): 0 above 66 % health, 1 at 66 % or less, 2 at 33 % or less (ruins at 0). */
 export function damageStage(hp: number, maxHp: number): 0 | 1 | 2 {
   if (maxHp <= 0 || hp >= maxHp) return 0;

@@ -10,7 +10,7 @@ import { airborne, deployBlock, destruction, isAbility, stars as starsOf, type S
 import { coverLeft, pointAt } from '../../gameplay/sim/battle/infiltration';
 import { HEROES, WARRIORS } from '../../gameplay/sim/progression';
 import { isHidden } from '../../gameplay/sim/battle/warriors';
-import { GROUND_PAD, Keys, TEX_SCALE, addSurroundings, groundScale, buildingOrigin, buildingScale, buildingTexture, ensureTextures, troopSize, holdBuildingTextures, releaseBuildingTextures } from './assets';
+import { GROUND_PAD, Keys, TEX_SCALE, addSurroundings, groundScale, buildingOrigin, buildingScale, buildingTexture, ensureTextures, troopSize, holdBuildingTextures, releaseBuildingTextures, paintTroopFrames, removeTroopFrames, troopFrameKey } from './assets';
 import { CameraControl } from './cameraControl';
 import { TILE_H, TILE_W, depthFor, footprintCenter, mapBounds, tileToWorld, worldToTile } from './iso';
 import { noteBattleFps, quality } from './quality';
@@ -20,7 +20,7 @@ import { addScenery, canvasRenderer, tintedTexture, debris, deathPuff, keepColla
 import { haptic, sound } from '../audio/sound';
 import { placeCallout, type CalloutBox } from './calloutLayout';
 import { OPENING_GLIDE_MS, OPENING_HOLD_MS, actionShot, battleOpening, type WorldBox } from './cameraFrame';
-import { DAMAGE_TINT, calmEffects, damageStage, reducedMotion, turnToward, warriorPose } from './motion';
+import { DAMAGE_TINT, calmEffects, damageStage, reducedMotion, turnToward, warriorFrame, warriorPose } from './motion';
 import { BARREL_ORIGIN_X, BARREL_REACH, barrelTexture, crackTexture } from './battleMarks';
 
 export interface BattleHooks {
@@ -244,10 +244,17 @@ export class BattleScene extends Phaser.Scene {
     holdBuildingTextures(this.textures, 'battle', this.bviews.map((v) => v.image.texture.key));
     // Beast Mode STB-07: the prepainted looks are held by this scene now.
     releaseBuildingTextures(this.textures, PREP_OWNER);
+    // Art audit F6: the army's walk and strike frames now, not on the first deploy (a paint mid-battle is a hitch).
+    if (!this.canvasMode) for (const type of Object.keys(this.session.setup.army ?? {})) {
+      this.framesTried.add(type);
+      for (const k of paintTroopFrames(this.textures, [type])) this.frameKeys.add(k);
+    }
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       releaseBuildingTextures(this.textures, 'battle');
       for (const k of this.tintKeys) if (this.textures.exists(k)) this.textures.remove(k);
       this.tintKeys.clear();
+      removeTroopFrames(this.textures, this.frameKeys);
+      this.frameKeys.clear();
     });
     this.zone = this.add.graphics().setDepth(-4).setAlpha(0);
     this.drawZone();
@@ -919,8 +926,17 @@ export class BattleScene extends Phaser.Scene {
       .setAlpha(jammed ? 0.55 : 1);
   }
 
+  /** Art audit F6: painted walk/strike frames for the troop types in this battle (removed on shutdown). */
+  private frameKeys = new Set<string>();
+  private framesTried = new Set<string>();
+
   private makeTroop(type: string, air: boolean): TView {
     const key = Keys.troop(type);
+    // Frames swap textures, which the Canvas renderer's pre-tinted copies would undo: WebGL only.
+    if (!this.canvasMode && !this.framesTried.has(type)) {
+      this.framesTried.add(type);
+      for (const k of paintTroopFrames(this.textures, [type])) this.frameKeys.add(k);
+    }
     const size = troopSize(type);
     const tex = this.textures.get(key);
     const src = tex.getSourceImage() as { width: number; height: number };
@@ -1161,7 +1177,13 @@ export class BattleScene extends Phaser.Scene {
           const ix = v.image.x;
           const iy = v.image.y;
           deathPuff(this, ix, iy - 8, OVER - 20);
-          this.tweens.add({ targets: [v.image, v.shadow, v.ring], alpha: 0, duration: 300, onComplete: () => { v.image.destroy(); v.shadow.destroy(); v.bar.destroy(); v.ring.destroy(); } });
+          // Art audit F6: a fallen warrior topples away from where it faced before it fades (not with reduced motion).
+          if (!this.reduced && !t.air) {
+            this.tweens.killTweensOf(v.image);
+            v.image.setTexture(v.key);
+            this.tweens.add({ targets: v.image, angle: (v.image.flipX ? 1 : -1) * 70, y: iy + 4, duration: 220, ease: 'Quad.easeIn' });
+          }
+          this.tweens.add({ targets: [v.image, v.shadow, v.ring], alpha: 0, delay: this.reduced || t.air ? 0 : 120, duration: 300, onComplete: () => { v.image.destroy(); v.shadow.destroy(); v.bar.destroy(); v.ring.destroy(); } });
         }
         return;
       }
@@ -1171,7 +1193,14 @@ export class BattleScene extends Phaser.Scene {
       const moving = t.x !== t.px || t.y !== t.py;
       const flying = airborne(sim, t);
       // Art audit F6: a procedural step/swing cycle on the single-frame sprite (motion.ts); flyers keep their float.
-      const pose = warriorPose(t.attacking ? 'attack' : moving ? 'walk' : 'idle', now, i, { reduced: this.reduced, lean: this.leanOn && !t.air });
+      const state = t.attacking ? 'attack' : moving ? 'walk' : 'idle';
+      const pose = warriorPose(state, now, i, { reduced: this.reduced, lean: this.leanOn && !t.air });
+      if (!this.canvasMode && this.frameKeys.size) {
+        const frame = t.air ? null : warriorFrame(state, now, i, { reduced: this.reduced });
+        const fk = frame ? troopFrameKey(t.type, frame) : v.key;
+        const show = this.frameKeys.has(fk) ? fk : v.key;
+        if (v.image.texture.key !== show) v.image.setTexture(show);
+      }
       const face = t.facing < 0 ? -1 : 1;
       const bob = flying ? (this.reduced ? 0 : Math.sin(now / 220 + i) * 4) : pose.dy;
       // A grounded flyer (Kite-Cutter Ballista) drops most of the way down while it is tangled.

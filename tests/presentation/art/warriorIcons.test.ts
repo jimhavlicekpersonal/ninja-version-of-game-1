@@ -1,7 +1,7 @@
 /** Every roster warrior has its own icon, and no two icons draw the same picture. */
 import { describe, expect, it } from 'vitest';
 import roster from '../../../src/gameplay/data/roster.json';
-import { paintWarriorIcon, warriorIconDefs } from '../../../src/presentation/art/warriorIcons';
+import { WARRIOR_FRAMES, paintWarriorIcon, warriorFrameArt, warriorIconDefs, warriorSpriteArt } from '../../../src/presentation/art/warriorIcons';
 
 /** A fake 2D context that records every drawing call, so two icons can be compared without a browser. */
 function recorder(): { ctx: CanvasRenderingContext2D; log: string[] } {
@@ -48,5 +48,27 @@ describe('warrior icons', () => {
       expect(seen.get(sig), `${id} looks the same as ${seen.get(sig)}`).toBeUndefined();
       seen.set(sig, id);
     }
+  });
+});
+
+describe('painted battle frames (art audit F6, 2026-11-25)', () => {
+  it('every grounded warrior has two strides and a strike, each a different picture on the sprite\'s canvas; flyers have none', () => {
+    for (const [troopId, sprite] of Object.entries(warriorSpriteArt)) {
+      if (!warriorFrameArt(troopId, 'stepA')) continue; // flyers: checked below
+      const base = recorder();
+      sprite.paint(base.ctx);
+      const sigs = new Set([base.log.join('\n')]);
+      for (const f of WARRIOR_FRAMES) {
+        const art = warriorFrameArt(troopId, f)!;
+        expect([art.w, art.h], `${troopId} ${f}`).toEqual([sprite.w, sprite.h]);
+        const r = recorder();
+        art.paint(r.ctx);
+        sigs.add(r.log.join('\n'));
+      }
+      expect(sigs.size, troopId).toBe(1 + WARRIOR_FRAMES.length);
+    }
+    const flyers = Object.entries(warriorIconDefs).filter(([, d]) => d.role === 'sky');
+    expect(flyers.length).toBeGreaterThan(0);
+    for (const [id] of flyers) for (const f of WARRIOR_FRAMES) expect(warriorFrameArt(id === 'kite_raider' ? 'owl_bomber' : id, f)).toBeUndefined();
   });
 });

@@ -19,7 +19,7 @@ import {
   registerWarriorArt,
   type PainterDef,
 } from '../art/ninja';
-import { ICON_SIZE, warriorIconArt } from '../art/warriorIcons';
+import { ICON_SIZE, WARRIOR_FRAMES, warriorFrameArt, warriorIconArt, type WarriorFrame } from '../art/warriorIcons';
 import { TILE_H, TILE_W, mapBounds, worldToTile } from './iso';
 import { HEROES, WARRIORS } from '../../gameplay/sim/progression';
 import { quality, renderScaleFor } from './quality';
@@ -209,6 +209,42 @@ const hallSkinPainters = new Map<string, PainterDef>();
 /** The third (1..3) of the level range: the tier key real art uses. */
 function thirdFor(type: string, level: number): 1 | 2 | 3 {
   return thirdOf(level, buildingInfo.get(type)?.maxLevel ?? 1);
+}
+
+/** Art audit F6: the key of a painted walk or strike frame of `troop.<type>`. */
+export function troopFrameKey(type: string, frame: WarriorFrame): string {
+  return `${Keys.troop(type)}.${frame}`;
+}
+
+/**
+ * Paint the walk and strike frames of these troops (art audit F6) and return their keys. Only on the high profile
+ * (low keeps one picture per warrior for memory), only over code-drawn art (a real image in the manifest has no
+ * matching frames, so it keeps its single picture) and only for warriors that have frames (not flyers). The battle
+ * that asked removes them again on shutdown (`removeTroopFrames`), so frames never pile up across battles.
+ */
+export function paintTroopFrames(textures: Phaser.Textures.TextureManager, types: Iterable<string>): string[] {
+  if (quality().profile !== 'high') return [];
+  const keys: string[] = [];
+  for (const type of types) {
+    const base = Keys.troop(type);
+    if (!textures.exists(base) || !(textures.get(base).getSourceImage() instanceof HTMLCanvasElement)) continue;
+    for (const frame of WARRIOR_FRAMES) {
+      const art = warriorFrameArt(type, frame);
+      if (!art) continue;
+      const key = troopFrameKey(type, frame);
+      const c = canvasFor(textures, key, art.w, art.h, art.h - 6, HD_SCALE);
+      if (c) {
+        art.paint(c.ctx);
+        c.done();
+      }
+      if (textures.exists(key)) keys.push(key);
+    }
+  }
+  return keys;
+}
+
+export function removeTroopFrames(textures: Phaser.Textures.TextureManager, keys: Iterable<string>): void {
+  for (const k of keys) if (textures.exists(k)) textures.remove(k);
 }
 
 /** Logical (1x) size of a troop texture, so scenes can scale real art the same way. */

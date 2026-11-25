@@ -2165,6 +2165,13 @@ export interface NinjaLook {
   lean?: number;
   /** 0..1: squat lower and wider (saboteurs, infiltrators). */
   crouch?: number;
+  /**
+   * Art audit F6 walk frames: -1..1, the stride. Positive swings the front leg forward and lifts its foot, the back leg
+   * pushes off behind; negative the other way round. 0 (the default) is the standing sprite.
+   */
+  stride?: number;
+  /** Art audit F6 strike frame: 0..1, how far the weapon arm has swung forward and down from its ready angle. */
+  strike?: number;
 }
 
 /** Chibi ninja, facing right, feet at y = 0. Shared by every warrior and their icons. */
@@ -2185,10 +2192,14 @@ export function ninja(ctx: Ctx, look: NinjaLook): void {
     g.addColorStop(1, darken(c, dark));
     return g;
   };
-  // Legs, with wrapped shins.
-  poly(ctx, [{ x: -6, y: -9 }, { x: -2, y: -9 }, { x: -2, y: 0 }, { x: -7, y: 0 }], ramp(-7, -2, darken(gi, 0.12)), 1.1);
-  poly(ctx, [{ x: 2, y: -9 }, { x: 6, y: -9 }, { x: 7, y: 0 }, { x: 2, y: 0 }], ramp(2, 7, darken(gi, 0.2)), 1.1);
-  for (const [x0, x1] of [[-6.6, -2], [2, 6.6]] as const) line(ctx, [{ x: x0, y: -4 }, { x: x1, y: -5 }], rgba('#ffffff', 0.22), 0.8);
+  // Legs, with wrapped shins. A stride (walk frames) swings each foot about its hip: the front foot forward and up,
+  // the back foot behind and up when the stride is the other way.
+  const st = look.stride ?? 0;
+  const fx = st * 3.4;
+  const up = (k: number) => Math.max(0, k) * 2.4;
+  poly(ctx, [{ x: -6, y: -9 }, { x: -2, y: -9 }, { x: -2 - fx, y: -up(-st) }, { x: -7 - fx, y: -up(-st) }], ramp(-7, -2, darken(gi, 0.12)), 1.1);
+  poly(ctx, [{ x: 2, y: -9 }, { x: 6, y: -9 }, { x: 7 + fx, y: -up(st) }, { x: 2 + fx, y: -up(st) }], ramp(2, 7, darken(gi, 0.2)), 1.1);
+  for (const [x0, x1, k] of [[-6.6, -2, -fx], [2, 6.6, fx]] as const) line(ctx, [{ x: x0 + k / 2, y: -4 }, { x: x1 + k / 2, y: -5 }], rgba('#ffffff', 0.22), 0.8);
   // Body
   poly(ctx, [{ x: -8, y: -22 }, { x: 8, y: -22 }, { x: 9, y: -8 }, { x: -9, y: -8 }], ramp(-9, 9, gi), 1.3);
   line(ctx, [{ x: -3, y: -22 }, { x: 3, y: -15 }], rgba(INK, 0.35), 0.9); // crossed collar
@@ -2350,8 +2361,15 @@ export function ninja(ctx: Ctx, look: NinjaLook): void {
     circle(ctx, -1, -43, 3.6, '#2b2b2b', 1);
     line(ctx, [{ x: -4, y: -41 }, { x: 2, y: -41.5 }], look.band ?? VERMILION, 1.6);
   }
-  // Arm and weapon
+  // Arm and weapon. A strike frame turns the whole arm about the shoulder, forward and down.
   const w = look.weapon ?? 'katana';
+  const swing = look.strike ?? 0;
+  if (swing) {
+    ctx.save();
+    ctx.translate(6, -18);
+    ctx.rotate(swing * 0.95);
+    ctx.translate(-6, 18);
+  }
   if (w === 'katana') {
     // Blade with a bright edge, a gold guard and a wrapped grip.
     line(ctx, [{ x: 8, y: -19.5 }, { x: 23, y: -31 }], '#5d636e', 3);
@@ -2372,6 +2390,7 @@ export function ninja(ctx: Ctx, look: NinjaLook): void {
     line(ctx, [{ x: 5, y: -15.5 }, { x: 17, y: -32.5 }], rgba('#ffffff', 0.25), 1);
     for (let i = 0; i < 3; i++) circle(ctx, 13 + i * 2, -26 - i * 3, 1.2, '#c9ced6', 0);
   }
+  if (swing) ctx.restore();
   ctx.restore();
 }
 

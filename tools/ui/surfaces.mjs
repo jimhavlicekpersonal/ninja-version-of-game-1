@@ -195,12 +195,16 @@ for (const lang of LANGS) {
           for (let k = 0; k < 40 && sc.session.squadWaiting > 0; k++) await new Promise((r) => setTimeout(r, 250));
         }
         const out = [z0];
+        // Art audit F6 (2026-11-25): count warriors seen on a painted walk/strike frame (high profile, WebGL).
+        const framed = new Set();
         for (let i = 0; i < 12; i++) {
           await new Promise((r) => setTimeout(r, 1000));
           out.push(Math.round(sc.cam.userZoom * 1000) / 1000);
+          for (const v of sc.tviews) if (!v.dead && v.image.texture.key !== v.key) framed.add(v.image.texture.key.split('.').pop());
         }
-        return { zooms: out, speed: Boolean(document.querySelector('[data-id="battle-speed"]')), left: Object.values(sc.session.sim.remaining).reduce((a, b) => a + b, 0) };
+        return { zooms: out, speed: Boolean(document.querySelector('[data-id="battle-speed"]')), left: Object.values(sc.session.sim.remaining).reduce((a, b) => a + b, 0), frames: { painted: sc.frameKeys.size, seen: [...framed].sort() } };
       });
+      console.log(`  frames: ${zooms.frames.painted} painted, seen ${zooms.frames.seen.join(', ') || 'none'}`);
       const problems = [...squadProblems];
       if (Math.max(...zooms.zooms.slice(1)) < zooms.zooms[0] * 1.5) problems.push({ problem: `camera stayed near the entry fit: ${zooms.zooms.join(' ')}` });
       if (zooms.left === 0 && !zooms.speed) problems.push({ problem: 'no speed button with every warrior in' });

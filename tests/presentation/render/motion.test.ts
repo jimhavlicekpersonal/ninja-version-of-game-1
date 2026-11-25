@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { NEUTRAL, STEP_MS, SWING_MS, damageStage, turnToward, warriorPose } from '../../../src/presentation/render/motion';
+import { NEUTRAL, STEP_MS, SWING_MS, damageStage, turnToward, warriorFrame, warriorPose } from '../../../src/presentation/render/motion';
 
 const sample = (state: 'walk' | 'attack' | 'idle', ms: number, opts = {}) => Array.from({ length: 40 }, (_, k) => warriorPose(state, (k / 40) * ms, 0, opts));
 
@@ -63,5 +63,22 @@ describe('defense aim (art audit F27)', () => {
     // From just under +pi to just over -pi is a small step across the seam, not a full turn back.
     const a = turnToward(Math.PI - 0.1, -Math.PI + 0.1, 0.05);
     expect(a).toBeCloseTo(Math.PI - 0.05);
+  });
+});
+
+describe('painted warrior frames (art audit F6, 2026-11-25)', () => {
+  it('a walk cycles stride A, standing, stride B, standing, one per half step', () => {
+    const seen = [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75].map((k) => warriorFrame('walk', k * STEP_MS, 0));
+    expect(seen).toEqual(['stepA', 'stepA', null, null, 'stepB', 'stepB', null, null]);
+  });
+  it('an attack shows the strike frame from the lunge into early recovery, on the pose clock', () => {
+    expect(warriorFrame('attack', 0.3 * SWING_MS, 0)).toBeNull();
+    expect(warriorFrame('attack', 0.6 * SWING_MS, 0)).toBe('strike');
+    expect(warriorFrame('attack', 0.9 * SWING_MS, 0)).toBeNull();
+  });
+  it('idle stands; reduced motion keeps the walk still but still shows the strike', () => {
+    expect(warriorFrame('idle', 123, 2)).toBeNull();
+    expect(warriorFrame('walk', 0, 0, { reduced: true })).toBeNull();
+    expect(warriorFrame('attack', 0.6 * SWING_MS, 0, { reduced: true })).toBe('strike');
   });
 });
