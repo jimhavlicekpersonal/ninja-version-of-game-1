@@ -1,0 +1,2693 @@
+import { choosableHeroes, heroFor } from './heroes';
+import { sealProgress } from './seals';
+import { hasAttacked, shieldAfterAttack } from './shield';
+import { awardMastery, masteryBonuses, masteryMatches, masteryOn } from './mastery';
+import { hallLevel } from './keep';
+import { attemptTier, canTryAlternate, nextTrialTier, trialBase, trialCatchUpTier, trialRewardsThrough, trialVariant } from './trials';
+import { armyHousing, armyReadyAt, armyValue, takeFromArmy, barracksLevel, finishTraining, housingCapacity, queueEndsAt, queueFits, queueHousing, retimeQueue, trainingQueueLimit, trainSecondsFor } from './army';
+import { runBattle, SIM_RULES, SIM_RULES_COMPATIBLE } from './battle/battle';
+import type { BattleRecord, BattleResult, BattleSetup, Deployment } from './battle/types';
+import { MS_PER_SECOND } from './clock';
+import { buildingDef, levelDef, maxDefinedLevel, troopLevel } from './data';
+import { mixSeed } from './rng';
+import { leagueFor, lossTrophies, rollSeasons, seasonOf, winTrophies, type SeasonReward } from './ranks';
+import { emptyResearch, finishResearch, researchQuote, startResearch, troopLevelOf } from './research';
+import { chestContents, chestDay, chestOutcome, emptyDaily, streakAfterClaim, streakJade, streakJadeDue } from './daily';
+import { eventEffect } from './events';
+import { achievementViews } from './achievements';
+import { scaleReward, skipCost, topUpCost, trainingSkipCost } from './economy';
+import { canPurchase, productGrantsFor, productInfo } from './monetization';
+import { addStipend, claimStipend, emptyStipend } from './stipend';
+import { goalBase, ladderReward, recordBountyResult, runningGoalEvent } from './goalEvents';
+import { leavesEntryRoom } from './entryRoom';
+import { rematchBase, rematchKeep, rematchReward, rematchStatus } from './rematch';
+import { matchedKeep } from './matchmaking';
+import { scatterObstacles } from './obstacles';
+import { offerCanStillShow, triggerOffer } from './offers';
+import { claimCalendarDay, emptyCalendar, localDayIndex, setLocalTime } from './calendar';
+import { drillArmy, drillLevels } from './drill';
+import { buildTimeFactor, currentTasks, dayIndex, passBonusCount, passSeason, passSeasonSkin, rollPeriods, unlockedTier } from './pass';
+import { emptyStats, type OfferTrigger } from './types';
+import { advanceGrove, canRequest, donate as donateTroops, emptyGrove, joinGrove, requestTroops, sendChat } from './social/grove';
+import { attacksLeft, enemyGrove, ensureRaid, raidPhase, settleRaids } from './social/groveRaid';
+import { bindPlayer, claimGangChest, claimRaidChest, emptyNet, receiveDonations, spendDonation, type ServerDonation } from './net';
+import { canPlace } from './grid';
+import { accrueRestart, addCapped, canAfford, capacity, collectorAmount, effectiveLevel, missingFor, subtractCost } from './resources';
+import type { Building, BuildingLimit, BuildingType, Cost, GameData, LeagueDef, PurchaseRecord, PurchaseRefund, ResourceKind, Temper, TopUpPaid, TrainingItem, VillageState, PendingBattle } from './types';
+import { normalizeTemper, sameTemper, temperable, temperDef, validTemper } from './battle/temper';
+import { cappedCarry, carriedLoot, contractFor, contractMultiplier, raidCarry, trainableRoles, validStake } from './carry';
+import { RESOURCE_KINDS } from './types';
+import { bandChangeAllowed, isAgeBand, type AgeBand } from './age';
+
+// ---------- Commands ----------
+
+export type Command =
+  /** `pay: 'dew'`: pay a wall or trap in Provisions instead of Coins (`economy.provisionsPayable`, save v21). */
+  | { type: 'place'; buildingType: BuildingType; x: number; y: number; pay?: PayWith }
+  | { type: 'move'; id: string; x: number; y: number }
+  | { type: 'upgrade'; id: string; pay?: PayWith }
+  /** Tempering (save v21): set the profile of every building of one temperable type (sim/battle/temper.ts). */
+  | { type: 'temper'; buildingType: BuildingType; temper: Temper }
+  | { type: 'cancel'; id: string }
+  | { type: 'collect'; id: string }
+  /** Queue `count` warriors (default 1); as many as fit and can be paid for are queued. */
+  | { type: 'train'; troop: string; count?: number }
+  /** Queue whatever is missing to reach this army (camps plus the next-army queue), e.g. a saved preset or the last army. */
+  | { type: 'trainArmy'; army: Record<string, number> }
+  | { type: 'saveArmyPreset'; name: string; army: Record<string, number> }
+  | { type: 'deleteArmyPreset'; index: number }
+  /** Send ready warriors home to make room (part of their training cost comes back). */
+  | { type: 'dismiss'; troop: string; count: number }
+  /** Cancel from `index` back through a run of one type (`count`, default 1). `troop` guards against the queue having moved. */
+  | { type: 'cancelTraining'; index: number; troop?: string; count?: number }
+  | { type: 'research'; troop: string }
+  /** Cancel or finish a running research (the oldest when `troop` is left out). */
+  | { type: 'cancelResearch'; troop?: string }
+  | { type: 'skipResearch'; troop?: string }
+  /**
+   * `entropy` (economy E18, save v22): a random number from the device (GameController fills it in) that rolls the
+   * next chest's salt, so future chests cannot be read from the village seed. A server-held village's server should
+   * replace it with its own (docs/backend/REQUESTS.md).
+   */
+  | { type: 'openDailyChest'; entropy?: number }
+  | { type: 'scout'; paid: boolean }
+  /**
+   * `known`: server only (roadmap step 22), the result it has just simulated
+   * from this exact setup, so the battle is not run a second time. The game
+   * never sets it, and the server never accepts battleEnd from a player.
+   */
+  | { type: 'battleEnd'; record: Omit<BattleRecord, 'result' | 'id' | 'kind'>; known?: BattleResult }
+  | { type: 'trialEnd'; tier: number; record: Omit<BattleRecord, 'result' | 'id' | 'kind'> }
+  /** After failing the next Shadow Trial tier, switch it to an alternate fortress (same tier, same reward). */
+  | { type: 'trialAlternate' }
+  | { type: 'battleProgress'; pending: PendingBattle | null }
+  | { type: 'skip'; id: string }
+  | { type: 'skipTraining' }
+  /**
+   * Buy exactly the Coins/Provisions missing for one action with Jade, and do it in the same step.
+   * There is no free-standing exchange: bought resources are spent at once, so they never sit in
+   * storage for raiders, and if the action fails nothing is bought.
+   */
+  | { type: 'topUp'; then: TopUpAction }
+  /**
+   * Deliver a real-money purchase. `verified`: the server checked the store's
+   * receipt (roadmap step 35-37), so the purchase is delivered even if the
+   * offer has since ended or the age check would now refuse it (the player has
+   * paid); only an unknown product or a repeated transaction is refused.
+   */
+  | { type: 'grantPurchase'; productId: string; transactionId: string; verified?: boolean }
+  /** A purchase the store refunded: take back what it gave; what was spent becomes a debt (server, or the game from the server's purchase records). */
+  | { type: 'revokePurchase'; transactionId: string; economy?: boolean }
+  /**
+   * A refund the store reversed (the player paid after all): give back exactly what the refund took.
+   * Both refund commands take `economy: false` when the game applies them to a village the server keeps:
+   * the server already changed the resources, so only what its economy does not carry changes here
+   * (the stipend, the Season Scroll, looks).
+   */
+  | { type: 'reinstatePurchase'; transactionId: string; economy?: boolean }
+  /** Staff add or take resources (support; the admin tool, server only). Never below zero. */
+  | { type: 'staffAdjust'; resources: Partial<Record<ResourceKind, number>> }
+  /**
+   * Age protections: `ageBand` from the age screen or the store (under18 is then
+   * derived from it); a plain `under18` from older games. Only ever stricter.
+   */
+  | { type: 'setProfile'; under18: boolean; ageBand?: AgeBand }
+  /** Staff cleared the age group after a support check (server only; the player is asked again). */
+  | { type: 'staffResetAge' }
+  | { type: 'buySkin'; skin: string }
+  | { type: 'equipSkin'; skin: string }
+  | { type: 'claimTask'; id: string; kind: 'daily' | 'weekly' }
+  | { type: 'claimTier'; tier: number; track: 'free' | 'premium' }
+  | { type: 'claimAchievement'; id: string }
+  | { type: 'clear'; id: string }
+  | { type: 'triggerOffer'; trigger: OfferTrigger }
+  | { type: 'joinGrove' }
+  | { type: 'chat'; text: string }
+  | { type: 'donate'; requestId: string; troop: string; count: number }
+  | { type: 'requestTroops' }
+  | { type: 'groveBattleEnd'; target: number; record: Omit<BattleRecord, 'result' | 'id' | 'kind'> }
+  | { type: 'markPrepOffer'; week: number }
+  | { type: 'tutorial'; step: number; done?: boolean }
+  /** `fallen`: server only, the buildings its own simulation saw destroyed and their loot (saves re-running the raid). */
+  /** P3-07: the daily drill (sim/drill.ts): the army is rebuilt here, the client's is ignored; nothing is spent. */
+  | { type: 'drillEnd'; record: Omit<BattleRecord, 'result' | 'id' | 'kind'> }
+  /** P5-08: claim the current Keep's seal (sim/seals.ts). */
+  | { type: 'claimKeepSeal' }
+  | { type: 'applyDefense'; record: BattleRecord; lost: Cost; trophies: number; shieldUntil: number; fallen?: { id: string; loot: Cost }[] }
+  | { type: 'syncRank'; trophies: number; shieldUntil?: number }
+  // Multiplayer server results (see sim/net.ts); each is safe to apply twice.
+  | { type: 'netBind'; playerId: string }
+  | { type: 'receiveDonations'; items: ServerDonation[] }
+  | { type: 'spendDonation'; troop: string; count: number; xp: number }
+  | { type: 'claimRaidChest'; week: number; outcome: 'win' | 'draw' | 'loss'; ours: number; theirs: number; /** GT-13: the member's own-star share (the server's). */ starShare?: number }
+  /** A Gang War chest the server confirmed (step 65), once per war. */
+  /** `generated`: the war was against a generated Gang (ledger audit E13: no Jade). */
+  | { type: 'claimGangChest'; warId: string; outcome: 'win' | 'draw' | 'loss'; generated?: boolean; /** GT-13: the member's own-star share (the server's). */ starShare?: number }
+  /** `known`: server only, the result it has just simulated from this setup (see battleEnd). */
+  | { type: 'remoteGroveBattleEnd'; target: number; record: Omit<BattleRecord, 'result' | 'id' | 'kind'>; known?: BattleResult }
+  /**
+   * The server's answer to an online attack (see battleEnd with `ticket`):
+   * bank its result, or turn the attack into a practice result when it was
+   * refused (expired ticket, rule violation). Safe to apply twice.
+   */
+  /** `stake`: the stake the server fixed when the raid started (sim/carry.ts), protocol 11. */
+  | { type: 'settleOnlineAttack'; ticket: string; result?: BattleResult; trophies?: number; playerTrophies?: number; rejected?: string; stake?: number; /** P5-03: the server's time for the daily contract (absent: none). */ contractAt?: number }
+  /** An interrupted battle that can no longer be banked: its deployed troops are spent, nothing is won. */
+  | { type: 'abandonBattle'; record: Omit<BattleRecord, 'result' | 'id' | 'kind'> }
+  | { type: 'leaveLocalGrove' }
+  /** Claim today's Clan Stipend payment (sim/stipend.ts). */
+  | { type: 'claimStipend' }
+  /** Report section 5 step 8: the device's offset from UTC (task days roll at local midnight). */
+  | { type: 'setLocalTime'; minutes: number }
+  /**
+   * Device-only (never a player command, P1-16 / XPL-06): a server-held village's daily chest rolls its next salt
+   * from the server's entropy, and the server returns the salt it rolled (`CommandOutcome.chestSalt`); the game
+   * puts it in place so its next chest is the server's.
+   */
+  | { type: 'setChestSalt'; salt: number }
+  /** Report section 5 step 8: today's 28-day calendar reward. */
+  | { type: 'claimCalendar' }
+  /** An attack on the running goal event's bounty fortress (`eventKey`, sim/goalEvents.ts); the base is rebuilt, never taken from the client. */
+  | { type: 'bountyEnd'; eventKey: string; record: Omit<BattleRecord, 'result' | 'id' | 'kind'> }
+  /** Settle the score with a bot raider (`defenseId`, sim/rematch.ts); the raider's base is rebuilt from the defense record. */
+  | { type: 'rematchEnd'; defenseId: string; record: Omit<BattleRecord, 'result' | 'id' | 'kind'> }
+  /**
+   * Hero Hall (content batch 2026-11-14, save v23): choose the hero who joins attacks (null = the automatic one).
+   * Only while `features.heroChoice` is on (off in the shipped data). Not in PLAYER_COMMANDS: a server-held
+   * village cannot send it until BACKEND adds it (docs/backend/REQUESTS.md).
+   */
+  | { type: 'chooseHero'; hero: string | null };
+
+/** The actions a top-up can pay for. */
+export type TopUpAction = Extract<Command, { type: 'upgrade' | 'place' | 'train' | 'research' }>;
+
+export type ErrorCode =
+  | 'NOT_FOUND'
+  | 'NOT_AVAILABLE'
+  | 'INVALID_PLACEMENT'
+  | 'LIMIT_REACHED'
+  | 'HALL_LEVEL_TOO_LOW'
+  | 'MAX_LEVEL'
+  | 'BUSY'
+  | 'NOT_UPGRADING'
+  | 'NOT_ENOUGH_RESOURCES'
+  | 'NO_FREE_BUILDER'
+  | 'NOTHING_TO_COLLECT'
+  | 'STORAGE_FULL'
+  | 'LOCKED'
+  | 'ARMY_FULL'
+  | 'INVALID_BATTLE'
+  | 'NOT_ENOUGH_MOONSTONES'
+  | 'NOTHING_TO_SKIP'
+  | 'PURCHASE_REFUSED'
+  | 'NOT_OWNED'
+  | 'NOT_READY'
+  | 'ALREADY_CLAIMED'
+  | 'NO_OFFER';
+
+export type SimEvent =
+  | { kind: 'upgrade_start'; buildingType: BuildingType; id: string; toLevel: number; seconds: number; cost: Cost }
+  | { kind: 'upgrade_cancel'; buildingType: BuildingType; id: string; toLevel: number; refund: Cost }
+  | { kind: 'collect'; buildingType: BuildingType; id: string; resource: ResourceKind; amount: number; eventBonus?: number }
+  | { kind: 'move'; buildingType: BuildingType; id: string }
+  | { kind: 'temper'; buildingType: BuildingType; temper: Temper; cost: Cost }
+  | { kind: 'train_start'; troop: string; seconds: number; cost: Cost; count?: number }
+  | { kind: 'dismiss'; troop: string; count: number; refund: Cost; overflow?: Cost }
+  | { kind: 'train_cancel'; troop: string; count?: number; refund?: Cost }
+  /** Quality 33: a real raid this build could not trace; its losses were not taken here (`reason` for logs). */
+  | { kind: 'defense_untraced'; id: string; lost: Cost; reason: string }
+  /** A one-tap refill could not queue everything: how many are missing, and why. */
+  | { kind: 'train_short'; missing: number; why: string }
+  | { kind: 'research_start'; troop: string; toLevel: number; seconds: number; cost: Cost }
+  | { kind: 'research_cancel'; troop: string; toLevel: number; refund: Cost }
+  /** `grants` is what was really added; `overflow` is what did not fit in storage. */
+  | { kind: 'daily_chest'; outcome: string; step: number; grants: Cost; skipped: number; steppedBack: number; overflow?: Cost; /** P5-06: a chest milestone's look. */ looks?: string[] }
+  | { kind: 'scout'; seed: number; fee: number }
+  | { kind: 'raid_end'; record: BattleRecord }
+  | { kind: 'trial_end'; record: BattleRecord; tier: number; cleared: boolean; firstClear: boolean; reward: Cost; /** P3-06: tiers counted as cleared by a catch-up clear, first and last. */ skipped?: [number, number]; /** P5-06: Trial looks this clear gave. */ looks?: string[] }
+  /** A bounty attack: the ladder steps it newly reached and what they paid (`reward`, really added; `overflow` did not fit). */
+  | { kind: 'bounty_end'; record: BattleRecord; eventKey: string; steps: number[]; reward: Cost; looks?: string[]; overflow?: Cost }
+  | { kind: 'rematch_end'; record: BattleRecord; defenseId: string; won: boolean; reward: Cost; overflow?: Cost }
+  | { kind: 'drill_end'; record: BattleRecord; paid: boolean; reward: Cost; overflow?: Cost }
+  | { kind: 'stipend_claimed'; moonstones: number; left: number }
+  | { kind: 'skip_used'; what: string; seconds: number; moonstones: number }
+  /** Jade bought exactly these missing resources, spent at once by the action that follows. */
+  | { kind: 'top_up'; missing: Cost; moonstones: number }
+  | { kind: 'moonstone_spend'; what: string; moonstones: number }
+  | { kind: 'purchase_granted'; productId: string; usd: number; grants: Cost }
+  | { kind: 'trigger'; trigger: OfferTrigger }
+  | { kind: 'offer_shown'; offerId: string; expiresAt: number }
+  | { kind: 'reward'; source: string; grants: Cost; overflow?: Cost }
+  | { kind: 'clear_start'; buildingType: BuildingType; id: string; seconds: number }
+  | { kind: 'donation'; troop: string; count: number; xp: number }
+  | { kind: 'grove_attack'; target: number; stars: number; destruction: number; record: BattleRecord }
+  | { kind: 'raid_settled'; record: BattleRecord; outcome: 'confirmed' | 'rejected' }
+  | { kind: 'reinforcements'; troops: { troop: string; count: number; fromName: string }[] };
+
+/**
+ * GUI request (report section 5 step 9): the numbers and ids in a refusal, so the interface can word it in the
+ * player's language from `code` + `params` instead of parsing `message` (kept, in English, for compatibility).
+ * Values are numbers, ids (troop, building type, resource kind) or a `Cost`.
+ */
+export type FailParams = Record<string, string | number | Cost>;
+
+export type CommandResult =
+  | { ok: true; state: VillageState; events: SimEvent[] }
+  | { ok: false; code: ErrorCode; message: string; params?: FailParams };
+
+export interface Quote {
+  toLevel: number;
+  cost: Cost;
+  seconds: number;
+}
+
+export type QuoteResult = { ok: true; quote: Quote } | { ok: false; code: ErrorCode; message: string; params?: FailParams; quote?: Quote };
+
+export interface FinishedUpgrade {
+  id: string;
+  type: BuildingType;
+  level: number;
+  at: number;
+}
+
+function fail(code: ErrorCode, message: string, params?: FailParams): { ok: false; code: ErrorCode; message: string; params?: FailParams } {
+  return params ? { ok: false, code, message, params } : { ok: false, code, message };
+}
+
+// ---------- Village setup and queries ----------
+
+export function createNewVillage(now: number, data: GameData): VillageState {
+  const state: VillageState = {
+    createdAt: now,
+    lastSeenAt: now,
+    resources: { ...data.economy.startingResources },
+    buildings: [],
+    nextId: 1,
+    army: {},
+    training: [],
+    research: emptyResearch(),
+    scout: null,
+    battleLog: [],
+    seed: mixSeed(now >>> 0, Math.floor(now / 4294967296)),
+    nextSeed: 1,
+    trophies: data.ranks.startingTrophies,
+    shieldUntil: now + data.raids.newPlayerShieldHours * 3_600_000,
+    defenseLog: [],
+    season: seasonOf(now),
+    raidCheckAt: now,
+    stats: emptyStats(),
+    purchases: [],
+    profile: { under18: null, ageBand: null },
+    offers: { active: [], lastShown: {}, bought: [] },
+    pass: { season: passSeason(now, data), points: 0, premium: false, claimedFree: [], claimedPremium: [] },
+    tasks: { day: dayIndex(now, data), dayBaseline: emptyStats(), dayClaimed: [], week: Math.floor(dayIndex(now, data) / 7), weekBaseline: emptyStats(), weekClaimed: [] },
+    cosmetics: { owned: ['classic'], hallSkin: 'classic' },
+    achievements: {},
+    flags: { longWaitSeen: false },
+    grove: emptyGrove(),
+    net: emptyNet(),
+    tutorial: { step: 0, done: false },
+    daily: emptyDaily(data),
+    trials: { best: 0 },
+    pendingBattle: null,
+    seasonLog: [],
+    armyPresets: [],
+    stipend: emptyStipend(),
+    calendar: emptyCalendar(),
+    goalEvents: [],
+    mastery: {},
+    hero: {},
+  };
+  for (const sb of data.economy.startingLayout) {
+    const def = buildingDef(data, sb.type);
+    state.buildings.push({
+      id: `b${state.nextId++}`,
+      type: sb.type,
+      level: sb.level,
+      x: sb.x,
+      y: sb.y,
+      upgrade: null,
+      collector: def.produces ? { stored: 0, accrueFrom: now } : null,
+    });
+  }
+  // Report section 5 step 8 (art F13): a new village opened on a bare plateau with two buildings. A few
+  // lanterns, planters and a rock garden frame the Keep (decor: movable, never in battle).
+  for (const d of data.economy.startingDecor ?? []) {
+    if (!data.buildings[d.type] || !canPlace(state, data, d.type, d.x, d.y).ok) continue;
+    state.buildings.push({ id: `b${state.nextId++}`, type: d.type, level: 1, x: d.x, y: d.y, upgrade: null, collector: null });
+  }
+  scatterObstacles(state, data);
+  return state;
+}
+
+/**
+ * Finish every timer whose end time has passed. Returns a new state; the input is untouched.
+ *
+ * Timers finish in the order they ended, and the task day/week (and the monthly
+ * league season) rolls over at its real boundary in between. So a troop that
+ * finished at 03:00 on the new day counts toward the new day's tasks even if
+ * the player only comes back at 09:00, and one that finished before midnight
+ * counts toward the old day.
+ */
+export function advance(state: VillageState, now: number, data: GameData): { state: VillageState; finished: FinishedUpgrade[] } {
+  const next = structuredClone(state);
+  const finished: FinishedUpgrade[] = [];
+  const timeline: { at: number; seq: number; run: () => void }[] = [];
+  const cleared = new Set<string>();
+  let seq = 0;
+  for (const b of next.buildings) {
+    const u = b.upgrade;
+    if (!u || u.endsAt > now) continue;
+    if (u.toLevel === 0) {
+      // Obstacles whose clearing finished disappear and give their Jade.
+      finished.push({ id: b.id, type: b.type, level: 0, at: u.endsAt });
+      timeline.push({ at: u.endsAt, seq: seq++, run: () => {
+        next.resources.moonstones += buildingDef(data, b.type).clear?.moonstones ?? 0;
+        next.stats.obstaclesCleared++;
+        cleared.add(b.id);
+      } });
+    } else {
+      finished.push({ id: b.id, type: b.type, level: u.toLevel, at: u.endsAt });
+      timeline.push({ at: u.endsAt, seq: seq++, run: () => {
+        // P3-03: bank what it made at the old level, then produce at the new one from the end.
+        if (b.collector && b.level >= 1) b.collector = { stored: collectorAmount({ ...b, upgrade: null }, u.endsAt, data), accrueFrom: u.endsAt };
+        b.level = u.toLevel;
+        b.upgrade = null;
+        // Tasks count finished upgrades only, so start-and-cancel earns nothing.
+        next.stats.upgradesDone++;
+        // P1-08: upgrades that took a builder's time (an instant wall level is not one).
+        if (u.endsAt > u.startedAt) next.stats.timedUpgradesDone = (next.stats.timedUpgradesDone ?? 0) + 1;
+        // P1-21: when the Keep reached this level (a Bounty attack begun before it may use the Keep below).
+        if (data.buildings[b.type]?.category === 'hall') next.keepReachedAt = u.endsAt;
+      } });
+    }
+  }
+  // Training runs back to back, so the finished items are a prefix of the queue.
+  // Each one is a moment the camps may have room for anyone finished so far.
+  for (const item of next.training) {
+    if (item.endsAt > now) break;
+    timeline.push({ at: item.endsAt, seq: seq++, run: () => finishTraining(next, item.endsAt, data) });
+  }
+  for (const r of next.research?.active ?? []) if (r.endsAt <= now) timeline.push({ at: r.endsAt, seq: seq++, run: () => finishResearch(next, r.endsAt) });
+  timeline.sort((a, b) => a.at - b.at || a.seq - b.seq);
+  for (const e of timeline) {
+    settleSeasons(next, e.at, data);
+    claimSeasonLeftovers(next, e.at, data);
+    rollPeriods(next, e.at, data);
+    e.run();
+  }
+  if (cleared.size) next.buildings = next.buildings.filter((b) => !cleared.has(b.id));
+  finished.sort((a, b) => a.at - b.at);
+  settleSeasons(next, now, data);
+  claimSeasonLeftovers(next, now, data);
+  rollPeriods(next, now, data);
+  advanceGrove(next, now, data);
+  settleRaids(next, now, hallLevel(next, data), data);
+  return { state: next, finished };
+}
+
+/**
+ * Retention audit RET-03 / ECO-02 (P1-01): a Season Scroll that ends grants every unlocked tier not claimed yet,
+ * free ones always and premium ones while the Scroll was owned, through the same claim as the button (premium
+ * grants are recorded on the purchase, so a refund still takes them back). What was granted and what did not fit
+ * is kept in `pass.lastSeason` for the welcome-back summary. It used to vanish: the one place the game took
+ * something for a missed day. Mutates.
+ */
+function claimSeasonLeftovers(s: VillageState, at: number, data: GameData): void {
+  if (passSeason(at, data) <= s.pass.season) return;
+  const granted: Cost = {};
+  const overflow: Cost = {};
+  const top = unlockedTier(s, data);
+  let any = false;
+  for (const def of data.pass.tiers) {
+    if (def.tier > top) continue;
+    for (const track of ['free', 'premium'] as const) {
+      if (track === 'premium' && !s.pass.premium) continue;
+      if ((track === 'free' ? s.pass.claimedFree : s.pass.claimedPremium).includes(def.tier)) continue;
+      const r = claimTier(s, def.tier, track, data);
+      if (!r.ok) continue;
+      any = true;
+      for (const e of r.events) {
+        if (e.kind !== 'reward') continue;
+        for (const [k, v] of Object.entries(e.grants) as [ResourceKind, number][]) if (v > 0) granted[k] = (granted[k] ?? 0) + v;
+        for (const [k, v] of Object.entries(e.overflow ?? {}) as [ResourceKind, number][]) if (v > 0) overflow[k] = (overflow[k] ?? 0) + v;
+      }
+    }
+  }
+  // P5-10: every rollover writes the recap (the card at the next visit), with or without leftovers.
+  void any;
+  const start = s.pass.startStats;
+  s.pass.lastSeason = {
+    season: s.pass.season,
+    granted,
+    overflow,
+    tiers: top,
+    league: leagueFor(s.trophies, data).id,
+    ...(start ? { raidsWon: Math.max(0, s.stats.raidsWon - start.raidsWon), stars: Math.max(0, s.stats.starsEarned - start.starsEarned) } : {}),
+  };
+}
+
+/** How many settled league seasons the village remembers (for the welcome-back summary and the Ranks screen). */
+const SEASON_LOG = 6;
+
+/**
+ * Close every monthly league season that ended before `at`: soften trophies and
+ * pay the league chest (resources up to storage, Jade in full). Runs from
+ * `advance`, so a game left open across the month end settles at once, and it
+ * is idempotent: a season is only ever closed once. Mutates.
+ */
+export function settleSeasons(s: VillageState, at: number, data: GameData): void {
+  for (const sr of rollSeasons(s, at, data)) {
+    const { granted, overflow } = grantResources(s, sr.chest, data);
+    // P5-06: the first season finished in Obsidian, Storm or Kage gives that league's look.
+    const look = data.ranks.leagues.find((l) => l.id === sr.league)?.look;
+    const newLook = grantLook(s, look, data);
+    const entry: SeasonReward = { ...sr, chest: granted, ...(hasAny(overflow) ? { overflow } : {}), ...(newLook ? { look } : {}) };
+    s.seasonLog = [...(s.seasonLog ?? []), entry].slice(-SEASON_LOG);
+  }
+}
+
+export { hallLevel } from './keep';
+
+export function countOfType(state: VillageState, type: BuildingType): number {
+  return state.buildings.filter((b) => b.type === type).length;
+}
+
+/** How many of a building the current Keep level allows, and the highest level. */
+export function limitFor(state: VillageState, data: GameData, type: BuildingType, atHallLevel?: number): BuildingLimit {
+  if (buildingDef(data, type).category === 'hall') {
+    return { count: 1, maxLevel: Math.min(data.hall.levels.length, maxDefinedLevel(data, type)) };
+  }
+  const level = atHallLevel ?? hallLevel(state, data);
+  return data.hall.levels[level - 1]?.limits[type] ?? { count: 0, maxLevel: 0 };
+}
+
+/** The lowest Keep level that allows the condition, or null if none does. */
+export function hallLevelRequiredFor(data: GameData, type: BuildingType, test: (l: BuildingLimit) => boolean): number | null {
+  for (const hl of data.hall.levels) {
+    const lim = hl.limits[type];
+    if (lim && test(lim)) return hl.level;
+  }
+  return null;
+}
+
+/** The building categories the garrison crew builds (P2-14: every counter, so `support` too). */
+const GARRISON_CATEGORIES: readonly string[] = ['defense', 'trap', 'support'];
+
+/** Whether the garrison crew builds this type (with `economy.garrisonCrew` on). */
+export function onGarrisonCrew(type: string, data: GameData): boolean {
+  return (data.economy.garrisonCrew ?? 0) > 0 && GARRISON_CATEGORIES.includes(data.buildings[type]?.category ?? '');
+}
+
+/** Whether a build of `type` just started took a Village Artisan (not a crew build, or the crew was already full). */
+function tookArtisan(state: VillageState, type: string, now: number, data: GameData): boolean {
+  if (!onGarrisonCrew(type, data)) return true;
+  const onCrew = state.buildings.filter((b) => b.upgrade && b.upgrade.endsAt > now && onGarrisonCrew(b.type, data)).length;
+  return onCrew > (data.economy.garrisonCrew ?? 0);
+}
+
+export function builderStatus(state: VillageState, data: GameData, now: number, forType?: string): { total: number; busy: number; free: number } {
+  // `economy.garrisonCrew` (P2-14, from the lab's Rules 10): that many defense, trap or support builds at a time are
+  // done by the garrison and take no Village Artisan, so fortifying the village does not stop it from growing.
+  // `forType`: the building about to start (a crew build may start while every artisan is busy).
+  const crew = data.economy.garrisonCrew ?? 0;
+  const garrison = (type: string) => onGarrisonCrew(type, data);
+  let total = 0;
+  let busy = 0;
+  let onCrew = 0;
+  for (const b of state.buildings) {
+    if (buildingDef(data, b.type).category === 'builder' && effectiveLevel(b, now) >= 1) total++;
+    if (b.upgrade && b.upgrade.endsAt > now) { if (garrison(b.type)) onCrew++; else busy++; }
+  }
+  busy += Math.max(0, onCrew - crew);
+  let free = Math.max(0, total - busy);
+  if (forType && garrison(forType) && onCrew < crew) free = Math.max(free, 1);
+  return { total, busy, free };
+}
+
+/** P6-12: the garrison crew's own queue (`economy.garrisonCrew` places; crew builds beyond it take artisans). */
+export function crewStatus(state: VillageState, data: GameData, now: number): { total: number; busy: number; free: number } {
+  const total = data.economy.garrisonCrew ?? 0;
+  const onCrew = state.buildings.filter((b) => b.upgrade && b.upgrade.endsAt > now && onGarrisonCrew(b.type, data)).length;
+  const busy = Math.min(total, onCrew);
+  return { total, busy, free: total - busy };
+}
+
+/** 5448274 → "5,448,274" (no locale: the sim is the same everywhere; the text layer will localise it). */
+function thousands(n: number): string {
+  const digits = String(Math.round(Math.abs(n)));
+  return (n < 0 ? '-' : '') + digits.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+}
+
+/**
+ * "5,448,274 Coins and 1,200 Provisions" (report section 5 step 4, art F1: messages used to read
+ * "needs 5448274 acorns", the internal id of the old game, unformatted, on the Keep sheet).
+ */
+function costText(cost: Cost, data: GameData): string {
+  const parts = RESOURCE_KINDS.filter((k) => cost[k]).map((k) => `${thousands(cost[k]!)} ${data.economy.resourceNames?.[k] ?? k}`);
+  return parts.length > 1 ? `${parts.slice(0, -1).join(', ')} and ${parts[parts.length - 1]}` : parts.join('');
+}
+
+/**
+ * Whether another Artisan's Hut can still be hired (bought with Jade): the Keep allows another hut
+ * and `builderHutCosts` has a price for it. The Artisan's Bundle offer (Jade "to hire another
+ * Village Artisan") is only raised while this is true.
+ */
+export function canHireArtisan(state: VillageState, data: GameData): boolean {
+  const type = Object.keys(data.buildings).find((t) => data.buildings[t].category === 'builder' && data.buildings[t].inShop);
+  if (!type) return false;
+  const have = countOfType(state, type);
+  const cost = data.economy.builderHutCosts[have - 2];
+  if (!(have >= 2 && cost !== undefined && have < limitFor(state, data, type).count)) return false;
+  // Economy ECO-05 (P1-04): the Artisan's Bundle is offered only while its Jade covers the next hut. With four
+  // huts the fifth costs 1,000 Jade and the bundle gives 650, yet it said "Jade to hire another Village Artisan".
+  const bundles = data.offers.rules.filter((r) => r.trigger === 'all_builders_busy').map((r) => r.contents.moonstones ?? 0);
+  return !bundles.length || cost <= Math.max(...bundles);
+}
+
+export type PayWith = 'acorns' | 'dew';
+
+/** Whether a building type may be paid in Provisions (either-currency defences). */
+export function payableInProvisions(type: BuildingType, data: GameData): boolean {
+  const cat = data.buildings[type]?.category;
+  return cat !== undefined && (data.economy.provisionsPayable ?? []).includes(cat);
+}
+
+/** A Coin price paid in Provisions instead, one for one (other parts of the price stay). */
+function inProvisions(cost: Cost): Cost {
+  if (!cost.acorns) return cost;
+  const out: Cost = { ...cost, dew: (cost.dew ?? 0) + cost.acorns };
+  delete out.acorns;
+  return out;
+}
+
+/** Can a new building of this type be bought right now (ignoring where it goes)? */
+export function placeQuote(state: VillageState, data: GameData, type: BuildingType, now: number, pay: PayWith = 'acorns'): QuoteResult {
+  const s = advance(state, now, data).state;
+  const def = data.buildings[type];
+  if (!def || !def.inShop) return fail('NOT_AVAILABLE', 'That building is not available.');
+  const first = def.levels[0];
+  const have = countOfType(s, type);
+  let cost: Cost = first.cost;
+  if (def.category === 'builder') {
+    const i = have - 2;
+    const price = data.economy.builderHutCosts[i];
+    if (price === undefined || i < 0) return fail('LIMIT_REACHED', 'You have all the Village Artisans you can hire.');
+    cost = { moonstones: price };
+  }
+  if (pay === 'dew') {
+    if (!payableInProvisions(type, data)) return fail('NOT_AVAILABLE', 'Only walls and traps can be paid in Provisions.');
+    cost = inProvisions(cost);
+  }
+  const quote: Quote = { toLevel: 1, cost, seconds: Math.round(first.buildSeconds * buildTimeFactor(s, now, data)) };
+  const lim = limitFor(s, data, type);
+  if (have >= lim.count) {
+    const need = hallLevelRequiredFor(data, type, (l) => l.count > have);
+    return need
+      ? { ...fail('HALL_LEVEL_TOO_LOW', have > 0 ? `Upgrade your Clan Keep to level ${need} to build another ${def.name}.` : `Upgrade your Clan Keep to level ${need} to build a ${def.name}.`, { keep: need, building: type }), quote }
+      : { ...fail('LIMIT_REACHED', `Your Keep allows no more of these (${def.name}: ${have} of ${lim.count}).`, { building: type, have, max: lim.count }), quote };
+  }
+  if (!canAfford(s.resources, cost)) {
+    return cost.moonstones && s.resources.moonstones < cost.moonstones
+      ? { ...fail('NOT_ENOUGH_MOONSTONES', `Needs ${cost.moonstones} Jade.`, { jade: cost.moonstones }), quote }
+      : { ...fail('NOT_ENOUGH_RESOURCES', `Not enough resources (needs ${costText(cost, data)}).`, { cost, missing: missingFor(s.resources, cost) }), quote };
+  }
+  if (quote.seconds > 0 && builderStatus(s, data, now, type).free < 1) {
+    return { ...fail('NO_FREE_BUILDER', 'All your Village Artisans are busy.'), quote };
+  }
+  return { ok: true, quote };
+}
+
+/** What the next upgrade of a building costs, and whether it can start now. */
+export function upgradeQuote(state: VillageState, id: string, data: GameData, now: number, pay: PayWith = 'acorns'): QuoteResult {
+  const s = advance(state, now, data).state;
+  const b = s.buildings.find((x) => x.id === id);
+  if (!b) return fail('NOT_FOUND', 'Building not found.');
+  const def = buildingDef(data, b.type);
+  if (b.upgrade) return fail('BUSY', `${def.name} is already being worked on.`);
+  if (def.category === 'obstacle' || def.category === 'decor') return fail('MAX_LEVEL', `${def.name} cannot be upgraded.`);
+  const next = levelDef(data, b.type, b.level + 1);
+  const lim = limitFor(s, data, b.type);
+  if (!next || b.level >= maxDefinedLevel(data, b.type) || (def.category === 'hall' && b.level >= lim.maxLevel)) {
+    return fail('MAX_LEVEL', `${def.name} is at its highest level.`);
+  }
+  if (pay === 'dew' && !payableInProvisions(b.type, data)) return fail('NOT_AVAILABLE', 'Only walls and traps can be paid in Provisions.');
+  const price = pay === 'dew' ? inProvisions(next.cost) : next.cost;
+  const quote: Quote = { toLevel: next.level, cost: price, seconds: Math.round(next.buildSeconds * buildTimeFactor(s, now, data)) };
+  if (next.level > lim.maxLevel) {
+    const need = hallLevelRequiredFor(data, b.type, (l) => l.maxLevel >= next.level);
+    return need
+      ? { ...fail('HALL_LEVEL_TOO_LOW', `Upgrade your Clan Keep to level ${need} first.`, { keep: need, building: b.type }), quote }
+      : { ...fail('MAX_LEVEL', `${def.name} is at its highest level.`), quote };
+  }
+  if (!canAfford(s.resources, price)) return { ...fail('NOT_ENOUGH_RESOURCES', `Not enough resources (needs ${costText(price, data)}).`, { cost: price, missing: missingFor(s.resources, price) }), quote };
+  if (quote.seconds > 0 && builderStatus(s, data, now, b.type).free < 1) {
+    return { ...fail('NO_FREE_BUILDER', 'All your Village Artisans are busy.'), quote };
+  }
+  return { ok: true, quote };
+}
+
+// ---------- Applying commands ----------
+
+/**
+ * Apply one player command at time `now`. Pure: returns a new state and never
+ * mutates the input. Timers that ended before `now` are finished first.
+ */
+export function applyCommand(state: VillageState, cmd: Command, now: number, data: GameData): CommandResult {
+  const settled = advance(state, now, data);
+  const s = settled.state;
+  const moonBefore = s.resources.moonstones;
+  const r = runCommand(s, cmd, now, data);
+  if (!r.ok) return r;
+  afterCommand(r.state, r.events, cmd, moonBefore, now, data);
+  return r;
+}
+
+/** Update counters, note Moonstone spending and raise offer triggers. Mutates. */
+function afterCommand(s: VillageState, events: SimEvent[], cmd: Command, moonBefore: number, now: number, data: GameData): void {
+  for (const e of [...events]) {
+    if (e.kind === 'collect') {
+      if (e.resource === 'acorns') s.stats.collectedAcorns += e.amount;
+      if (e.resource === 'dew') s.stats.collectedDew += e.amount;
+    } else if (e.kind === 'upgrade_start') {
+      s.stats.upgradesStarted++;
+      // Instant upgrades finish right away; timed ones count in advance(). Exploit audit 2026-11-20 (low): walls
+      // and decorations never count (the tasks leave them out when they pick a target, but a ~100-Coin wall
+      // upgrade used to finish an "upgrades" task).
+      if (e.seconds <= 0 && !['hedge', 'decor', 'obstacle'].includes(data.buildings[e.buildingType]?.category ?? '')) s.stats.upgradesDone++;
+      // Report section 5 step 6 (economy E01): the flag used to be set before the offer was checked, so a
+      // Starter Pack refused that time (age unknown, account under a day old, session slot taken) was gone
+      // for good. It is set only when the offer shows (`triggerOffer`), so every long wait re-arms it.
+      // A village that lost it that way before this fix (flag set, offer never shown) gets it back too.
+      if (e.seconds > 3600 && (!s.flags.longWaitSeen || data.offers.rules.some((r) => r.trigger === 'first_long_wait' && offerCanStillShow(s, data, r.id)))) events.push({ kind: 'trigger', trigger: 'first_long_wait' });
+      // The Artisan's Bundle is Jade for another Artisan's Hut: only offer it while one can still be hired.
+      // P2-14: a garrison-crew build took no artisan, so it is no reason to offer one.
+      if (e.seconds > 0 && tookArtisan(s, e.buildingType, now, data) && builderStatus(s, data, now).free === 0 && canHireArtisan(s, data)) events.push({ kind: 'trigger', trigger: 'all_builders_busy' });
+    } else if (e.kind === 'raid_end' && e.record.kind === 'attack' && e.record.settlement !== 'pending') {
+      // Online attacks count once the server has confirmed them (see settleOnlineAttack).
+      if (e.record.result.stars >= 1) s.stats.raidsWon++;
+      s.stats.starsEarned += e.record.result.stars;
+      s.stats.raidDestruction = (s.stats.raidDestruction ?? 0) + e.record.result.destruction;
+      countRaidStats(s, e.record, data);
+    }
+  }
+  const spent = moonBefore - s.resources.moonstones;
+  if (spent > 0 && cmd.type !== 'grantPurchase' && cmd.type !== 'revokePurchase' && cmd.type !== 'reinstatePurchase' && cmd.type !== 'staffAdjust') {
+    s.stats.moonstonesSpent += spent;
+    events.push({ kind: 'moonstone_spend', what: cmd.type === 'place' ? cmd.buildingType : cmd.type, moonstones: spent });
+  }
+}
+
+/** Longest army preset name kept, in UTF-16 units (quality Q20). */
+const ARMY_PRESET_NAME_MAX = 24;
+
+function runCommand(s: VillageState, cmd0: Command, now: number, data: GameData): CommandResult {
+  const cmd = withBattleStart(s, cmd0, now, data);
+  switch (cmd.type) {
+    case 'place':
+      return place(s, cmd.buildingType, cmd.x, cmd.y, now, data, cmd.pay);
+    case 'move':
+      return move(s, cmd.id, cmd.x, cmd.y, data);
+    case 'upgrade':
+      return upgrade(s, cmd.id, now, data, cmd.pay);
+    case 'temper':
+      return temper(s, cmd.buildingType, cmd.temper, now, data);
+    case 'cancel':
+      return cancel(s, cmd.id, now, data);
+    case 'collect':
+      return collect(s, cmd.id, now, data);
+    case 'train':
+      return train(s, cmd.troop, cmd.count ?? 1, now, data);
+    case 'trainArmy':
+      return trainArmy(s, cmd.army, now, data);
+    case 'saveArmyPreset': {
+      const army = cleanArmy(cmd.army, data);
+      if (!Object.keys(army).length) return fail('NOT_AVAILABLE', 'Pick some warriors first.');
+      const name = cmd.name.trim().slice(0, ARMY_PRESET_NAME_MAX) || nextArmyName(s);
+      const at = s.armyPresets.findIndex((p) => p.name === name);
+      if (at >= 0) s.armyPresets[at] = { name, army };
+      else {
+        if (s.armyPresets.length >= data.economy.maxArmyPresets) return fail('LIMIT_REACHED', `You can keep ${data.economy.maxArmyPresets} saved armies. Delete one first.`, { max: data.economy.maxArmyPresets });
+        s.armyPresets.push({ name, army });
+      }
+      return { ok: true, state: s, events: [] };
+    }
+    case 'deleteArmyPreset':
+      if (!s.armyPresets[cmd.index]) return fail('NOT_FOUND', 'No such saved army.');
+      s.armyPresets.splice(cmd.index, 1);
+      return { ok: true, state: s, events: [] };
+    case 'dismiss':
+      return dismiss(s, cmd.troop, cmd.count, now, data);
+    case 'cancelTraining':
+      return cancelTraining(s, cmd.index, cmd.troop, cmd.count ?? 1, now, data);
+    case 'research':
+      return research(s, cmd.troop, now, data);
+    case 'cancelResearch':
+      return cancelResearch(s, cmd.troop, now, data);
+    case 'skipResearch':
+      return skipResearch(s, cmd.troop, now, data);
+    case 'openDailyChest':
+      return openDailyChest(s, now, data, cmd.entropy);
+    case 'scout':
+      return scout(s, cmd.paid, data);
+    case 'battleEnd':
+      s.pendingBattle = null;
+      return battleEnd(s, cmd.record, now, data, cmd.known);
+    case 'trialEnd':
+      s.pendingBattle = null;
+      return trialEnd(s, cmd.tier, cmd.record, now, data);
+    case 'trialAlternate':
+      if (!canTryAlternate(s.trials, data)) return fail('NOT_AVAILABLE', 'An alternate fortress opens after a failed attempt at your next tier.');
+      // Independent review 2026-11-18: the alternate stays on the tier that was failed (a catch-up tier too).
+      s.trials = { ...s.trials, alternate: (s.trials.alternate ?? 0) + 1, alternateTier: s.trials.failedTier, failedTier: 0 };
+      return { ok: true, state: s, events: [] };
+    case 'battleProgress':
+      s.pendingBattle = cmd.pending ? structuredClone(cmd.pending) : null;
+      // Exploit audit 2026-11-20 #4: a tracked battle's start is trusted at settlement, so it is never later than now
+      // and never far back (the same slack as an untracked one, measured when the battle is tracked).
+      if (s.pendingBattle) s.pendingBattle.at = battleStartedAt(s.pendingBattle.at, now, data);
+      return { ok: true, state: s, events: [] };
+    case 'skip':
+      return skip(s, cmd.id, now, data);
+    case 'skipTraining':
+      return skipTraining(s, now, data);
+    case 'topUp':
+      return topUp(s, cmd.then, now, data);
+    case 'grantPurchase':
+      return grantPurchase(s, cmd.productId, cmd.transactionId, now, data, cmd.verified === true);
+    case 'revokePurchase':
+      return revokePurchase(s, cmd.transactionId, now, data, cmd.economy !== false);
+    case 'reinstatePurchase':
+      return reinstatePurchase(s, cmd.transactionId, now, data, cmd.economy !== false);
+    case 'staffAdjust':
+      for (const [k, v] of Object.entries(cmd.resources) as [ResourceKind, number][]) {
+        if (!(k in s.resources) || !Number.isFinite(v)) return fail('NOT_FOUND', 'Unknown resource.');
+        // A staff take never creates a debt or deepens one; a grant pays a debt back first (ledger audit A5:
+        // the old zero floor wiped a refund debt whenever a reversed refund was given back).
+        const next = s.resources[k] + v;
+        s.resources[k] = Math.round(v < 0 ? Math.max(Math.min(s.resources[k], 0), next) : next);
+      }
+      return { ok: true, state: s, events: [] };
+    case 'setProfile':
+      // Exploit audit 2026-11-20 #14: `under18: 0` (or any non-boolean) used to slip past the one-way check below.
+      // XPL-13 (P1-21): only a yes or a no. `null` used to turn a stated minor back to "unknown", after which
+      // "18 or older" passed the lock below (a server-held village was still blocked by the server's age table).
+      if (cmd.ageBand === undefined && typeof cmd.under18 !== 'boolean') return fail('NOT_FOUND', 'Unknown age group.');
+      // GLOBAL-006: the spending protection only gets stricter in the game. Under 18 is
+      // not switched back by the player (support resets it on the server after a check).
+      if (s.profile.under18 === true && cmd.under18 === false) return fail('LOCKED', 'Only our support team can change the age group back to 18 or older.');
+      if (cmd.ageBand !== undefined) {
+        // Age bands (sim/age.ts): the same or stricter only; under18 follows the band.
+        if (!isAgeBand(cmd.ageBand)) return fail('NOT_FOUND', 'Unknown age group.');
+        if (!bandChangeAllowed(s.profile.ageBand ?? null, s.profile.under18, cmd.ageBand)) return fail('LOCKED', 'Only our support team can make the age group less strict.');
+        s.profile.ageBand = cmd.ageBand;
+        s.profile.under18 = cmd.ageBand !== 'adult';
+        return { ok: true, state: s, events: [] };
+      }
+      s.profile.under18 = cmd.under18;
+      // An older game's answer: "under 18" makes an adult band 13to17 (a younger band stays); "18 or older" fills an unknown band.
+      if (cmd.under18 && (s.profile.ageBand ?? 'adult') === 'adult') s.profile.ageBand = s.profile.ageBand ? '13to17' : null;
+      else if (!cmd.under18 && !s.profile.ageBand) s.profile.ageBand = 'adult';
+      return { ok: true, state: s, events: [] };
+    case 'staffResetAge':
+      s.profile.under18 = null;
+      s.profile.ageBand = null;
+      return { ok: true, state: s, events: [] };
+    case 'buySkin':
+      return buySkin(s, cmd.skin, data);
+    case 'equipSkin':
+      if (!s.cosmetics.owned.includes(cmd.skin)) return fail('NOT_OWNED', 'You do not own that look yet.');
+      s.cosmetics.hallSkin = cmd.skin;
+      return { ok: true, state: s, events: [] };
+    case 'claimTask':
+      return claimTask(s, cmd.id, cmd.kind, data);
+    case 'claimTier':
+      return claimTier(s, cmd.tier, cmd.track, data);
+    case 'claimAchievement':
+      return claimAchievement(s, cmd.id, data);
+    case 'clear':
+      return clearObstacle(s, cmd.id, now, data);
+    case 'joinGrove':
+      if (s.grove.joined) return fail('ALREADY_CLAIMED', 'You are already in an Alliance.');
+      joinGrove(s, now, data);
+      return { ok: true, state: s, events: [] };
+    case 'chat': {
+      if (!s.grove.joined) return fail('NOT_AVAILABLE', 'Join an Alliance first.');
+      if (!cmd.text.trim()) return fail('NOT_AVAILABLE', 'Type a message first.');
+      sendChat(s, cmd.text, now, data);
+      return { ok: true, state: s, events: [] };
+    }
+    case 'donate': {
+      const r = donateTroops(s, cmd.requestId, cmd.troop, cmd.count, now, data);
+      if (!r.ok) return fail('NOT_AVAILABLE', r.message);
+      return { ok: true, state: s, events: [{ kind: 'donation', troop: cmd.troop, count: cmd.count, xp: r.xp }] };
+    }
+    case 'requestTroops': {
+      const c = canRequest(s, now, data);
+      if (!c.ok) return fail('NOT_AVAILABLE', c.message);
+      requestTroops(s, now, data);
+      return { ok: true, state: s, events: [] };
+    }
+    case 'groveBattleEnd':
+      s.pendingBattle = null;
+      return groveBattleEnd(s, cmd.target, cmd.record, now, data);
+    case 'applyDefense': {
+      // A real player's raid reported by the server.
+      if (s.defenseLog.some((d) => d.id === cmd.record.id)) return { ok: true, state: s, events: [] };
+      const untraced = applyDefenseLosses(s, cmd.record, cmd.lost, now, data, cmd.fallen);
+      s.trophies = Math.max(0, cmd.trophies);
+      s.shieldUntil = Math.max(s.shieldUntil, cmd.shieldUntil);
+      // A real player's raid keeps conservation (the defender loses what the raider carried) and pays the defender
+      // honor only, never the hold reward: resources created by a failed raid could be traded between two accounts
+      // (2026-11-20 merge decision, with `defenseWin.shareOfRaidLoot` 0.10 for simulated raids; it used to pay once per
+      // attacker per defender a day, which a set of alternate accounts could still farm).
+      s.defenseLog.push({ ...cmd.record });
+      while (s.defenseLog.length > data.raids.maxDefenseLog) s.defenseLog.shift();
+      s.net.defensesSince = Math.max(s.net.defensesSince, cmd.record.at);
+      return { ok: true, state: s, events: untraced ? [{ kind: 'defense_untraced', id: cmd.record.id, lost: cmd.lost, reason: untraced.untraced }] : [] };
+    }
+    case 'netBind':
+      bindPlayer(s, cmd.playerId);
+      return { ok: true, state: s, events: [] };
+    case 'receiveDonations': {
+      const troops = receiveDonations(s, cmd.items, data);
+      return { ok: true, state: s, events: troops.length ? [{ kind: 'reinforcements', troops }] : [] };
+    }
+    case 'spendDonation':
+      if (!spendDonation(s, cmd.troop, cmd.count, cmd.xp)) return fail('NOT_AVAILABLE', 'Not enough of that warrior.');
+      return { ok: true, state: s, events: [{ kind: 'donation', troop: cmd.troop, count: cmd.count, xp: cmd.xp }] };
+    case 'claimGangChest': {
+      const chest = claimGangChest(s, cmd.warId, cmd.outcome, hallLevel(s, data), data, cmd.generated === true, typeof cmd.starShare === 'number' ? cmd.starShare : undefined);
+      return chest ? { ok: true, state: s, events: [] } : fail('ALREADY_CLAIMED', 'This Gang War chest was already collected.');
+    }
+    case 'claimRaidChest': {
+      const chest = claimRaidChest(s, cmd.week, cmd.outcome, cmd, hallLevel(s, data), data, typeof cmd.starShare === 'number' ? cmd.starShare : undefined);
+      if (!chest) return fail('ALREADY_CLAIMED', 'That chest was already collected.');
+      return { ok: true, state: s, events: [{ kind: 'reward', source: `grove_raid:${cmd.week}`, grants: chest }] };
+    }
+    case 'remoteGroveBattleEnd': {
+      // An Alliance War attack scored by the server: the troops are spent and the fight is kept for replay.
+      s.pendingBattle = null;
+      const bad = checkBattleSetup(s, cmd.record.setup, data);
+      if (bad) return fail('INVALID_BATTLE', bad);
+      const result = cmd.known ? structuredClone(cmd.known) : runBattle(cmd.record.setup, cmd.record.deployments, data, cmd.record.endTick).result;
+      spendTroops(s, result.used, cmd.record.setup);
+      const record = logWarAttack(s, cmd.record, result, now, data);
+      return { ok: true, state: s, events: [{ kind: 'grove_attack', target: cmd.target, stars: result.stars, destruction: result.destruction, record }] };
+    }
+    case 'settleOnlineAttack':
+      return settleOnlineAttack(s, cmd, now, data);
+    case 'abandonBattle': {
+      s.pendingBattle = null;
+      // Exploit audit 2026-11-20 #13: deployments are counted against what the village really holds, not the
+      // record's setup, and the hero is the village's own: a forged setup (an ordinary warrior named as the hero,
+      // an empty army) used to walk away from the scouted base with no honor or shield lost. Built from the
+      // village, never from the client, it also covers the independent review of 2026-11-18 (a forged hero used
+      // to make the abandon a no-op that kept the scouted opponent).
+      const abandoned: BattleSetup = { ...cmd.record.setup, army: { ...s.army }, reinforcements: lodgeTroops(s), infiltration: true };
+      delete abandoned.startDamage;
+      const ownHero = heroFor(s, data);
+      if (ownHero) abandoned.hero = ownHero;
+      else delete abandoned.hero;
+      const deployments = Array.isArray(cmd.record.deployments) ? cmd.record.deployments : [];
+      // Re-audit: no simulation here. An abandoned battle wins nothing, so it only has to spend the
+      // warriors the player sent in: count the deployments (each warrior once, never more than the army
+      // and the Lodge hold). Running the battle cost a server up to a second for a forged base.
+      const sent = deployedTroops(abandoned, deployments, data);
+      spendTroops(s, sent, abandoned);
+      // Economy E16: walking away from the scouted offline opponent after sending warriors in is a lost attack
+      // (honor, shield, and the opponent goes), as an online start without a report already is. It used to keep
+      // the opponent: drop one warrior, watch the defenses fire, abandon, then attack the same base for real.
+      // 2026-11-14 verification fix: it depends on what the village holds (an opponent is scouted, warriors
+      // were spent), not on the record's battle seed, which a modified game could change to keep the opponent.
+      // Only an online raid (a server ticket) is left to the server, which counts a started raid with no
+      // report as a loss; for a village the server keeps, a ticket that is not this player's real ticket is
+      // dropped before the replay (server/core/village.ts), so a made-up one changes nothing.
+      const scouted = !cmd.record.ticket && s.scout !== null;
+      // XPL-05 (P1-15): the free hero alone counts too. A hero-only abandon used to keep the opponent and its
+      // seed, so the hero could walk in, show every trap and tower, and the real attack came after.
+      const heroWent = !!abandoned.hero && deployments.some((d) => d.troop === abandoned.hero!.id);
+      if (scouted && (heroWent || foughtWithWarriors({ used: sent }, abandoned))) {
+        const opp = cmd.record.setup?.base?.trophies ?? s.trophies;
+        s.trophies = Math.max(0, s.trophies - lossTrophies(s.trophies, opp, data));
+        s.shieldUntil = shieldAfterAttack(s.shieldUntil, now, hasAttacked(s), data);
+        // Independent review 2026-11-18: an abandoned raid counts as an attack for the first-attack shield rule.
+        s.stats.raidsAbandoned = (s.stats.raidsAbandoned ?? 0) + 1;
+        s.scout = null;
+      }
+      return { ok: true, state: s, events: [] };
+    }
+    case 'claimStipend': {
+      const jade = claimStipend(s, now, data);
+      if (jade === null) return fail('NOT_AVAILABLE', s.stipend?.left > 0 ? "Today's stipend is already claimed. Come back tomorrow." : 'No Clan Stipend payments left.');
+      return { ok: true, state: s, events: [{ kind: 'stipend_claimed', moonstones: jade, left: s.stipend.left }] };
+    }
+    case 'setChestSalt': {
+      if (!Number.isInteger(cmd.salt) || cmd.salt < 0 || cmd.salt > 0xffffffff) return fail('NOT_AVAILABLE', 'That command could not be read.');
+      s.daily = { ...s.daily, salt: cmd.salt };
+      return { ok: true, state: s, events: [] };
+    }
+    case 'setLocalTime': {
+      const why = setLocalTime(s, cmd.minutes, now);
+      if (why) return fail('NOT_AVAILABLE', why);
+      return { ok: true, state: s, events: [] };
+    }
+    case 'chooseHero': {
+      if (!data.features?.heroChoice) return fail('NOT_AVAILABLE', 'Choosing a hero is not available yet.');
+      if (cmd.hero === null) {
+        s.hero = {};
+        return { ok: true, state: s, events: [] };
+      }
+      const def = data.battle.heroes?.[cmd.hero];
+      if (!def) return fail('NOT_FOUND', 'Unknown hero.');
+      if (!choosableHeroes(s, data).includes(cmd.hero)) {
+        return hallLevel(s, data) < def.unlockKeep
+          ? fail('LOCKED', `This hero joins from Keep ${def.unlockKeep}.`, { keep: def.unlockKeep, troop: cmd.hero })
+          : fail('NOT_AVAILABLE', 'Build a Hero Hall first.', { building: 'hero_shrine' });
+      }
+      s.hero = { chosen: cmd.hero };
+      return { ok: true, state: s, events: [] };
+    }
+    case 'claimCalendar': {
+      const r = claimCalendarDay(s, now, hallLevel(s, data), data);
+      if ('error' in r) return fail('ALREADY_CLAIMED', r.error);
+      const { granted, overflow } = grantReward(s, r.reward, data);
+      const lost = hasAny(overflow) ? { overflow } : {};
+      return { ok: true, state: s, events: [{ kind: 'reward', source: `calendar:${r.day}`, grants: granted, ...lost }] };
+    }
+    case 'bountyEnd':
+      s.pendingBattle = null;
+      return bountyEnd(s, cmd.eventKey, cmd.record, now, data);
+    case 'rematchEnd':
+      s.pendingBattle = null;
+      return rematchEnd(s, cmd.defenseId, cmd.record, now, data);
+    case 'drillEnd':
+      return drillEnd(s, cmd.record, now, data);
+    case 'claimKeepSeal': {
+      const p = sealProgress(s, data);
+      if (!p || p.sealed) return fail('ALREADY_CLAIMED', 'This Keep is already sealed.');
+      if (!p.ready) return fail('NOT_AVAILABLE', `Build every building this Keep allows to its cap first (${p.done} of ${p.total}).`, { n: p.done, total: p.total });
+      s.seals = [...(s.seals ?? []), p.keep];
+      const { granted, overflow } = grantResources(s, p.reward, data);
+      return { ok: true, state: s, events: [{ kind: 'reward', source: `keep_seal:${p.keep}`, grants: granted, ...(hasAny(overflow) ? { overflow } : {}) }] };
+    }
+    case 'leaveLocalGrove':
+      // Playing online: the real Grove replaces the bot one (XP, Lodge troops and history stay).
+      s.grove.joined = false;
+      s.grove.requests = [];
+      s.grove.myRequest = null;
+      s.grove.raid = null;
+      return { ok: true, state: s, events: [] };
+    case 'syncRank':
+      s.trophies = Math.max(0, cmd.trophies);
+      if (cmd.shieldUntil !== undefined) s.shieldUntil = cmd.shieldUntil;
+      return { ok: true, state: s, events: [] };
+    case 'tutorial':
+      s.tutorial = { step: cmd.step, done: Boolean(cmd.done) };
+      return { ok: true, state: s, events: [] };
+    case 'markPrepOffer':
+      s.grove.prepOfferWeek = cmd.week;
+      return { ok: true, state: s, events: [] };
+    case 'triggerOffer': {
+      if (cmd.trigger === 'all_builders_busy' && !canHireArtisan(s, data)) return fail('NO_OFFER', 'No offer right now.');
+      const rule = triggerOffer(s, cmd.trigger, now, data);
+      if (!rule) return fail('NO_OFFER', 'No offer right now.');
+      const active = s.offers.active.find((a) => a.id === rule.id)!;
+      return { ok: true, state: s, events: [{ kind: 'offer_shown', offerId: rule.id, expiresAt: active.expiresAt }] };
+    }
+  }
+}
+
+// ---------- Moonstones, purchases and rewards ----------
+
+/** Moonstones to finish a building's timer now. */
+export function skipQuote(state: VillageState, id: string, now: number, data: GameData): { seconds: number; moonstones: number } | null {
+  const b = state.buildings.find((v) => v.id === id);
+  if (!b?.upgrade || b.upgrade.endsAt <= now) return null;
+  const seconds = Math.ceil((b.upgrade.endsAt - now) / 1000);
+  return { seconds, moonstones: skipCost(seconds, data) };
+}
+
+function skip(s: VillageState, id: string, now: number, data: GameData): CommandResult {
+  const q = skipQuote(s, id, now, data);
+  if (!q) return fail('NOTHING_TO_SKIP', 'Nothing to finish.');
+  if (s.resources.moonstones < q.moonstones) return fail('NOT_ENOUGH_MOONSTONES', `Needs ${q.moonstones} Jade.`, { jade: q.moonstones });
+  s.resources.moonstones -= q.moonstones;
+  const b = s.buildings.find((v) => v.id === id)!;
+  const finishedAt = now;
+  if (b.collector && b.upgrade) b.collector = { stored: b.level >= 1 ? collectorAmount({ ...b, upgrade: null }, finishedAt, data) : b.collector.stored, accrueFrom: finishedAt };
+  b.upgrade!.endsAt = finishedAt;
+  const adv = advance(s, now, data).state;
+  return { ok: true, state: adv, events: [{ kind: 'skip_used', what: b.type, seconds: q.seconds, moonstones: q.moonstones }] };
+}
+
+/** The running research of a troop (the oldest one when `troop` is not given). */
+function activeResearch(state: VillageState, troop?: string) {
+  const list = state.research?.active ?? [];
+  return troop ? list.find((a) => a.troop === troop) : list[0];
+}
+
+/** Jade to finish a running research now (the oldest one when `troop` is not given). */
+export function researchSkipQuote(state: VillageState, now: number, data: GameData, troop?: string): { seconds: number; moonstones: number } | null {
+  const a = activeResearch(state, troop);
+  if (!a || a.endsAt <= now) return null;
+  const seconds = Math.ceil((a.endsAt - now) / 1000);
+  return { seconds, moonstones: skipCost(seconds, data) };
+}
+
+function skipResearch(s: VillageState, troop: string | undefined, now: number, data: GameData): CommandResult {
+  const q = researchSkipQuote(s, now, data, troop);
+  if (!q) return fail('NOTHING_TO_SKIP', 'Nothing to finish.');
+  if (s.resources.moonstones < q.moonstones) return fail('NOT_ENOUGH_MOONSTONES', `Needs ${q.moonstones} Jade.`, { jade: q.moonstones });
+  s.resources.moonstones -= q.moonstones;
+  const a = activeResearch(s, troop)!;
+  a.endsAt = now;
+  finishResearch(s, now);
+  return { ok: true, state: s, events: [{ kind: 'skip_used', what: `research:${a.troop}`, seconds: q.seconds, moonstones: q.moonstones }] };
+}
+
+/** Finishing training covers the warriors who fit in the camps: Jade never buys a warrior who would only wait for room. */
+export function trainingSkipQuote(state: VillageState, now: number, data: GameData): { seconds: number; moonstones: number } | null {
+  const doneAt = armyReadyAt(state, data);
+  if (doneAt === null || doneAt <= now) return null;
+  const seconds = Math.ceil((doneAt - now) / 1000);
+  return { seconds, moonstones: trainingSkipCost(seconds, hallLevel(state, data), data) };
+}
+
+function skipTraining(s: VillageState, now: number, data: GameData): CommandResult {
+  const q = trainingSkipQuote(s, now, data);
+  if (!q) return fail('NOTHING_TO_SKIP', 'Nothing to finish.');
+  if (s.resources.moonstones < q.moonstones) return fail('NOT_ENOUGH_MOONSTONES', `Needs ${q.moonstones} Jade.`, { jade: q.moonstones });
+  s.resources.moonstones -= q.moonstones;
+  const fits = queueFits(s, data);
+  s.training.forEach((item, i) => {
+    if (!fits[i]) return;
+    // Some of these never started: a timer must not end before it began (the save check rejects that).
+    item.startedAt = Math.min(item.startedAt, now);
+    item.endsAt = Math.min(item.endsAt, now);
+  });
+  finishTraining(s, now, data);
+  retimeQueue(s.training, now);
+  return { ok: true, state: s, events: [{ kind: 'skip_used', what: 'training', seconds: q.seconds, moonstones: q.moonstones }] };
+}
+
+/** Jade for exactly the resources missing for `cost`, at the village's Keep (null if nothing is missing or it would not fit). */
+function shortfallQuote(s: VillageState, cost: Cost, data: GameData): { missing: Cost; moonstones: number } | null {
+  const missing: Cost = {};
+  const cap = capacity(s, data);
+  for (const k of RESOURCE_KINDS) {
+    if (k === 'moonstones') continue;
+    // XPL-04 (P1-14): a top-up never buys a refund's debt (a negative balance, ledger audit A5). It used to buy
+    // the debt too, and a cancel then refunded all of that Jade: the debt was gone for nothing. The action
+    // stays refused until income repays it.
+    if ((cost[k] ?? 0) > 0 && s.resources[k] < 0) return null;
+    const need = (cost[k] ?? 0) - s.resources[k];
+    if (need > 0) {
+      if ((cost[k] ?? 0) > cap[k]) return null;
+      missing[k] = need;
+    }
+  }
+  if (!Object.keys(missing).length) return null;
+  return { missing, moonstones: topUpCost(missing, data, hallLevel(s, data)) };
+}
+
+/** What `action` would cost if resources were the only thing missing (null when something else blocks it). */
+function topUpTarget(s: VillageState, action: TopUpAction, now: number, data: GameData): Cost | null {
+  const short = (q: QuoteResult) => (!q.ok && q.code === 'NOT_ENOUGH_RESOURCES' && q.quote ? q.quote : null);
+  // P2-14: the building's type decides whether the garrison crew can take it while every artisan is busy.
+  const builderFree = (seconds: number, type?: string) => seconds <= 0 || builderStatus(s, data, now, type).free >= 1;
+  switch (action.type) {
+    case 'upgrade': {
+      // XPL-09 (P1-18): priced in the currency the action really pays (`pay: 'dew'`), or the bought Coins stayed.
+      const q = short(upgradeQuote(s, action.id, data, now, action.pay === 'dew' ? 'dew' : 'acorns'));
+      return q && builderFree(q.seconds, s.buildings.find((b) => b.id === action.id)?.type) ? q.cost : null;
+    }
+    case 'place': {
+      const q = short(placeQuote(s, data, action.buildingType, now, action.pay === 'dew' ? 'dew' : 'acorns'));
+      return q && builderFree(q.seconds, action.buildingType) ? q.cost : null;
+    }
+    case 'research':
+      return short(researchStartQuoteOn(s, action.troop, now, data))?.cost ?? null;
+    case 'train': {
+      // The warriors who fit in the camps and the next-army queue, all paid for.
+      const q = trainQuoteOn(s, action.troop, now, data);
+      if (!q.quote || (!q.ok && q.code !== 'NOT_ENOUGH_RESOURCES')) return null;
+      const def = data.troops[action.troop];
+      const room = trainingQueueLimit(s, data) - armyHousing(s.army, data) - queueHousing(s.training, data);
+      const n = Math.min(Math.max(1, Math.min(data.economy.maxTrainBatch, Math.floor(action.count ?? 1) || 1)), Math.floor(room / def.housing));
+      if (n < 1) return null;
+      const cost: Cost = {};
+      for (const [k, v] of Object.entries(q.quote.cost) as [ResourceKind, number][]) cost[k] = v * n;
+      return cost;
+    }
+  }
+}
+
+/**
+ * Jade to buy what `action` is missing and do it now (null when nothing is missing, it would not fit
+ * in storage, or something other than resources blocks it).
+ */
+export function topUpQuote(state: VillageState, action: TopUpAction, now: number, data: GameData): { missing: Cost; moonstones: number } | null {
+  return topUpQuoteOn(advance(state, now, data).state, action, now, data);
+}
+
+/** `topUpQuote` for a village already settled up to `now` (the Army panel asks once per row). */
+export function topUpQuoteOn(s: VillageState, action: TopUpAction, now: number, data: GameData): { missing: Cost; moonstones: number } | null {
+  const cost = topUpTarget(s, action, now, data);
+  return cost ? shortfallQuote(s, cost, data) : null;
+}
+
+function topUp(s: VillageState, action: TopUpAction, now: number, data: GameData): CommandResult {
+  if (!action || !['upgrade', 'place', 'train', 'research'].includes(action.type)) return fail('NOT_AVAILABLE', 'Jade can only buy what an upgrade, building, warrior or research is missing.');
+  const q = topUpQuoteOn(s, action, now, data);
+  if (!q) return fail('NOTHING_TO_SKIP', 'Nothing missing, or it would not fit in your storage.');
+  if (s.resources.moonstones < q.moonstones) return fail('NOT_ENOUGH_MOONSTONES', `Needs ${q.moonstones} Jade.`, { jade: q.moonstones });
+  s.resources.moonstones -= q.moonstones;
+  for (const [k, v] of Object.entries(q.missing) as [ResourceKind, number][]) s.resources[k] += v;
+  // The bought resources are spent in the same step; if the action fails, the whole command fails
+  // and the village is left as it was (applyCommand works on a copy).
+  const before = { training: new Set(s.training), research: new Set(s.research.active) };
+  const r = runCommand(s, action, now, data);
+  if (!r.ok) return r;
+  noteTopUp(r.state, action, r.events, before, { cost: q.missing, jade: q.moonstones });
+  return { ok: true, state: r.state, events: [{ kind: 'top_up', missing: q.missing, moonstones: q.moonstones }, ...r.events] };
+}
+
+/**
+ * Balance audit CU-3 (save v22): put what a top-up bought on the timers its action started, so a cancel gives
+ * that share back as Jade instead of as resources (top-up then cancel used to exchange Jade for Provisions at
+ * 100%). Several warriors share it evenly, the last one taking the remainder. Mutates.
+ */
+function noteTopUp(s: VillageState, action: TopUpAction, events: SimEvent[], before: { training: Set<TrainingItem>; research: Set<unknown> }, paid: TopUpPaid): void {
+  const holders: { topUp?: TopUpPaid; cost: Cost }[] = [];
+  if (action.type === 'train') holders.push(...s.training.filter((q) => !before.training.has(q)));
+  else if (action.type === 'research') holders.push(...s.research.active.filter((a) => !before.research.has(a)));
+  else {
+    const started = events.find((e) => e.kind === 'upgrade_start');
+    const b = started && 'id' in started ? s.buildings.find((x) => x.id === started.id) : undefined;
+    if (b?.upgrade) holders.push(b.upgrade);
+  }
+  // A finished-at-once action (a wall, a zero-second research) leaves nothing to cancel.
+  if (!holders.length) return;
+  const n = holders.length;
+  const costs: Cost[] = holders.map(() => ({}));
+  for (const [k, v] of Object.entries(paid.cost) as [ResourceKind, number][]) {
+    // Exploit audit 2026-11-20 #9: the last holder used to take the whole remainder, capped at its own cost, so
+    // part of what was bought went unrecorded and a cancel paid it back as Provisions. An even share first, then
+    // what is left spread over every holder with room, so the recorded shares add up to what was bought.
+    let left = v;
+    holders.forEach((h, i) => {
+      const each = Math.min(Math.floor(v / n), h.cost[k] ?? 0);
+      if (each > 0) costs[i][k] = each;
+      left -= each;
+    });
+    holders.forEach((h, i) => {
+      if (left <= 0) return;
+      const more = Math.min(left, (h.cost[k] ?? 0) - (costs[i][k] ?? 0));
+      if (more > 0) {
+        costs[i][k] = (costs[i][k] ?? 0) + more;
+        left -= more;
+      }
+    });
+    // What no timer holds was never part of a cancellable cost; it is spent either way.
+  }
+  holders.forEach((h, i) => {
+    const last = i === n - 1;
+    const jade = last ? paid.jade - Math.floor(paid.jade / n) * (n - 1) : Math.floor(paid.jade / n);
+    h.topUp = { cost: costs[i], jade };
+  });
+}
+
+function grantPurchase(s: VillageState, productId: string, transactionId: string, now: number, data: GameData, verified: boolean): CommandResult {
+  if (s.purchases.some((p) => p.id === transactionId)) return fail('ALREADY_CLAIMED', 'This purchase was already delivered.');
+  if (!verified) {
+    const check = canPurchase(s, productId, now, data);
+    if (!check.ok) return fail('PURCHASE_REFUSED', check.message);
+  }
+  const product = productInfo(data, productId);
+  if (!product) return fail('PURCHASE_REFUSED', 'That item is not available.');
+  // What this village gets now: offers scale with the Keep and never stockpile above storage (productGrantsFor).
+  const grants = productGrantsFor(s, productId, data)?.grants ?? { ...product.grants };
+  const record: PurchaseRecord = { id: transactionId, productId, usd: product.usd, at: now, grants: { ...grants } };
+  s.purchases.push(record);
+  if (product.kind === 'stipend') {
+    const added = addStipend(s, data);
+    if (added) record.stipend = added;
+  }
+  if (product.kind === 'pass') {
+    record.premium = { granted: {}, skins: [] };
+    s.pass.premium = true;
+    s.pass.season = passSeason(now, data);
+  }
+  if (product.kind === 'offer') {
+    const rule = data.offers.rules.find((o) => o.productId === productId)!;
+    if (!s.offers.bought.includes(rule.id)) s.offers.bought.push(rule.id);
+    s.offers.active = s.offers.active.filter((a) => a.id !== rule.id);
+  }
+  // Delivered in full: productGrantsFor already fitted the resources to storage (the rest came as Jade).
+  for (const [k, v] of Object.entries(grants) as [ResourceKind, number][]) s.resources[k] += v;
+  return { ok: true, state: s, events: [{ kind: 'purchase_granted', productId, usd: product.usd, grants }] };
+}
+
+/**
+ * Take back a refunded purchase: everything it gave, and the premium Season
+ * Scroll if it was this season's. What was already spent becomes a debt (a
+ * negative balance, paid back from income before anything can be bought with
+ * it). The purchase stays listed so the same transaction can never be
+ * delivered again, and keeps what the refund took (`refund`), so a reversed
+ * refund gives back exactly that and a second refund takes nothing.
+ *
+ * Remnant audit (2026-11-06): a Clan Stipend refund used to cancel only the
+ * payments still waiting (claimed Jade stayed, and the Jade still owed paid out
+ * with the next stipend), and a Season Scroll refund only switched the track
+ * off (claimed premium rewards and the Scroll-only look stayed).
+ */
+function revokePurchase(s: VillageState, transactionId: string, now: number, data: GameData, economy = true): CommandResult {
+  const p = s.purchases.find((x) => x.id === transactionId);
+  if (!p) return fail('NOT_FOUND', 'No such purchase in this village.');
+  if (p.refund) return fail('ALREADY_CLAIMED', 'This purchase was already refunded.');
+  const product = productInfo(data, p.productId);
+  if (!product) return { ok: true, state: s, events: [] };
+  const took: Cost = {};
+  const take = (k: ResourceKind, v: number) => {
+    if (!(v > 0)) return;
+    if (economy) s.resources[k] -= v;
+    took[k] = (took[k] ?? 0) + v;
+  };
+  // Save v16: a purchase keeps what it really delivered (offers scale with the Keep); older ones had the catalog contents.
+  // Re-audit: refunded Jade that was already spent becomes a debt (a negative balance). Ledger audit A5:
+  // every resource does. An offer's coins and rice were spent on an upgrade within seconds, and taking
+  // back only what was left gave a free upgrade per refund (save v17).
+  for (const [k, v] of Object.entries(p.grants ?? product.grants) as [ResourceKind, number][]) take(k, v);
+  const refund: PurchaseRefund = { took, skins: [], premium: false, claimedPremium: [] };
+  if (product.kind === 'stipend') {
+    // What this purchase added (save v20), else what a stipend adds now. Payments still waiting go first, with
+    // the Jade they owe; Jade this purchase owed that was already claimed is taken back like other Jade.
+    const def = data.store.stipend;
+    const sold = p.stipend ?? { payments: def?.payments ?? 0, jade: (def?.payments ?? 0) * (def?.jadePerPayment ?? 0) };
+    const st = (s.stipend = s.stipend ?? emptyStipend());
+    const payments = Math.min(Math.max(0, st.left), sold.payments);
+    const owed = Math.min(Math.max(0, st.jade), sold.jade);
+    st.left -= payments;
+    st.jade -= owed;
+    if (st.left <= 0) {
+      st.left = 0;
+      st.jade = 0;
+    }
+    refund.stipend = { payments, jade: owed };
+    take('moonstones', sold.jade - owed);
+  }
+  if (product.kind === 'pass') {
+    // Claims made under this purchase (save v20): their resources become a debt, looks that came with them go.
+    for (const [k, v] of Object.entries(p.premium?.granted ?? {}) as [ResourceKind, number][]) take(k, v);
+    for (const skin of p.premium?.skins ?? []) {
+      if (!s.cosmetics.owned.includes(skin)) continue;
+      s.cosmetics.owned = s.cosmetics.owned.filter((x) => x !== skin);
+      refund.skins.push(skin);
+    }
+    if (refund.skins.includes(s.cosmetics.hallSkin)) s.cosmetics.hallSkin = data.cosmetics.hallSkins[0]?.id ?? 'classic';
+    if (passSeason(p.at, data) === passSeason(now, data) && s.pass.season === passSeason(now, data)) {
+      refund.premium = s.pass.premium;
+      s.pass.premium = false;
+      // Taken back, so a Scroll bought again this season can claim them again (older records: kept claimed).
+      if (p.premium) {
+        refund.claimedPremium = [...s.pass.claimedPremium];
+        s.pass.claimedPremium = [];
+      }
+    }
+  }
+  p.refund = refund;
+  return { ok: true, state: s, events: [] };
+}
+
+/**
+ * A refund the store reversed: give back what `revokePurchase` took (a debt is
+ * paid back first, simply by adding), the stipend payments, the looks and, in
+ * the same season, the premium track and its claims. A purchase refunded before
+ * save v20 has no record of what was taken: it gets its grants back, its
+ * stipend payments, and the premium track if it is still that season.
+ */
+function reinstatePurchase(s: VillageState, transactionId: string, now: number, data: GameData, economy = true): CommandResult {
+  const p = s.purchases.find((x) => x.id === transactionId);
+  if (!p) return fail('NOT_FOUND', 'No such purchase in this village.');
+  const product = productInfo(data, p.productId);
+  if (!product) return { ok: true, state: s, events: [] };
+  const sameSeason = passSeason(p.at, data) === passSeason(now, data) && s.pass.season === passSeason(now, data);
+  const r = p.refund;
+  if (r) {
+    if (economy) for (const [k, v] of Object.entries(r.took) as [ResourceKind, number][]) if (v > 0) s.resources[k] += v;
+    if (r.stipend && (r.stipend.payments > 0 || r.stipend.jade > 0)) {
+      const st = (s.stipend = s.stipend ?? emptyStipend());
+      if (st.left <= 0) st.jade = 0;
+      st.left += r.stipend.payments;
+      st.jade += r.stipend.jade;
+    }
+    for (const skin of r.skins) if (!s.cosmetics.owned.includes(skin)) s.cosmetics.owned.push(skin);
+    if (r.premium && sameSeason) {
+      s.pass.premium = true;
+      for (const t of r.claimedPremium) if (!s.pass.claimedPremium.includes(t)) s.pass.claimedPremium.push(t);
+    }
+    delete p.refund;
+    return { ok: true, state: s, events: [] };
+  }
+  // Refunded before save v20: what the old refund took.
+  if (economy) for (const [k, v] of Object.entries(p.grants ?? product.grants) as [ResourceKind, number][]) if (v > 0) s.resources[k] += v;
+  if (product.kind === 'stipend') {
+    const st = (s.stipend = s.stipend ?? emptyStipend());
+    st.left += data.store.stipend?.payments ?? 0;
+  }
+  if (product.kind === 'pass' && sameSeason) s.pass.premium = true;
+  return { ok: true, state: s, events: [] };
+}
+
+function buySkin(s: VillageState, id: string, data: GameData): CommandResult {
+  const skin = data.cosmetics.hallSkins.find((k) => k.id === id);
+  if (!skin) return fail('NOT_FOUND', 'Unknown look.');
+  if (s.cosmetics.owned.includes(id)) return fail('ALREADY_CLAIMED', 'You already own this look.');
+  if (skin.passOnly) return fail('LOCKED', 'This look comes from the Season Scroll.');
+  if (skin.calendarOnly) return fail('LOCKED', 'This look comes from the 28-day calendar.');
+  if (skin.earned) return fail('LOCKED', 'This look is earned in play, never sold.');
+  if (skin.minKeep && hallLevel(s, data) < skin.minKeep) return fail('LOCKED', `This look unlocks at Keep ${skin.minKeep}.`, { keep: skin.minKeep });
+  if (s.resources.moonstones < skin.moonstones) return fail('NOT_ENOUGH_MOONSTONES', `Needs ${skin.moonstones} Jade.`, { jade: skin.moonstones });
+  s.resources.moonstones -= skin.moonstones;
+  s.cosmetics.owned.push(id);
+  s.cosmetics.hallSkin = id;
+  return { ok: true, state: s, events: [] };
+}
+
+/** True when a cost has any positive amount. */
+export function hasAny(c: Cost | undefined): boolean {
+  return Boolean(c) && Object.values(c!).some((v) => (v ?? 0) > 0);
+}
+
+/** `want` minus `got`, keeping only what is still positive (what did not fit). */
+function shortfall(want: Cost, got: Cost): Cost {
+  const out: Cost = {};
+  for (const [k, v] of Object.entries(want) as [ResourceKind, number][]) {
+    const left = (v ?? 0) - (got[k] ?? 0);
+    if (left > 0) out[k] = left;
+  }
+  return out;
+}
+
+/** Only the positive entries of a cost. */
+function positive(c: Cost): Cost {
+  const out: Cost = {};
+  for (const [k, v] of Object.entries(c) as [ResourceKind, number][]) if ((v ?? 0) > 0) out[k] = v;
+  return out;
+}
+
+function sumCost(...parts: Cost[]): Cost {
+  const out: Cost = {};
+  for (const p of parts) for (const [k, v] of Object.entries(p) as [ResourceKind, number][]) if (v) out[k] = (out[k] ?? 0) + v;
+  return out;
+}
+
+/** Add resources (storage-capped; Jade in full). Returns what was actually added and what did not fit. Mutates. */
+function grantResources(s: VillageState, res: Cost, data: GameData): { granted: Cost; overflow: Cost } {
+  const soft: Cost = {};
+  const granted: Cost = {};
+  for (const [k, v] of Object.entries(res) as [ResourceKind, number][]) {
+    if (!(v > 0)) continue;
+    if (k === 'moonstones') {
+      s.resources.moonstones += v;
+      granted.moonstones = v;
+    } else soft[k] = v;
+  }
+  const added = addCapped(s.resources, soft, capacity(s, data));
+  return { granted: positive({ ...granted, ...added }), overflow: shortfall(soft, added) };
+}
+
+/**
+ * Grant a reward bundle (resources capped by storage, Jade and skins in full). Mutates.
+ * Returns what was actually received, and what did not fit, so a message never
+ * claims resources the player did not get.
+ */
+/** P5-06: give an earned look once; true when it was new. */
+function grantLook(s: VillageState, look: string | undefined, data: GameData): boolean {
+  if (!look || s.cosmetics.owned.includes(look) || !data.cosmetics.hallSkins.some((k) => k.id === look)) return false;
+  s.cosmetics.owned.push(look);
+  return true;
+}
+
+function grantReward(s: VillageState, reward: Cost & { skin?: string }, data: GameData): { granted: Cost; overflow: Cost } {
+  const { skin, ...res } = reward;
+  if (skin && !s.cosmetics.owned.includes(skin)) s.cosmetics.owned.push(skin);
+  return grantResources(s, res, data);
+}
+
+/**
+ * What of a one-time reward would not fit in storage right now (empty when it
+ * all fits). The UI warns with this before the player opens or claims it.
+ */
+export function rewardOverflow(state: VillageState, reward: Cost, data: GameData): Cost {
+  const cap = capacity(state, data);
+  const out: Cost = {};
+  for (const [k, v] of Object.entries(reward) as [ResourceKind, number][]) {
+    if (k === 'moonstones' || typeof v !== 'number' || v <= 0) continue;
+    const lost = v - Math.max(0, cap[k] - state.resources[k]);
+    if (lost > 0) out[k] = lost;
+  }
+  return out;
+}
+
+/** The most today's chest could hold that would not fit (the largest outcome at today's streak step). */
+export function dailyChestOverflowRisk(state: VillageState, now: number, data: GameData): Cost {
+  const day = chestDay(state, now, data);
+  if (state.daily.lastDay >= day) return {};
+  const step = streakAfterClaim(state.daily, day, data).step;
+  const hall = hallLevel(state, data);
+  let worst: Cost = {};
+  let worstTotal = 0;
+  for (const o of data.daily.chest.outcomes) {
+    const lost = rewardOverflow(state, chestContents(o.id, hall, step, data, streakJadeDue(state.daily, day, data)), data);
+    const total = Object.values(lost).reduce((a, b) => a + (b ?? 0), 0);
+    if (total > worstTotal) {
+      worst = lost;
+      worstTotal = total;
+    }
+  }
+  return worst;
+}
+
+/** A Season Scroll tier's reward on a track, scaled to the player's Keep like other fixed rewards. */
+export function passTierReward(state: VillageState, tier: number, track: 'free' | 'premium', data: GameData): (Cost & { skin?: string }) | null {
+  const def = data.pass.tiers.find((t) => t.tier === tier);
+  if (!def) return null;
+  // The premium column only for exactly 'premium' (a command's track is whatever the game sent; R3-02).
+  const { skin: tierSkin, ...res } = track === 'premium' ? def.premium : def.free;
+  const scaled = scaleReward(res, passTierKeep(state, tier, data), data);
+  // P1-02: the look is this season's; a buyer who already owns it gets `repeatJade` instead of nothing.
+  const skin = tierSkin ? passSeasonSkin(state.pass.season, data, tierSkin) : undefined;
+  if (skin && state.cosmetics.owned.includes(skin) && data.pass.repeatJade) return { ...scaled, moonstones: (scaled.moonstones ?? 0) + data.pass.repeatJade };
+  return { ...scaled, ...(skin ? { skin } : {}) };
+}
+
+/**
+ * The Keep a Season Scroll tier's resources scale by (balance audit CU-6): the Keep when the tier unlocked
+ * (`pass.tierKeep`), never more than the Keep now; a tier not unlocked yet (or unlocked before save v22 without
+ * a record) uses the Keep now.
+ */
+export function passTierKeep(state: VillageState, tier: number, data: GameData): number {
+  const now = hallLevel(state, data);
+  const at = state.pass.tierKeep?.[tier - 1];
+  return tier <= unlockedTier(state, data) && typeof at === 'number' && at >= 1 ? Math.min(at, now) : now;
+}
+
+function claimTask(s: VillageState, id: string, kind: 'daily' | 'weekly', data: GameData): CommandResult {
+  const task = currentTasks(s, hallLevel(s, data), data).find((t) => t.id === id && t.kind === kind);
+  if (!task) return fail('NOT_FOUND', 'No such task today.');
+  if (task.claimed) return fail('ALREADY_CLAIMED', 'Already claimed.');
+  if (task.progress < task.target) return fail('NOT_READY', 'Not finished yet.');
+  (kind === 'daily' ? s.tasks.dayClaimed : s.tasks.weekClaimed).push(id);
+  const tierBefore = unlockedTier(s, data);
+  s.pass.points += task.points;
+  // Balance audit CU-6 (save v22): a tier's resources scale by the Keep it unlocked at, not the Keep at claim time.
+  const keep = hallLevel(s, data);
+  for (let t = tierBefore + 1; t <= unlockedTier(s, data); t++) (s.pass.tierKeep ??= [])[t - 1] = keep;
+  // P1-03: past the last tier, each newly reached bonus pays through the normal grant path (Keep-scaled, no Jade).
+  const bonuses = passBonusCount(s.pass.points, data) - passBonusCount(s.pass.points - task.points, data);
+  if (bonuses > 0 && data.pass.bonus) {
+    let wanted: Cost = {};
+    const one = scaleReward({ ...data.pass.bonus.reward, moonstones: 0 }, keep, data);
+    delete one.moonstones;
+    for (let i = 0; i < bonuses; i++) wanted = sumCost(wanted, one);
+    const { granted, overflow } = grantResources(s, wanted, data);
+    return { ok: true, state: s, events: [{ kind: 'reward', source: `task:${id}`, grants: granted, ...(hasAny(overflow) ? { overflow } : {}) }] };
+  }
+  return { ok: true, state: s, events: [{ kind: 'reward', source: `task:${id}`, grants: {} }] };
+}
+
+function claimTier(s: VillageState, tier: number, track: 'free' | 'premium', data: GameData): CommandResult {
+  // Exploit audit 2026-11-20 #1: any track other than 'free' used to pay the premium reward without the Scroll.
+  if (track !== 'free' && track !== 'premium') return fail('NOT_FOUND', 'No such track.');
+  const def = data.pass.tiers.find((t) => t.tier === tier);
+  if (!def) return fail('NOT_FOUND', 'No such tier.');
+  if (tier > unlockedTier(s, data)) return fail('NOT_READY', 'Earn more pass points first.');
+  if (track === 'premium' && !s.pass.premium) return fail('LOCKED', 'Premium rewards need the premium Season Scroll.');
+  const list = track === 'premium' ? s.pass.claimedPremium : s.pass.claimedFree;
+  if (list.includes(tier)) return fail('ALREADY_CLAIMED', 'Already claimed.');
+  return { ok: true, state: s, events: [payTier(s, tier, track, data)] };
+}
+
+/** Mark one unlocked Season Scroll tier claimed and pay it (the caller has checked it may be claimed). Mutates. */
+function payTier(s: VillageState, tier: number, track: 'free' | 'premium', data: GameData): SimEvent {
+  (track === 'premium' ? s.pass.claimedPremium : s.pass.claimedFree).push(tier);
+  const reward = passTierReward(s, tier, track, data)!;
+  const newSkin = reward.skin && !s.cosmetics.owned.includes(reward.skin) ? reward.skin : null;
+  const { granted, overflow } = grantReward(s, reward, data);
+  if (track === 'premium') {
+    // Kept on this season's Scroll purchase (save v20), so a refund can take the rewards back.
+    const bought = [...s.purchases].reverse().find((p) => p.productId === data.pass.productId && !p.refund && passSeason(p.at, data) === s.pass.season);
+    if (bought) {
+      const kept = (bought.premium = bought.premium ?? { granted: {}, skins: [] });
+      for (const [k, v] of Object.entries(granted) as [ResourceKind, number][]) if (v > 0) kept.granted[k] = (kept.granted[k] ?? 0) + v;
+      if (newSkin) kept.skins.push(newSkin);
+    }
+  }
+  return { kind: 'reward', source: `pass:${track}:${tier}`, grants: granted, ...(hasAny(overflow) ? { overflow } : {}) };
+}
+
+function claimAchievement(s: VillageState, id: string, data: GameData): CommandResult {
+  const view = achievementViews(s, hallLevel(s, data), data).find((v) => v.def.id === id);
+  if (!view) return fail('NOT_FOUND', 'Unknown achievement.');
+  if (!view.next) return fail('ALREADY_CLAIMED', 'All tiers claimed.');
+  if (!view.claimable) return fail('NOT_READY', 'Not finished yet.');
+  s.achievements[id] = view.claimed + 1;
+  s.resources.moonstones += view.next.reward;
+  return { ok: true, state: s, events: [{ kind: 'reward', source: `achievement:${id}`, grants: { moonstones: view.next.reward } }] };
+}
+
+function clearObstacle(s: VillageState, id: string, now: number, data: GameData): CommandResult {
+  const b = s.buildings.find((v) => v.id === id);
+  if (!b) return fail('NOT_FOUND', 'Not found.');
+  const def = buildingDef(data, b.type);
+  if (def.category !== 'obstacle' || !def.clear) return fail('NOT_AVAILABLE', 'That cannot be cleared.');
+  if (b.upgrade) return fail('BUSY', 'Already being cleared.');
+  if (!canAfford(s.resources, def.clear.cost)) return fail('NOT_ENOUGH_RESOURCES', `Not enough resources (needs ${costText(def.clear.cost, data)}).`, { cost: def.clear.cost, missing: missingFor(s.resources, def.clear.cost) });
+  if (builderStatus(s, data, now).free < 1) return fail('NO_FREE_BUILDER', 'All your Village Artisans are busy.');
+  subtractCost(s.resources, def.clear.cost);
+  b.upgrade = { toLevel: 0, startedAt: now, endsAt: now + def.clear.seconds * MS_PER_SECOND, cost: def.clear.cost };
+  return { ok: true, state: s, events: [{ kind: 'clear_start', buildingType: b.type, id, seconds: def.clear.seconds }] };
+}
+
+// ---------- Army and raids ----------
+
+export function trainQuote(state: VillageState, troop: string, now: number, data: GameData): QuoteResult {
+  return trainQuoteOn(advance(state, now, data).state, troop, now, data);
+}
+
+/** `trainQuote` for a village already settled up to `now`. Nothing is copied: `train` asks once per warrior and the Army panel once per row. */
+export function trainQuoteOn(s: VillageState, troop: string, now: number, data: GameData): QuoteResult {
+  const def = data.troops[troop];
+  if (!def) return fail('NOT_FOUND', 'Unknown warrior.');
+  const level = troopLevelOf(s, troop);
+  const cost = discounted(troopLevel(data, troop, level).cost, eventEffect(now, data).trainingDiscount);
+  const quote: Quote = { toLevel: level, cost, seconds: trainSecondsFor(s, troop, data) };
+  if (hallLevel(s, data) < (def.unlockKeep ?? 1)) {
+    return { ...fail('LOCKED', `Needs a level ${def.unlockKeep} Clan Keep.`, { keep: def.unlockKeep ?? 1, troop }), quote };
+  }
+  if (barracksLevel(s, data) < def.barracksLevel) {
+    return { ...fail('LOCKED', `Needs a level ${def.barracksLevel} Training Dojo.`, { dojo: def.barracksLevel, troop }), quote };
+  }
+  const cap = housingCapacity(s, data);
+  // The camps hold one army; the queue may train the next one ahead.
+  if (armyHousing(s.army, data) + queueHousing(s.training, data) + def.housing > trainingQueueLimit(s, data)) {
+    return { ...fail('ARMY_FULL', cap ? 'Your Squad Courtyards and the next-army queue are full.' : 'Build a Squad Courtyard to house warriors.'), quote };
+  }
+  if (!canAfford(s.resources, cost)) return { ...fail('NOT_ENOUGH_RESOURCES', `Not enough resources (needs ${costText(cost, data)}).`, { cost, missing: missingFor(s.resources, cost) }), quote };
+  return { ok: true, quote };
+}
+
+/** Queue up to `count` warriors of one type: as many as fit and can be paid for (at least one, or it fails). */
+function train(s: VillageState, troop: string, count: number, now: number, data: GameData): CommandResult {
+  const want = Math.max(1, Math.min(data.economy.maxTrainBatch, Math.floor(count) || 1));
+  let queued = 0;
+  let paid: Cost = {};
+  let seconds = 0;
+  for (let i = 0; i < want; i++) {
+    const q = trainQuoteOn(s, troop, now, data);
+    if (!q.ok) {
+      if (queued === 0) return q;
+      break;
+    }
+    const cost = q.quote.cost;
+    subtractCost(s.resources, cost);
+    const startedAt = queueEndsAt(s, now);
+    s.training.push({ troop, startedAt, endsAt: startedAt + q.quote.seconds * MS_PER_SECOND, cost });
+    paid = sumCost(paid, cost);
+    seconds = q.quote.seconds;
+    queued++;
+  }
+  return { ok: true, state: s, events: [{ kind: 'train_start', troop, seconds, cost: paid, count: queued }] };
+}
+
+/** The first free default name: counting presets would reuse a name after a delete and overwrite that army. */
+function nextArmyName(s: VillageState): string {
+  const taken = new Set(s.armyPresets.map((p) => p.name));
+  let n = 1;
+  while (taken.has(`Army ${n}`)) n++;
+  return `Army ${n}`;
+}
+
+/** Only known troops with whole positive counts. */
+function cleanArmy(army: Record<string, number>, data: GameData): Record<string, number> {
+  const out: Record<string, number> = {};
+  for (const [t, n] of Object.entries(army ?? {})) if (data.troops[t] && Number.isInteger(n) && n > 0) out[t] = Math.min(n, 999);
+  return out;
+}
+
+/**
+ * Queue what is missing to reach `army` (counting troops already ready and
+ * queued), in the order given, as far as space and resources allow. Fails only
+ * when nothing could be queued.
+ */
+function trainArmy(s: VillageState, target: Record<string, number>, now: number, data: GameData): CommandResult {
+  const army = cleanArmy(target, data);
+  const events: SimEvent[] = [];
+  let firstFail: Extract<CommandResult, { ok: false }> | null = null;
+  let missing = 0;
+  let why = '';
+  for (const [troop, n] of Object.entries(army)) {
+    const have = (s.army[troop] ?? 0) + s.training.filter((q) => q.troop === troop).length;
+    if (have >= n) continue;
+    const r = train(s, troop, n - have, now, data);
+    if (!r.ok) {
+      firstFail = firstFail ?? r;
+      missing += n - have;
+      why = why || r.message;
+      continue;
+    }
+    events.push(...r.events);
+    const queued = r.events.reduce((sum, e) => sum + (e.kind === 'train_start' ? e.count ?? 1 : 0), 0);
+    if (queued < n - have) {
+      missing += n - have - queued;
+      if (!why) {
+        const stopped = trainQuoteOn(s, troop, now, data);
+        why = stopped.ok ? '' : stopped.message;
+      }
+    }
+  }
+  if (!events.length) return firstFail ?? fail('NOTHING_TO_SKIP', 'That army is already ready or training.');
+  if (missing > 0) events.push({ kind: 'train_short', missing, why });
+  return { ok: true, state: s, events };
+}
+
+/** What dismissing `count` ready warriors would give back and how much camp space it frees (before storage caps). */
+export function dismissPreview(state: VillageState, troop: string, count: number, data: GameData): { refund: Cost; housing: number } {
+  // Balance audit CU-7: the price paid (from storage), never today's research level's price for a warrior trained
+  // at a lower level. Warriors trained before save v22 are untracked and refund at today's price.
+  const worth = armyValue(state, troop, count, troopLevel(data, troop, troopLevelOf(state, troop)).cost);
+  const refund: Cost = {};
+  for (const [k, v] of Object.entries(worth) as [ResourceKind, number][]) {
+    const r = Math.floor((v ?? 0) * data.economy.dismissRefundFraction);
+    if (r > 0) refund[k] = r;
+  }
+  return { refund, housing: (data.troops[troop]?.housing ?? 0) * count };
+}
+
+/** Your own warriors in your last attack (donated ones left out), for "Retrain last army". */
+export function lastAttackArmy(state: VillageState): Record<string, number> | null {
+  const last = [...state.battleLog].reverse().find((r) => r.kind === 'attack' && !r.drill);
+  if (!last) return null;
+  const out: Record<string, number> = {};
+  for (const [t, n] of Object.entries(last.setup.army)) {
+    const own = n - (last.setup.reinforcements?.[t]?.count ?? 0);
+    if (own > 0) out[t] = own;
+  }
+  return Object.keys(out).length ? out : null;
+}
+
+/**
+ * A practice army to try a warrior without training it: the village's own mix
+ * (ready, queued, or the last attack) scaled to full camps, with a squad of
+ * `troop` taking `share` of the space. Practice battles spend and win nothing.
+ */
+export function practiceArmy(state: VillageState, troop: string, data: GameData, share = 0.3): Record<string, number> {
+  const cap = Math.max(housingCapacity(state, data), data.troops[troop]?.housing ?? 1);
+  const mix: Record<string, number> = { ...state.army };
+  for (const q of state.training) mix[q.troop] = (mix[q.troop] ?? 0) + 1;
+  const base = Object.keys(mix).length ? mix : lastAttackArmy(state) ?? {};
+  const out: Record<string, number> = {};
+  const squad = Math.max(1, Math.floor((cap * (Object.keys(base).length ? share : 1)) / data.troops[troop].housing));
+  out[troop] = squad;
+  const room = cap - squad * data.troops[troop].housing;
+  const baseHousing = armyHousing(base, data);
+  if (baseHousing > 0 && room > 0) {
+    for (const [t, n] of Object.entries(base)) {
+      const k = Math.floor((n * room) / baseHousing);
+      if (k > 0) out[t] = (out[t] ?? 0) + k;
+    }
+  }
+  return out;
+}
+
+/** Send ready warriors home. Part of their training cost comes back (storage permitting). Mutates. */
+function dismiss(s: VillageState, troop: string, count: number, now: number, data: GameData): CommandResult {
+  const n = Math.floor(count);
+  if (!data.troops[troop] || !(n > 0)) return fail('NOT_FOUND', 'Pick warriors to dismiss.');
+  if ((s.army[troop] ?? 0) < n) return fail('NOT_AVAILABLE', 'You do not have that many ready.');
+  const want = dismissPreview(s, troop, n, data).refund;
+  takeFromArmy(s, troop, n);
+  // Dismissing is how a player frees camp space, so a full storage does not stop it; what did not fit is
+  // reported (`overflow`), never silently dropped (CU-7). The Army panel shows the refund first (`dismissPreview`).
+  const refund = positive(addCapped(s.resources, want, capacity(s, data)));
+  const overflow = shortfall(want, refund);
+  // Finished warriors waiting for camp room can walk in now.
+  finishTraining(s, now, data);
+  return { ok: true, state: s, events: [{ kind: 'dismiss', troop, count: n, refund, ...(hasAny(overflow) ? { overflow } : {}) }] };
+}
+
+/** A cost with a share taken off (limited-time events). */
+function discounted(cost: Cost, share: number): Cost {
+  if (share <= 0) return cost;
+  const out: Cost = {};
+  for (const [k, v] of Object.entries(cost) as [ResourceKind, number][]) out[k] = Math.round(v * (1 - share));
+  return out;
+}
+
+/** Open today's free chest. Never costs anything and cannot be reopened or rerolled. */
+function openDailyChest(s: VillageState, now: number, data: GameData, entropy?: number): CommandResult {
+  // P5-09 (RET-12): the player's own day once a claim has been made on it (`chestDay`).
+  const day = chestDay(s, now, data);
+  if (s.daily.lastDay >= day) return fail('ALREADY_CLAIMED', "You've opened today's chest. A new one is ready when your next day starts.");
+  const st = streakAfterClaim(s.daily, day, data);
+  // Economy E18 (save v22): the draw also takes the salt the previous claim rolled with fresh entropy.
+  const salt = s.daily.salt ?? 0;
+  const outcome = chestOutcome((s.seed ^ salt) >>> 0, day, data);
+  // A chest only reports what it really gave: anything that did not fit is listed separately.
+  const jadeDue = streakJadeDue(s.daily, day, data);
+  const { granted: grants, overflow } = grantReward(s, chestContents(outcome, hallLevel(s, data), st.step, data, jadeDue), data);
+  const lost = hasAny(overflow) ? { overflow } : {};
+  const sj = jadeDue ? streakJade(st.step, data) : 0;
+  const history = [...s.daily.history, { day, outcome, step: st.step, grants, ...lost, ...(sj ? { streakJade: sj } : {}) }].slice(-data.daily.streak.historyDays);
+  // Without entropy (an older game, the model player) the salt stays: the draw is the seed's, as before v22.
+  const nextSalt = Number.isFinite(entropy) ? mixSeed(salt, Math.floor(entropy!) >>> 0) : salt;
+  // P5-09: from this claim on the chest counts in the player's own day.
+  // Review M2: on the switching claim, west of UTC the local day is the one before the UTC day just used; storing the
+  // later of the two keeps a second chest out of the same UTC day (the next one waits for the next local day).
+  const lastDay = s.daily.local ? localDayIndex(s, now, data) : Math.max(day, localDayIndex(s, now, data));
+  s.daily = { lastDay, local: true, step: st.step, skipsLeft: st.skipsLeft, skipWeek: s.daily.local ? st.skipWeek : Math.floor(lastDay / 7), history, salt: nextSalt };
+  // P5-06: lifetime chest milestones give looks (a count of chests opened: a missed day cannot touch it).
+  s.stats.chestsOpened = (s.stats.chestsOpened ?? 0) + 1;
+  const chestLook = data.daily.chestLooks?.find((l) => l.at === s.stats.chestsOpened)?.look;
+  const looks = grantLook(s, chestLook, data) ? [chestLook!] : [];
+  return {
+    ok: true,
+    state: s,
+    events: [
+      { kind: 'daily_chest', outcome, step: st.step, grants, skipped: st.skipped, steppedBack: st.steppedBack, ...lost, ...(looks.length ? { looks } : {}) },
+      { kind: 'reward', source: `daily_chest:${outcome}`, grants, ...lost },
+    ],
+  };
+}
+
+/** Research quote including the resource check (for the UI). */
+export function researchStartQuote(state: VillageState, troop: string, now: number, data: GameData): QuoteResult {
+  return researchStartQuoteOn(advance(state, now, data).state, troop, now, data);
+}
+
+/** `researchStartQuote` for a village already settled up to `now`. */
+export function researchStartQuoteOn(s: VillageState, troop: string, now: number, data: GameData): QuoteResult {
+  const q = researchQuote(s, troop, hallLevel(s, data), data);
+  const quote: Quote | undefined = q.toLevel !== undefined ? { toLevel: q.toLevel, cost: q.cost ?? {}, seconds: Math.round((q.seconds ?? 0) * buildTimeFactor(s, now, data)) } : undefined;
+  if (!q.ok) return { ...fail(q.code, q.message), quote };
+  if (!canAfford(s.resources, q.cost)) return { ...fail('NOT_ENOUGH_RESOURCES', `Not enough resources (needs ${costText(q.cost, data)}).`, { cost: q.cost, missing: missingFor(s.resources, q.cost) }), quote };
+  return { ok: true, quote: quote! };
+}
+
+function research(s: VillageState, troop: string, now: number, data: GameData): CommandResult {
+  const q = researchStartQuote(s, troop, now, data);
+  if (!q.ok) return q;
+  const { cost, seconds, toLevel } = q.quote;
+  subtractCost(s.resources, cost);
+  startResearch(s, troop, toLevel, cost, seconds, now);
+  finishResearch(s, now);
+  return { ok: true, state: s, events: [{ kind: 'research_start', troop, toLevel, seconds, cost }] };
+}
+
+function cancelResearch(s: VillageState, troop: string | undefined, now: number, data: GameData): CommandResult {
+  const a = activeResearch(s, troop);
+  if (!a) return fail('NOT_UPGRADING', 'Nothing to cancel.');
+  const back = cancelRefund(s, [a], data.economy.cancelRefundFraction, data);
+  if (!back.ok) return back;
+  s.research.active = s.research.active.filter((x) => x !== a);
+  const refund = payRefund(s, back.refund, data);
+  void now;
+  return { ok: true, state: s, events: [{ kind: 'research_cancel', troop: a.troop, toLevel: a.toLevel, refund }] };
+}
+
+/**
+ * What cancelling paid-for work gives back at `fraction` (balance audit CU-3, CU-7): the resources paid from
+ * storage, and the Jade a top-up spent on the rest (as Jade, never as resources). Refused, with the amounts,
+ * when the resources would not fit in storage: a cancel used to drop what did not fit without a word.
+ */
+function cancelRefund(s: VillageState, paid: { cost: Cost; topUp?: TopUpPaid }[], fraction: number, data: GameData): { ok: true; refund: Cost } | ReturnType<typeof fail> {
+  const refund: Cost = {};
+  let jade = 0;
+  for (const p of paid) {
+    for (const [k, v] of Object.entries(p.cost) as [ResourceKind, number][]) {
+      const own = (v ?? 0) - (p.topUp?.cost[k] ?? 0);
+      if (own > 0) refund[k] = (refund[k] ?? 0) + own;
+    }
+    jade += p.topUp?.jade ?? 0;
+  }
+  for (const k of Object.keys(refund) as ResourceKind[]) {
+    refund[k] = Math.floor(refund[k]! * fraction);
+    if (!(refund[k]! > 0)) delete refund[k];
+  }
+  const back = Math.floor(jade * fraction);
+  const lost = rewardOverflow(s, refund, data);
+  if (hasAny(lost)) {
+    // 'Storage is too full' is an existing translated line; the amounts travel in params for the interface to show.
+    return fail('STORAGE_FULL', 'Storage is too full', { refund, lost });
+  }
+  if (back > 0) refund.moonstones = back;
+  return { ok: true, refund };
+}
+
+/** Pay a refund `cancelRefund` checked (it fits). Jade given back no longer counts as spent. Mutates. */
+function payRefund(s: VillageState, refund: Cost, data: GameData): Cost {
+  const { moonstones = 0, ...res } = refund;
+  const added = positive(addCapped(s.resources, res, capacity(s, data)));
+  if (moonstones > 0) {
+    s.resources.moonstones += moonstones;
+    s.stats.moonstonesSpent = Math.max(0, s.stats.moonstonesSpent - moonstones);
+    added.moonstones = moonstones;
+  }
+  return added;
+}
+
+/**
+ * Take warriors out of the queue, working back from `index` through a run of
+ * the same type, with what they cost from storage back (and a top-up's Jade as Jade; refused when it would not
+ * fit, `cancelRefund`). `troop` is the
+ * type the player tapped: a warrior may have finished since the panel drew, which
+ * shifts every index, and the wrong warrior must never be cancelled.
+ */
+function cancelTraining(s: VillageState, index: number, troop: string | undefined, count: number, now: number, data: GameData): CommandResult {
+  const at = troop !== undefined && s.training[index]?.troop !== troop ? s.training.map((q) => q.troop).lastIndexOf(troop) : index;
+  const type = s.training[at]?.troop;
+  if (type === undefined) return fail('NOT_FOUND', 'Nothing to cancel.');
+  const items: TrainingItem[] = [];
+  for (let left = Math.max(1, Math.floor(count)), i = at; left > 0 && s.training[i]?.troop === type; left--, i--) items.push(s.training[i]);
+  const back = cancelRefund(s, items, 1, data);
+  if (!back.ok) return back;
+  s.training = s.training.filter((q) => !items.includes(q));
+  retimeQueue(s.training, now);
+  const refund = payRefund(s, back.refund, data);
+  return { ok: true, state: s, events: [{ kind: 'train_cancel', troop: type, count: items.length, refund }] };
+}
+
+/** The battle seed of an offline raid on the opponent scouted with `scoutSeed` (the app builds the setup with it). */
+export function scoutBattleSeed(scoutSeed: number): number {
+  return mixSeed(scoutSeed, 0xba771e);
+}
+
+/** The battle seed of a Shadow Trial attack begun when the village's `nextSeed` was `nextSeed` (the app builds the setup with it). */
+export function trialBattleSeed(villageSeed: number, nextSeed: number, tier: number): number {
+  return mixSeed(villageSeed, 0x7a1a1 + tier * 7919 + nextSeed);
+}
+
+/** The battle seed of a Bounty Hunt attack (see `trialBattleSeed`). */
+export function bountyBattleSeed(villageSeed: number, nextSeed: number): number {
+  return mixSeed(villageSeed, 0xb0b7 + nextSeed);
+}
+
+/** The battle seed of a settle-the-score rematch (see `trialBattleSeed`). */
+export function rematchBattleSeed(villageSeed: number, nextSeed: number): number {
+  return mixSeed(villageSeed, 0x5e771e + nextSeed);
+}
+
+/**
+ * How many `nextSeed` steps a battle may span (bot raids settled mid-battle each take one). A seed made from an
+ * older `nextSeed` than this is refused: the client could otherwise pick its luckiest seed.
+ */
+const SEED_WINDOW = 256;
+
+/**
+ * When a battle command counts as having begun (exploit audit 2026-11-20 #4): the record's own `at`, but never in
+ * the future and never more than `events.settleSlackSeconds` before the command arrived, so a modified game cannot
+ * backdate an attack into an event, a war or a rematch window that is already over.
+ */
+export function battleStartedAt(recAt: number | undefined, now: number, data: GameData, trackedAt?: number): number {
+  const slack = (data.events.settleSlackSeconds ?? 600) * 1000;
+  const at = typeof recAt === 'number' && Number.isFinite(recAt) ? recAt : now;
+  // The start this village recorded itself when the battle began (`battleProgress`, never later than its own time
+  // then): an attack interrupted by closing the app still counts when it is settled on the next launch.
+  if (trackedAt !== undefined && at === trackedAt) return Math.min(now, at);
+  return Math.min(now, Math.max(at, now - slack));
+}
+
+const BATTLE_END_COMMANDS = new Set<Command['type']>(['battleEnd', 'trialEnd', 'groveBattleEnd', 'bountyEnd', 'rematchEnd']);
+
+/** A battle-end command with its start time settled once (`battleStartedAt`), before anything reads it. */
+function withBattleStart(s: VillageState, cmd: Command, now: number, data: GameData): Command {
+  if (!BATTLE_END_COMMANDS.has(cmd.type) || !('record' in cmd) || !cmd.record) return cmd;
+  const record = cmd.record as { at?: number };
+  return { ...cmd, record: { ...cmd.record, at: battleStartedAt(record.at, now, data, s.pendingBattle?.at) } } as Command;
+}
+
+/**
+ * Root cause A of the exploit audit 2026-11-20: a battle against a base the village rebuilds (Shadow Trial, goal
+ * event, rematch) is set up here, not taken from the client. The seed must be one this village would have issued
+ * (within `SEED_WINDOW` steps of `nextSeed`), and the rest goes through `sanitizeBattleSetup` (XPL-01's whitelist:
+ * Infiltration Points always on, the village's own hero, no relay damage, everything checked against the village).
+ */
+function ownedBattleSetup(s: VillageState, client: BattleSetup, base: BattleLayoutOf, seedAt: (nextSeed: number) => number, data: GameData): { setup: BattleSetup } | { error: string } {
+  if (!client || typeof client !== 'object') return { error: 'Unknown battle.' };
+  const seed = Number(client.seed) >>> 0;
+  let seedOk = false;
+  for (let n = s.nextSeed; n >= Math.max(0, s.nextSeed - SEED_WINDOW) && !seedOk; n--) seedOk = seedAt(n) >>> 0 === seed;
+  if (!seedOk) return { error: 'This battle was not started by this village.' };
+  return sanitizeBattleSetup(s, { ...client, seed, base }, data);
+}
+type BattleLayoutOf = BattleSetup['base'];
+
+/**
+ * The Coin fee for "Next", priced by the Keep the player is matched against (`matchedKeep`), not its own (P2-11,
+ * DEF-13: at Keeps 5 and 15 the offers are a Keep lower, and the fee was 4.8% and 3.3% of the mean offer).
+ */
+export function scoutFee(state: VillageState, data: GameData): number {
+  const fees = data.battle.scoutFeeByHall;
+  return fees[Math.min(fees.length, matchedKeep(state, data)) - 1] ?? 0;
+}
+
+/**
+ * Find an opponent. The first look after each attack is free, and it stays the
+ * same opponent until the player attacks it or pays the Coin fee for "Next":
+ * leaving and pressing Attack again shows the same base, so rerolling always
+ * costs the fee.
+ */
+function scout(s: VillageState, paid: boolean, data: GameData): CommandResult {
+  if (!paid && s.scout) return { ok: true, state: s, events: [{ kind: 'scout', seed: s.scout.seed, fee: 0 }] };
+  const fee = paid ? scoutFee(s, data) : 0;
+  if (s.resources.acorns < fee) return fail('NOT_ENOUGH_RESOURCES', `Next costs ${fee} coins.`, { cost: { acorns: fee } });
+  s.resources.acorns -= fee;
+  const seed = mixSeed(s.seed, s.nextSeed++);
+  s.scout = { seed };
+  return { ok: true, state: s, events: [{ kind: 'scout', seed, fee }] };
+}
+
+/**
+ * Apply the result of an attack. The battle is re-simulated from its seed and
+ * deployments, so the loot always matches what really happened.
+ */
+/**
+ * Exploit audit XPL-01 (P1-11): a new battle command's setup, rebuilt from a whitelist. Only `seed`, `base`
+ * (each command replaces it with the base it rebuilds, except the device-only offline paths), `army`, `levels`,
+ * `reinforcements` and `mastery` come from the client, and `checkBattleSetup` checks them; Infiltration Points
+ * are always on; the hero is the one this village brings, at most at its level; `startDamage` is dropped (only
+ * the server's Gang War path builds relay damage). A command whose hero the village does not bring is refused.
+ * Old records are never passed through this: they replay with the setup they were recorded with.
+ */
+function sanitizeBattleSetup(s: VillageState, setup: BattleSetup, data: GameData): { setup: BattleSetup } | { error: string } {
+  if (!setup || typeof setup !== 'object' || !setup.army || typeof setup.army !== 'object') return { error: 'Unknown warriors in battle.' };
+  const clean: BattleSetup = { seed: setup.seed, base: setup.base, army: { ...setup.army }, infiltration: true };
+  if (setup.levels) clean.levels = { ...setup.levels };
+  if (setup.reinforcements) clean.reinforcements = structuredClone(setup.reinforcements);
+  if (setup.mastery) clean.mastery = { ...setup.mastery };
+  if (setup.hero !== undefined && setup.hero !== null) {
+    const most = heroFor(s, data);
+    const level = Number(setup.hero?.level);
+    if (!most || typeof setup.hero !== 'object' || setup.hero.id !== most.id || !Number.isInteger(level) || level < 1 || level > most.level) return { error: 'Your clan hero does not match your village.' };
+    clean.hero = { id: most.id, level };
+  }
+  const bad = checkBattleSetup(s, clean, data);
+  return bad ? { error: bad } : { setup: clean };
+}
+
+/** Reject a battle that used troops or troop levels the player does not have. */
+function checkBattleSetup(s: VillageState, setup: BattleSetup, data: GameData): string | null {
+  const lodge = lodgeTroops(s);
+  for (const [t, r] of Object.entries(setup.reinforcements ?? {})) {
+    if (!data.troops[t] || !r || !Number.isInteger(r.count) || r.count < 0 || r.count > (lodge[t]?.count ?? 0)) return 'More donated warriors than your Lodge holds.';
+    if (r.count > 0 && r.level !== lodge[t].level) return 'Donated warrior levels do not match your Lodge.';
+  }
+  const have = battleArmy(s);
+  for (const [t, n] of Object.entries(setup.army)) {
+    if (!data.troops[t] || !Number.isInteger(n) || n < 0) return 'Unknown warriors in battle.';
+    if (n > (have[t] ?? 0)) return 'More warriors than your army holds.';
+    // Review 2026-11-17 (R3-05): the army may count the Lodge, but only the part the setup declares as donated
+    // is taken from the Lodge afterwards (`spendTroops`). A setup that named no donated warriors fought with
+    // them and spent none. So whatever is not declared as donated must come from the village's own army.
+    if (setup.reinforcements && Object.hasOwn(setup.reinforcements, t) ? n - setup.reinforcements[t].count > (s.army[t] ?? 0) : setup.reinforcements && n > (s.army[t] ?? 0)) return 'More warriors than your army holds.';
+  }
+  for (const [t, lvl] of Object.entries(setup.levels ?? {})) {
+    if (!data.troops[t] || !Number.isInteger(lvl) || lvl < 1 || lvl > troopLevelOf(s, t)) return 'Warrior levels do not match your research.';
+  }
+  if (!masteryMatches(s, setup, data)) return 'Warrior mastery does not match your village.';
+  // Exploit audit 2026-11-20 #3: the hero is the one this village brings, at most at its level (a Keep upgrade
+  // that finished mid-battle leaves a lower level), never a forged Shadow Captain or an ordinary warrior.
+  if (setup.hero !== undefined && setup.hero !== null) {
+    const own = heroFor(s, data);
+    const lvl = setup.hero?.level;
+    if (!own || typeof setup.hero !== 'object' || setup.hero.id !== own.id || !Number.isInteger(lvl) || lvl < 1 || lvl > own.level) return 'The hero does not match your village.';
+  }
+  return null;
+}
+
+/**
+ * Take a real raid's losses where they came from, the same way offline raids
+ * do: loot a destroyed collector gave comes out of that collector, the rest out
+ * of storage. Which buildings fell is re-simulated from the record (the server
+ * ran the same battle). Never takes more than `lost`. Mutates.
+ *
+ * Quality 33: when the raid cannot be traced (a record under battle rules this build does not play, or a
+ * simulation that throws), nothing is taken and the reason is returned for an event. It used to swallow any
+ * exception and take the whole amount out of storage, so a bug or a rules mismatch silently cost the player
+ * resources that were partly still in the collectors. The server's own economy, where it holds the village,
+ * stays the truth either way.
+ */
+function applyDefenseLosses(s: VillageState, record: BattleRecord, lost: Cost, now: number, data: GameData, fallen?: { id: string; loot: Cost }[]): { untraced: string } | null {
+  const claims: { b: Building; k: ResourceKind; amount: number }[] = [];
+  let down: { id: string; loot: Cost }[];
+  if (fallen) down = fallen;
+  else if (record.rules !== undefined && record.rules !== SIM_RULES && !SIM_RULES_COMPATIBLE.includes(record.rules)) return { untraced: `rules_${record.rules}` };
+  else {
+    try {
+      down = runBattle(record.setup, record.deployments, data, record.endTick).sim.buildings.filter((b) => b.destroyed);
+    } catch (e) {
+      return { untraced: e instanceof Error ? e.message.slice(0, 120) : 'simulation_failed' };
+    }
+  }
+  for (const sb of down) {
+    const vb = s.buildings.find((b) => b.id === sb.id);
+    const k = vb ? data.buildings[vb.type]?.produces : undefined;
+    if (!vb || !k || !vb.collector || !(sb.loot[k]! > 0)) continue;
+    claims.push({ b: vb, k, amount: sb.loot[k]! });
+  }
+  for (const [k, v0] of Object.entries(lost) as [ResourceKind, number][]) {
+    let left = Math.max(0, Math.floor(v0 ?? 0));
+    for (const c of claims) {
+      if (c.k !== k || left <= 0) continue;
+      const have = collectorAmount(c.b, now, data);
+      const take = Math.floor(Math.min(have, c.amount, left));
+      if (take <= 0) continue;
+      c.b.collector = { stored: have - take, accrueFrom: accrueRestart(c.b, now) };
+      left -= take;
+    }
+    // Collected since the raid (or not traceable): it is in storage now. A debt (negative balance,
+    // ledger audit A5) has nothing to take and is never wiped by a raid.
+    s.resources[k] -= Math.max(0, Math.min(s.resources[k], left));
+  }
+  return null;
+}
+
+/** League bonus for a won attack: the full bonus at 3 stars, a third per star. */
+export function leagueWinBonus(trophies: number, stars: number, keep: number, data: GameData): Cost {
+  return leagueBonusOf(leagueFor(trophies, data), stars, keep, data);
+}
+
+/**
+ * A league's win bonus at a Keep for this many stars: per resource the larger of the flat `winBonus` and (P2-09,
+ * DEF-10) `winBonusShare` of the Keep's lowest generated raid loot in Coins and Provisions, both x stars/3.
+ */
+export function leagueBonusOf(league: LeagueDef, stars: number, keep: number, data: GameData): Cost {
+  const out: Cost = {};
+  if (stars < 1) return out;
+  const s = Math.min(3, stars);
+  const share = Math.floor((league.winBonusShare ?? 0) * (data.battle.generatedLootByHall[keep - 1]?.min ?? 0));
+  const full: Cost = { ...(league.winBonus ?? {}) };
+  for (const k of ['acorns', 'dew'] as const) if (share > (full[k] ?? 0)) full[k] = share;
+  for (const [k, v] of Object.entries(full) as [ResourceKind, number][]) {
+    const amt = Math.floor((v * s) / 3);
+    if (amt > 0) out[k] = amt;
+  }
+  return out;
+}
+
+function battleEnd(s: VillageState, rec0: Omit<BattleRecord, 'result' | 'id' | 'kind'>, now: number, data: GameData, known?: BattleResult): CommandResult {
+  // An online attack's setup was built and checked by the server (`checkArmy`), which may carry relay damage.
+  const clean = rec0.ticket ? null : sanitizeBattleSetup(s, rec0.setup, data);
+  if (clean && 'error' in clean) return fail('INVALID_BATTLE', clean.error);
+  const rec = clean ? { ...rec0, setup: clean.setup } : rec0;
+  const bad = checkBattleSetup(s, rec.setup, data);
+  if (bad) return fail('INVALID_BATTLE', bad);
+  const result = known ? structuredClone(known) : runBattle(rec.setup, rec.deployments, data, rec.endTick).result;
+  spendTroops(s, result.used, rec.setup);
+  if (!foughtWithWarriors(result, rec.setup)) {
+    // Balance audit 2026-11-08 (DZ-3): the clan hero joins for free, so a battle where no warrior was
+    // deployed wins nothing: no loot (it used to bank 17k-327k per battle).
+    // XPL-05 (P1-15): but a started raid the hero went into is a lost attack, as an abandon is: honor, the
+    // shield and the scouted opponent go. It used to be practice, a free way out that skipped the Next fee.
+    let trophies = 0;
+    if (!rec.ticket && (result.used[rec.setup.hero?.id ?? ''] ?? 0) > 0) {
+      const opp = rec.setup.base.trophies ?? s.trophies;
+      trophies = -lossTrophies(s.trophies, opp, data);
+      s.trophies = Math.max(0, s.trophies + trophies);
+      s.shieldUntil = shieldAfterAttack(s.shieldUntil, now, hasAttacked(s), data);
+    }
+    s.scout = null;
+    const record: BattleRecord = { ...rec, id: `r${s.nextSeed++}`, kind: 'attack', at: rec.at ?? now, result: { ...result, loot: { ...result.loot } }, trophies, banked: {}, rules: SIM_RULES, settlement: 'rejected', rejected: 'no_warriors' };
+    s.battleLog.push(record);
+    trimLog(s.battleLog, data.battle.maxReplays);
+    return { ok: true, state: s, events: [{ kind: 'raid_end', record }] };
+  }
+  if (rec.ticket) {
+    // Online attack: the server re-runs it and decides. Troops are spent now
+    // (they fought), but loot and honor wait for the server's answer, so a
+    // refused or expired report can never leave loot behind (settleOnlineAttack).
+    if (s.battleLog.some((r) => r.ticket === rec.ticket)) return fail('ALREADY_CLAIMED', 'This attack was already recorded.');
+    s.shieldUntil = shieldAfterAttack(s.shieldUntil, now, hasAttacked(s), data);
+    s.scout = null;
+    const record: BattleRecord = { ...rec, id: `r${s.nextSeed++}`, kind: 'attack', at: rec.at ?? now, result: { ...result, loot: { ...result.loot } }, trophies: 0, banked: {}, rules: SIM_RULES, settlement: 'pending' };
+    if (!validStake(record.stake, data, hallLevel(s, data))) delete record.stake;
+    s.battleLog.push(record);
+    trimLog(s.battleLog, data.battle.maxReplays);
+    return { ok: true, state: s, events: [{ kind: 'raid_end', record }] };
+  }
+  // Three separate amounts: the battle's loot (result.loot, exactly what the
+  // simulation says), the bonuses on top (league, limited-time event), and what
+  // really reached storage. Whatever was won but did not fit is kept as
+  // `overflow`, so the results screen can say so precisely.
+  const stake = validStake(rec.stake, data, hallLevel(s, data)) ? rec.stake : undefined;
+  // P5-03: the contract of the day the raid began (its own time, never later than now: browser and server agree).
+  const contract = contractFor(battleBegan(rec, now, data) ?? now, data); // review L3: bounded like any record time
+  const roles = trainableRoles(s, data);
+  const carry = raidCarry(result, rec.setup, stake, data, roles, contract);
+  const metContract = contractMultiplier(contract, result, rec.setup, stake, data, roles) > 1 ? contract!.id : undefined;
+  const { banked, overflow, bonus, eventBonus } = bankRaidLoot(s, result, now, data, carry);
+  const masteryXp = sumXp(awardMastery(s, result, rec.setup, data));
+  const opp = rec.setup.base.trophies ?? s.trophies;
+  const trophies = result.stars >= 1 ? winTrophies(s.trophies, opp, data) : -lossTrophies(s.trophies, opp, data);
+  s.trophies = Math.max(0, s.trophies + trophies);
+  // Attacking ends your shield, and the next look at an opponent is free again.
+  s.shieldUntil = shieldAfterAttack(s.shieldUntil, now, hasAttacked(s), data);
+  s.scout = null;
+  const record: BattleRecord = { ...rec, id: `r${s.nextSeed++}`, kind: 'attack', at: rec.at ?? now, result: { ...result, loot: { ...result.loot } }, trophies, banked, rules: SIM_RULES };
+  delete record.stake;
+  if (stake !== undefined) record.stake = stake;
+  if (carry !== 1) record.carry = carry;
+  if (metContract) record.contract = metContract;
+  if (masteryXp) record.masteryXp = masteryXp;
+  if (hasAny(overflow)) record.overflow = overflow;
+  if (hasAny(bonus)) record.leagueBonus = bonus;
+  if (hasAny(eventBonus)) record.eventBonus = eventBonus;
+  s.battleLog.push(record);
+  trimLog(s.battleLog, data.battle.maxReplays);
+  return { ok: true, state: s, events: [{ kind: 'raid_end', record }] };
+}
+
+/** P5-07: the experience an attack paid, all warrior types together (shown on the result screen). */
+function sumXp(gained: Record<string, number>): number {
+  return Object.values(gained).reduce((a, x) => a + x, 0);
+}
+
+/** P5-04: the counters a settled raid adds beyond wins, stars and destruction (three-star raids, stakes reached). */
+function countRaidStats(s: VillageState, rec: BattleRecord, data: GameData): void {
+  if (rec.result.stars >= 3) s.stats.raidsThreeStar = (s.stats.raidsThreeStar ?? 0) + 1;
+  if (validStake(rec.stake, data) && rec.result.stars >= rec.stake) s.stats.stakesWon = (s.stats.stakesWon ?? 0) + 1;
+}
+
+/** Whether any warrior (not just the free hero) was deployed: a battle without one is practice. */
+export function foughtWithWarriors(result: Pick<BattleResult, 'used'>, setup: Pick<BattleSetup, 'hero'>): boolean {
+  return Object.entries(result.used).some(([t, n]) => n > 0 && t !== setup.hero?.id);
+}
+
+/**
+ * Bank a won attack's loot plus the league and event bonuses. `carry` (sim/carry.ts) is the share of the battle's
+ * loot the attacker carries home. Returns banked, overflow and the bonuses. Mutates.
+ */
+function bankRaidLoot(s: VillageState, result: BattleResult, at: number, data: GameData, carry = 1): { banked: Cost; overflow: Cost; bonus: Cost; eventBonus: Cost } {
+  const cap = capacity(s, data);
+  // Rules 10 (lab): `raids.attackCarryByStars` — the same rule as on defence: you carry home a share of what you
+  // broke open, by the stars you won.
+  const byStars = data.raids.attackCarryByStars;
+  if (byStars) carry *= byStars[result.stars] ?? 1;
+  // P5-03: contract x stake x diversity x event bonus stop at `raids.carryCap` times the plain loot.
+  const capped = cappedCarry(carry, result.stars >= 1 ? eventEffect(at, data).raidLootBonus : 0, data);
+  carry = capped.carry;
+  const loot = carriedLoot(result.loot, carry);
+  const fromBattle = addCapped(s.resources, loot, cap);
+  const bonusWanted = leagueWinBonus(s.trophies, result.stars, hallLevel(s, data), data);
+  const bonus = positive(addCapped(s.resources, bonusWanted, cap));
+  const lootBonus = capped.eventBonus;
+  const eventWanted: Cost = {};
+  if (lootBonus > 0) for (const [k, v] of Object.entries(loot) as [ResourceKind, number][]) if (v > 0) eventWanted[k] = Math.floor(v * lootBonus);
+  const eventBonus = positive(addCapped(s.resources, eventWanted, cap));
+  const banked = positive(sumCost(fromBattle, bonus, eventBonus));
+  return { banked, overflow: shortfall(sumCost(loot, bonusWanted, eventWanted), banked), bonus, eventBonus };
+}
+
+/**
+ * Apply the server's answer to an online attack recorded as pending. Confirmed:
+ * bank the server's result (it re-ran the battle) and take its honor change.
+ * Refused: the attack stays in the log as a practice result with no loot or
+ * honor. Idempotent: a settled or unknown ticket changes nothing.
+ */
+function settleOnlineAttack(s: VillageState, cmd: Extract<Command, { type: 'settleOnlineAttack' }>, now: number, data: GameData): CommandResult {
+  const rec = s.battleLog.find((r) => r.ticket === cmd.ticket && r.settlement === 'pending');
+  if (!rec) return { ok: true, state: s, events: [] };
+  if (cmd.rejected || !cmd.result) {
+    rec.settlement = 'rejected';
+    rec.rejected = cmd.rejected ?? 'refused';
+    rec.banked = {};
+    return { ok: true, state: s, events: [{ kind: 'raid_settled', record: structuredClone(rec), outcome: 'rejected' }] };
+  }
+  const result = cmd.result;
+  // Only the stake the server settled with counts (it was fixed when the raid started); a server without
+  // stakes settles with none, whatever this game recorded.
+  const stake = validStake(cmd.stake, data) ? cmd.stake : undefined;
+  // P5-03 (review M1): only the server's contract time counts (the ticket's start, `cmd.contractAt`), like its stake;
+  // a server without contracts settles with none, whatever this game's clock said.
+  const contract = Number.isFinite(cmd.contractAt) ? contractFor(cmd.contractAt!, data) : null;
+  const roles = trainableRoles(s, data);
+  const carry = raidCarry(result, rec.setup, stake, data, roles, contract);
+  if (contractMultiplier(contract, result, rec.setup, stake, data, roles) > 1) rec.contract = contract!.id;
+  else delete rec.contract;
+  const { banked, overflow, bonus, eventBonus } = bankRaidLoot(s, result, Math.min(rec.at, now), data, carry);
+  const masteryXp = sumXp(awardMastery(s, result, rec.setup, data));
+  if (masteryXp) rec.masteryXp = masteryXp;
+  rec.result = { ...result, loot: { ...result.loot } };
+  rec.banked = banked;
+  if (stake !== undefined) rec.stake = stake;
+  else delete rec.stake;
+  if (carry !== 1) rec.carry = carry;
+  if (hasAny(overflow)) rec.overflow = overflow;
+  if (hasAny(bonus)) rec.leagueBonus = bonus;
+  if (hasAny(eventBonus)) rec.eventBonus = eventBonus;
+  rec.trophies = cmd.trophies ?? 0;
+  rec.settlement = 'confirmed';
+  if (cmd.playerTrophies !== undefined) s.trophies = Math.max(0, cmd.playerTrophies);
+  if (result.stars >= 1) s.stats.raidsWon++;
+  s.stats.starsEarned += result.stars;
+  s.stats.raidDestruction = (s.stats.raidDestruction ?? 0) + result.destruction;
+  countRaidStats(s, rec, data);
+  void now;
+  return { ok: true, state: s, events: [{ kind: 'raid_settled', record: structuredClone(rec), outcome: 'confirmed' }] };
+}
+
+/** Keep the log to `max` entries, dropping the oldest settled ones (an attack awaiting the server is never dropped). Mutates. */
+function trimLog(log: BattleRecord[], max: number): void {
+  let drop = log.length - max;
+  if (drop <= 0) return;
+  // The oldest settled records go first; a pending online attack is kept while a settled one can go instead.
+  // One pass (it removed one record per pass, which a very long log from a forged save made quadratic: R3-07).
+  const kept: BattleRecord[] = [];
+  for (const r of log) {
+    if (drop > 0 && r.settlement !== 'pending') drop--;
+    else kept.push(r);
+  }
+  if (drop > 0) kept.splice(0, drop);
+  log.length = 0;
+  for (const r of kept) log.push(r);
+}
+
+/** Keep an Alliance War attack in the battle log so it can be replayed. Mutates. */
+function logWarAttack(s: VillageState, rec: Omit<BattleRecord, 'result' | 'id' | 'kind'>, result: BattleResult, now: number, data: GameData): BattleRecord {
+  const record: BattleRecord = { ...rec, id: `r${s.nextSeed++}`, kind: 'attack', at: rec.at ?? now, result: { ...result, loot: {} }, trophies: 0, banked: {}, rules: SIM_RULES, war: true };
+  s.battleLog.push(record);
+  trimLog(s.battleLog, data.battle.maxReplays);
+  return record;
+}
+
+/**
+ * A Shadow Trial attack: no loot from buildings and no trophies. The base is
+ * rebuilt from the tier (never taken from the client), the battle is
+ * re-simulated, and the reward is paid only on the first clear of the next tier.
+ */
+function trialEnd(s: VillageState, tier: number, rec: Omit<BattleRecord, 'result' | 'id' | 'kind'>, now: number, data: GameData): CommandResult {
+  if (!Number.isInteger(tier) || tier < 1) return fail('INVALID_BATTLE', 'Unknown Shadow Trial.');
+  // P3-06: the next uncleared tier, or the catch-up tier (the first of the Keep two below this one), or a replay.
+  const catchUp = trialCatchUpTier(s.trials, hallLevel(s, data), data);
+  const next = nextTrialTier(s.trials.best);
+  if (tier > next && tier !== catchUp) return fail('LOCKED', `Clear Shadow Trial ${s.trials.best + 1} first.`, { tier: s.trials.best + 1 });
+  // Relay damage is server-issued for Gang War tickets only. Trials must always
+  // begin from the intact generated fortress.
+  if (rec.setup?.startDamage && Object.keys(rec.setup.startDamage).length) return fail('INVALID_BATTLE', 'Trial fortress damage is not allowed.');
+  const clean = ownedBattleSetup(s, rec.setup, trialBase(tier, data, trialVariant(s.trials, tier)), (n) => trialBattleSeed(s.seed, n, tier), data);
+  if ('error' in clean) return fail('INVALID_BATTLE', clean.error);
+  const setup = clean.setup;
+  const { result } = runBattle(setup, rec.deployments, data, rec.endTick);
+  spendTroops(s, result.used, setup);
+  // XPL-01: a clear needs warriors; the free hero alone clears nothing.
+  const cleared = result.stars >= data.trials.starsToClear && foughtWithWarriors(result, setup);
+  const firstClear = cleared && (tier === next || tier === catchUp);
+  // P5-07: mastery is paid for raids and a tier's first clear only (a replayed tier farmed experience).
+  const masteryXp = firstClear ? sumXp(awardMastery(s, result, setup, data)) : 0;
+  const looks: string[] = [];
+  let reward: Cost = {};
+  let overflow: Cost = {};
+  let skipped: [number, number] | undefined;
+  if (firstClear) {
+    // P3-06: a catch-up clear pays every skipped tier's reward once, with its own.
+    if (tier > next) skipped = [next, tier - 1];
+    ({ granted: reward, overflow } = grantResources(s, trialRewardsThrough(s.trials.best, tier, data), data));
+    // P5-06: Trial looks for every milestone this clear passes.
+    for (const l of data.trials.looks ?? []) if (l.tier > s.trials.best && l.tier <= tier && grantLook(s, l.look, data)) looks.push(l.look);
+    s.trials = { best: tier, alternate: 0, failedTier: 0 };
+    s.stats.trialsCleared++;
+  } else if (!cleared && (tier === next || tier === catchUp)) {
+    if ((s.trials.alternateTier ?? next) !== tier) {
+      s.trials.alternate = 0;
+      delete s.trials.alternateTier;
+    }
+    s.trials.failedTier = tier;
+  }
+  const record: BattleRecord = { ...rec, setup, opponentName: setup.base.name, id: `r${s.nextSeed++}`, kind: 'attack', at: rec.at ?? now, result: { ...result, loot: { ...result.loot } }, trophies: 0, banked: reward, rules: SIM_RULES, trial: tier, ...(hasAny(overflow) ? { overflow } : {}), ...(masteryXp ? { masteryXp } : {}) };
+  s.battleLog.push(record);
+  trimLog(s.battleLog, data.battle.maxReplays);
+  return { ok: true, state: s, events: [{ kind: 'trial_end', record, tier, cleared, firstClear, reward, ...(skipped ? { skipped } : {}), ...(looks.length ? { looks } : {}) }] };
+}
+
+/**
+ * XPL-02 (P1-12): when a battle a client reports began. A record's time is the client's word, so it is bounded
+ * above by now and below by the battle's length plus `raids.battleResumeHours`; null when it is older than that.
+ */
+function battleBegan(rec: { at?: number }, now: number, data: GameData): number | null {
+  const at = Math.min(now, rec.at ?? now);
+  if (!Number.isFinite(at)) return null;
+  const resume = data.raids.battleResumeHours;
+  if (resume === undefined) return at;
+  return at < now - (data.battle.durationSeconds + resume * 3600) * MS_PER_SECOND ? null : at;
+}
+
+/** Review M5: how long after a goal event ends (beyond one battle's length) its last battle may still be settled. */
+const GOAL_GRACE_MS = 30 * 60_000;
+
+/**
+ * An attack on a goal event's fortress (sim/goalEvents.ts: a Bounty Hunt's, a festival's or the Gauntlet's): the
+ * occurrence must be running when the attack began, the base is rebuilt (never taken from the client), the battle is
+ * re-simulated, troops are spent, no loot from buildings and no honor. Each ladder step the result newly reaches pays
+ * once per occurrence (Keep-scaled, storage-capped), with its look if it has one (P5-01). P5-01: any running goal
+ * event, by its key; progress is kept per occurrence, so alternating between two never pays a step twice.
+ */
+function bountyEnd(s: VillageState, key: string, rec: Omit<BattleRecord, 'result' | 'id' | 'kind'>, now: number, data: GameData): CommandResult {
+  const at = battleBegan(rec, now, data);
+  const ev = at === null ? null : runningGoalEvent(key, at, data);
+  // XPL-02's alternating-keys exploit (one progress slot, reset on every switch) cannot recur: progress is per key.
+  if (at === null || !ev) return fail('NOT_AVAILABLE', 'The Bounty Hunt is not running.');
+  // Review M5: a goal event's countdown is real. A battle begun before the end may finish, but nothing is accepted
+  // later than its length plus a short grace after the event ended (the 72-hour resume window is for raids).
+  if (now > ev.end + data.battle.durationSeconds * MS_PER_SECOND + GOAL_GRACE_MS) return fail('NOT_AVAILABLE', 'The Bounty Hunt is not running.');
+  const keep = hallLevel(s, data);
+  // The Keep the attack began with: the current one, or one below if a Keep upgrade finished mid-battle.
+  // XPL-13 (P1-21): only then. The record must have begun before the Keep reached its level (save v24); the
+  // easier fortress of the Keep below used to be the client's choice.
+  const asked = rec.setup?.base?.hallLevel;
+  const baseKeep = asked === keep - 1 && s.keepReachedAt !== undefined && at < s.keepReachedAt && s.keepReachedAt <= now ? asked : keep;
+  const clean = ownedBattleSetup(s, rec.setup, goalBase(s.seed, key, baseKeep, ev.goal, data), (n) => bountyBattleSeed(s.seed, n), data);
+  if ('error' in clean) return fail('INVALID_BATTLE', clean.error);
+  const setup = clean.setup;
+  const { result } = runBattle(setup, rec.deployments, data, rec.endTick);
+  spendTroops(s, result.used, setup);
+  // XPL-01: ladder steps need warriors; a hero-only attack reaches none.
+  const steps = foughtWithWarriors(result, setup) ? recordBountyResult(s, key, ev.goal, result.stars, result.destruction) : [];
+  s.stats.goalSteps = (s.stats.goalSteps ?? 0) + steps.length; // P5-04
+  // P5-05: a Gauntlet ladder completed by this result.
+  if (ev.goal.kind === 'gauntlet' && steps.length && s.goalEvents.find((g) => g.key === key)?.claimed.length === ev.goal.ladder.length) s.stats.gauntletLadders = (s.stats.gauntletLadders ?? 0) + 1;
+  let wanted: Cost = {};
+  for (const i of steps) wanted = sumCost(wanted, ladderReward(ev.goal.ladder[i], baseKeep, data));
+  const { granted: reward, overflow } = grantResources(s, wanted, data);
+  // P5-01: a step's look, once (an owned look is never granted twice).
+  const looks: string[] = [];
+  for (const i of steps) {
+    const look = ev.goal.ladder[i].look;
+    if (look && data.cosmetics.hallSkins.some((k) => k.id === look) && !s.cosmetics.owned.includes(look)) {
+      s.cosmetics.owned.push(look);
+      looks.push(look);
+    }
+  }
+  const record: BattleRecord = { ...rec, setup, opponentName: setup.base.name, id: `r${s.nextSeed++}`, kind: 'attack', at, result: { ...result, loot: {} }, trophies: 0, banked: reward, rules: SIM_RULES, goalEvent: key, ...(hasAny(overflow) ? { overflow } : {}) };
+  s.battleLog.push(record);
+  trimLog(s.battleLog, data.battle.maxReplays);
+  return { ok: true, state: s, events: [{ kind: 'bounty_end', record, eventKey: key, steps, reward, ...(looks.length ? { looks } : {}), ...(hasAny(overflow) ? { overflow } : {}) }] };
+}
+
+/**
+ * Settle the score with a bot raider (sim/rematch.ts): once per defense record, within the
+ * window, against the raider's own generated base (rebuilt from the record). No honor and no
+ * loot from buildings; a win pays the small fixed rematch reward.
+ */
+function rematchEnd(s: VillageState, defenseId: string, rec: Omit<BattleRecord, 'result' | 'id' | 'kind'>, now: number, data: GameData): CommandResult {
+  const at = battleBegan(rec, now, data);
+  if (at === null) return fail('NOT_AVAILABLE', 'Too long ago: the raider has moved on.');
+  const status = rematchStatus(s, defenseId, at, data);
+  if (!status.ok) return fail('NOT_AVAILABLE', status.message);
+  const base = rematchBase(status.record, data)!;
+  const clean = ownedBattleSetup(s, rec.setup, base, (n) => rematchBattleSeed(s.seed, n), data);
+  if ('error' in clean) return fail('INVALID_BATTLE', clean.error);
+  const setup = clean.setup;
+  const { result } = runBattle(setup, rec.deployments, data, rec.endTick);
+  spendTroops(s, result.used, setup);
+  status.record.rematch = `r${s.nextSeed}`;
+  // XPL-01: a win needs warriors (the rematch is still used up either way).
+  const won = result.stars >= 1 && foughtWithWarriors(result, setup);
+  let reward: Cost = {};
+  let overflow: Cost = {};
+  if (won) {
+    s.stats.rematchesWon = (s.stats.rematchesWon ?? 0) + 1;
+    ({ granted: reward, overflow } = grantResources(s, rematchReward(result.stars, rematchKeep(s, status.record, data), data, status.record.result.loot ?? {}), data));
+  }
+  const record: BattleRecord = { ...rec, setup, opponentName: base.name, id: `r${s.nextSeed++}`, kind: 'attack', at, result: { ...result, loot: {} }, trophies: 0, banked: reward, rules: SIM_RULES, rematch: defenseId, ...(hasAny(overflow) ? { overflow } : {}) };
+  s.battleLog.push(record);
+  trimLog(s.battleLog, data.battle.maxReplays);
+  return { ok: true, state: s, events: [{ kind: 'rematch_end', record, defenseId, won, reward, ...(hasAny(overflow) ? { overflow } : {}) }] };
+}
+
+/**
+ * P3-07 (PAC-10): the daily drill. The base is the village's next Trial fortress and the army a full camp of its own
+ * mix at its researched levels, both rebuilt here (the client's army and levels are ignored and never checked against
+ * the camps); nothing is spent; the battle is re-simulated (the server runs it, BATTLE_COMMANDS). One fight with
+ * warriors per local day pays `daily.drill.reward`, Keep-scaled like the daily chest; later drills pay nothing.
+ */
+function drillEnd(s: VillageState, rec: Omit<BattleRecord, 'result' | 'id' | 'kind'>, now: number, data: GameData): CommandResult {
+  if (!data.daily.drill) return fail('NOT_AVAILABLE', 'There is no daily drill.');
+  const at = battleBegan(rec, now, data);
+  if (at === null) return fail('NOT_AVAILABLE', 'Too long ago.');
+  const army = drillArmy(s, data);
+  if (!Object.keys(army).length) return fail('NOT_AVAILABLE', 'Build a Training Dojo and a Squad Courtyard first.');
+  const keep = hallLevel(s, data);
+  const tier = attemptTier(s.trials, keep, data);
+  const hero = heroFor(s, data);
+  const setup: BattleSetup = { seed: Number.isInteger(rec.setup?.seed) ? rec.setup.seed : 0, base: { ...trialBase(tier, data, trialVariant(s.trials, tier)), practice: 'Daily drill (practice: nothing spent)' }, army, levels: drillLevels(army, s), infiltration: true, ...(hero ? { hero } : {}) };
+  const { result } = runBattle(setup, rec.deployments, data, rec.endTick);
+  // Independent review 2026-11-18: the paid day is today's, never the record's (a backdated `at` paid past days).
+  const day = localDayIndex(s, now, data);
+  const paid = foughtWithWarriors(result, setup) && (s.drill?.day ?? -1) < day;
+  let reward: Cost = {};
+  let overflow: Cost = {};
+  if (paid) {
+    ({ granted: reward, overflow } = grantResources(s, scaleReward(data.daily.drill.reward, keep, data), data));
+    s.drill = { day };
+    s.stats.drillsDone = (s.stats.drillsDone ?? 0) + 1;
+  }
+  const record: BattleRecord = { ...rec, setup, opponentName: setup.base.name, id: `r${s.nextSeed++}`, kind: 'attack', at, result: { ...result, loot: {} }, trophies: 0, banked: reward, rules: SIM_RULES, drill: true, ...(hasAny(overflow) ? { overflow } : {}) };
+  s.battleLog.push(record);
+  trimLog(s.battleLog, data.battle.maxReplays);
+  return { ok: true, state: s, events: [{ kind: 'drill_end', record, paid, reward, ...(hasAny(overflow) ? { overflow } : {}) }] };
+}
+
+/**
+ * Use donated (Lodge) troops first, then your own army: the battle deploys the
+ * donated ones first too, so the troops spent are the ones that fought. Mutates.
+ */
+/** Warriors sent into a battle, from its deployments (abilities are not warriors), capped by what the battle had. */
+export function deployedTroops(setup: BattleSetup, deployments: readonly { troop: string }[], data: GameData): Record<string, number> {
+  const out: Record<string, number> = {};
+  for (const d of deployments) {
+    if (!data.troops[d.troop]) continue;
+    const cap = (setup.army[d.troop] ?? 0) + (setup.reinforcements?.[d.troop]?.count ?? 0);
+    if ((out[d.troop] ?? 0) < cap) out[d.troop] = (out[d.troop] ?? 0) + 1;
+  }
+  return out;
+}
+
+function spendTroops(s: VillageState, used: Record<string, number>, setup?: BattleSetup): void {
+  for (const [t, n0] of Object.entries(used)) {
+    let n = n0;
+    const donated = setup?.reinforcements ? setup.reinforcements[t]?.count ?? 0 : Infinity;
+    const fromGrove = Math.min(n, s.grove.reinforcements[t] ?? 0, donated);
+    if (fromGrove > 0) {
+      s.grove.reinforcements[t] -= fromGrove;
+      if (s.grove.reinforcements[t] <= 0) {
+        delete s.grove.reinforcements[t];
+        if (s.grove.reinforcementLevels) delete s.grove.reinforcementLevels[t];
+      }
+      n -= fromGrove;
+    }
+    takeFromArmy(s, t, n);
+  }
+}
+
+/** Troops available for a battle: your army plus troops your Alliance donated. */
+export function battleArmy(state: VillageState): Record<string, number> {
+  const out: Record<string, number> = { ...state.army };
+  for (const [t, n] of Object.entries(state.grove.reinforcements)) out[t] = (out[t] ?? 0) + n;
+  return out;
+}
+
+/** Donated troops in the Lodge with the level each was donated at (your own research level if none was kept). */
+export function lodgeTroops(state: VillageState): Record<string, { count: number; level: number }> {
+  const out: Record<string, { count: number; level: number }> = {};
+  for (const [t, n] of Object.entries(state.grove.reinforcements)) {
+    if (n > 0) out[t] = { count: n, level: state.grove.reinforcementLevels?.[t] ?? troopLevelOf(state, t) };
+  }
+  return out;
+}
+
+/** Everything a new battle setup needs about the attacker: troops, researched levels and donated troops. */
+export function battleLoadout(state: VillageState, data: GameData): Pick<BattleSetup, 'army' | 'levels' | 'reinforcements' | 'hero' | 'mastery'> {
+  const levels: Record<string, number> = {};
+  for (const t of Object.keys(data.troops)) levels[t] = troopLevelOf(state, t);
+  // Report section 5 step 8: the clan hero joins every attack from his Keep (SIM_RULES 5).
+  const hero = heroFor(state, data);
+  // Warrior Mastery (feature flag, off in the shipped data): only then does a setup carry mastery.
+  const mastery = masteryOn(data) ? masteryBonuses(state, data) : {};
+  return { army: battleArmy(state), levels, reinforcements: lodgeTroops(state), ...(hero ? { hero } : {}), ...(Object.keys(mastery).length ? { mastery } : {}) };
+}
+
+/** A Grove Raid attack: no loot or trophies, best stars per enemy base count. */
+function groveBattleEnd(s: VillageState, target: number, rec: Omit<BattleRecord, 'result' | 'id' | 'kind'>, now: number, data: GameData): CommandResult {
+  // The war must have been live when the attack began (an interrupted attack
+  // settled after the war ended still counts, exactly once), within the settle slack (exploit audit 2026-11-20 #4).
+  const at = battleBegan(rec, now, data);
+  const phase = at === null ? null : raidPhase(at, data);
+  if (at === null || !phase || !s.grove.joined || phase.phase !== 'live') return fail('NOT_AVAILABLE', 'The Alliance War is not running.');
+  const raid = ensureRaid(s, at, data)!;
+  if (attacksLeft(s, phase.week, data) <= 0) return fail('NOT_AVAILABLE', 'You have used both Alliance War attacks.');
+  // XPL-13 (P1-21): the base is the war's own (rebuilt for the target, never the client's), at the Keep the
+  // attack began with (this one, or the one below only if a Keep upgrade finished after the attack began).
+  const keep = hallLevel(s, data);
+  const wantKeep = rec.setup?.base?.hallLevel;
+  const keepBelow = wantKeep !== undefined && wantKeep < keep && keep > 1 && s.keepReachedAt !== undefined && at < s.keepReachedAt && s.keepReachedAt <= now;
+  const enemy = enemyGrove(s.grove.seed, phase.week, keepBelow ? keep - 1 : keep, data);
+  const warBase = Number.isInteger(target) ? enemy.bases[target] : undefined;
+  if (!warBase) return fail('NOT_FOUND', 'No such enemy base.');
+  const clean = sanitizeBattleSetup(s, { ...rec.setup, base: warBase }, data);
+  if ('error' in clean) return fail('INVALID_BATTLE', clean.error);
+  const setup = clean.setup;
+  const { result } = runBattle(setup, rec.deployments, data, rec.endTick);
+  spendTroops(s, result.used, setup);
+  raid.attacks.push({ target, stars: result.stars, destruction: result.destruction, at });
+  const record = logWarAttack(s, { ...rec, setup }, result, now, data);
+  return { ok: true, state: s, events: [{ kind: 'grove_attack', target, stars: result.stars, destruction: result.destruction, record }] };
+}
+
+export type { BattleSetup, Deployment };
+
+function place(s: VillageState, type: BuildingType, x: number, y: number, now: number, data: GameData, pay?: PayWith): CommandResult {
+  const q = placeQuote(s, data, type, now, pay === 'dew' ? 'dew' : 'acorns');
+  if (!q.ok) return q;
+  if (!canPlace(s, data, type, x, y).ok) return fail('INVALID_PLACEMENT', "That spot isn't free.");
+  if (closesEntry(s, data, { type, x, y })) return fail('INVALID_PLACEMENT', "That spot isn't free.");
+  const def = buildingDef(data, type);
+  const { cost, seconds } = q.quote;
+  subtractCost(s.resources, cost);
+  const endsAt = now + seconds * MS_PER_SECOND;
+  const b: Building = {
+    id: `b${s.nextId++}`,
+    type,
+    level: seconds > 0 ? 0 : 1,
+    x,
+    y,
+    upgrade: seconds > 0 ? { toLevel: 1, startedAt: now, endsAt, cost } : null,
+    collector: def.produces ? { stored: 0, accrueFrom: endsAt } : null,
+  };
+  // Tempering: a new building takes the profile its type already has.
+  const sibling = s.buildings.find((o) => o.type === type && o.temper);
+  if (sibling?.temper) b.temper = { ...sibling.temper };
+  s.buildings.push(b);
+  return { ok: true, state: s, events: [{ kind: 'upgrade_start', buildingType: type, id: b.id, toLevel: 1, seconds, cost }] };
+}
+
+/**
+ * What tempering every building of `type` to `next` costs, and whether it can happen now (sim/battle/temper.ts):
+ * `temper.retemperCostShare` of the Coins its buildings cost to build up to their levels, no builder, no timer.
+ */
+export function temperQuote(state: VillageState, type: BuildingType, next: Temper, data: GameData): { ok: true; cost: Cost } | { ok: false; code: ErrorCode; message: string; cost?: Cost } {
+  const def = temperDef(data);
+  if (!def || !temperable(type, data)) return fail('NOT_AVAILABLE', 'This building cannot be tempered.');
+  if (hallLevel(state, data) < def.unlockKeep) return fail('LOCKED', `Needs a level ${def.unlockKeep} Clan Keep.`);
+  if (!validTemper(type, next, data)) return fail('NOT_AVAILABLE', 'That temper is not possible.');
+  const own = state.buildings.filter((b) => b.type === type);
+  if (!own.length) return fail('NOT_FOUND', 'Building not found.');
+  if (own.every((b) => sameTemper(b.temper, next))) return fail('NOT_AVAILABLE', 'Already tempered that way.');
+  let coins = 0;
+  for (const b of own) for (let l = 1; l <= b.level; l++) coins += levelDef(data, type, l)?.cost.acorns ?? 0;
+  const cost: Cost = { acorns: Math.ceil(coins * def.retemperCostShare) };
+  if (!canAfford(state.resources, cost)) return { ...fail('NOT_ENOUGH_RESOURCES', `Not enough resources (needs ${costText(cost, data)}).`, { cost, missing: missingFor(state.resources, cost) }), cost };
+  return { ok: true, cost };
+}
+
+function temper(s: VillageState, type: BuildingType, next: Temper, now: number, data: GameData): CommandResult {
+  const q = temperQuote(s, type, next, data);
+  if (!q.ok) return q;
+  subtractCost(s.resources, q.cost);
+  const t = normalizeTemper(next);
+  for (const b of s.buildings) {
+    if (b.type !== type) continue;
+    if (t) b.temper = { ...t };
+    else delete b.temper;
+  }
+  void now;
+  return { ok: true, state: s, events: [{ kind: 'temper', buildingType: type, temper: t ?? {}, cost: q.cost }] };
+}
+
+/**
+ * Whether putting this building here would close the village to attackers (sim/entryRoom.ts). A layout that is
+ * already closed (built before the rule) is not frozen: only a change that closes an open village is refused.
+ * The refusal reuses the one placement sentence the game has; a sentence of its own needs every language.
+ */
+function closesEntry(s: VillageState, data: GameData, change: { id?: string; type: BuildingType; x: number; y: number }): boolean {
+  if (!data.economy.entryRoom) return false;
+  const c = buildingDef(data, change.type).category;
+  if (c === 'trap' || c === 'decor' || c === 'obstacle') return false;
+  if (!leavesEntryRoom(s.buildings, data)) return false;
+  return !leavesEntryRoom([...s.buildings.filter((b) => b.id !== change.id), change], data);
+}
+
+function move(s: VillageState, id: string, x: number, y: number, data: GameData): CommandResult {
+  const b = s.buildings.find((v) => v.id === id);
+  if (!b) return fail('NOT_FOUND', 'Building not found.');
+  if (!canPlace(s, data, b.type, x, y, id).ok) return fail('INVALID_PLACEMENT', "That spot isn't free.");
+  if (closesEntry(s, data, { id, type: b.type, x, y })) return fail('INVALID_PLACEMENT', "That spot isn't free.");
+  b.x = x;
+  b.y = y;
+  return { ok: true, state: s, events: [{ kind: 'move', buildingType: b.type, id }] };
+}
+
+function upgrade(s: VillageState, id: string, now: number, data: GameData, pay?: PayWith): CommandResult {
+  const q = upgradeQuote(s, id, data, now, pay === 'dew' ? 'dew' : 'acorns');
+  if (!q.ok) return q;
+  const b = s.buildings.find((v) => v.id === id)!;
+  const { cost, seconds, toLevel } = q.quote;
+  subtractCost(s.resources, cost);
+  const endsAt = now + seconds * MS_PER_SECOND;
+  if (seconds <= 0) {
+    b.level = toLevel;
+  } else {
+    if (b.collector) {
+      // Bank what it holds. P3-03 (PAC-03): it keeps producing at its old level while it upgrades (a level 15 Mint
+      // used to forfeit 1.59 M Coins on top of its price).
+      b.collector = { stored: collectorAmount(b, now, data), accrueFrom: now };
+    }
+    b.upgrade = { toLevel, startedAt: now, endsAt, cost };
+  }
+  return { ok: true, state: s, events: [{ kind: 'upgrade_start', buildingType: b.type, id, toLevel, seconds, cost }] };
+}
+
+function cancel(s: VillageState, id: string, now: number, data: GameData): CommandResult {
+  const b = s.buildings.find((v) => v.id === id);
+  if (!b) return fail('NOT_FOUND', 'Building not found.');
+  if (!b.upgrade) return fail('NOT_UPGRADING', 'Nothing to cancel.');
+  const { toLevel, cost } = b.upgrade;
+  const back = cancelRefund(s, [b.upgrade], data.economy.cancelRefundFraction, data);
+  if (!back.ok) return back;
+  if (toLevel === 0) {
+    b.upgrade = null;
+  } else if (b.level < 1) {
+    s.buildings = s.buildings.filter((v) => v.id !== id);
+  } else {
+    // P3-03: what it made at its own level while the upgrade ran stays.
+    if (b.collector) b.collector = { stored: collectorAmount(b, now, data), accrueFrom: now };
+    b.upgrade = null;
+  }
+  void cost;
+  const refund = payRefund(s, back.refund, data);
+  return { ok: true, state: s, events: [{ kind: 'upgrade_cancel', buildingType: b.type, id, toLevel, refund }] };
+}
+
+function collect(s: VillageState, id: string, now: number, data: GameData): CommandResult {
+  const b = s.buildings.find((v) => v.id === id);
+  if (!b) return fail('NOT_FOUND', 'Building not found.');
+  const resource = buildingDef(data, b.type).produces;
+  if (!b.collector || !resource) return fail('NOTHING_TO_COLLECT', 'This building does not produce anything.');
+  const amount = collectorAmount(b, now, data);
+  if (Math.floor(amount) < data.economy.minCollectAmount) return fail('NOTHING_TO_COLLECT', 'Nothing to collect yet.');
+  const room = Math.max(0, capacity(s, data)[resource] - s.resources[resource]);
+  if (room <= 0) {
+    // Display names only (remnant audit 2026-11-06: this said "Your acorns storage is full", the internal id).
+    const what = data.economy.resourceNames?.[resource] ?? resource;
+    const store = Object.values(data.buildings).find((d) => d.category === 'storage' && (d.levels[0]?.storage?.[resource] ?? 0) > 0)?.name;
+    return fail('STORAGE_FULL', `No room for more ${what}. Upgrade your ${store ?? 'storage'} or build another.`, { resource });
+  }
+  const take = Math.min(Math.floor(amount), room);
+  // Limited-time event: collecting gives extra, as far as storage allows.
+  const extra = Math.min(room - take, Math.floor(take * eventEffect(now, data).collectBonus));
+  s.resources[resource] += take + extra;
+  // A new building's production starts when it is built; an upgrading one keeps producing (P3-03).
+  b.collector = { stored: amount - take, accrueFrom: accrueRestart(b, now) };
+  return { ok: true, state: s, events: [{ kind: 'collect', buildingType: b.type, id, resource, amount: take + extra, ...(extra > 0 ? { eventBonus: extra } : {}) }] };
+}

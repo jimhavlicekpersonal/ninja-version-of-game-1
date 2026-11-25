@@ -1,0 +1,348 @@
+{
+  "membersMin": 10,
+  "membersMax": 20,
+  "groveNames": {
+    "first": [
+      "Silent",
+      "Crimson",
+      "Iron",
+      "Jade",
+      "Twin",
+      "Falling",
+      "Rising",
+      "Midnight",
+      "Thunder",
+      "Lantern",
+      "Hollow",
+      "Mountain"
+    ],
+    "second": [
+      "Crane",
+      "Lotus",
+      "Tiger",
+      "Fang",
+      "Blossom",
+      "River",
+      "Mask",
+      "Blade",
+      "Ember",
+      "Shadow"
+    ]
+  },
+  "colors": [
+    "#ff6b5b",
+    "#47b9f5",
+    "#5ccf4a",
+    "#ffd23f",
+    "#9b5fd6",
+    "#ff8a3d"
+  ],
+  "chatSlotMinutes": 20,
+  "chatChancePerSlot": 0.3,
+  "requestChancePerSlot": 0.12,
+  "requestSizes": [
+    5,
+    10,
+    15
+  ],
+  "requestTroops": [
+    "hedgehog_roller",
+    "frog_lobber",
+    "beetle_brute"
+  ],
+  "requestLifetimeHours": 8,
+  "maxChat": 80,
+  "requestCooldownMinutes": 30,
+  "chatPerMinute": 12,
+  "reinforcementChunkMinutes": 2,
+  "reinforcementChunkHousing": 5,
+  "xpPerHousing": 2,
+  "xpLevels": [
+    0,
+    50,
+    150,
+    300,
+    500,
+    800,
+    1200,
+    1700,
+    2300,
+    3000,
+    4000,
+    5200,
+    6600,
+    8200,
+    10000
+  ],
+  "chatLines": {
+    "random": [
+      "Morning, clan!",
+      "The terraced farms look great after the rain.",
+      "Just finished my Treasury upgrade!",
+      "Who wants to raid together later?",
+      "My artisans never sleep, I swear.",
+      "Good luck on your upgrades today!",
+      "The Stone Lanterns look so calm at night.",
+      "Remember to collect your Coins!",
+      "Almost three-starred a fortress just now!",
+      "Shinobi rush is underrated. Fight me.",
+      "Smoke first, then send everything. Works every time.",
+      "Upgrading my Clan Keep, see you in a day!",
+      "Back from a raid with full storehouses!",
+      "Saboteurs on the mortar, then guardians in. Clean.",
+      "Who has the tidiest village here?",
+      "Meditating for a bit, guard my village!"
+    ],
+    "greet": [
+      "Welcome to the Alliance!",
+      "Welcome, new ally! Glad to have you.",
+      "Welcome! Ask if you need warriors.",
+      "A new blade joins us. Welcome!"
+    ],
+    "thanks": [
+      "Thank you so much!",
+      "You are the best, thanks!",
+      "Thanks for the warriors!",
+      "Much appreciated, ally!",
+      "Honored, thank you!"
+    ],
+    "raidStart": [
+      "Alliance War has started! Use both your attacks!",
+      "Time to raid! Go for the stars!",
+      "Alliance War is on, good luck everyone!"
+    ],
+    "raidEnd": [
+      "Great Alliance War, everyone!",
+      "That was fun! Same time next week?",
+      "Thanks for fighting, team!"
+    ],
+    "reply": [
+      "Haha, so true!",
+      "Agreed!",
+      "Love that!",
+      "Good luck!",
+      "Same here!",
+      "Nice one!",
+      "You got this!",
+      ":)"
+    ],
+    "donated": [
+      "Sent you some warriors!",
+      "Here you go!",
+      "Warriors on the way!",
+      "Fresh warriors for you!"
+    ]
+  },
+  "profanity": [
+    "damn",
+    "crap",
+    "stupid",
+    "idiot",
+    "dumb",
+    "loser",
+    "shut up",
+    "suck",
+    "sucks",
+    "jerk",
+    "moron",
+    "fool",
+    "hate you",
+    "ugly",
+    "kill yourself",
+    "kys",
+    "wtf",
+    "stfu",
+    "ass",
+    "bitch",
+    "bastard",
+    "shit",
+    "fuck",
+    "piss",
+    "slut",
+    "whore",
+    "retard",
+    "cunt"
+  ],
+  "profanityByLanguage": {
+    "$comment": "P7-07 (PUB-10): conservative per-language lists for the ten largest launch languages, applied to every chat line and name together with `profanity` (chat mixes languages). Strong insults and slurs only; words that are ordinary in another launch language or inside common words (Japanese くそ in やくそく and 死ね in 死ねない, Chinese 妈的 in 我妈的, Spanish puta = Croatian 'times', French pute = Romanian 'stinks'; English hell and dick are German words) are left out. Each list has a corpus of ordinary sentences that must pass unfiltered (tests/gameplay/sim/profanity-lists.test.ts). NOT reviewed by native speakers: docs/localization/WORD_LISTS.md. Changing a list changes the data the game and the server load: deploy them together.",
+    "es": [
+      "puto",
+      "pendejo",
+      "pendeja",
+      "gilipollas",
+      "cabrón",
+      "cabron",
+      "coño",
+      "mierda",
+      "maricón",
+      "hijo de puta"
+    ],
+    "pt": [
+      "caralho",
+      "merda",
+      "foda-se",
+      "viado",
+      "cuzão",
+      "arrombado",
+      "filho da puta",
+      "babaca"
+    ],
+    "fr": [
+      "merde",
+      "putain",
+      "connard",
+      "connasse",
+      "salope",
+      "enculé",
+      "ta gueule",
+      "fils de pute",
+      "nique ta mère"
+    ],
+    "de": [
+      "scheiße",
+      "scheisse",
+      "arschloch",
+      "fotze",
+      "wichser",
+      "hurensohn",
+      "schlampe",
+      "missgeburt",
+      "fick dich",
+      "halt die fresse"
+    ],
+    "ru": [
+      "сука",
+      "блядь",
+      "хуй",
+      "пизда",
+      "мудак",
+      "долбоёб",
+      "долбоеб",
+      "пидор",
+      "пидорас"
+    ],
+    "ja": [
+      "クソ野郎",
+      "くそ野郎",
+      "バカ野郎",
+      "ばか野郎",
+      "ちんこ",
+      "死ねよ",
+      "死ねや"
+    ],
+    "ko": [
+      "씨발",
+      "병신",
+      "개새끼",
+      "좆까",
+      "지랄",
+      "미친놈",
+      "미친년"
+    ],
+    "zh-Hans": [
+      "傻逼",
+      "煞笔",
+      "操你妈",
+      "草泥马",
+      "你妈逼",
+      "狗日的",
+      "王八蛋",
+      "贱人"
+    ],
+    "ar": [
+      "شرموطة",
+      "كس امك",
+      "كس أمك",
+      "ابن الكلب",
+      "منيوك",
+      "عرص"
+    ],
+    "hi": [
+      "चूतिया",
+      "मादरचोद",
+      "बहनचोद",
+      "भोसड़ी",
+      "हरामी",
+      "गांडू",
+      "chutiya",
+      "madarchod",
+      "behenchod",
+      "bhenchod",
+      "gandu"
+    ]
+  },
+  "groveRaid": {
+    "epoch": 1767398400000,
+    "durationHours": 48,
+    "attacksPerMember": 2,
+    "$commentChest": "Exploit audit 2026-11-20 #10: a member's chest needs at least chestMinAttacks attacks in the war, as an Alliance War chest does (a squad with an alt collected a chest a day without fighting).",
+    "chestMinAttacks": 1,
+    "$commentLedger": "Ledger audit E12: the offline (computer) Alliance War pays its chest only to a player who attacked at least chestMinAttacks times that week, and a returning player is paid for at most the last settleWeeksMax wars (a year away used to pay 52 chests at once).",
+    "chestMinAttacks": 1,
+    "$commentChestEffort": "Beast Mode 2026-11-21 GT-13: an online war attack counts toward the chest only when it won a star or deployed at least chestMinDeployShare of the Keep's full camp housing (sim/army.ts warChestAttack); a one-warrior token attack burned a team slot and still paid the chest.",
+    "chestMinDeployShare": 0.8,
+    "$commentStarShare": "Beast Mode GT-13: this share of a member's chest follows the member's own stars (stars won over attacksPerMember x 3); the rest is paid by the outcome alone. Absent from an older server's claim: the whole chest.",
+    "chestStarShare": 0.3,
+    "settleWeeksMax": 2,
+    "prepOfferHours": 24,
+    "starOdds": {
+      "base3": 0.2,
+      "base2": 0.35,
+      "base1": 0.25,
+      "perHallDiff": 0.12
+    },
+    "rewards": {
+      "win": {
+        "acorns": 150000,
+        "dew": 150000,
+        "moonstones": 40,
+        "xp": 200
+      },
+      "draw": {
+        "acorns": 90000,
+        "dew": 90000,
+        "moonstones": 25,
+        "xp": 120
+      },
+      "loss": {
+        "acorns": 40000,
+        "dew": 40000,
+        "moonstones": 10,
+        "xp": 60
+      }
+    }
+  },
+  "gangWar": {
+    "$comment": "Gang Wars (roadmap steps 65-66): 2v2 to 4v4 between Gangs of friends, a 2 h prep then a 22 h battle day, 2 attacks each; relay strikes carry damage over. Chests are fixed (scaled by Keep), nothing random, never sold. Honor never moves; the Gang Rating does (not against bots). relayCarry: the share of a relay strike's damage the next strike starts from (defenders patch up between strikes); measured in tests/gameplay/balance/gang-war.test.ts so a relay beats solo strikes by a clear but limited margin.",
+    "minSize": 2,
+    "maxSize": 4,
+    "prepHours": 2,
+    "battleHours": 22,
+    "attacksPerMember": 2,
+    "$commentLedger": "Ledger audit E13: a war against a generated Gang (paired after botAfterMinutes, any time of day) pays its chest in resources only; Jade comes only from wars against real Gangs.",
+    "generatedOpponentJade": false,
+    "relayCarry": 0.5,
+    "chestMinDeployShare": 0.8,
+    "$commentStarShare": "Beast Mode GT-13: this share of a member's chest follows the member's own stars (stars won over attacksPerMember x 3); the rest is paid by the outcome alone. Absent from an older server's claim: the whole chest.",
+    "chestStarShare": 0.3,
+    "botAfterMinutes": 3,
+    "recentOpponents": 3,
+    "rewards": {
+      "win": {
+        "acorns": 60000,
+        "dew": 60000,
+        "moonstones": 15
+      },
+      "draw": {
+        "acorns": 35000,
+        "dew": 35000,
+        "moonstones": 8
+      },
+      "loss": {
+        "acorns": 15000,
+        "dew": 15000,
+        "moonstones": 3
+      }
+    }
+  }
+}
