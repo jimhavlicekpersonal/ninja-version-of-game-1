@@ -69,7 +69,9 @@ export function format(msg: string, params: Record<string, unknown> = {}, code =
         branches.set(sel[1], rest.slice(open + 1, close));
         j = close;
       }
-      const n = Number(value ?? 0);
+      // N24-UX-4: canonical server/sim English carries counts as text ("1,200"); read it as the number, so
+      // the branch and `#` are right in English too (the per-language kinds conversion skips English).
+      const n = typeof value === 'string' && /^-?[\d,]+(?:\.\d+)?$/.test(value.trim()) ? Number(value.trim().replace(/,/g, '')) : Number(value ?? 0);
       const branch = spec[2] === 'plural' ? branches.get(`=${n}`) ?? branches.get(plural(n, code)) : branches.get(String(value));
       out += format((branch ?? branches.get('other') ?? '').replace(/#/g, () => numberText(n, code)), params, code);
     } else {

@@ -965,7 +965,7 @@ export class BattleHud {
       } else if (l.kind === 'honor') {
         wrap.append(h('p', { class: 'muted small' }, i18nText("ui.more_honor_to_reach_3b60f7cad1", { arg1: formatNumber(l.left), arg2: l.league })));
       } else {
-        wrap.append(h('p', { class: 'muted small' }, i18nText("ui.tier_more_points_c5379e2fd6", { arg1: l.tier, arg2: formatNumber(l.pointsLeft) })));
+        wrap.append(h('p', { class: 'muted small' }, i18nText("ui.tier_more_points_c5379e2fd6", { arg1: l.tier, arg2: l.pointsLeft })));
       }
     }
     return wrap;

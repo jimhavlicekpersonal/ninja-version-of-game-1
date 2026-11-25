@@ -261,7 +261,8 @@ export class SettingsUi {
       { class: 'text', 'aria-label': i18nText("ui.graphics_quality_da5eb63952") },
       ...(
         [
-          ['auto', i18nText('ui.automatic_now_9549772afc', {arg1: i18nLabel(now.profile === 'low' ? 'Lighter' : 'Sharp')})],
+          // N24-UX-3: plain "Automatic"; the note under the select names the profile now in use (it did not fit at 130 % on 320 px).
+          ['auto', t('settings.graphicsAuto')],
           ['low', 'Lighter: for older or low-memory phones, saves battery'],
           ['high', 'Sharp: full detail'],
         ] as [QualityChoice, string][]
