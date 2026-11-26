@@ -49,7 +49,7 @@ describe('aura lookups by kind (quality 28)', () => {
     }
     expect(SIM_RULES).toBe(10);
     // Re-pinned for SIM_RULES 10 (2026-11-25): generated bases now hold the live counters and the Hero Hall, and the
-    // Keep 13 tier is x1.15. The aura lookup code is unchanged; only the battles it is pinned on changed.
+    // Keep 13 tier is x1.2. The aura lookup code is unchanged; only the battles it is pinned on changed.
     expect(fnv64(parts.join('|'))).toBe('9fe91e8e47c02dfd');
   }, 120_000);
 });

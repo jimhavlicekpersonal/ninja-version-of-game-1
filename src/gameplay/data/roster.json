@@ -85,8 +85,8 @@
         "weapon": "lightning-etched katana"
       },
       "liveTroop": "storm_sovereign",
-      "hpScale": 1.15,
-      "dpsScale": 1.15
+      "hpScale": 1.2,
+      "dpsScale": 1.2
     },
     {
       "id": "kunai_adept",
@@ -173,9 +173,9 @@
         "accent": "#f4ead6",
         "weapon": "needle quiver and launcher"
       },
-      "dpsScale": 0.92,
+      "dpsScale": 0.96,
       "liveTroop": "thousand_needle",
-      "hpScale": 1.15
+      "hpScale": 1.2
     },
     {
       "id": "armored_guardian",
@@ -266,8 +266,8 @@
         "armor": "black lacquer with horned helm"
       },
       "liveTroop": "oni_breaker",
-      "hpScale": 1.15,
-      "dpsScale": 1.15
+      "hpScale": 1.2,
+      "dpsScale": 1.2
     },
     {
       "id": "saboteur",
@@ -353,8 +353,8 @@
         "weapon": "lantern of silence"
       },
       "liveTroop": "ghost_engineer",
-      "hpScale": 1.15,
-      "dpsScale": 1.15
+      "hpScale": 1.2,
+      "dpsScale": 1.2
     },
     {
       "id": "tunnel_runner",

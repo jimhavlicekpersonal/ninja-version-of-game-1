@@ -24,7 +24,7 @@ const KIT_FLOOR = 2;
 // stays: at 1.03, held down by the solo gate, its kit is still under +2); mole_king and phantom_gate entered it (their HP and damage rose 1.21x and 1.3x so they beat the tier below, and
 // the kit is a smaller share of that).
 // SIM_RULES 10 (2026-11-25), re-measured on the rules-10 bases (live counters and the Hero Hall in generated bases,
-// the Keep 13 tier x1.15): bear_warrior, dragon_kite_armada, lantern_balloon, mirage_twin and phantom_gate now reach
+// the Keep 13 tier x1.2): bear_warrior, dragon_kite_armada, lantern_balloon, mirage_twin and phantom_gate now reach
 // +2 and left the list; boar_rider, eclipse_ninja and fuse_master entered it (their kits are worth less against bases
 // that now hold a Steam Vent, a Mirror Screen and a Lightning Rod). These are 10-battle kit values: the same noise as
 // the old tier check, so a kit within a few points of the floor can move either way with any data change.
@@ -44,7 +44,7 @@ const KIT_KNOWN_BELOW = new Set(['blowgun_hunter', 'boar_rider', 'bomb_carrier',
 // tier is significantly below the older one (one-sided 95%: difference < -1.645 standard errors; ~3.5-4.3 points).
 // Measured that way, rules 9 had one real inversion (Bomb Carrier below Fire Monk, -7.5 +- 4.2); the other seven
 // listed pairs were noise. Fixed by the endgame shift (roster.json `lateScale`, tools/progression/endgameshift.mjs,
-// research levels past Keep 12 only): Bomb Carrier x1.6, and the Keep 13 tier x1.15 so late raids keep pace with the
+// research levels past Keep 12 only): Bomb Carrier x1.6, and the Keep 13 tier x1.2 so late raids keep pace with the
 // new counters. Pairs move only when one of their two warriors, the Keep 15 bot mix or the generated bases change.
 const TIER_KNOWN_BELOW = new Set<string>([]);
 
