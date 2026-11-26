@@ -20,12 +20,13 @@ export interface TierRow {
   clears: number;
 }
 
-export function measureLadder(tiers: number[], seeds = 4, data: GameData = defaultData): TierRow[] {
+/** `variant` is the alternate fortress a player may switch a failed tier to (`canTryAlternate`); 0 is the tier's own. */
+export function measureLadder(tiers: number[], seeds = 4, data: GameData = defaultData, variant = 0): TierRow[] {
   return tiers.map((tier) => {
-    const keep = trialInfo(tier, data).hall;
+    const keep = trialInfo(tier, data, variant).hall;
     const { army, levels } = cappedArmy(keep, data);
     const hero = heroAtKeep(keep, data);
-    const base = trialBase(tier, data);
+    const base = trialBase(tier, data, variant);
     let destruction = 0;
     let stars = 0;
     let clears = 0;
