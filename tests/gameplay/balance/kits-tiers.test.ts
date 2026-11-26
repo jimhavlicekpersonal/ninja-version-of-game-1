@@ -23,12 +23,12 @@ const KIT_FLOOR = 2;
 // SIM_RULES 9 (2026-11-22, combat rebalance), re-measured: eclipse_ninja now reaches +2 and left the list (void_walker
 // stays: at 1.03, held down by the solo gate, its kit is still under +2); mole_king and phantom_gate entered it (their HP and damage rose 1.21x and 1.3x so they beat the tier below, and
 // the kit is a smaller share of that).
-// SIM_RULES 10 (2026-11-25), re-measured on the rules-10 bases (live counters and the Hero Hall in generated bases,
-// the Keep 13 tier x1.2): bear_warrior, dragon_kite_armada, lantern_balloon, mirage_twin and phantom_gate now reach
-// +2 and left the list; boar_rider, eclipse_ninja and fuse_master entered it (their kits are worth less against bases
-// that now hold a Steam Vent, a Mirror Screen and a Lightning Rod). These are 10-battle kit values: the same noise as
-// the old tier check, so a kit within a few points of the floor can move either way with any data change.
-const KIT_KNOWN_BELOW = new Set(['blowgun_hunter', 'boar_rider', 'bomb_carrier', 'drum_monk', 'eclipse_ninja', 'fuse_master', 'herbalist', 'hound_handler', 'mist_weaver', 'mole_king', 'night_blade', 'ram_crew', 'sage_of_clouds', 'shadow_stalker', 'spirit_caller', 'thunder_kite', 'tiger_lord', 'twin_fang_dancer', 'void_walker']);
+// SIM_RULES 10 (2026-11-25), re-measured on the final rules-10 data (live counters and the Hero Hall in generated bases,
+// the Keep 13 tier x1.2): lantern_balloon, mirage_twin, phantom_gate, thunder_kite and twin_fang_dancer now reach +2 and
+// left the list; boar_rider and eclipse_ninja entered it (their kits are worth less against bases that now hold a Steam
+// Vent, a Mirror Screen and a Lightning Rod). These are 10-battle kit values: the same noise as the old tier check, so a
+// kit within a few points of the floor moves either way with any data change (bear_warrior crossed it and came back).
+const KIT_KNOWN_BELOW = new Set(['bear_warrior', 'blowgun_hunter', 'boar_rider', 'bomb_carrier', 'dragon_kite_armada', 'drum_monk', 'eclipse_ninja', 'herbalist', 'hound_handler', 'mist_weaver', 'mole_king', 'night_blade', 'ram_crew', 'sage_of_clouds', 'shadow_stalker', 'spirit_caller', 'tiger_lord', 'void_walker']);
 /** Keep 15 scores where a newer tier is below the previous one in its role ("newer<older"). */
 // Beast Mode follow-up (2026-11-22, measured, not shipped): raising the Keep 13 tier x1.25 with every defense level past
 // Keep 12 x1.5 (so Keep 15 raids stay 1-2 stars) fixed its four pairs but put 16 pairs out of order (x1.25 defenses: 17);

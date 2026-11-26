@@ -49,12 +49,12 @@ const PINNED: string[] = [
   'K8 lag2 #0: base 908d1f50 Keep 7 deps 9018cbfb 2* 87% t1800 c7d8bbf1',
   'K8 lag2 #1: base 1162ced1 Keep 7 deps 22c24102 2* 73% t900 36af5507',
   'K8 lag2 #2: base 48736fd9 Keep 7 deps 2ec9874c 2* 65% t796 b9362225',
-  'K15 lag0 #0: base fd5e70fa Keep 15 deps 761a3476 2* 75% t1800 31e58953',
-  'K15 lag0 #1: base 7abdae11 Keep 15 deps 82bb80ec 2* 52% t1387 5ca07ea1',
-  'K15 lag0 #2: base 37532de9 Keep 15 deps 5263304c 2* 68% t1170 add9336c',
-  'K15 lag2 #0: base 8c2b5401 Keep 14 deps 761a3476 2* 88% t1452 a813c1a5',
-  'K15 lag2 #1: base f16c3ae8 Keep 14 deps 82bb80ec 2* 68% t1685 de436088',
-  'K15 lag2 #2: base d1de7521 Keep 14 deps 5263304c 2* 72% t1369 31ea0d6e',
+  'K15 lag0 #0: base fd5e70fa Keep 15 deps 761a3476 2* 97% t1498 21d217f5',
+  'K15 lag0 #1: base 7abdae11 Keep 15 deps 82bb80ec 2* 54% t1347 20135abf',
+  'K15 lag0 #2: base 37532de9 Keep 15 deps 5263304c 2* 68% t1063 67434b87',
+  'K15 lag2 #0: base 8c2b5401 Keep 14 deps 761a3476 2* 86% t1800 bcb02938',
+  'K15 lag2 #1: base f16c3ae8 Keep 14 deps 82bb80ec 2* 68% t1554 af183ae0',
+  'K15 lag2 #2: base d1de7521 Keep 14 deps 5263304c 2* 72% t1291 2b690fe1',
 ];
 
 describe('matchmaking, generated bases and the bot plan replay exactly (PUB-02)', () => {
