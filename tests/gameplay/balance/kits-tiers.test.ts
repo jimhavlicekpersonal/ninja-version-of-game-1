@@ -28,7 +28,8 @@ const KIT_FLOOR = 2;
 // left the list; boar_rider and eclipse_ninja entered it (their kits are worth less against bases that now hold a Steam
 // Vent, a Mirror Screen and a Lightning Rod). These are 10-battle kit values: the same noise as the old tier check, so a
 // kit within a few points of the floor moves either way with any data change (bear_warrior crossed it and came back).
-const KIT_KNOWN_BELOW = new Set(['bear_warrior', 'blowgun_hunter', 'boar_rider', 'bomb_carrier', 'dragon_kite_armada', 'drum_monk', 'eclipse_ninja', 'herbalist', 'hound_handler', 'mist_weaver', 'mole_king', 'night_blade', 'ram_crew', 'sage_of_clouds', 'shadow_stalker', 'spirit_caller', 'tiger_lord', 'void_walker']);
+// Eclipse Ninja x1.1 (2026-11-26, Shadow strike back above its army-lab gate at Keep 15): its kit reaches +2 again.
+const KIT_KNOWN_BELOW = new Set(['bear_warrior', 'blowgun_hunter', 'boar_rider', 'bomb_carrier', 'dragon_kite_armada', 'drum_monk', 'herbalist', 'hound_handler', 'mist_weaver', 'mole_king', 'night_blade', 'ram_crew', 'sage_of_clouds', 'shadow_stalker', 'spirit_caller', 'tiger_lord', 'void_walker']);
 /** Keep 15 scores where a newer tier is below the previous one in its role ("newer<older"). */
 // Beast Mode follow-up (2026-11-22, measured, not shipped): raising the Keep 13 tier x1.25 with every defense level past
 // Keep 12 x1.5 (so Keep 15 raids stay 1-2 stars) fixed its four pairs but put 16 pairs out of order (x1.25 defenses: 17);
