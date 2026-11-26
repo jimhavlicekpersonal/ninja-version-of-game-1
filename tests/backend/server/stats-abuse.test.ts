@@ -40,6 +40,13 @@ for (const [label, factory] of repoFactories) {
         await repo.addStatsEvents(ID, 't', '', events, now);
       }
       await repo.addStatsEvents(ID2, 't', '', [{ name: 'trial_end', at: T0, props: { tier: 1, cleared: true } }], now);
+      // The Postgres horizon is the oldest transaction still running in the whole database (statsHorizon). Other
+      // test files writing their own schemas in parallel (CI runs two workers) can hold it below these events for a
+      // moment; summarizeNew then leaves them for its next run, as it should. Wait until both ids are below it, so
+      // the timed run reads every event.
+      for (const until = Date.now() + 20_000; Date.now() < until; await new Promise((r) => setTimeout(r, 50))) {
+        if ((await repo.statsTouched(0, 10, await repo.statsHorizon())).installs.length === 2) break;
+      }
       const started = Date.now();
       expect(await summarizeNew(ctx)).toMatchObject({ installs: 2 });
       expect(Date.now() - started).toBeLessThan(2_000);
