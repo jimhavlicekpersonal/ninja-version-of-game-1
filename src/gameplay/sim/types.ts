@@ -74,6 +74,13 @@ export interface TemperAxisDef {
   fireSlow?: number;
   /** Rules 10 hook, not set in shipped data (P4-10, BNL-10): extra damage against a warrior class (`cls`). */
   versus?: { cls: string; bonus: number };
+  /**
+   * SIM_RULES 10 (GT-07): the tower reads varied armies. With more than `kindsFree` kinds of warrior on the field
+   * (own deployed warriors; not the hero, summons or abilities), its shots deal `perKind` more damage per extra kind
+   * at full weight (x the axis share). A focused family army is the answer to a base tempered this way.
+   */
+  kindsFree?: number;
+  perKind?: number;
 }
 
 /** What a tempered base takes off the attackers' support (`TemperDef.troopCuts`). */
@@ -645,9 +652,12 @@ export interface WarriorKit {
    * `pushTiles` toward its target and takes `strength` less damage from defenses for `durationTicks`. inner_calm:
    * every warrior on the field heals `heal` of its max HP and ignores the next trap, splash hit or stun.
    */
+  /** SIM_RULES 10: with `cooldownTicks`, a hero ability re-arms that long after it starts (next new target). */
   heroAbility?: 'bulwark' | 'squall' | 'inner_calm';
   coneCos?: number;
   pushTiles?: number;
+  /** SIM_RULES 10 (Squall): ground warriors take this share of the flyers' damage cut (absent = none). */
+  groundShare?: number;
   heal?: number;
 }
 

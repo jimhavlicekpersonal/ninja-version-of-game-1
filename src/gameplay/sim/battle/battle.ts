@@ -55,8 +55,12 @@ import { heroShield } from './heroAbilities';
  * them at Keep 15 (per-warrior HP and damage factors in roster.json hpScale/dpsScale, Shuriken Storm and Hawk Tamer
  * trimmed), and the air family's HP and damage x1.3 with its training cost x0.6. Smoke Bomb unchanged (measured). No
  * older rules stay compatible; rules 8 is archived in server/rules/v8.
+ * 10 (2026-11-25, GT-07/GT-04 and the first live content of the 2026-11-14 batch): Watch-tempered Kunai and Shuriken
+ * Towers read varied armies (`TemperAxisDef.kindsFree`/`perKind`, `BattleSim.fieldKinds`), so a focused army answers a
+ * Watch base; tier-order factors; the released counters and heroes. No older rules stay compatible; rules 9 is archived
+ * in server/rules/v9.
  */
-export const SIM_RULES = 9;
+export const SIM_RULES = 10;
 
 /**
  * Older rules this code plays out identically (their battles never use the
@@ -236,6 +240,7 @@ export function createBattle(setup: BattleSetup, data: GameData): BattleSim {
     abilitiesUsed: {},
     warriorEffects: [],
     supportTroops: [],
+    fieldKinds: [],
     auraSources: {},
   };
 }
@@ -336,6 +341,8 @@ export function deploy(sim: BattleSim, d: Deployment): boolean {
     litUntil: 0, litBonus: 0, groundedUntil: 0, groundImmuneUntil: 0, healCut: 0, auraCut: 0,
   };
   sim.troops.push(t);
+  // SIM_RULES 10 (GT-07): a new kind of own warrior on the field (the hero is not counted).
+  if (d.troop !== sim.setup.hero?.id && !sim.fieldKinds.includes(d.troop)) sim.fieldKinds.push(d.troop);
   // A non-live hero's ability (sim/battle/heroAbilities.ts) reads its hero back by index.
   if (def.kit?.heroAbility && d.troop === sim.setup.hero?.id) sim.heroIndex = t.id;
   if (sim.entry) sim.entry.points[pointAt(sim.entry, d.x, d.y)].used += def.housing;
@@ -674,10 +681,18 @@ function stepDefense(sim: BattleSim, bi: number): void {
   }
   sim.projectiles.push({
     id: sim.nextProjectile++, kind: c.projectile, fromX: cx, fromY: cy, toX, toY, total: travel, left: travel,
-    damage: c.damage * shotSpread(sim), splash: c.splashRadius ?? 0, targetTroop: c.splashRadius ? -1 : b.targetTroop, targetBuilding: -1,
+    damage: c.damage * shotSpread(sim) * kindsFactor(sim, b), splash: c.splashRadius ?? 0, targetTroop: c.splashRadius ? -1 : b.targetTroop, targetBuilding: -1,
     hitsAir: c.targets !== 'ground', hitsGround: c.targets !== 'air', arc: Boolean(c.splashRadius), sourceBuilding: bi,
   });
   sim.events.push({ k: 'fire', building: bi });
+}
+
+/** SIM_RULES 10 (GT-07): a tower that reads varied armies hits harder for each kind of warrior beyond its free ones. */
+function kindsFactor(sim: BattleSim, b: SimBuilding): number {
+  const r = b.readsKinds;
+  if (!r) return 1;
+  const extra = sim.fieldKinds.length - r.free;
+  return extra > 0 ? 1 + r.per * extra : 1;
 }
 
 function stepTraps(sim: BattleSim): void {

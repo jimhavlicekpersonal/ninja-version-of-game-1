@@ -16,7 +16,7 @@ import { armyDiversity, diversityShare, trainableRoles } from '../../gameplay/si
 import { troopLevelOf, researchLanes } from '../../gameplay/sim/research';
 import { troopLevel } from '../../gameplay/sim/data';
 import { HEROES as CANONICAL_HEROES, MODEL as CANONICAL_MODEL, WARRIORS as CANONICAL_WARRIORS } from '../../gameplay/sim/progression';
-import { heroAtKeep } from '../../gameplay/sim/heroes';
+import { heroFor } from '../../gameplay/sim/heroes';
 import { missingFor } from '../../gameplay/sim/resources';
 import { RESOURCE_KINDS, type ResourceKind } from '../../gameplay/sim/types';
 import { troopUnlock, trainingSpeed } from '../../gameplay/sim/army';
@@ -394,8 +394,9 @@ export class ArmyUi {
     if (!ready.childElementCount) ready.append(h('span', { class: 'muted' }, i18nText("ui.no_warriors_ready_yet_0132a774ac")));
     const units = Object.values(s.army).reduce((a, b) => a + b, 0);
     wrap.append(h('h3', {}, units ? t('army.readyN', { n: units }) : t('army.ready')), ready);
-    // P6-08: the hero has a card outside the battle bar (his name and ability, translated).
-    const hero = heroAtKeep(hallLevel(s, gd), gd);
+    // P6-08: the hero has a card outside the battle bar (name and ability, translated). SIM_RULES 10: the hero who joins,
+    // the one chosen at the Hero Hall or else the Keep's (`heroFor`, the same rule as the battle loadout).
+    const hero = heroFor(s, gd);
     const heroEntry = hero ? HEROES_SHOWN.find((x) => x.id === hero.id) : undefined;
     if (hero && heroEntry) {
       wrap.append(h('div', { class: 'troop-row army-card hero-card', 'data-id': 'hero-card' }, this.thumb(hero.id), h('div', { class: 'army-card-body' }, h('b', {}, `${heroEntry.name} `, h('span', { class: 'muted small' }, i18nText("ui.lv_445f51ab9e", { arg1: hero.level }))), h('span', { class: 'small' }, h('b', {}, `${heroEntry.ability.name}: `), heroEntry.ability.text))));

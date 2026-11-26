@@ -1716,6 +1716,103 @@ const longbowYagura: PainterDef = {
 };
 
 /** Every building type, keyed by its stable internal id. */
+// ---- SIM_RULES 10 (2026-11-25): the first planned buildings to go live (counters and the Hero Hall) ----
+
+/** Steam Vent: a squat stone well over a fissure, iron grate, scalding plume (blows smoke off its tiles). */
+const steamVent: PainterDef = {
+  extra: 70,
+  paint(ctx, size, tier) {
+    const { hw, hh } = half(size);
+    plate(ctx, size, '#9c927e');
+    softShadow(ctx, hw * 0.6, hh * 0.6, 2, 0.22);
+    // Cracked earth around the vent, glowing faintly at the higher tiers.
+    for (const [x0, y0, x1, y1] of [[-hw * 0.7, 2, -hw * 0.3, hh * 0.3], [hw * 0.5, -2, hw * 0.2, hh * 0.25], [-hw * 0.2, -hh * 0.5, 0, -hh * 0.2]]) line(ctx, [{ x: x0, y: y0 }, { x: x1, y: y1 }], tier >= 3 ? '#c8622f' : rgba(INK, 0.45), 1.4);
+    const y = stoneBase(ctx, hw * 0.45, hh * 0.45, 2, 10);
+    // Iron grate over the mouth.
+    ctx.beginPath();
+    ctx.ellipse(0, y, hw * 0.3, hh * 0.3, 0, 0, Math.PI * 2);
+    ctx.fillStyle = '#2f2a26';
+    ctx.fill();
+    ctx.strokeStyle = tier >= 4 ? GOLD : '#5d636e';
+    ctx.lineWidth = 1.6;
+    ctx.stroke();
+    for (const k of [-0.5, 0, 0.5]) line(ctx, [{ x: hw * 0.3 * k - 6, y: y - 4 + hh * 0.3 * k }, { x: hw * 0.3 * k + 6, y: y + 4 + hh * 0.3 * k }], '#5d636e', 1.2);
+    // The plume: stacked white puffs, taller and wider each tier.
+    for (let i = 0; i < 3 + tier; i++) circle(ctx, Math.sin(i * 1.3) * (3 + i), y - 10 - i * 8, 6 + i * 1.4, rgba('#ffffff', 0.62 - i * 0.07), 0);
+  },
+};
+
+/** Lightning Rod Tower: a slim copper-roofed pagoda with a tall iron rod and a charge glow at its tip. */
+const lightningRodPagoda: PainterDef = {
+  extra: 118,
+  paint(ctx, size, tier) {
+    const { hw, hh } = half(size);
+    plate(ctx, size, '#a69c88');
+    softShadow(ctx, hw * 0.6, hh * 0.6, 2, 0.24);
+    let y = stoneBase(ctx, hw * 0.5, hh * 0.5, 2, 8);
+    const floors = Math.min(3, 1 + Math.floor((tier + 1) / 2));
+    for (let i = 0; i < floors; i++) {
+      const k = 1 - i * 0.18;
+      y = storey(ctx, hw * 0.34 * k, hh * 0.34 * k, y, 12, PLASTER, { trim: VERMILION });
+      y = roof(ctx, hw * 0.5 * k, hh * 0.5 * k, y, 10, ROOF_COLOURS.copper, { material: 'copper' }) + 6;
+    }
+    // The rod, its copper coil and the stored charge (brighter as it fills; here by tier).
+    line(ctx, [{ x: 0, y: y - 4 }, { x: 0, y: y - 46 }], '#4a4f58', 2.4);
+    for (let i = 0; i < 4; i++) line(ctx, [{ x: -4, y: y - 10 - i * 6 }, { x: 4, y: y - 13 - i * 6 }], '#b8733d', 1.4);
+    glow(ctx, 0, y - 48, 8 + tier * 1.5);
+    circle(ctx, 0, y - 48, 3.4, '#bfe8ff', 1, '#4a8ab8');
+    for (const a of [-0.7, 0.3, 1.2]) line(ctx, [{ x: 0, y: y - 48 }, { x: Math.cos(a) * 9, y: y - 48 + Math.sin(a) * 9 - 4 }, { x: Math.cos(a) * 14, y: y - 48 + Math.sin(a) * 14 }], rgba('#bfe8ff', 0.8), 1.1);
+  },
+};
+
+/** Bronze Mirror Screen: a folding frame of polished bronze panels that throws projectiles back. */
+const mirrorScreen: PainterDef = {
+  extra: 64,
+  paint(ctx, size, tier) {
+    const { hw, hh } = half(size);
+    plate(ctx, size, '#a9a08c');
+    softShadow(ctx, hw * 0.65, hh * 0.65, 2, 0.22);
+    const y = stoneBase(ctx, hw * 0.55, hh * 0.55, 2, 6);
+    // Three hinged panels zig-zagging across the plinth.
+    const panels = [[-hw * 0.5, -hh * 0.15, -hw * 0.17, hh * 0.15], [-hw * 0.17, hh * 0.15, hw * 0.17, -hh * 0.05], [hw * 0.17, -hh * 0.05, hw * 0.5, hh * 0.2]];
+    const bronze = tier >= 3 ? '#d6a75a' : '#b8863f';
+    for (const [x0, y0, x1, y1] of panels) {
+      const h = 34 + tier * 3;
+      const g = ctx.createLinearGradient(x0, y + y0 - h, x1, y + y1);
+      g.addColorStop(0, lighten(bronze, 0.45));
+      g.addColorStop(0.45, bronze);
+      g.addColorStop(1, darken(bronze, 0.3));
+      poly(ctx, [{ x: x0, y: y + y0 }, { x: x1, y: y + y1 }, { x: x1, y: y + y1 - h }, { x: x0, y: y + y0 - h }], g, 1.3);
+      // A bright glint across each panel.
+      line(ctx, [{ x: x0 + (x1 - x0) * 0.2, y: y + y0 - h * 0.75 }, { x: x0 + (x1 - x0) * 0.6, y: y + y0 + (y1 - y0) * 0.6 - h * 0.35 }], rgba('#ffffff', 0.55), 1.4);
+      line(ctx, [{ x: x0, y: y + y0 - h }, { x: x1, y: y + y1 - h }], tier >= 4 ? GOLD : WOOD_DARK, 2);
+    }
+  },
+};
+
+/** Hero Hall: a raised shrine hall with banners in the heroes' colours; more banners as it grows. */
+const heroHall: PainterDef = {
+  extra: 104,
+  paint(ctx, size, tier) {
+    const { hw, hh } = half(size);
+    plate(ctx, size, '#b3a98f');
+    softShadow(ctx, hw * 0.7, hh * 0.7, 2, 0.22);
+    let y = stoneBase(ctx, hw * 0.62, hh * 0.62, 2, 10);
+    y = storey(ctx, hw * 0.48, hh * 0.48, y, 20, PLASTER, { door: true, trim: VERMILION });
+    y = roof(ctx, hw * 0.7, hh * 0.7, y, 22, tier >= 3 ? ROOF_COLOURS.copper : ROOF, { material: tier >= 3 ? 'copper' : 'tile', finial: GOLD });
+    crest(ctx, 0, y + 30, 6, WASHI);
+    // Hero banners (nobori) on poles: one per tier, in the heroes' colours.
+    const colours = [VERMILION, '#3a5a8a', '#7a3a2e', '#5a3a7a'];
+    for (let i = 0; i < Math.min(4, tier + 1); i++) {
+      const x = -hw * 0.78 + (i % 2) * hw * 1.56;
+      const by = (i < 2 ? 0 : -hh * 0.35) - 4;
+      line(ctx, [{ x, y: by }, { x, y: by - 52 }], WOOD_DARK, 1.8);
+      poly(ctx, [{ x: x + 1, y: by - 50 }, { x: x + 11, y: by - 48 }, { x: x + 11, y: by - 22 }, { x: x + 1, y: by - 24 }], colours[i], 1);
+      circle(ctx, x + 6, by - 38, 3, rgba(WASHI, 0.9), 0);
+    }
+  },
+};
+
 export const buildingPainters: Record<string, PainterDef> = {
   elder_toadstool: keepSkin('#3d4a5c', VERMILION),
   acorn_orchard: coinMint,
@@ -1745,6 +1842,10 @@ export const buildingPainters: Record<string, PainterDef> = {
   bitter_incense_burner: incenseBurner,
   kite_cutter_ballista: kiteCutterBallista,
   longbow_yagura: longbowYagura,
+  steam_vent: steamVent,
+  lightning_rod_pagoda: lightningRodPagoda,
+  mirror_screen: mirrorScreen,
+  hero_shrine: heroHall,
 };
 
 /** Legacy visual tier (1-3, thirds of the level range): the tier keys real art uses (`building.<type>.t<1-3>`). */

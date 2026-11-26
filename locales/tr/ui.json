@@ -182,6 +182,7 @@
   "temper.done": { "en": "Tempered: every {building} has its new shape.", "text": "Tavlandı: her {building} yeni biçimini aldı." },
   "temper.reset": { "en": "Back to untempered", "text": "Tavlanmamış hâle dön" },
   "temper.watchSupport": { "en": "Watch also weakens the raiders' healing, revives, toughness and shield cover across the whole base.", "text": "Nöbet ayrıca tüm üs genelinde baskıncıların iyileşmesini, diriltmelerini, dayanıklılığını ve kalkan korumasını zayıflatır." },
+  "temper.watchKinds": { "en": "Watch-tempered towers read varied armies: for each kind of warrior beyond {free} on the field, they hit {pct} harder. A focused army answers a Watch base.", "text": "Nöbet ile tavlanmış kuleler karışık orduları okur: sahadaki savaşçı türü sayısı {free} değerini aşınca, fazladan her tür için {pct} daha sert vururlar. Nöbet üssüne karşı az türden oluşan bir ordu işe yarar." },
   "scout.profile": { "en": "Tempered: Reach {reach} · Blast {blast} · Watch {watch}", "text": "Tavlama: Menzil {reach} · Patlama {blast} · Nöbet {watch}" },
   "stake.label": { "en": "Stake", "text": "Bahis" },
   "stake.none": { "en": "No stake", "text": "Bahis yok" },

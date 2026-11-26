@@ -182,6 +182,7 @@
   "temper.done": { "en": "Tempered: every {building} has its new shape.", "text": "Kaljeno: sve zgrade vrste {building} imaju novi oblik." },
   "temper.reset": { "en": "Back to untempered", "text": "Vrati na nekaljeno" },
   "temper.watchSupport": { "en": "Watch also weakens the raiders' healing, revives, toughness and shield cover across the whole base.", "text": "Straža također slabi liječenje, oživljavanje, izdržljivost i zaštitu štitom napadača u cijeloj bazi." },
+  "temper.watchKinds": { "en": "Watch-tempered towers read varied armies: for each kind of warrior beyond {free} on the field, they hit {pct} harder. A focused army answers a Watch base.", "text": "Tornjevi kaljeni na Stražu čitaju raznolike vojske: za svaku vrstu ratnika na bojištu iznad {free} pogađaju za {pct} jače. Vojska od malo vrsta odgovor je na bazu sa Stražom." },
   "scout.profile": { "en": "Tempered: Reach {reach} · Blast {blast} · Watch {watch}", "text": "Kaljeno: Domet {reach} · Prasak {blast} · Straža {watch}" },
   "stake.label": { "en": "Stake", "text": "Ulog" },
   "stake.none": { "en": "No stake", "text": "Bez uloga" },

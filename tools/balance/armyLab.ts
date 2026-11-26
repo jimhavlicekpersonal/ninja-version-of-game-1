@@ -126,7 +126,8 @@ export interface LabRow {
   counterEvents: Record<string, number>;
 }
 
-const COUNTERS = new Set(['paper_lantern_line', 'clockwork_repairer', 'bitter_incense_burner', 'kite_cutter_ballista', 'longbow_yagura']);
+// SIM_RULES 10 (2026-11-25): the Steam Vent, Lightning Rod Tower and Bronze Mirror Screen are live counters too.
+const COUNTERS = new Set(['paper_lantern_line', 'clockwork_repairer', 'bitter_incense_burner', 'kite_cutter_ballista', 'longbow_yagura', 'steam_vent', 'lightning_rod_pagoda', 'mirror_screen']);
 
 /**
  * Removes the counter buildings from a base (their whole value: footprint,

@@ -216,6 +216,128 @@
           "cost": {}
         }
       ]
+    },
+    "iron_matriarch": {
+      "name": "Iron Matriarch",
+      "description": "On her first strike she raises a wall of shields: every warrior takes 60% less defense fire for 20 seconds, once per battle.",
+      "housing": 0,
+      "attackIntervalTicks": 10,
+      "range": 0.8,
+      "speed": 0.1,
+      "air": false,
+      "prefers": "defense",
+      "ignoresHedges": false,
+      "trainSeconds": 0,
+      "barracksLevel": 1,
+      "unlockKeep": 9,
+      "ability": "bulwark",
+      "kit": {
+        "heroAbility": "bulwark",
+        "radius": 99,
+        "strength": 0.6,
+        "durationTicks": 200,
+        "coneCos": -1
+      },
+      "levels": [
+        {
+          "level": 1,
+          "hp": 6478,
+          "damage": 41.529,
+          "cost": {}
+        },
+        {
+          "level": 2,
+          "hp": 7514,
+          "damage": 48.174,
+          "cost": {}
+        },
+        {
+          "level": 3,
+          "hp": 10111,
+          "damage": 64.823,
+          "cost": {}
+        },
+        {
+          "level": 4,
+          "hp": 11731,
+          "damage": 75.194,
+          "cost": {}
+        },
+        {
+          "level": 5,
+          "hp": 15785,
+          "damage": 101.182,
+          "cost": {}
+        },
+        {
+          "level": 6,
+          "hp": 21240,
+          "damage": 136.15,
+          "cost": {}
+        },
+        {
+          "level": 7,
+          "hp": 28579,
+          "damage": 183.203,
+          "cost": {}
+        }
+      ]
+    },
+    "sky_admiral": {
+      "name": "Sky Admiral",
+      "description": "On his first strike a gale pushes every flyer forward: flyers take 85% less defense fire and ground warriors 34% less for 30 seconds, once per battle.",
+      "housing": 0,
+      "attackIntervalTicks": 10,
+      "range": 0.5,
+      "speed": 0.12,
+      "air": true,
+      "prefers": "defense",
+      "ignoresHedges": true,
+      "trainSeconds": 0,
+      "barracksLevel": 1,
+      "unlockKeep": 11,
+      "projectile": "seedbomb",
+      "projectileSpeed": 0.8,
+      "ability": "squall",
+      "kit": {
+        "heroAbility": "squall",
+        "pushTiles": 3,
+        "strength": 0.85,
+        "durationTicks": 300,
+        "groundShare": 0.4
+      },
+      "levels": [
+        {
+          "level": 1,
+          "hp": 6540,
+          "damage": 424.55,
+          "cost": {}
+        },
+        {
+          "level": 2,
+          "hp": 7590,
+          "damage": 492.625,
+          "cost": {}
+        },
+        {
+          "level": 3,
+          "hp": 10220,
+          "damage": 662.55,
+          "cost": {}
+        },
+        {
+          "level": 4,
+          "hp": 13750,
+          "damage": 891.275,
+          "cost": {}
+        },
+        {
+          "level": 5,
+          "hp": 18500,
+          "damage": 1199.1,
+          "cost": {}
+        }
+      ]
     }
   },
   "temper": {
@@ -237,7 +359,9 @@
           "damageCost": 0.3
         },
         "watch": {
-          "damageCost": 0.1
+          "damageCost": 0.1,
+          "kindsFree": 5,
+          "perKind": 0.15
         }
       },
       "wasp_nest": {
@@ -248,7 +372,9 @@
           "prefersBeyond": 3.5
         },
         "watch": {
-          "damageCost": 0.1
+          "damageCost": 0.1,
+          "kindsFree": 5,
+          "perKind": 0.15
         }
       }
     },

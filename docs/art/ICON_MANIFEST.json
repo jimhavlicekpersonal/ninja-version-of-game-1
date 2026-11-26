@@ -4957,7 +4957,7 @@
         1,
         2
       ],
-      "live": false,
+      "live": true,
       "prompt": "Isometric icon of the Hero Hall: Home of your clan heroes: its level decides which hero you can choose.. Stage 1 of 5: timber and plaster, simple."
     },
     {
@@ -4971,7 +4971,7 @@
         3,
         4
       ],
-      "live": false,
+      "live": true,
       "prompt": "Isometric icon of the Hero Hall: Home of your clan heroes: its level decides which hero you can choose.. Stage 2 of 5: stone base and tiled roof."
     },
     {
@@ -4985,7 +4985,7 @@
         5,
         6
       ],
-      "live": false,
+      "live": true,
       "prompt": "Isometric icon of the Hero Hall: Home of your clan heroes: its level decides which hero you can choose.. Stage 3 of 5: second storey, banners, lacquer trim."
     },
     {
@@ -4999,7 +4999,7 @@
         7,
         8
       ],
-      "live": false,
+      "live": true,
       "prompt": "Isometric icon of the Hero Hall: Home of your clan heroes: its level decides which hero you can choose.. Stage 4 of 5: gold finials, lanterns, carved beams."
     },
     {
@@ -5013,7 +5013,7 @@
         9,
         10
       ],
-      "live": false,
+      "live": true,
       "prompt": "Isometric icon of the Hero Hall: Home of your clan heroes: its level decides which hero you can choose.. Stage 5 of 5: masterwork: gold leaf, glowing lanterns, clan crest banners."
     },
     {
@@ -6147,8 +6147,8 @@
         1,
         2
       ],
-      "live": false,
-      "prompt": "Isometric icon of the Bronze Mirror Screen: Polished bronze panels: every third projectile that hits the screen flies back at whoever threw it.. Stage 1 of 5: timber and plaster, simple."
+      "live": true,
+      "prompt": "Isometric icon of the Bronze Mirror Screen: Polished bronze panels: every second projectile that hits the screen flies back at whoever threw it.. Stage 1 of 5: timber and plaster, simple."
     },
     {
       "key": "icon.building.mirror_screen.s2",
@@ -6161,8 +6161,8 @@
         3,
         4
       ],
-      "live": false,
-      "prompt": "Isometric icon of the Bronze Mirror Screen: Polished bronze panels: every third projectile that hits the screen flies back at whoever threw it.. Stage 2 of 5: stone base and tiled roof."
+      "live": true,
+      "prompt": "Isometric icon of the Bronze Mirror Screen: Polished bronze panels: every second projectile that hits the screen flies back at whoever threw it.. Stage 2 of 5: stone base and tiled roof."
     },
     {
       "key": "icon.building.mirror_screen.s3",
@@ -6175,8 +6175,8 @@
         5,
         6
       ],
-      "live": false,
-      "prompt": "Isometric icon of the Bronze Mirror Screen: Polished bronze panels: every third projectile that hits the screen flies back at whoever threw it.. Stage 3 of 5: second storey, banners, lacquer trim."
+      "live": true,
+      "prompt": "Isometric icon of the Bronze Mirror Screen: Polished bronze panels: every second projectile that hits the screen flies back at whoever threw it.. Stage 3 of 5: second storey, banners, lacquer trim."
     },
     {
       "key": "icon.building.mirror_screen.s4",
@@ -6189,8 +6189,8 @@
         7,
         8
       ],
-      "live": false,
-      "prompt": "Isometric icon of the Bronze Mirror Screen: Polished bronze panels: every third projectile that hits the screen flies back at whoever threw it.. Stage 4 of 5: gold finials, lanterns, carved beams."
+      "live": true,
+      "prompt": "Isometric icon of the Bronze Mirror Screen: Polished bronze panels: every second projectile that hits the screen flies back at whoever threw it.. Stage 4 of 5: gold finials, lanterns, carved beams."
     },
     {
       "key": "icon.building.mirror_screen.s5",
@@ -6203,8 +6203,8 @@
         9,
         10
       ],
-      "live": false,
-      "prompt": "Isometric icon of the Bronze Mirror Screen: Polished bronze panels: every third projectile that hits the screen flies back at whoever threw it.. Stage 5 of 5: masterwork: gold leaf, glowing lanterns, clan crest banners."
+      "live": true,
+      "prompt": "Isometric icon of the Bronze Mirror Screen: Polished bronze panels: every second projectile that hits the screen flies back at whoever threw it.. Stage 5 of 5: masterwork: gold leaf, glowing lanterns, clan crest banners."
     },
     {
       "key": "icon.building.sand_bucket_post.s1",
@@ -6497,7 +6497,7 @@
         1,
         2
       ],
-      "live": false,
+      "live": true,
       "prompt": "Isometric icon of the Steam Vent: Blasts scalding steam in a 2-tile circle. It needs no target, so it hurts hidden warriors, blows smoke away from its tiles, and cannot be dodged.. Stage 1 of 5: timber and plaster, simple."
     },
     {
@@ -6511,7 +6511,7 @@
         3,
         4
       ],
-      "live": false,
+      "live": true,
       "prompt": "Isometric icon of the Steam Vent: Blasts scalding steam in a 2-tile circle. It needs no target, so it hurts hidden warriors, blows smoke away from its tiles, and cannot be dodged.. Stage 2 of 5: stone base and tiled roof."
     },
     {
@@ -6525,7 +6525,7 @@
         5,
         6
       ],
-      "live": false,
+      "live": true,
       "prompt": "Isometric icon of the Steam Vent: Blasts scalding steam in a 2-tile circle. It needs no target, so it hurts hidden warriors, blows smoke away from its tiles, and cannot be dodged.. Stage 3 of 5: second storey, banners, lacquer trim."
     },
     {
@@ -6539,7 +6539,7 @@
         7,
         8
       ],
-      "live": false,
+      "live": true,
       "prompt": "Isometric icon of the Steam Vent: Blasts scalding steam in a 2-tile circle. It needs no target, so it hurts hidden warriors, blows smoke away from its tiles, and cannot be dodged.. Stage 4 of 5: gold finials, lanterns, carved beams."
     },
     {
@@ -6553,7 +6553,7 @@
         9,
         10
       ],
-      "live": false,
+      "live": true,
       "prompt": "Isometric icon of the Steam Vent: Blasts scalding steam in a 2-tile circle. It needs no target, so it hurts hidden warriors, blows smoke away from its tiles, and cannot be dodged.. Stage 5 of 5: masterwork: gold leaf, glowing lanterns, clan crest banners."
     },
     {
@@ -6917,7 +6917,7 @@
         1,
         1
       ],
-      "live": false,
+      "live": true,
       "prompt": "Isometric icon of the Lightning Rod Tower: Grounds lightning: chained slashes and lightning strikes within 3 tiles hit the rod instead, charging it. When fully charged it fires the lightning back.. Stage 1 of 5: timber and plaster, simple."
     },
     {
@@ -6931,7 +6931,7 @@
         2,
         3
       ],
-      "live": false,
+      "live": true,
       "prompt": "Isometric icon of the Lightning Rod Tower: Grounds lightning: chained slashes and lightning strikes within 3 tiles hit the rod instead, charging it. When fully charged it fires the lightning back.. Stage 2 of 5: stone base and tiled roof."
     },
     {
@@ -6945,7 +6945,7 @@
         4,
         4
       ],
-      "live": false,
+      "live": true,
       "prompt": "Isometric icon of the Lightning Rod Tower: Grounds lightning: chained slashes and lightning strikes within 3 tiles hit the rod instead, charging it. When fully charged it fires the lightning back.. Stage 3 of 5: second storey, banners, lacquer trim."
     },
     {
@@ -6959,7 +6959,7 @@
         5,
         6
       ],
-      "live": false,
+      "live": true,
       "prompt": "Isometric icon of the Lightning Rod Tower: Grounds lightning: chained slashes and lightning strikes within 3 tiles hit the rod instead, charging it. When fully charged it fires the lightning back.. Stage 4 of 5: gold finials, lanterns, carved beams."
     },
     {
@@ -6973,7 +6973,7 @@
         7,
         8
       ],
-      "live": false,
+      "live": true,
       "prompt": "Isometric icon of the Lightning Rod Tower: Grounds lightning: chained slashes and lightning strikes within 3 tiles hit the rod instead, charging it. When fully charged it fires the lightning back.. Stage 5 of 5: masterwork: gold leaf, glowing lanterns, clan crest banners."
     },
     {
@@ -7451,7 +7451,7 @@
       "group": "ability",
       "subject": "Bulwark",
       "live": false,
-      "prompt": "Ability icon \"Bulwark\": Raises a wall of shields that blocks defense fire in a cone for 12 seconds. One bold symbol on a round ink-wash badge."
+      "prompt": "Ability icon \"Bulwark\": On her first strike she raises a wall of shields: every warrior takes 60% less defense fire for 20 seconds, once per battle. One bold symbol on a round ink-wash badge."
     },
     {
       "key": "icon.ability.squall",
@@ -7460,7 +7460,7 @@
       "group": "ability",
       "subject": "Squall",
       "live": false,
-      "prompt": "Ability icon \"Squall\": Pushes all flyers forward and shields them from anti-air for 10 seconds. One bold symbol on a round ink-wash badge."
+      "prompt": "Ability icon \"Squall\": On his first strike a gale pushes every flyer forward: flyers take 85% less defense fire and ground warriors 34% less for 30 seconds, once per battle. One bold symbol on a round ink-wash badge."
     },
     {
       "key": "icon.ability.inner_calm",

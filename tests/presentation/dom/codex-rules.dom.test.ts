@@ -18,6 +18,9 @@ describe('the Codex rules page (P6-18)', () => {
     const d = controller.data;
     expect(page.textContent).toContain(`last ${d.battle.temper!.offers.recentRaids} raids`);
     expect(page.textContent).toContain(`${d.raids.exhaustion!.windowHours} hours`);
+    // SIM_RULES 10 (GT-07): the Watch rule, with the data's numbers.
+    const w = d.battle.temper!.types.acorn_cannon.watch!;
+    expect(page.querySelector('[data-id="codex-watch-kinds"]')?.textContent).toContain(`beyond ${w.kindsFree} on the field, they hit ${Math.round(w.perKind! * 100)}% harder`);
     for (const [type, troops] of Object.entries(codex.confirmedCounters)) {
       expect(BUILDINGS.find((b) => b.id === type)?.live).toBe(true);
       for (const t of troops) expect(page.textContent).toContain(d.troops[t].name);

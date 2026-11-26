@@ -5,7 +5,7 @@
  * storage loot caps; shield tiers. Every attack is re-simulated here.
  */
 import { createHash } from 'node:crypto';
-import { heroAtKeep } from '../../src/gameplay/sim/heroes';
+import { heroLevelAllowed } from '../../src/gameplay/sim/heroes';
 import { rivalFor, rivalOutpostName } from '../../src/gameplay/sim/rivals';
 import { maxHousingAtHall, troopEarliestKeep } from '../../src/gameplay/sim/army';
 import type { runBattle } from '../../src/gameplay/sim/battle/battle';
@@ -237,14 +237,16 @@ export function checkArmy(sub: BattleReport, me: Player, data: GameData): { army
   if (ownHousing > maxHousingAtHall(me.hallLevel, data) || lodgeHousing > maxReinforcementAt(me.hallLevel, data)) throw fail(400, 'bad_request', 'army.too_big');
   const levels = validLevels(sub.levels, me.hallLevel, data);
   if (!levels) throw fail(400, 'bad_request', 'army.bad_levels');
-  // Report section 5 step 8 (SIM_RULES 5): the hero must be the one the attacker's Keep brings, at that level.
+  // Report section 5 step 8 (SIM_RULES 5), hero choice live in SIM_RULES 10: a hero the attacker's Keep has unlocked
+  // (the Shadow Captain, or one chosen at the Hero Hall), at no more than its level at that Keep.
   let hero: { id: string; level: number } | undefined;
   if (sub.hero !== undefined && sub.hero !== null) {
     // One Keep of slack: the base the server holds can trail a Keep upgrade that just finished on the device.
-    const most = heroAtKeep(me.hallLevel + 1, data);
+    const id = typeof sub.hero === 'object' ? sub.hero.id : undefined;
+    const most = typeof id === 'string' ? heroLevelAllowed(id, me.hallLevel + 1, data) : 0;
     const level = Number(sub.hero?.level);
-    if (!most || typeof sub.hero !== 'object' || sub.hero.id !== most.id || !Number.isInteger(level) || level < 1 || level > most.level) throw fail(400, 'bad_request', 'army.bad_hero');
-    hero = { id: most.id, level };
+    if (!most || !Number.isInteger(level) || level < 1 || level > most) throw fail(400, 'bad_request', 'army.bad_hero');
+    hero = { id: id as string, level };
   }
   return { army, levels, reinforcements, ...(hero ? { hero } : {}) };
 }

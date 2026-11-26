@@ -182,6 +182,7 @@
   "temper.done": { "en": "Tempered: every {building} has its new shape.", "text": "Закалено: все здания {building} получили новую настройку." },
   "temper.reset": { "en": "Back to untempered", "text": "Сбросить закалку" },
   "temper.watchSupport": { "en": "Watch also weakens the raiders' healing, revives, toughness and shield cover across the whole base.", "text": "Дозор также ослабляет лечение, воскрешения, стойкость и прикрытие щитами у налётчиков по всей базе." },
+  "temper.watchKinds": { "en": "Watch-tempered towers read varied armies: for each kind of warrior beyond {free} on the field, they hit {pct} harder. A focused army answers a Watch base.", "text": "Башни, закалённые на Дозор, видят пёстрые армии насквозь: за каждый вид воинов на поле сверх {free} они бьют на {pct} сильнее. Против базы с Дозором выручает армия из немногих видов." },
   "scout.profile": { "en": "Tempered: Reach {reach} · Blast {blast} · Watch {watch}", "text": "Закалка: Дальность {reach} · Залп {blast} · Дозор {watch}" },
   "stake.label": { "en": "Stake", "text": "Ставка" },
   "stake.none": { "en": "No stake", "text": "Без ставки" },

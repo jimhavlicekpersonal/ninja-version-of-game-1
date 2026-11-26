@@ -182,6 +182,7 @@
   "temper.done": { "en": "Tempered: every {building} has its new shape.", "text": "பதப்படுத்தப்பட்டது: ஒவ்வொரு {building} கட்டடத்துக்கும் புதிய வடிவம்." },
   "temper.reset": { "en": "Back to untempered", "text": "பதப்படுத்தாத நிலைக்குத் திரும்பு" },
   "temper.watchSupport": { "en": "Watch also weakens the raiders' healing, revives, toughness and shield cover across the whole base.", "text": "காவல், முழுத் தளத்திலும் தாக்குபவர்களின் குணமாக்கல், உயிர்ப்பித்தல், உறுதி, கேடயப் பாதுகாப்பு ஆகியவற்றையும் பலவீனப்படுத்தும்." },
+  "temper.watchKinds": { "en": "Watch-tempered towers read varied armies: for each kind of warrior beyond {free} on the field, they hit {pct} harder. A focused army answers a Watch base.", "text": "காவல் பதப்படுத்திய கோபுரங்கள் கலவையான படைகளைக் கண்டுகொள்ளும்: களத்தில் வீரர் வகைகள் {free} என்ற எண்ணிக்கையைத் தாண்டினால், கூடுதலான ஒவ்வொரு வகைக்கும் அவை {pct} அதிக வலுவாகத் தாக்கும். சில வகைகள் மட்டுமே கொண்ட படையே காவல் தளத்துக்குப் பதில்." },
   "scout.profile": { "en": "Tempered: Reach {reach} · Blast {blast} · Watch {watch}", "text": "பதப்படுத்தல்: தொலைவு {reach} · வெடிப்பு {blast} · காவல் {watch}" },
   "stake.label": { "en": "Stake", "text": "பந்தயம்" },
   "stake.none": { "en": "No stake", "text": "பந்தயம் இல்லை" },

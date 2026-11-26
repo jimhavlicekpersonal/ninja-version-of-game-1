@@ -182,6 +182,7 @@
   "temper.done": { "en": "Tempered: every {building} has its new shape.", "text": "החישול הושלם: לכל המבנים מסוג {building} יש עיצוב חדש." },
   "temper.reset": { "en": "Back to untempered", "text": "חזרה למצב לא מחושל" },
   "temper.watchSupport": { "en": "Watch also weakens the raiders' healing, revives, toughness and shield cover across the whole base.", "text": "שמירה גם מחלישה את הריפוי, ההחייאה, העמידות וכיסוי המגן של הפושטים בכל הבסיס." },
+  "temper.watchKinds": { "en": "Watch-tempered towers read varied armies: for each kind of warrior beyond {free} on the field, they hit {pct} harder. A focused army answers a Watch base.", "text": "מגדלים בחישול שמירה מנצלים צבאות מגוונים: כשבשדה הקרב יש יותר מ־{free} סוגי לוחמים, כל סוג נוסף מגביר את הפגיעה שלהם ב־{pct}. צבא עם מעט סוגים הוא התשובה לבסיס בחישול שמירה." },
   "scout.profile": { "en": "Tempered: Reach {reach} · Blast {blast} · Watch {watch}", "text": "חישול: טווח {reach} · פיצוץ {blast} · שמירה {watch}" },
   "stake.label": { "en": "Stake", "text": "הימור" },
   "stake.none": { "en": "No stake", "text": "בלי הימור" },

@@ -182,6 +182,7 @@
   "temper.done": { "en": "Tempered: every {building} has its new shape.", "text": "Hærdet: alle {building} har fået deres nye form." },
   "temper.reset": { "en": "Back to untempered", "text": "Tilbage til uhærdet" },
   "temper.watchSupport": { "en": "Watch also weakens the raiders' healing, revives, toughness and shield cover across the whole base.", "text": "Vagt svækker også angribernes heling, genoplivninger, sejhed og skjolddækning i hele basen." },
+  "temper.watchKinds": { "en": "Watch-tempered towers read varied armies: for each kind of warrior beyond {free} on the field, they hit {pct} harder. A focused army answers a Watch base.", "text": "Tårne hærdet med Vagt gennemskuer blandede hære: for hver krigertype på slagmarken ud over {free} rammer de {pct} hårdere. En hær med få krigertyper er svaret på en Vagt-base." },
   "scout.profile": { "en": "Tempered: Reach {reach} · Blast {blast} · Watch {watch}", "text": "Hærdet: Rækkevidde {reach} · Sprængkraft {blast} · Vagt {watch}" },
   "stake.label": { "en": "Stake", "text": "Indsats" },
   "stake.none": { "en": "No stake", "text": "Ingen indsats" },

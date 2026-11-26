@@ -1891,6 +1891,9 @@ export class Hud {
     const axisName: Record<TemperAxis, string> = { reach: t('temper.axis.reach'), blast: t('temper.axis.blast'), watch: t('temper.axis.watch') };
     wrap.append(h('p', { class: 'muted small' }, t('temper.intro', { building: name })));
     if (gd.battle.temper?.troopCuts?.watch) wrap.append(h('p', { class: 'muted small' }, t('temper.watchSupport')));
+    // SIM_RULES 10 (GT-07): the varied-army rule, numbers from the data (this type's Watch axis).
+    const kinds = gd.battle.temper?.types[type]?.watch;
+    if (kinds?.perKind) wrap.append(h('p', { class: 'muted small', 'data-id': 'temper-watch-kinds' }, t('temper.watchKinds', { free: kinds.kindsFree ?? 0, pct: fmtPercent(kinds.perKind * 100) })));
     const step = (a: TemperAxis, by: number) => {
       draft[a] = Math.max(0, (draft[a] ?? 0) + by);
       this.renderSheet();

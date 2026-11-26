@@ -182,6 +182,7 @@
   "temper.done": { "en": "Tempered: every {building} has its new shape.", "text": "ଶାଣ ଦିଆଗଲା: ସବୁ {building} ର ନୂଆ ଆକାର ହେଲା।" },
   "temper.reset": { "en": "Back to untempered", "text": "ଶାଣ ବିନା ଅବସ୍ଥାକୁ ଫେରନ୍ତୁ" },
   "temper.watchSupport": { "en": "Watch also weakens the raiders' healing, revives, toughness and shield cover across the whole base.", "text": "ପହରା ସମଗ୍ର ଘାଣ୍ଟିରେ ଚଢ଼ାଉକାରୀଙ୍କ ଆରୋଗ୍ୟ, ପୁନର୍ଜୀବନ, ଦୃଢ଼ତା ଓ ଢାଲ ସୁରକ୍ଷାକୁ ମଧ୍ୟ ଦୁର୍ବଳ କରେ।" },
+  "temper.watchKinds": { "en": "Watch-tempered towers read varied armies: for each kind of warrior beyond {free} on the field, they hit {pct} harder. A focused army answers a Watch base.", "text": "ପହରା ଶାଣ ଦିଆଯାଇଥିବା ଟାୱାର୍ ମିଶ୍ରିତ ସେନାକୁ ଚିହ୍ନିପାରେ: ପଡ଼ିଆରେ ଯୋଦ୍ଧାଙ୍କ ପ୍ରକାର {free} ରୁ ଅଧିକ ହେଲେ, ପ୍ରତି ଅତିରିକ୍ତ ପ୍ରକାର ପାଇଁ ସେଗୁଡ଼ିକ {pct} ଅଧିକ ଜୋରରେ ମାରେ। କମ୍ ପ୍ରକାରର ସେନା ହିଁ ପହରା ଘାଣ୍ଟିର ଉତ୍ତର।" },
   "scout.profile": { "en": "Tempered: Reach {reach} · Blast {blast} · Watch {watch}", "text": "ଶାଣ: ପହଞ୍ଚ {reach} · ବିସ୍ଫୋରଣ {blast} · ପହରା {watch}" },
   "stake.label": { "en": "Stake", "text": "ବାଜି" },
   "stake.none": { "en": "No stake", "text": "ବାଜି ନାହିଁ" },

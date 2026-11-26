@@ -182,6 +182,7 @@
   "temper.done": { "en": "Tempered: every {building} has its new shape.", "text": "Gehard: elke {building} heeft zijn nieuwe vorm." },
   "temper.reset": { "en": "Back to untempered", "text": "Terug naar ongehard" },
   "temper.watchSupport": { "en": "Watch also weakens the raiders' healing, revives, toughness and shield cover across the whole base.", "text": "Wacht verzwakt ook in de hele basis het genezen, de heroplevingen, de taaiheid en de schilddekking van aanvallers." },
+  "temper.watchKinds": { "en": "Watch-tempered towers read varied armies: for each kind of warrior beyond {free} on the field, they hit {pct} harder. A focused army answers a Watch base.", "text": "Op Wacht geharde torens doorzien gemengde legers: voor elke soort krijger op het veld boven de eerste {free} raken ze {pct} harder. Een leger van weinig soorten is het antwoord op een Wacht-basis." },
   "scout.profile": { "en": "Tempered: Reach {reach} · Blast {blast} · Watch {watch}", "text": "Gehard: Bereik {reach} · Explosie {blast} · Wacht {watch}" },
   "stake.label": { "en": "Stake", "text": "Inzet" },
   "stake.none": { "en": "No stake", "text": "Geen inzet" },

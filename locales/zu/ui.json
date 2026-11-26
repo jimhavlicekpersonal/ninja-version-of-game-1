@@ -182,6 +182,7 @@
   "temper.done": { "en": "Tempered: every {building} has its new shape.", "text": "Kucijiwe: konke okuthi {building} sekunokulolongwa okusha." },
   "temper.reset": { "en": "Back to untempered", "text": "Buyela kokungacijiwe" },
   "temper.watchSupport": { "en": "Watch also weakens the raiders' healing, revives, toughness and shield cover across the whole base.", "text": "Ukulinda kuphinde kwenze buthaka ukwelapha kwabagaseli, ukuvuselela, ukuqina nokuvikelwa yizihlangu kuyo yonke inqaba." },
+  "temper.watchKinds": { "en": "Watch-tempered towers read varied armies: for each kind of warrior beyond {free} on the field, they hit {pct} harder. A focused army answers a Watch base.", "text": "Imibhoshongo ecijwe ngokuthi Ukulinda ibona amabutho axubile: uma izinhlobo zamaqhawe enkundleni zidlula inani elithi {free}, uhlobo ngalunye olwengeziwe lwenza ishaye ngamandla angeziwe angu-{pct}. Ibutho elinezinhlobo ezimbalwa yilo elinqoba inqaba ecijwe ngokuthi Ukulinda." },
   "scout.profile": { "en": "Tempered: Reach {reach} · Blast {blast} · Watch {watch}", "text": "Kucijiwe: Ibanga {reach} · Ukuqhuma {blast} · Ukulinda {watch}" },
   "stake.label": { "en": "Stake", "text": "Isibambiso" },
   "stake.none": { "en": "No stake", "text": "Asikho isibambiso" },

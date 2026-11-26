@@ -359,14 +359,16 @@ describe('missing tests the verifier listed (8g)', () => {
     for (const bad of [0, -1, 169, 1.5, Number.NaN]) expect(checkEventSchedule(s(bad), defaultData.events), String(bad)).toHaveProperty('error');
   });
 
-  it('chooseHero is refused online even when the data turns the Hero Hall feature on', async () => {
-    expect(PLAYER_COMMANDS.has('chooseHero')).toBe(false);
-    const data = { ...defaultData, features: { ...(defaultData.features ?? {}), heroChoice: true } };
-    const w = world({ data });
+  it('SIM_RULES 10: chooseHero is replayed online (hero choice is live); the server applies the same checks', async () => {
+    expect(PLAYER_COMMANDS.has('chooseHero')).toBe(true);
+    expect(defaultData.features?.heroChoice).toBe(true);
+    const w = world({ data: defaultData });
     const ann = await w.player('Ann');
     const game = emulator((await ann.startVillage()).file, w.data);
+    // "Let the Keep choose" is always allowed; choosing a hero without a Hero Hall is refused by the shared rule.
     game.raw({ type: 'chooseHero', hero: null }, w.now());
+    game.raw({ type: 'chooseHero', hero: 'iron_matriarch' }, w.now());
     const r = await ann.sendCommands(game.batch());
-    expect(r.results.map((x) => x.error)).toEqual(['NOT_ALLOWED']);
+    expect(r.results.map((x) => x.error)).toEqual([undefined, 'LOCKED']);
   });
 });

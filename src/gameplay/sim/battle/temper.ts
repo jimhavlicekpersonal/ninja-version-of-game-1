@@ -125,6 +125,13 @@ export function applyTemper(b: SimBuilding, t: Temper | undefined, data: GameDat
     versus[ad.versus.cls] = (versus[ad.versus.cls] ?? 0) + ad.versus.bonus * raise(f[a], gamma);
   }
   if (Object.keys(versus).length) (b as SimBuilding & { versus?: Record<string, number> }).versus = versus;
+  // SIM_RULES 10 (GT-07): reading varied armies, scaled by the axis share (the strongest axis that has it).
+  for (const a of TEMPER_AXES) {
+    const ad = def[a];
+    if (!ad || f[a] <= 0 || ad.perKind === undefined) continue;
+    const per = ad.perKind * f[a];
+    if (!b.readsKinds || per > b.readsKinds.per) b.readsKinds = { free: ad.kindsFree ?? 0, per };
+  }
   b.combat = {
     ...b.combat,
     range: b.combat.range + range,

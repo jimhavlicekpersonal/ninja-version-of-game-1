@@ -182,6 +182,7 @@
   "temper.done": { "en": "Tempered: every {building} has its new shape.", "text": "اكتمل التطويع: كل {building} بشكله الجديد." },
   "temper.reset": { "en": "Back to untempered", "text": "العودة إلى ما قبل التطويع" },
   "temper.watchSupport": { "en": "Watch also weakens the raiders' healing, revives, toughness and shield cover across the whole base.", "text": "«الرصد» يُضعف أيضًا علاج المغيرين وإحياءهم وصلابتهم وغطاء دروعهم في القاعدة كلها." },
+  "temper.watchKinds": { "en": "Watch-tempered towers read varied armies: for each kind of warrior beyond {free} on the field, they hit {pct} harder. A focused army answers a Watch base.", "text": "الأبراج المطوَّعة على «الرصد» تقرأ الجيوش المتنوعة: كلما زاد عدد أنواع المحاربين في الميدان على {free}، اشتدت ضرباتها بنسبة {pct} عن كل نوع زائد. والجيش ذو الأنواع القليلة هو الرد على قاعدة «الرصد»." },
   "scout.profile": { "en": "Tempered: Reach {reach} · Blast {blast} · Watch {watch}", "text": "مطوَّع: المدى {reach} · الانفجار {blast} · الرصد {watch}" },
   "stake.label": { "en": "Stake", "text": "الرهان" },
   "stake.none": { "en": "No stake", "text": "بلا رهان" },

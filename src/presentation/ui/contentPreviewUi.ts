@@ -46,7 +46,7 @@ export function heroPickerSection(c: Host, buildingType: string, redraw: () => v
       h(
         'div',
         { class: `log-row hero-option${active ? ' active' : ''}`, 'data-hero': id },
-        h('b', {}, name(id)),
+        h('div', {}, h('b', {}, name(id)), h('p', { class: 'muted small' }, gd.battle.heroes?.[id]?.description ?? '')),
         active ? h('span', { class: 'chip good' }, t('heroPick.chosen')) : h('button', { class: 'btn sky', type: 'button', 'data-id': `choose-hero-${id}`, onclick: () => send(id) }, t('heroPick.choose')),
       ),
     );
@@ -55,7 +55,6 @@ export function heroPickerSection(c: Host, buildingType: string, redraw: () => v
     'div',
     { class: 'hero-picker', 'data-id': 'hero-picker' },
     h('h3', {}, t('heroPick.title')),
-    h('p', { class: 'muted small' }, t('preview.notLive')),
     options.length ? h('p', { class: 'small' }, t('heroPick.intro')) : h('p', { class: 'small' }, t('heroPick.none')),
     joining ? h('p', { class: 'small' }, t('heroPick.joining', { hero: name(joining.id), level: joining.level })) : null,
     list,

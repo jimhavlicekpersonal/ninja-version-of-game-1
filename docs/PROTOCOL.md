@@ -460,6 +460,13 @@ Closure record: `docs/store/WORLDWIDE_AUDIT.md` "2026-11-20 security audit". Tes
 - **Duel reports (SECR-03).** `POST /v1/duels` follows the other report kinds: a server-held village reporting warriors it does not have gets `400 bad_request` (`pvp.fewer_troops`) before any re-simulation, and a refused report counts against the ticket, so after `MAX_TICKET_FAILURES` (3) the ticket answers `409 conflict` (`battle.already_reported`). Existing codes.
 - **Reversing raids (SECR-02, staff API).** `POST /admin/v1/players/:id/reverse-raids` marks each raid it reverses (`reversed_attacks`, migration 0049, filled from earlier `reverse-raids` staff log rows) in the same transaction as the honor it gives back, with the players locked; a raid is reversed once whatever follows in the staff log, two runs at once apply once, and every raid in the window is read (in pages, not only the newest 500). Same shape.
 
+## SIM_RULES 10 and the first live content (2026-11-25, additive, no protocol bump)
+
+- **Battle rules 10.** Rules 9 is archived in `server/rules/v9` (`npm run rules:snapshot` before the bump; fixture `tests/backend/fixtures/rules/v10.json`). Records carry their rules; replays of other rules show as unavailable. Deploy the server before the game.
+- **Hero choice (`chooseHero { hero: string | null }`).** New player command in `PLAYER_COMMANDS` (the server's copy of a held village must know the chosen hero; `sim/heroes.ts` `heroFor`). It needs `features.heroChoice` (now in the shipped data), a built Hero Hall (`hero_shrine`) and the hero's Keep; `null` lets the Keep choose. A server without it refuses the command as unknown: deploy the server first.
+- **Reported heroes (`checkArmy`).** `BattleReport.hero` may name any live hero the attacker's Keep (plus one, the existing slack) has unlocked, at no more than its level at that Keep (`heroLevelAllowed`): the Shadow Captain, the Iron Matriarch (Keep 9) or the Sky Admiral (Keep 11). Like warriors, this is a legality check, not an inventory: the server does not know whether a device village built a Hero Hall. Anything else is `400 army.bad_hero` as before.
+- **New building types in bases.** `steam_vent`, `lightning_rod_pagoda`, `mirror_screen` and `hero_shrine` are live (`buildings.json`, `hall.json` limits), so `validateBase` accepts them at the counts and levels the Keep allows; an older server refuses a base holding one (`unknown building`).
+
 ## Server-owned village (beta)
 
 | | request | response |

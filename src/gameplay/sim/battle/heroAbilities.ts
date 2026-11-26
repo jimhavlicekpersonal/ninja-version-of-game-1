@@ -1,13 +1,14 @@
 /**
  * The three non-live heroes' abilities (content batch 2026-11-14; designs in docs/game-theory/ROSTER.md).
  * Their kits (`kit.heroAbility`) exist only in `data/planned.json`, so a live battle never starts one and
- * `BattleSim.heroIndex` stays unset. Each starts on the hero's first hit, once per battle.
+ * `BattleSim.heroIndex` stays unset. Each starts on the hero's first hit, once per battle, or again on a new target
+ * once `kit.cooldownTicks` have passed (SIM_RULES 10).
  *
  * - bulwark (Iron Matriarch): for `durationTicks`, warriors within `radius` of her take `strength` less damage
  *   from defense fire that comes from inside her forward cone (facing her target when she raised it; `coneCos`
  *   is the cosine of the cone's half-angle, so the test is a dot product, no trigonometry).
  * - squall (Sky Admiral): every flyer is pushed `pushTiles` toward its target, and for `durationTicks` flyers
- *   take `strength` less damage from defenses.
+ *   take `strength` less damage from defenses (ground warriors `strength` x `groundShare`, SIM_RULES 10).
  * - inner_calm (Grand Sensei): every warrior on the field heals `heal` of its max HP (less any healing cut) and
  *   ignores the next trap, splash hit or stun (`SimTroop.calm`).
  */
@@ -30,8 +31,10 @@ function push(t: SimTroop, x: number, y: number, tiles: number): void {
 
 /** Start a non-live hero's ability (from attackDamage, on its first hit). */
 export function startHeroAbility(sim: BattleSim, t: SimTroop, kit: WarriorKit, target: SimBuilding): void {
-  if (t.heroUsed || !kit.heroAbility) return;
+  if (!kit.heroAbility) return;
+  if (t.heroUsed && !(kit.cooldownTicks !== undefined && sim.tick >= (t.heroReadyAt ?? 0))) return;
   t.heroUsed = true;
+  if (kit.cooldownTicks !== undefined) t.heroReadyAt = sim.tick + kit.cooldownTicks;
   const until = sim.tick + (kit.durationTicks ?? 0);
   if (kit.heroAbility === 'bulwark') {
     const dx = target.x + target.size / 2 - t.x;
@@ -42,7 +45,12 @@ export function startHeroAbility(sim: BattleSim, t: SimTroop, kit: WarriorKit, t
     t.bulwarkY = d > 0.0001 ? dy / d : 0;
   } else if (kit.heroAbility === 'squall') {
     for (const f of sim.troops) {
-      if (f.dead || !f.air || f.groundedUntil > sim.tick) continue;
+      if (f.dead) continue;
+      // SIM_RULES 10: the gale also shelters ground warriors, at `groundShare` of the flyers' cut (no push).
+      if (!f.air || f.groundedUntil > sim.tick) {
+        if (kit.groundShare) f.squallUntil = until;
+        continue;
+      }
       f.squallUntil = until;
       const goal = f.target >= 0 ? sim.buildings[f.target] : null;
       if (goal && !goal.destroyed) push(f, goal.x + goal.size / 2, goal.y + goal.size / 2, kit.pushTiles ?? 0);
@@ -64,7 +72,7 @@ export function heroShield(sim: BattleSim, t: SimTroop, fromX: number, fromY: nu
   if (!h) return 1;
   const kit = (sim.data.battle.heroes?.[h.type]?.kit ?? {}) as WarriorKit;
   let factor = 1;
-  if (t.squallUntil !== undefined && t.squallUntil > sim.tick && t.air) factor *= 1 - (kit.strength ?? 0);
+  if (t.squallUntil !== undefined && t.squallUntil > sim.tick) factor *= 1 - (kit.strength ?? 0) * (t.air ? 1 : kit.groundShare ?? 0);
   if (!h.dead && h.bulwarkUntil !== undefined && h.bulwarkUntil > sim.tick && dist(h.x, h.y, t.x, t.y) <= (kit.radius ?? 0)) {
     const dx = fromX - t.x;
     const dy = fromY - t.y;

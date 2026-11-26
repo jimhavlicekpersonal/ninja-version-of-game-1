@@ -9,7 +9,7 @@
 | warrior | 200 | 200 |
 | sprite | 50 | 50 |
 | hero | 16 | 0 |
-| building | 250 | 105 |
+| building | 250 | 125 |
 | ability | 55 | 51 |
 | currency | 4 | 3 |
 | league | 8 | 8 |
@@ -408,11 +408,11 @@
 | `icon.building.sky_net.s3` | `public/art/icons/buildings/sky_net_s3.png` | 256 | Sky Net (trap) | 3 (3-3) |  |
 | `icon.building.sky_net.s4` | `public/art/icons/buildings/sky_net_s4.png` | 256 | Sky Net (trap) | 4 (4-4) |  |
 | `icon.building.sky_net.s5` | `public/art/icons/buildings/sky_net_s5.png` | 256 | Sky Net (trap) | 5 (5-6) |  |
-| `icon.building.hero_shrine.s1` | `public/art/icons/buildings/hero_shrine_s1.png` | 256 | Hero Hall (military) | 1 (1-2) |  |
-| `icon.building.hero_shrine.s2` | `public/art/icons/buildings/hero_shrine_s2.png` | 256 | Hero Hall (military) | 2 (3-4) |  |
-| `icon.building.hero_shrine.s3` | `public/art/icons/buildings/hero_shrine_s3.png` | 256 | Hero Hall (military) | 3 (5-6) |  |
-| `icon.building.hero_shrine.s4` | `public/art/icons/buildings/hero_shrine_s4.png` | 256 | Hero Hall (military) | 4 (7-8) |  |
-| `icon.building.hero_shrine.s5` | `public/art/icons/buildings/hero_shrine_s5.png` | 256 | Hero Hall (military) | 5 (9-10) |  |
+| `icon.building.hero_shrine.s1` | `public/art/icons/buildings/hero_shrine_s1.png` | 256 | Hero Hall (military) | 1 (1-2) | yes |
+| `icon.building.hero_shrine.s2` | `public/art/icons/buildings/hero_shrine_s2.png` | 256 | Hero Hall (military) | 2 (3-4) | yes |
+| `icon.building.hero_shrine.s3` | `public/art/icons/buildings/hero_shrine_s3.png` | 256 | Hero Hall (military) | 3 (5-6) | yes |
+| `icon.building.hero_shrine.s4` | `public/art/icons/buildings/hero_shrine_s4.png` | 256 | Hero Hall (military) | 4 (7-8) | yes |
+| `icon.building.hero_shrine.s5` | `public/art/icons/buildings/hero_shrine_s5.png` | 256 | Hero Hall (military) | 5 (9-10) | yes |
 | `icon.building.temple_bell_tower.s1` | `public/art/icons/buildings/temple_bell_tower_s1.png` | 256 | Alarm Bell Tower (defense) | 1 (1-2) |  |
 | `icon.building.temple_bell_tower.s2` | `public/art/icons/buildings/temple_bell_tower_s2.png` | 256 | Alarm Bell Tower (defense) | 2 (3-4) |  |
 | `icon.building.temple_bell_tower.s3` | `public/art/icons/buildings/temple_bell_tower_s3.png` | 256 | Alarm Bell Tower (defense) | 3 (5-7) |  |
@@ -493,11 +493,11 @@
 | `icon.building.straw_scarecrow.s3` | `public/art/icons/buildings/straw_scarecrow_s3.png` | 256 | Straw Scarecrow (trap) | 3 (3-3) |  |
 | `icon.building.straw_scarecrow.s4` | `public/art/icons/buildings/straw_scarecrow_s4.png` | 256 | Straw Scarecrow (trap) | 4 (4-4) |  |
 | `icon.building.straw_scarecrow.s5` | `public/art/icons/buildings/straw_scarecrow_s5.png` | 256 | Straw Scarecrow (trap) | 5 (5-6) |  |
-| `icon.building.mirror_screen.s1` | `public/art/icons/buildings/mirror_screen_s1.png` | 256 | Bronze Mirror Screen (defense) | 1 (1-2) |  |
-| `icon.building.mirror_screen.s2` | `public/art/icons/buildings/mirror_screen_s2.png` | 256 | Bronze Mirror Screen (defense) | 2 (3-4) |  |
-| `icon.building.mirror_screen.s3` | `public/art/icons/buildings/mirror_screen_s3.png` | 256 | Bronze Mirror Screen (defense) | 3 (5-6) |  |
-| `icon.building.mirror_screen.s4` | `public/art/icons/buildings/mirror_screen_s4.png` | 256 | Bronze Mirror Screen (defense) | 4 (7-8) |  |
-| `icon.building.mirror_screen.s5` | `public/art/icons/buildings/mirror_screen_s5.png` | 256 | Bronze Mirror Screen (defense) | 5 (9-10) |  |
+| `icon.building.mirror_screen.s1` | `public/art/icons/buildings/mirror_screen_s1.png` | 256 | Bronze Mirror Screen (defense) | 1 (1-2) | yes |
+| `icon.building.mirror_screen.s2` | `public/art/icons/buildings/mirror_screen_s2.png` | 256 | Bronze Mirror Screen (defense) | 2 (3-4) | yes |
+| `icon.building.mirror_screen.s3` | `public/art/icons/buildings/mirror_screen_s3.png` | 256 | Bronze Mirror Screen (defense) | 3 (5-6) | yes |
+| `icon.building.mirror_screen.s4` | `public/art/icons/buildings/mirror_screen_s4.png` | 256 | Bronze Mirror Screen (defense) | 4 (7-8) | yes |
+| `icon.building.mirror_screen.s5` | `public/art/icons/buildings/mirror_screen_s5.png` | 256 | Bronze Mirror Screen (defense) | 5 (9-10) | yes |
 | `icon.building.sand_bucket_post.s1` | `public/art/icons/buildings/sand_bucket_post_s1.png` | 256 | Sand Bucket Post (support) | 1 (1-1) |  |
 | `icon.building.sand_bucket_post.s2` | `public/art/icons/buildings/sand_bucket_post_s2.png` | 256 | Sand Bucket Post (support) | 2 (2-3) |  |
 | `icon.building.sand_bucket_post.s3` | `public/art/icons/buildings/sand_bucket_post_s3.png` | 256 | Sand Bucket Post (support) | 3 (4-4) |  |
@@ -518,11 +518,11 @@
 | `icon.building.spotter_perch.s3` | `public/art/icons/buildings/spotter_perch_s3.png` | 256 | Spotter's Perch (support) | 3 (4-4) |  |
 | `icon.building.spotter_perch.s4` | `public/art/icons/buildings/spotter_perch_s4.png` | 256 | Spotter's Perch (support) | 4 (5-6) |  |
 | `icon.building.spotter_perch.s5` | `public/art/icons/buildings/spotter_perch_s5.png` | 256 | Spotter's Perch (support) | 5 (7-8) |  |
-| `icon.building.steam_vent.s1` | `public/art/icons/buildings/steam_vent_s1.png` | 256 | Steam Vent (defense) | 1 (1-2) |  |
-| `icon.building.steam_vent.s2` | `public/art/icons/buildings/steam_vent_s2.png` | 256 | Steam Vent (defense) | 2 (3-4) |  |
-| `icon.building.steam_vent.s3` | `public/art/icons/buildings/steam_vent_s3.png` | 256 | Steam Vent (defense) | 3 (5-6) |  |
-| `icon.building.steam_vent.s4` | `public/art/icons/buildings/steam_vent_s4.png` | 256 | Steam Vent (defense) | 4 (7-8) |  |
-| `icon.building.steam_vent.s5` | `public/art/icons/buildings/steam_vent_s5.png` | 256 | Steam Vent (defense) | 5 (9-10) |  |
+| `icon.building.steam_vent.s1` | `public/art/icons/buildings/steam_vent_s1.png` | 256 | Steam Vent (defense) | 1 (1-2) | yes |
+| `icon.building.steam_vent.s2` | `public/art/icons/buildings/steam_vent_s2.png` | 256 | Steam Vent (defense) | 2 (3-4) | yes |
+| `icon.building.steam_vent.s3` | `public/art/icons/buildings/steam_vent_s3.png` | 256 | Steam Vent (defense) | 3 (5-6) | yes |
+| `icon.building.steam_vent.s4` | `public/art/icons/buildings/steam_vent_s4.png` | 256 | Steam Vent (defense) | 4 (7-8) | yes |
+| `icon.building.steam_vent.s5` | `public/art/icons/buildings/steam_vent_s5.png` | 256 | Steam Vent (defense) | 5 (9-10) | yes |
 | `icon.building.sleep_dart_tower.s1` | `public/art/icons/buildings/sleep_dart_tower_s1.png` | 256 | Sleep Dart Tower (defense) | 1 (1-2) |  |
 | `icon.building.sleep_dart_tower.s2` | `public/art/icons/buildings/sleep_dart_tower_s2.png` | 256 | Sleep Dart Tower (defense) | 2 (3-4) |  |
 | `icon.building.sleep_dart_tower.s3` | `public/art/icons/buildings/sleep_dart_tower_s3.png` | 256 | Sleep Dart Tower (defense) | 3 (5-6) |  |
@@ -548,11 +548,11 @@
 | `icon.building.longbow_yagura.s3` | `public/art/icons/buildings/longbow_yagura_s3.png` | 256 | Longbow Yagura (defense) | 3 (5-6) | yes |
 | `icon.building.longbow_yagura.s4` | `public/art/icons/buildings/longbow_yagura_s4.png` | 256 | Longbow Yagura (defense) | 4 (7-8) | yes |
 | `icon.building.longbow_yagura.s5` | `public/art/icons/buildings/longbow_yagura_s5.png` | 256 | Longbow Yagura (defense) | 5 (9-10) | yes |
-| `icon.building.lightning_rod_pagoda.s1` | `public/art/icons/buildings/lightning_rod_pagoda_s1.png` | 256 | Lightning Rod Tower (defense) | 1 (1-1) |  |
-| `icon.building.lightning_rod_pagoda.s2` | `public/art/icons/buildings/lightning_rod_pagoda_s2.png` | 256 | Lightning Rod Tower (defense) | 2 (2-3) |  |
-| `icon.building.lightning_rod_pagoda.s3` | `public/art/icons/buildings/lightning_rod_pagoda_s3.png` | 256 | Lightning Rod Tower (defense) | 3 (4-4) |  |
-| `icon.building.lightning_rod_pagoda.s4` | `public/art/icons/buildings/lightning_rod_pagoda_s4.png` | 256 | Lightning Rod Tower (defense) | 4 (5-6) |  |
-| `icon.building.lightning_rod_pagoda.s5` | `public/art/icons/buildings/lightning_rod_pagoda_s5.png` | 256 | Lightning Rod Tower (defense) | 5 (7-8) |  |
+| `icon.building.lightning_rod_pagoda.s1` | `public/art/icons/buildings/lightning_rod_pagoda_s1.png` | 256 | Lightning Rod Tower (defense) | 1 (1-1) | yes |
+| `icon.building.lightning_rod_pagoda.s2` | `public/art/icons/buildings/lightning_rod_pagoda_s2.png` | 256 | Lightning Rod Tower (defense) | 2 (2-3) | yes |
+| `icon.building.lightning_rod_pagoda.s3` | `public/art/icons/buildings/lightning_rod_pagoda_s3.png` | 256 | Lightning Rod Tower (defense) | 3 (4-4) | yes |
+| `icon.building.lightning_rod_pagoda.s4` | `public/art/icons/buildings/lightning_rod_pagoda_s4.png` | 256 | Lightning Rod Tower (defense) | 4 (5-6) | yes |
+| `icon.building.lightning_rod_pagoda.s5` | `public/art/icons/buildings/lightning_rod_pagoda_s5.png` | 256 | Lightning Rod Tower (defense) | 5 (7-8) | yes |
 
 ## ability
 

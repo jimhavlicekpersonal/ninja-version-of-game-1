@@ -182,6 +182,7 @@
   "temper.done": { "en": "Tempered: every {building} has its new shape.", "text": "ተጠናክሯል፦ እያንዳንዱ {building} አዲሱን ቅርጽ ይዟል።" },
   "temper.reset": { "en": "Back to untempered", "text": "ወደ ያልተጠናከረ ይመለሱ" },
   "temper.watchSupport": { "en": "Watch also weakens the raiders' healing, revives, toughness and shield cover across the whole base.", "text": "«ጥበቃ» በመላው መንደር የወራሪዎችን ፈውስ፣ ዳግም ሕይወት፣ ጥንካሬና የጋሻ ሽፋን ያዳክማል።" },
+  "temper.watchKinds": { "en": "Watch-tempered towers read varied armies: for each kind of warrior beyond {free} on the field, they hit {pct} harder. A focused army answers a Watch base.", "text": "በ«ጥበቃ» የተጠናከሩ ማማዎች ድብልቅ ሠራዊትን ይቀጣሉ፦ በሜዳው ላይ ከ{free} በላይ ላለ እያንዳንዱ የተዋጊ ዓይነት ጉዳታቸው በ{pct} ይጨምራል። ጥቂት የተዋጊ ዓይነቶች ያሉት ሠራዊት ለ«ጥበቃ» መንደር መልስ ነው።" },
   "scout.profile": { "en": "Tempered: Reach {reach} · Blast {blast} · Watch {watch}", "text": "የተጠናከረ፦ ርቀት {reach} · ፍንዳታ {blast} · ጥበቃ {watch}" },
   "stake.label": { "en": "Stake", "text": "ውርርድ" },
   "stake.none": { "en": "No stake", "text": "ውርርድ የለም" },

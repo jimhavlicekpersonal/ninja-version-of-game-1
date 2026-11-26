@@ -64,6 +64,8 @@ export interface SimBuilding {
   /** The same for a Hawk Tamer's slowing. */
   repairedSlowUntil: number;
   // ---- Non-live counters (content batch 2026-11-14, previewCounters.ts); absent on every live building ----
+  /** SIM_RULES 10 (GT-07): a tempered tower that reads varied armies (`TemperAxisDef.kindsFree`/`perKind`). */
+  readsKinds?: { free: number; per: number };
   /** Discipline Banner: this defense ignores taunts/decoys this tick (recomputed every tick). */
   focused?: boolean;
   /** Spotter's Perch covering this defense this tick (its building index). */
@@ -145,6 +147,8 @@ export interface SimTroop {
   sealed?: boolean;
   /** Hero abilities: the hero's ability was used; Bulwark/Squall end ticks; Bulwark's facing; Inner Calm's ward. */
   heroUsed?: boolean;
+  /** SIM_RULES 10: the tick from which a re-arming hero ability (`kit.cooldownTicks`) may start again. */
+  heroReadyAt?: number;
   bulwarkUntil?: number;
   bulwarkX?: number;
   bulwarkY?: number;
@@ -246,4 +250,6 @@ export interface BattleSim {
    */
   previewKinds?: Partial<Record<string, true>>;
   heroIndex?: number;
+  /** SIM_RULES 10 (GT-07): the kinds of own warrior deployed so far (not the hero, summons or abilities), in order. */
+  fieldKinds: string[];
 }

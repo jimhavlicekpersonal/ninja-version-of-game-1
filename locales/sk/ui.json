@@ -182,6 +182,7 @@
   "temper.done": { "en": "Tempered: every {building} has its new shape.", "text": "Zakalené: každá stavba {building} má nový tvar." },
   "temper.reset": { "en": "Back to untempered", "text": "Späť bez kalenia" },
   "temper.watchSupport": { "en": "Watch also weakens the raiders' healing, revives, toughness and shield cover across the whole base.", "text": "Hliadka navyše oslabuje liečenie, oživovanie, odolnosť a krytie štítom nájazdníkov v celej základni." },
+  "temper.watchKinds": { "en": "Watch-tempered towers read varied armies: for each kind of warrior beyond {free} on the field, they hit {pct} harder. A focused army answers a Watch base.", "text": "Veže zakalené na Hliadku prekuknú pestré armády: za každý druh bojovníka na bojisku nad {free} zasahujú o {pct} silnejšie. Na základňu s Hliadkou platí armáda z mála druhov." },
   "scout.profile": { "en": "Tempered: Reach {reach} · Blast {blast} · Watch {watch}", "text": "Kalenie: Dosah {reach} · Výbuch {blast} · Hliadka {watch}" },
   "stake.label": { "en": "Stake", "text": "Stávka" },
   "stake.none": { "en": "No stake", "text": "Bez stávky" },

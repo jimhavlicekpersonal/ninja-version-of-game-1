@@ -18,7 +18,10 @@ import { botArmy } from '../../../src/gameplay/sim/matchmaking';
 import { troopLevelCapAt } from '../../../src/gameplay/sim/research';
 import { createRng } from '../../../src/gameplay/sim/rng';
 
-const SEEDS = 8;
+// 16 bases (8 until SIM_RULES 10): adding the live counters and the Hero Hall to generated bases reshuffled their
+// layouts, and over 8 bases the lazy attack at Keep 8 rose 13 points by chance (best - lazy 22 -> 4). Over 16 the
+// margin is the same under both rules: best - lazy 18.2 / 13.4 / 12.8 at Keeps 4 / 6 / 8 (rules 9: 18.2 / 13.4 / 11.8).
+const SEEDS = 16;
 
 function battles(hall: number) {
   const army = botArmy(hall, 1, data);

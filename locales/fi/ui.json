@@ -182,6 +182,7 @@
   "temper.done": { "en": "Tempered: every {building} has its new shape.", "text": "Karkaistu: jokainen {building} sai uuden muotonsa." },
   "temper.reset": { "en": "Back to untempered", "text": "Takaisin karkaisemattomaksi" },
   "temper.watchSupport": { "en": "Watch also weakens the raiders' healing, revives, toughness and shield cover across the whole base.", "text": "Vartio heikentää myös ryöstäjien parannusta, elvytyksiä, sitkeyttä ja kilpisuojaa koko tukikohdassa." },
+  "temper.watchKinds": { "en": "Watch-tempered towers read varied armies: for each kind of warrior beyond {free} on the field, they hit {pct} harder. A focused army answers a Watch base.", "text": "Vartio-karkaistut tornit lukevat monipuolisia armeijoita: kun kentällä on soturilajeja yli {free}, jokainen ylimääräinen laji tekee niiden iskuista {pct} kovempia. Harvoista lajeista koottu armeija on vastaus Vartio-tukikohtaan." },
   "scout.profile": { "en": "Tempered: Reach {reach} · Blast {blast} · Watch {watch}", "text": "Karkaistu: Kantama {reach} · Räjähdys {blast} · Vartio {watch}" },
   "stake.label": { "en": "Stake", "text": "Panos" },
   "stake.none": { "en": "No stake", "text": "Ei panosta" },

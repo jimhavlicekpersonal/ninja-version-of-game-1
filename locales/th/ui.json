@@ -182,6 +182,7 @@
   "temper.done": { "en": "Tempered: every {building} has its new shape.", "text": "ชุบแข็งแล้ว: {building} ทุกหลังได้รูปแบบใหม่" },
   "temper.reset": { "en": "Back to untempered", "text": "กลับเป็นแบบไม่ชุบแข็ง" },
   "temper.watchSupport": { "en": "Watch also weakens the raiders' healing, revives, toughness and shield cover across the whole base.", "text": "เฝ้าระวังยังทำให้การรักษา การชุบชีวิต ความทนทาน และการกำบังด้วยโล่ของฝ่ายบุกอ่อนลงทั่วทั้งฐาน" },
+  "temper.watchKinds": { "en": "Watch-tempered towers read varied armies: for each kind of warrior beyond {free} on the field, they hit {pct} harder. A focused army answers a Watch base.", "text": "หอที่ชุบแข็งแบบเฝ้าระวังอ่านกองทัพผสมออก: เมื่อนักรบในสนามมีเกิน {free} ชนิด ทุกชนิดที่เกินมาจะทำให้หอยิงแรงขึ้น {pct} กองทัพที่ใช้นักรบไม่กี่ชนิดคือทางแก้ฐานเฝ้าระวัง" },
   "scout.profile": { "en": "Tempered: Reach {reach} · Blast {blast} · Watch {watch}", "text": "ชุบแข็ง: ระยะ {reach} · ระเบิด {blast} · เฝ้าระวัง {watch}" },
   "stake.label": { "en": "Stake", "text": "เดิมพัน" },
   "stake.none": { "en": "No stake", "text": "ไม่เดิมพัน" },

@@ -39,8 +39,8 @@ export const defaultData: GameData = {
   notifications: notifications as unknown as GameData['notifications'],
   trials: trials as unknown as GameData['trials'],
   // P5-07: Warrior Mastery ranks are live (no stat bonus: progression.json mastery.maxBonus is 0, so no battle setup
-  // carries one). The Hero Hall's choice stays behind the preview (planned.json).
-  features: { mastery: true },
+  // carries one). SIM_RULES 10 (2026-11-25): the Hero Hall's choice is live (Iron Matriarch, Sky Admiral).
+  features: { mastery: true, heroChoice: true },
 };
 
 export function buildingDef(data: GameData, type: BuildingType): BuildingDef {

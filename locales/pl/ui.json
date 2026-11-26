@@ -182,6 +182,7 @@
   "temper.done": { "en": "Tempered: every {building} has its new shape.", "text": "Zahartowano: każda budowla {building} ma nowy kształt." },
   "temper.reset": { "en": "Back to untempered", "text": "Przywróć stan niezahartowany" },
   "temper.watchSupport": { "en": "Watch also weakens the raiders' healing, revives, toughness and shield cover across the whole base.", "text": "Czujność osłabia też w całej bazie leczenie, wskrzeszanie, wytrzymałość i osłony najeźdźców." },
+  "temper.watchKinds": { "en": "Watch-tempered towers read varied armies: for each kind of warrior beyond {free} on the field, they hit {pct} harder. A focused army answers a Watch base.", "text": "Wieże zahartowane na Czujność rozpoznają różnorodne armie: za każdy rodzaj wojownika na polu ponad {free} uderzają o {pct} mocniej. Na bazę z Czujnością najlepsza jest armia z niewielu rodzajów." },
   "scout.profile": { "en": "Tempered: Reach {reach} · Blast {blast} · Watch {watch}", "text": "Hartowanie: Zasięg {reach} · Wybuch {blast} · Czujność {watch}" },
   "stake.label": { "en": "Stake", "text": "Stawka" },
   "stake.none": { "en": "No stake", "text": "Bez stawki" },

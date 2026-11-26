@@ -958,7 +958,8 @@ function runCommand(s: VillageState, cmd0: Command, now: number, data: GameData)
         s.hero = {};
         return { ok: true, state: s, events: [] };
       }
-      const def = data.battle.heroes?.[cmd.hero];
+      const heroes = data.battle.heroes ?? {};
+      const def = typeof cmd.hero === 'string' && Object.hasOwn(heroes, cmd.hero) ? heroes[cmd.hero] : undefined;
       if (!def) return fail('NOT_FOUND', 'Unknown hero.');
       if (!choosableHeroes(s, data).includes(cmd.hero)) {
         return hallLevel(s, data) < def.unlockKeep

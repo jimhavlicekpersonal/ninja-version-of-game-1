@@ -182,6 +182,7 @@
   "temper.done": { "en": "Tempered: every {building} has its new shape.", "text": "ਤਪਾਈ ਹੋਈ: ਹਰ {building} ਨੂੰ ਨਵਾਂ ਰੂਪ ਮਿਲਿਆ।" },
   "temper.reset": { "en": "Back to untempered", "text": "ਬਿਨਾਂ ਤਪਾਈ ਵਾਲੀ ਹਾਲਤ 'ਤੇ ਵਾਪਸ" },
   "temper.watchSupport": { "en": "Watch also weakens the raiders' healing, revives, toughness and shield cover across the whole base.", "text": "ਪਹਿਰਾ ਪੂਰੇ ਅੱਡੇ ਵਿੱਚ ਧਾੜਵੀਆਂ ਦੇ ਇਲਾਜ, ਮੁੜ-ਜੀਵਨ, ਮਜ਼ਬੂਤੀ ਅਤੇ ਢਾਲ ਦੀ ਓਟ ਨੂੰ ਵੀ ਕਮਜ਼ੋਰ ਕਰਦਾ ਹੈ।" },
+  "temper.watchKinds": { "en": "Watch-tempered towers read varied armies: for each kind of warrior beyond {free} on the field, they hit {pct} harder. A focused army answers a Watch base.", "text": "ਪਹਿਰਾ ਤਪਾਈ ਵਾਲੇ ਬੁਰਜ ਰਲੀ-ਮਿਲੀ ਫ਼ੌਜ ਨੂੰ ਪਛਾਣ ਲੈਂਦੇ ਹਨ: ਮੈਦਾਨ ਵਿੱਚ ਯੋਧਿਆਂ ਦੀਆਂ ਕਿਸਮਾਂ {free} ਤੋਂ ਵੱਧ ਹੋਣ 'ਤੇ ਹਰ ਵਾਧੂ ਕਿਸਮ ਲਈ ਉਹ {pct} ਵੱਧ ਜ਼ੋਰ ਨਾਲ ਵਾਰ ਕਰਦੇ ਹਨ। ਥੋੜ੍ਹੀਆਂ ਕਿਸਮਾਂ ਵਾਲੀ ਫ਼ੌਜ ਪਹਿਰਾ ਅੱਡੇ ਦਾ ਜਵਾਬ ਹੈ।" },
   "scout.profile": { "en": "Tempered: Reach {reach} · Blast {blast} · Watch {watch}", "text": "ਤਪਾਈ: ਮਾਰ {reach} · ਧਮਾਕਾ {blast} · ਪਹਿਰਾ {watch}" },
   "stake.label": { "en": "Stake", "text": "ਦਾਅ" },
   "stake.none": { "en": "No stake", "text": "ਕੋਈ ਦਾਅ ਨਹੀਂ" },

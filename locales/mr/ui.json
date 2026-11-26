@@ -182,6 +182,7 @@
   "temper.done": { "en": "Tempered: every {building} has its new shape.", "text": "घडण झाली: प्रत्येक {building} ला नवी घडण मिळाली." },
   "temper.reset": { "en": "Back to untempered", "text": "घडणपूर्व स्थितीत परत" },
   "temper.watchSupport": { "en": "Watch also weakens the raiders' healing, revives, toughness and shield cover across the whole base.", "text": "पहारा संपूर्ण तळावर छापेमारांचे उपचार, पुनरुज्जीवन, कणखरपणा आणि ढाल-संरक्षणही कमकुवत करतो." },
+  "temper.watchKinds": { "en": "Watch-tempered towers read varied armies: for each kind of warrior beyond {free} on the field, they hit {pct} harder. A focused army answers a Watch base.", "text": "पहारा घडणीचे बुरूज मिश्र सैन्य ओळखतात: मैदानावर योद्ध्यांचे प्रकार {free} पेक्षा जास्त झाले की प्रत्येक जादा प्रकारासाठी ते {pct} जास्त जोरात मारतात. मोजक्या प्रकारांचे सैन्य हे पहारा तळाचे उत्तर आहे." },
   "scout.profile": { "en": "Tempered: Reach {reach} · Blast {blast} · Watch {watch}", "text": "घडण: पल्ला {reach} · स्फोट {blast} · पहारा {watch}" },
   "stake.label": { "en": "Stake", "text": "पण" },
   "stake.none": { "en": "No stake", "text": "पण नाही" },

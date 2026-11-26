@@ -182,6 +182,7 @@
   "temper.done": { "en": "Tempered: every {building} has its new shape.", "text": "ઘડાયું: દરેક {building} ને નવો ઘાટ મળ્યો." },
   "temper.reset": { "en": "Back to untempered", "text": "ઘડતર વગરની સ્થિતિમાં પાછા" },
   "temper.watchSupport": { "en": "Watch also weakens the raiders' healing, revives, toughness and shield cover across the whole base.", "text": "ચોકી આખા બેઝમાં ધાડપાડુઓની સારવાર, પુનર્જીવન, મજબૂતી અને ઢાલ-આવરણને પણ નબળાં કરે છે." },
+  "temper.watchKinds": { "en": "Watch-tempered towers read varied armies: for each kind of warrior beyond {free} on the field, they hit {pct} harder. A focused army answers a Watch base.", "text": "ચોકી ઘડતરવાળા ટાવર મિશ્ર સેનાને પારખી લે છે: મેદાન પર યોદ્ધાઓના પ્રકાર {free} થી વધે ત્યારે દરેક વધારાના પ્રકાર માટે તેઓ {pct} વધુ જોરથી મારે છે. થોડા પ્રકારના યોદ્ધાઓવાળી સેના ચોકી બેઝનો જવાબ છે." },
   "scout.profile": { "en": "Tempered: Reach {reach} · Blast {blast} · Watch {watch}", "text": "ઘડતર: પહોંચ {reach} · વિસ્ફોટ {blast} · ચોકી {watch}" },
   "stake.label": { "en": "Stake", "text": "દાવ" },
   "stake.none": { "en": "No stake", "text": "દાવ નહીં" },

@@ -54,6 +54,12 @@ export interface WarriorEntry {
    * strength is arriving unseen at full health (the Eclipse Ninja), instead of hand-editing troops.json.
    */
   hpScale?: number;
+  /**
+   * SIM_RULES 10 (GT-04): the endgame shift. HP and damage on the research levels past this warrior's Keep 12 cap carry
+   * this factor (absent = 1): below 1 an older tier plateaus, above 1 a newer tier comes into its own at Keeps 13-15.
+   * Written with `tools/progression/endgameshift.mjs`, which scales the same levels in troops.json.
+   */
+  lateScale?: number;
 }
 
 export interface HeroEntry {
@@ -104,7 +110,14 @@ export function warriorStats(w: WarriorEntry, level: number): { hp: number; dps:
   const r = role(w.role);
   const p = warriorPower(w, level);
   const k = Math.sqrt(r.hpPerDps);
-  return { hp: p * k * (w.hpScale ?? 1), dps: (p / k) * (w.dpsScale ?? 1), power: p, housing: r.housing, range: r.range, speed: r.speed };
+  const late = w.lateScale !== undefined && level > lateFrom(w) ? w.lateScale : 1;
+  return { hp: p * k * (w.hpScale ?? 1) * late, dps: (p / k) * (w.dpsScale ?? 1) * late, power: p, housing: r.housing, range: r.range, speed: r.speed };
+}
+
+/** SIM_RULES 10 (GT-04): the last research level a warrior reaches by Keep 12; `lateScale` acts above it. */
+function lateFrom(w: WarriorEntry): number {
+  const caps = progression.troopLevelCapByKeep;
+  return Math.max(1, caps[11] - progression.levelCapOffsetPerTier * (w.tier - 1));
 }
 
 /**

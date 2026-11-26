@@ -82,9 +82,9 @@ describe('DEF-01: a raid that wins fewer stars carries less home', () => {
 
   it('the fight is unchanged; what leaves the village is at most the carry share of what the old rule took', () => {
     const seen = new Set<number>();
-    // SIM_RULES 9 (2026-11-22): no seed below gave a one-star raid any more; 4030 on a capped base does (picked with
-    // seedWith, as the seeds above were).
-    for (const [seed, build] of [[4011, 'cap'], [4030, 'cap'], [4046, 'floor'], [4025, 'floor'], [4018, 'floor'], [4032, 'level1']] as const) {
+    // Re-picked for SIM_RULES 10 (2026-11-25: generated bases hold the live counters and the Hero Hall), the first seeds
+    // from 4000 for each star count per build: cap 4000/4002/4163 = 0/1/2, floor 4001/4106 = 1/3, level1 4014 = 1.
+    for (const [seed, build] of [[4000, 'cap'], [4002, 'cap'], [4163, 'cap'], [4001, 'floor'], [4106, 'floor'], [4014, 'level1']] as const) {
       const { old, now, village: v } = both(seed, build);
       expect(now.result.hash).toBe(old.result.hash);
       const stars = now.result.stars;
@@ -115,7 +115,8 @@ describe('DEF-01: a raid that wins fewer stars carries less home', () => {
     const seen = new Set<number>();
     // One raid for each star count: the first seeds from 4000 that give 0, 1, 2 and 3 stars under the current raider
     // rules (re-pick them if the raider rules change; the claim is per star count, not per seed).
-    const picks: [number, Build][] = [[4000, 'cap'], [4004, 'floor'], [4002, 'floor'], [4001, 'floor']];
+    // Re-picked for SIM_RULES 10: 0, 1, 2 and 3 stars.
+    const picks: [number, Build][] = [[4000, 'cap'], [4001, 'floor'], [4002, 'floor'], [4106, 'floor']];
     for (const [seed, build] of picks) {
       const { now } = both(seed, build, 0);
       const stars = now.result.stars;

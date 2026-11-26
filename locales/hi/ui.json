@@ -182,6 +182,7 @@
   "temper.done": { "en": "Tempered: every {building} has its new shape.", "text": "साधा गया: हर {building} को नया रूप मिल गया।" },
   "temper.reset": { "en": "Back to untempered", "text": "बिना साधे पर लौटें" },
   "temper.watchSupport": { "en": "Watch also weakens the raiders' healing, revives, toughness and shield cover across the whole base.", "text": "चौकसी पूरे ठिकाने में हमलावरों की चिकित्सा, पुनर्जीवन, सहनशक्ति और ढाल की ओट को भी कमज़ोर करती है।" },
+  "temper.watchKinds": { "en": "Watch-tempered towers read varied armies: for each kind of warrior beyond {free} on the field, they hit {pct} harder. A focused army answers a Watch base.", "text": "चौकसी से साधी गई मीनारें मिली-जुली सेनाओं को भाँप लेती हैं: मैदान पर योद्धाओं की किस्में {free} से ज़्यादा होने पर हर अतिरिक्त किस्म के लिए वे {pct} ज़्यादा ज़ोर से वार करती हैं। कम किस्मों वाली सेना चौकसी वाले ठिकाने का जवाब है।" },
   "scout.profile": { "en": "Tempered: Reach {reach} · Blast {blast} · Watch {watch}", "text": "साधा हुआ: पहुँच {reach} · धमाका {blast} · चौकसी {watch}" },
   "stake.label": { "en": "Stake", "text": "दाँव" },
   "stake.none": { "en": "No stake", "text": "कोई दाँव नहीं" },

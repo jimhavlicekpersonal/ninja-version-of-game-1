@@ -182,6 +182,7 @@
   "temper.done": { "en": "Tempered: every {building} has its new shape.", "text": "Templado: cada {building} tiene su nueva forma." },
   "temper.reset": { "en": "Back to untempered", "text": "Volver a sin templar" },
   "temper.watchSupport": { "en": "Watch also weakens the raiders' healing, revives, toughness and shield cover across the whole base.", "text": "Vigilancia también debilita, en toda la base, la curación, las resurrecciones, la resistencia y la protección de escudos de los atacantes." },
+  "temper.watchKinds": { "en": "Watch-tempered towers read varied armies: for each kind of warrior beyond {free} on the field, they hit {pct} harder. A focused army answers a Watch base.", "text": "Las torres templadas con Vigilancia leen los ejércitos variados: por cada tipo de guerrero en el campo más allá de {free}, golpean un {pct} más fuerte. Un ejército de pocos tipos es la respuesta a una base de Vigilancia." },
   "scout.profile": { "en": "Tempered: Reach {reach} · Blast {blast} · Watch {watch}", "text": "Templada: Alcance {reach} · Estallido {blast} · Vigilancia {watch}" },
   "stake.label": { "en": "Stake", "text": "Apuesta" },
   "stake.none": { "en": "No stake", "text": "Sin apuesta" },

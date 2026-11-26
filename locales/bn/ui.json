@@ -182,6 +182,7 @@
   "temper.done": { "en": "Tempered: every {building} has its new shape.", "text": "শান দেওয়া হয়েছে: সব {building} নতুন গড়ন পেয়েছে।" },
   "temper.reset": { "en": "Back to untempered", "text": "শান দেওয়ার আগের অবস্থায় ফিরুন" },
   "temper.watchSupport": { "en": "Watch also weakens the raiders' healing, revives, toughness and shield cover across the whole base.", "text": "পাহারা পুরো ঘাঁটি জুড়ে হানাদারদের আরোগ্য, পুনর্জীবন, দৃঢ়তা আর ঢালের সুরক্ষাও দুর্বল করে।" },
+  "temper.watchKinds": { "en": "Watch-tempered towers read varied armies: for each kind of warrior beyond {free} on the field, they hit {pct} harder. A focused army answers a Watch base.", "text": "পাহারায় শান দেওয়া মিনারগুলো মিশ্র বাহিনী চিনে নেয়: মাঠে যোদ্ধার ধরন {free} ছাড়ালে প্রতিটি বাড়তি ধরনের জন্য এগুলো {pct} বেশি জোরে আঘাত করে। অল্প কয়েক ধরনের যোদ্ধার বাহিনীই পাহারার ঘাঁটির জবাব।" },
   "scout.profile": { "en": "Tempered: Reach {reach} · Blast {blast} · Watch {watch}", "text": "শান: পাল্লা {reach} · বিস্ফোরণ {blast} · পাহারা {watch}" },
   "stake.label": { "en": "Stake", "text": "বাজি" },
   "stake.none": { "en": "No stake", "text": "বাজি নেই" },

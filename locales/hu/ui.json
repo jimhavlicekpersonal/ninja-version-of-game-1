@@ -182,6 +182,7 @@
   "temper.done": { "en": "Tempered: every {building} has its new shape.", "text": "Edzés kész: minden ilyen épület új formát kapott: {building}." },
   "temper.reset": { "en": "Back to untempered", "text": "Vissza edzés nélkülire" },
   "temper.watchSupport": { "en": "Watch also weakens the raiders' healing, revives, toughness and shield cover across the whole base.", "text": "Az Őrség az egész bázison gyengíti a portyázók gyógyítását, feltámasztását, szívósságát és pajzsfedezetét is." },
+  "temper.watchKinds": { "en": "Watch-tempered towers read varied armies: for each kind of warrior beyond {free} on the field, they hit {pct} harder. A focused army answers a Watch base.", "text": "Az Őrségre edzett tornyok kiismerik a vegyes seregeket: ha a csatatéren több harcosfajta van, mint {free}, minden további fajta után {pct} többletsebzést okoznak. Az Őrség-bázis ellen a kevés fajtából álló sereg a válasz." },
   "scout.profile": { "en": "Tempered: Reach {reach} · Blast {blast} · Watch {watch}", "text": "Edzés: Hatótáv {reach} · Robbanás {blast} · Őrség {watch}" },
   "stake.label": { "en": "Stake", "text": "Tét" },
   "stake.none": { "en": "No stake", "text": "Nincs tét" },

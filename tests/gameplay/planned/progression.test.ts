@@ -28,12 +28,19 @@ function village(keep: number, data: GameData, heroHall = 0): VillageState {
 
 describe('the planned buildings', () => {
   const ids = previewBuildingIds();
-  it('are the sixteen designed buildings (fifteen counters and the Hero Hall), none of them live', () => {
-    expect(ids).toHaveLength(16);
+  it('are the twelve counters still planned; the four of SIM_RULES 10 are live with their Keep limits', () => {
+    expect(ids).toHaveLength(12);
     for (const id of ids) {
       expect(BUILDINGS.find((b) => b.id === id)!.live).toBe(false);
       expect(defaultData.buildings[id]).toBeUndefined();
       for (const h of defaultData.hall.levels) expect(h.limits[id]).toBeUndefined();
+    }
+    for (const id of ['steam_vent', 'lightning_rod_pagoda', 'mirror_screen', 'hero_shrine']) {
+      const entry = BUILDINGS.find((b) => b.id === id)!;
+      expect(entry.live, id).toBe(true);
+      expect(defaultData.buildings[id], id).toBeDefined();
+      expect(defaultData.hall.levels[entry.unlockKeep - 1].limits[id]?.maxLevel, id).toBeGreaterThan(0);
+      expect(entry.unlockKeep > 1 ? defaultData.hall.levels[entry.unlockKeep - 2].limits[id] : undefined, id).toBeUndefined();
     }
   });
 
@@ -76,9 +83,9 @@ describe('the planned buildings', () => {
     const before = JSON.stringify(defaultData);
     const data = withPreview(defaultData);
     expect(JSON.stringify(defaultData)).toBe(before);
-    // P5-07: mastery (ranks, no bonus) is live; only the hero choice stays in the preview.
+    // P5-07: mastery (ranks, no bonus) is live; SIM_RULES 10: so is the hero choice.
     expect(data.features).toEqual({ mastery: true, heroChoice: true });
-    expect(defaultData.features).toEqual({ mastery: true });
+    expect(defaultData.features).toEqual({ mastery: true, heroChoice: true });
     for (const keep of [5, 9, 14]) {
       const base = generateOpponent(4242 + keep, keep, defaultData);
       const army = { hedgehog_roller: 20, frog_lobber: 10, beetle_brute: 4, owl_bomber: 3 };
@@ -94,14 +101,18 @@ describe('the planned buildings', () => {
 });
 
 describe('Hero Hall: choosing a hero', () => {
-  it('is refused in the shipped game', () => {
+  it('is live in the shipped game (SIM_RULES 10): a built Hall lets the player choose a live hero, never a planned one', () => {
     const s = village(13, defaultData, 3);
-    const r = applyCommand(s, { type: 'chooseHero', hero: 'shadow_captain' }, NOW, defaultData);
-    expect(r.ok).toBe(false);
-    if (!r.ok) expect(r.code).toBe('NOT_AVAILABLE');
-    // A choice left in a save changes nothing while the feature is off.
-    s.hero = { chosen: 'iron_matriarch' };
-    expect(heroFor(s, defaultData)).toEqual({ id: 'shadow_captain', level: 7 });
+    const r = applyCommand(s, { type: 'chooseHero', hero: 'iron_matriarch' }, NOW, defaultData);
+    expect(r.ok).toBe(true);
+    if (r.ok) expect(heroFor(r.state, defaultData)).toEqual({ id: 'iron_matriarch', level: 5 });
+    const planned = applyCommand(s, { type: 'chooseHero', hero: 'grand_sensei' }, NOW, defaultData);
+    expect(planned.ok).toBe(false);
+    if (!planned.ok) expect(planned.code).toBe('NOT_FOUND');
+    // Without a Hall a saved choice changes nothing: the Keep's hero joins.
+    const noHall = village(13, defaultData);
+    noHall.hero = { chosen: 'iron_matriarch' };
+    expect(heroFor(noHall, defaultData)).toEqual({ id: 'shadow_captain', level: 7 });
   });
 
   // P4-10 (BNL-11, restated): the Hall's level decides which heroes can be chosen; it never caps the hero's level.
@@ -111,10 +122,12 @@ describe('Hero Hall: choosing a hero', () => {
     expect(r0.ok).toBe(false);
     expect(heroFor(noHall, P)).toEqual({ id: 'shadow_captain', level: 6 });
     const low = village(12, P, 1);
-    // A level 1 Hall: the Captain only, at his full Keep level (the old cap gave level 1 here).
+    // A level 1 Hall: the Captain at his full Keep level (the old cap gave level 1 here) and, since SIM_RULES 10
+    // (heroHallLevels [1, 1, 3, 8]: the Hall opens at Keep 9 with her), the Iron Matriarch; not yet the Sky Admiral.
     const captain = applyCommand(low, { type: 'chooseHero', hero: 'shadow_captain' }, NOW, P);
     expect(captain.ok && heroFor(captain.state, P)).toEqual({ id: 'shadow_captain', level: 6 });
-    expect(applyCommand(low, { type: 'chooseHero', hero: 'iron_matriarch' }, NOW, P).ok).toBe(false);
+    expect(applyCommand(low, { type: 'chooseHero', hero: 'iron_matriarch' }, NOW, P).ok).toBe(true);
+    expect(applyCommand(low, { type: 'chooseHero', hero: 'sky_admiral' }, NOW, P).ok).toBe(false);
     const s = village(12, P, 3);
     const locked = applyCommand(s, { type: 'chooseHero', hero: 'grand_sensei' }, NOW, P);
     expect(locked.ok).toBe(false);

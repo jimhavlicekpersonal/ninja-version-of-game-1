@@ -30,9 +30,11 @@ describe('relay assaults (SIM_RULES 3)', () => {
     // Rules 5 (heroes, report section 5 step 8) plays a battle without a hero exactly as rules 4, and rules 6/7
     // (Tempering) a battle against an untempered base exactly as rules 5; rules 7 changed Watch, so 6 retires.
     // Rules 8 (2026-11-18, Phase 4) changes how live warriors fight in every battle: nothing older replays.
-    expect(SIM_RULES).toBe(9);
+    // Rules 10 (2026-11-25) puts new counters into generated bases and moves late research levels: 9 retires.
+    expect(SIM_RULES).toBe(10);
     expect(SIM_RULES_COMPATIBLE).toEqual([]);
-    expect(replayable({ rules: 9 })).toBe(true);
+    expect(replayable({ rules: 10 })).toBe(true);
+    expect(replayable({ rules: 9 })).toBe(false);
     expect(replayable({ rules: 8 })).toBe(false);
     expect(replayable({ rules: 7 })).toBe(false);
     expect(replayable({ rules: 6 })).toBe(false);

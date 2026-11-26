@@ -182,6 +182,7 @@
   "temper.done": { "en": "Tempered: every {building} has its new shape.", "text": "Fet: cada {building} té la seva nova forma." },
   "temper.reset": { "en": "Back to untempered", "text": "Torna a sense tremp" },
   "temper.watchSupport": { "en": "Watch also weakens the raiders' healing, revives, toughness and shield cover across the whole base.", "text": "La Guaita també afebleix, a tota la base, la curació, les ressurreccions, la resistència i la protecció dels escuts dels atacants." },
+  "temper.watchKinds": { "en": "Watch-tempered towers read varied armies: for each kind of warrior beyond {free} on the field, they hit {pct} harder. A focused army answers a Watch base.", "text": "Les torres amb tremp de Guaita llegeixen els exèrcits variats: per cada tipus de guerrer al camp més enllà dels primers {free}, colpegen un {pct} més fort. Un exèrcit de pocs tipus és la resposta a una base de Guaita." },
   "scout.profile": { "en": "Tempered: Reach {reach} · Blast {blast} · Watch {watch}", "text": "Tremp: Abast {reach} · Esclat {blast} · Guaita {watch}" },
   "stake.label": { "en": "Stake", "text": "Repte" },
   "stake.none": { "en": "No stake", "text": "Sense repte" },

@@ -48,7 +48,9 @@ describe('the Shadow Captain', () => {
     // original units whose numbers have not moved since rules 4: what it checks is that the hero code is inert.
     const originals = { hedgehog_roller: 40, frog_lobber: 30, beetle_brute: 8 };
     for (const seed of [3, 17]) {
-      const base = generateOpponent(9 * 7919 + seed, 9, data);
+      // SIM_RULES 10: generated bases may hold buildings rules 4 never had (the live counters, the Hero Hall), so the
+      // base comes from rules 4's own data: both engines fight the same base.
+      const base = generateOpponent(9 * 7919 + seed, 9, v4().data as never);
       const setup: BattleSetup = { seed, base, army: originals, infiltration: true };
       const probe = createBattle(setup, data);
       const r = { setup, deployments: botDeployments(probe.deployable, probe.grid.size, originals, createRng(seed), data, {}, probe.entry) };
@@ -97,7 +99,15 @@ describe('the server checks the hero (report section 5 step 8)', () => {
     expect(checkArmy(sub({ id: 'shadow_captain', level: 2 }), at(7), data).hero).toEqual({ id: 'shadow_captain', level: 2 });
     expect(() => checkArmy(sub({ id: 'shadow_captain', level: 3 }), at(7), data)).toThrow('bad hero');
     expect(() => checkArmy(sub({ id: 'shadow_captain', level: 1 }), at(5), data)).toThrow('bad hero');
-    expect(() => checkArmy(sub({ id: 'iron_matriarch', level: 1 }), at(12), data)).toThrow('bad hero');
+    // SIM_RULES 10: hero choice is live, so a hero chosen at the Hero Hall is accepted from its Keep, at its Keep level.
+    expect(checkArmy(sub({ id: 'iron_matriarch', level: 1 }), at(12), data).hero).toEqual({ id: 'iron_matriarch', level: 1 });
+    expect(checkArmy(sub({ id: 'iron_matriarch', level: 5 }), at(12), data).hero).toEqual({ id: 'iron_matriarch', level: 5 });
+    expect(() => checkArmy(sub({ id: 'iron_matriarch', level: 6 }), at(12), data)).toThrow('bad hero');
+    expect(() => checkArmy(sub({ id: 'sky_admiral', level: 1 }), at(9), data)).toThrow('bad hero');
+    // Not live (still planned), an ordinary warrior, or an inherited property name: refused.
+    expect(() => checkArmy(sub({ id: 'grand_sensei', level: 1 }), at(15), data)).toThrow('bad hero');
+    expect(() => checkArmy(sub({ id: 'hedgehog_roller', level: 1 }), at(12), data)).toThrow('bad hero');
+    expect(() => checkArmy(sub({ id: 'constructor', level: 1 }), at(12), data)).toThrow('bad hero');
     expect(checkArmy(sub(undefined), at(12), data).hero).toBeUndefined();
   });
 });

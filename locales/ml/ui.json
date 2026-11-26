@@ -182,6 +182,7 @@
   "temper.done": { "en": "Tempered: every {building} has its new shape.", "text": "മിനുക്കി: എല്ലാ {building} കെട്ടിടങ്ങൾക്കും പുതിയ രൂപമായി." },
   "temper.reset": { "en": "Back to untempered", "text": "മിനുക്കാത്ത നിലയിലേക്ക്" },
   "temper.watchSupport": { "en": "Watch also weakens the raiders' healing, revives, toughness and shield cover across the whole base.", "text": "കാവൽ മുഴുവൻ താവളത്തിലും റെയ്ഡർമാരുടെ ചികിത്സ, പുനർജീവനം, കരുത്ത്, പരിച സംരക്ഷണം എന്നിവ ദുർബലമാക്കുകയും ചെയ്യും." },
+  "temper.watchKinds": { "en": "Watch-tempered towers read varied armies: for each kind of warrior beyond {free} on the field, they hit {pct} harder. A focused army answers a Watch base.", "text": "കാവൽ മിനുക്കിയ ഗോപുരങ്ങൾ കലർന്ന സേനകളെ തിരിച്ചറിയും: കളത്തിലെ യോദ്ധാക്കളുടെ തരങ്ങൾ {free} എണ്ണം കടന്നാൽ, ഓരോ അധിക തരത്തിനും അവ {pct} കൂടുതൽ ശക്തിയിൽ അടിക്കും. കുറച്ച് തരങ്ങൾ മാത്രമുള്ള സേനയാണ് കാവൽ താവളത്തിനുള്ള മറുപടി." },
   "scout.profile": { "en": "Tempered: Reach {reach} · Blast {blast} · Watch {watch}", "text": "മിനുക്കിയത്: ദൂരം {reach} · സ്ഫോടനം {blast} · കാവൽ {watch}" },
   "stake.label": { "en": "Stake", "text": "പന്തയം" },
   "stake.none": { "en": "No stake", "text": "പന്തയമില്ല" },

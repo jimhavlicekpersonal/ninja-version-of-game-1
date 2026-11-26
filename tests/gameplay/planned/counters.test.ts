@@ -143,8 +143,8 @@ describe('Straw Scarecrow (beast_decoy)', () => {
   });
 });
 
-describe('Bronze Mirror Screen (reflect_projectiles)', () => {
-  it('sends every third projectile back at its thrower', () => {
+describe('Bronze Mirror Screen (reflect_projectiles, live in SIM_RULES 10)', () => {
+  it('sends every second projectile back at its thrower', () => {
     const s = sim([b('m', 'mirror_screen', 10, 10)], { frog_lobber: 1 });
     const ti = place(s, 'frog_lobber', 30, 30);
     frozen(s, ti);
@@ -153,12 +153,15 @@ describe('Bronze Mirror Screen (reflect_projectiles)', () => {
     const shot = () => s.projectiles.push({ id: 900 + s.tick, kind: 'pebble', fromX: 30, fromY: 30, toX: 11, toY: 11, total: 1, left: 1, damage: 10, splash: 0, targetTroop: -1, targetBuilding: 1, hitsAir: false, hitsGround: false, arc: true, sourceTroop: ti });
     const hp = t.hp;
     shot(); step(s);
-    shot(); step(s);
-    expect(mirror.maxHp - mirror.hp).toBeCloseTo(20, 6);
+    expect(mirror.maxHp - mirror.hp).toBeCloseTo(10, 6);
     expect(t.hp).toBe(hp);
     shot(); step(s);
-    expect(mirror.maxHp - mirror.hp).toBeCloseTo(20, 6);
+    expect(mirror.maxHp - mirror.hp).toBeCloseTo(10, 6);
     expect(hp - t.hp).toBeCloseTo(10, 6);
+    shot(); step(s);
+    expect(mirror.maxHp - mirror.hp).toBeCloseTo(20, 6);
+    shot(); step(s);
+    expect(hp - t.hp).toBeCloseTo(20, 6);
   });
 });
 

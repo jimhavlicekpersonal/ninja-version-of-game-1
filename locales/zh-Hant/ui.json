@@ -182,6 +182,7 @@
   "temper.done": { "en": "Tempered: every {building} has its new shape.", "text": "淬鍊完成：所有{building}都換上了新形態。" },
   "temper.reset": { "en": "Back to untempered", "text": "恢復未淬鍊" },
   "temper.watchSupport": { "en": "Watch also weakens the raiders' healing, revives, toughness and shield cover across the whole base.", "text": "警戒還會在整個基地削弱進攻方的治療、復活、韌性和護盾掩護。" },
+  "temper.watchKinds": { "en": "Watch-tempered towers read varied armies: for each kind of warrior beyond {free} on the field, they hit {pct} harder. A focused army answers a Watch base.", "text": "以警戒淬鍊的塔能看穿混編軍隊：場上戰士種類超過 {free} 種後，每多一種，傷害提高 {pct}。對付警戒基地，就用種類精簡的軍隊。" },
   "scout.profile": { "en": "Tempered: Reach {reach} · Blast {blast} · Watch {watch}", "text": "淬鍊：射程 {reach} · 爆破 {blast} · 警戒 {watch}" },
   "stake.label": { "en": "Stake", "text": "賭注" },
   "stake.none": { "en": "No stake", "text": "不下注" },

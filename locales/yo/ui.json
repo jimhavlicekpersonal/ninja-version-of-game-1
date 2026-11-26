@@ -182,6 +182,7 @@
   "temper.done": { "en": "Tempered: every {building} has its new shape.", "text": "A ti pọ́n ọn: gbogbo {building} ti ní àtúntò tuntun." },
   "temper.reset": { "en": "Back to untempered", "text": "Padà sí àìpọ́n" },
   "temper.watchSupport": { "en": "Watch also weakens the raiders' healing, revives, toughness and shield cover across the whole base.", "text": "Ìṣọ́ tún ń dín ìwòsàn, ìjíǹde, agbára àti ààbò apata àwọn agbógunti kù káàkiri gbogbo ibùdó." },
+  "temper.watchKinds": { "en": "Watch-tempered towers read varied armies: for each kind of warrior beyond {free} on the field, they hit {pct} harder. A focused army answers a Watch base.", "text": "Àwọn ilé-ìṣọ́ tí a pọ́n ní Ìṣọ́ ń dá ọmọ ogun aláàdàpọ̀ mọ̀: fún irú jagunjagun kọ̀ọ̀kan lórí pápá tí ó ju {free} lọ, agbára ìkọlù wọn ń pọ̀ sí i ní {pct}. Ọmọ ogun tí ó ní irú díẹ̀ ni ìdáhùn sí ibùdó Ìṣọ́." },
   "scout.profile": { "en": "Tempered: Reach {reach} · Blast {blast} · Watch {watch}", "text": "A ti pọ́n ọn: Ìnàjìnnà {reach} · Ìbúgbàù {blast} · Ìṣọ́ {watch}" },
   "stake.label": { "en": "Stake", "text": "Ìfidógò" },
   "stake.none": { "en": "No stake", "text": "Kò sí ìfidógò" },

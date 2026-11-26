@@ -182,6 +182,7 @@
   "temper.done": "Tempered: every {building} has its new shape.",
   "temper.reset": "Back to untempered",
   "temper.watchSupport": "Watch also weakens the raiders' healing, revives, toughness and shield cover across the whole base.",
+  "temper.watchKinds": "Watch-tempered towers read varied armies: for each kind of warrior beyond {free} on the field, they hit {pct} harder. A focused army answers a Watch base.",
   "scout.profile": "Tempered: Reach {reach} · Blast {blast} · Watch {watch}",
   "stake.label": "Stake",
   "stake.none": "No stake",

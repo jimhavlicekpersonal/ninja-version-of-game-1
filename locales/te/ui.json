@@ -182,6 +182,7 @@
   "temper.done": { "en": "Tempered: every {building} has its new shape.", "text": "పదును పెట్టాం: ప్రతి {building} కట్టడానికి కొత్త ఆకారం వచ్చింది." },
   "temper.reset": { "en": "Back to untempered", "text": "పదును లేని స్థితికి తిరిగి" },
   "temper.watchSupport": { "en": "Watch also weakens the raiders' healing, revives, toughness and shield cover across the whole base.", "text": "కాపలా మొత్తం స్థావరంలో దాడిదారుల వైద్యం, పునరుజ్జీవనం, దృఢత్వం, డాలు రక్షణను కూడా బలహీనపరుస్తుంది." },
+  "temper.watchKinds": { "en": "Watch-tempered towers read varied armies: for each kind of warrior beyond {free} on the field, they hit {pct} harder. A focused army answers a Watch base.", "text": "కాపలా పదును పెట్టిన బురుజులు కలగలిసిన సైన్యాలను పసిగడతాయి: మైదానంలో యోధుల రకాలు {free} సంఖ్యను దాటితే, అదనపు ప్రతి రకానికీ అవి {pct} ఎక్కువ బలంగా కొడతాయి. కొన్ని రకాలే ఉన్న సైన్యం కాపలా స్థావరానికి జవాబు." },
   "scout.profile": { "en": "Tempered: Reach {reach} · Blast {blast} · Watch {watch}", "text": "పదును: పరిధి {reach} · పేలుడు {blast} · కాపలా {watch}" },
   "stake.label": { "en": "Stake", "text": "పందెం" },
   "stake.none": { "en": "No stake", "text": "పందెం లేదు" },

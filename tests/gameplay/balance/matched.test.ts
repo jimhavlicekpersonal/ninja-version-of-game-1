@@ -18,11 +18,14 @@ import { troopLevelCapAt } from '../../../src/gameplay/sim/research';
 const KEEPS = [5, 8, 12, 15];
 
 describe('matched raids average about one to two stars at every Keep (raid bots\' mix, bot plan)', () => {
-  // 12 seeds (6 until Tempering): rival clans' outposts now differ in temper and closeness to the caps, and six
-  // seeds swung a Keep-15 row between 0.67 and 1.29 stars with the same data (24 seeds: 1.21-1.54 at every Keep).
-  const rows = KEEPS.flatMap((k) => [0, 2].map((lag) => matchedRaids(k, lag, 'bots', 12, data)));
+  // 24 seeds (12 until SIM_RULES 10, 6 until Tempering): rival clans' outposts differ in temper and closeness to the
+  // caps, and six seeds swung a Keep-15 row between 0.67 and 1.29 stars with the same data. SIM_RULES 10 put the live
+  // counters (Bronze Mirror Screen, Steam Vent, Lightning Rod Tower) and the Hero Hall into generated bases: 12 seeds
+  // read Keep 12 at 0.75 stars, 24 seeds at 1.08 (rules 9 on the same 24: 1.71). Raids from Keep 9 to 14 are about
+  // 0.35-0.6 stars harder than under rules 9 (Keep 13, 2.83 -> 2.46, was the easiest band).
+  const rows = KEEPS.flatMap((k) => [0, 2].map((lag) => matchedRaids(k, lag, 'bots', 24, data)));
 
-  it('researched to the caps: 1-2 stars on average at every Keep band, never a three-star farm', { timeout: 180_000 }, () => {
+  it('researched to the caps: 1-2 stars on average at every Keep band, never a three-star farm', { timeout: 400_000 }, () => {
     for (const r of rows.filter((x) => x.lag === 0)) {
       // PUB-02 / XPL-07: CI once computed this row as the lag-2 row (2.75 stars). Name the inputs first, so a
       // wrong-row result fails on its cause (opponent Keep, levels) and prints every battle's hash.

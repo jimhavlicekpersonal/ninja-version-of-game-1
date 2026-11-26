@@ -492,9 +492,9 @@
       "id": "hero_shrine",
       "name": "Hero Hall",
       "category": "military",
-      "unlockKeep": 7,
+      "unlockKeep": 9,
       "pinnacleMaxLevel": 10,
-      "live": false,
+      "live": true,
       "description": "Home of your clan heroes: its level decides which hero you can choose."
     },
     {
@@ -778,11 +778,11 @@
       "category": "defense",
       "unlockKeep": 7,
       "pinnacleMaxLevel": 10,
-      "live": false,
-      "description": "Polished bronze panels: every third projectile that hits the screen flies back at whoever threw it.",
+      "live": true,
+      "description": "Polished bronze panels: every second projectile that hits the screen flies back at whoever threw it.",
       "effect": {
         "kind": "reflect_projectiles",
-        "every": 3
+        "every": 2
       },
       "counters": [
         "kunai_adept",
@@ -902,7 +902,7 @@
       "category": "defense",
       "unlockKeep": 9,
       "pinnacleMaxLevel": 10,
-      "live": false,
+      "live": true,
       "description": "Blasts scalding steam in a 2-tile circle. It needs no target, so it hurts hidden warriors, blows smoke away from its tiles, and cannot be dodged.",
       "effect": {
         "kind": "no_projectile_aoe",
@@ -1047,7 +1047,7 @@
       "category": "defense",
       "unlockKeep": 13,
       "pinnacleMaxLevel": 8,
-      "live": false,
+      "live": true,
       "description": "Grounds lightning: chained slashes and lightning strikes within 3 tiles hit the rod instead, charging it. When fully charged it fires the lightning back.",
       "effect": {
         "kind": "absorb_lightning",

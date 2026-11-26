@@ -15,18 +15,22 @@ import { describe, expect, it } from 'vitest';
 import { runBuildingPreview, runHeroPreview } from '../../../tools/balance/preview';
 
 const OPTS = { layouts: ['random', 'kunai_ring', 'walled_keep', 'mortar_core', 'twin_gates', 'open_court'], seeds: 5 };
+// SIM_RULES 10 (2026-11-25): the Lightning Rod Tower, the Steam Vent and the Bronze Mirror Screen (reflecting every
+// second projectile) passed and are live, with the Hero Hall, the Iron Matriarch and the Sky Admiral; they left the
+// planned data, so this gate no longer reads them. Measured before going live (30 bases a cell): Lightning Rod
+// -5.8/-2.5/-3.7, Steam Vent -5.6/-0.7/-5.2, Mirror Screen -4.1 (Keep 11) and -5.8 (Keep 15); Iron Matriarch family
+// +7 to +19 over the Captain, raid mix +1 to +15; Sky Admiral family +12 to +21, raid mix -0.2 to +2.5.
 const COUNTER_KNOWN_BELOW = new Set<string>([
-  // Every planned counter but the Lightning Rod Tower (effect -5.8 / -3.8 / -3.0 at its three Keeps: it passes) and, since
-  // SIM_RULES 9 (2026-11-22, the armies it answers changed), the Steam Vent.
-  'whirling_blade_tower', 'rain_barrel_tower', 'listening_jars', 'living_bamboo_wall', 'straw_scarecrow', 'mirror_screen', 'sand_bucket_post',
+  'whirling_blade_tower', 'rain_barrel_tower', 'listening_jars', 'living_bamboo_wall', 'straw_scarecrow', 'sand_bucket_post',
   'discipline_banner', 'spotter_perch', 'sleep_dart_tower', 'rolling_log_chute', 'moonlit_gravel', 'ink_seal_post',
 ]);
 const HERO_KNOWN_BELOW = new Set<string>([
-  // Rally B (P4-02) raised the bar: with their own family each is 0.6 to 10.5 points below the Shadow Captain somewhere.
-  'iron_matriarch', 'sky_admiral', 'grand_sensei',
+  // The Grand Sensei: every version tried in SIM_RULES 10 stayed 0 to 8 points short of the Captain with the Keep 14
+  // mystic family while the raid mix reached 98-100% (10 to 14 above him): a redesign, not a tuning (CLOSURE 2026-11-25).
+  'grand_sensei',
 ]);
 
-describe('the go-live gate for planned content (none of it is live)', () => {
+describe('the go-live gate for planned content (what is still planned)', () => {
   it('counters: effect -3 or better against the armies they beat, at two of three Keeps', { timeout: 3_600_000 }, () => {
     const rows = runBuildingPreview(OPTS).filter((r) => r.army === 'it beats');
     const ids = [...new Set(rows.map((r) => r.id))];

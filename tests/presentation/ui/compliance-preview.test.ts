@@ -79,10 +79,15 @@ function host(data: GameData, keep: number, hall: number) {
 }
 
 describe('the Hero Hall hero picker', () => {
-  it('is hidden with the shipped data (hero choice off), on any building', () => {
-    const h = host(defaultData, 10, 0);
-    expect(heroPickerSection(h.c, 'hero_shrine', () => undefined, () => undefined)).toBeNull();
-    expect(defaultData.features?.heroChoice).not.toBe(true);
+  it('is live with the shipped data (SIM_RULES 10): on the Hero Hall only, never on another building', () => {
+    const h = host(defaultData, 10, 3);
+    expect(defaultData.features?.heroChoice).toBe(true);
+    expect(heroPickerSection(h.c, 'acorn_cannon', () => undefined, () => undefined)).toBeNull();
+    const sec = heroPickerSection(h.c, 'hero_shrine', () => undefined, () => undefined) as unknown as El;
+    expect(sec).not.toBeNull();
+    expect(sec.text).not.toContain(en['preview.notLive']);
+    // Each hero shows what its ability does (the data text the battle runs).
+    expect(sec.text).toContain(defaultData.battle.heroes!.iron_matriarch.description);
   });
 
   it('with preview data, shows only on the Hero Hall, and Choose sends chooseHero', () => {
@@ -91,7 +96,6 @@ describe('the Hero Hall hero picker', () => {
     let redrawn = 0;
     const sec = heroPickerSection(h.c, 'hero_shrine', () => redrawn++, () => undefined) as unknown as El;
     expect(sec).not.toBeNull();
-    expect(sec.text).toContain(en['preview.notLive']);
     const btn = sec.find((e) => e.attrs['data-id'] === 'choose-hero-iron_matriarch');
     expect(btn).not.toBeNull();
     btn!.listeners.click[0]({});

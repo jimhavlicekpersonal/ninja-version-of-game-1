@@ -182,6 +182,7 @@
   "temper.done": { "en": "Tempered: every {building} has its new shape.", "text": "Ditempa: setiap {building} mempunyai bentuk baharunya." },
   "temper.reset": { "en": "Back to untempered", "text": "Kembali tanpa tempaan" },
   "temper.watchSupport": { "en": "Watch also weakens the raiders' healing, revives, toughness and shield cover across the whole base.", "text": "Kawalan juga melemahkan penyembuhan, kebangkitan, ketahanan dan perlindungan perisai penyerang di seluruh pangkalan." },
+  "temper.watchKinds": { "en": "Watch-tempered towers read varied armies: for each kind of warrior beyond {free} on the field, they hit {pct} harder. A focused army answers a Watch base.", "text": "Menara dengan tempaan Kawalan membaca tentera yang pelbagai: bagi setiap jenis pahlawan di medan selepas {free} jenis pertama, serangannya {pct} lebih kuat. Tentera dengan sedikit jenis pahlawan ialah jawapan kepada pangkalan Kawalan." },
   "scout.profile": { "en": "Tempered: Reach {reach} · Blast {blast} · Watch {watch}", "text": "Ditempa: Jangkauan {reach} · Letupan {blast} · Kawalan {watch}" },
   "stake.label": { "en": "Stake", "text": "Taruhan" },
   "stake.none": { "en": "No stake", "text": "Tiada taruhan" },

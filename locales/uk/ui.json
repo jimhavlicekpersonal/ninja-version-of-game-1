@@ -182,6 +182,7 @@
   "temper.done": { "en": "Tempered: every {building} has its new shape.", "text": "Загартовано: усі споруди «{building}» мають нову форму." },
   "temper.reset": { "en": "Back to untempered", "text": "Скинути гартування" },
   "temper.watchSupport": { "en": "Watch also weakens the raiders' healing, revives, toughness and shield cover across the whole base.", "text": "Пильність також послаблює лікування, воскресіння, стійкість і щити нападників по всій базі." },
+  "temper.watchKinds": { "en": "Watch-tempered towers read varied armies: for each kind of warrior beyond {free} on the field, they hit {pct} harder. A focused army answers a Watch base.", "text": "Вежі, загартовані на Пильність, бачать строкаті армії наскрізь: за кожен вид воїнів на полі понад {free} вони б’ють на {pct} сильніше. Проти бази з Пильністю допоможе армія з небагатьох видів." },
   "scout.profile": { "en": "Tempered: Reach {reach} · Blast {blast} · Watch {watch}", "text": "Гартування: Дальність {reach} · Вибух {blast} · Пильність {watch}" },
   "stake.label": { "en": "Stake", "text": "Ставка" },
   "stake.none": { "en": "No stake", "text": "Без ставки" },

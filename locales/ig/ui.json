@@ -182,6 +182,7 @@
   "temper.done": { "en": "Tempered: every {building} has its new shape.", "text": "Ekpụziela: {building} ọ bụla nwere ọdịdị ọhụrụ ya." },
   "temper.reset": { "en": "Back to untempered", "text": "Laghachi na nke a na-akpụzibeghị" },
   "temper.watchSupport": { "en": "Watch also weakens the raiders' healing, revives, toughness and shield cover across the whole base.", "text": "Nche na-emekwa ka ọgwụgwọ, ọmụmụ ọzọ, ike na mkpuchi ọta nke ndị mwakpo dị ala n'ebe niile." },
+  "temper.watchKinds": { "en": "Watch-tempered towers read varied armies: for each kind of warrior beyond {free} on the field, they hit {pct} harder. A focused army answers a Watch base.", "text": "Ụlọ elu a kpụziri na Nche na-aghọta usuu agha agwakọtara: ọ bụrụ na ụdị ndị dike nọ n'ọgbọ agha karịrị {free}, ụdị ọ bụla gbakwụnyere na-eme ka ha kụọ ike karịa site na {pct}. Usuu agha nwere ụdị ole na ole bụ azịza maka obodo Nche." },
   "scout.profile": { "en": "Tempered: Reach {reach} · Blast {blast} · Watch {watch}", "text": "Ekpụziri: Ogologo {reach} · Mgbawa {blast} · Nche {watch}" },
   "stake.label": { "en": "Stake", "text": "Nkwa" },
   "stake.none": { "en": "No stake", "text": "Enweghị nkwa" },

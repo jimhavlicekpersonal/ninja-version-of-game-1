@@ -52,6 +52,19 @@ export function choosableHeroes(state: VillageState, data: GameData): string[] {
   return order.filter(([, d], i) => keep >= d.unlockKeep && hall >= (needs[i] ?? needs[needs.length - 1] ?? 1)).map(([id]) => id);
 }
 
+/**
+ * SIM_RULES 10 (hero choice live): the highest level at which hero `id` may join an attack from Keep `keep` (0 = it may
+ * not). The server's legality check for a reported hero (`checkArmy`): any live hero the Keep has unlocked, at no more
+ * than its Keep level. It does not know whether the attacker built a Hero Hall (the server keeps no device village's
+ * buildings, the same trust model as warriors); a server-held village checks `heroFor` through `chooseHero`.
+ */
+export function heroLevelAllowed(id: string, keep: number, data: GameData): number {
+  const heroes = data.battle.heroes ?? {};
+  if (typeof id !== 'string' || !Object.hasOwn(heroes, id)) return 0;
+  const def = heroes[id];
+  return keep < def.unlockKeep ? 0 : keepLevelOf(def, keep);
+}
+
 export function heroFor(state: VillageState, data: GameData): { id: string; level: number } | null {
   const keep = hallLevel(state, data);
   const chosen = state.hero?.chosen;

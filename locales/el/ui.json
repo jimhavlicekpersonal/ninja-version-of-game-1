@@ -182,6 +182,7 @@
   "temper.done": { "en": "Tempered: every {building} has its new shape.", "text": "Σφυρηλατήθηκε: όλα τα κτίρια {building} έχουν το νέο τους σχήμα." },
   "temper.reset": { "en": "Back to untempered", "text": "Επαναφορά χωρίς σφυρηλάτηση" },
   "temper.watchSupport": { "en": "Watch also weakens the raiders' healing, revives, toughness and shield cover across the whole base.", "text": "Η Επαγρύπνηση αποδυναμώνει επίσης τη θεραπεία, τις αναβιώσεις, την αντοχή και την κάλυψη ασπίδας των επιδρομέων σε όλη τη βάση." },
+  "temper.watchKinds": { "en": "Watch-tempered towers read varied armies: for each kind of warrior beyond {free} on the field, they hit {pct} harder. A focused army answers a Watch base.", "text": "Οι πύργοι με σφυρηλάτηση Επαγρύπνησης διαβάζουν τους ανάμεικτους στρατούς: για κάθε είδος πολεμιστή στο πεδίο πέρα από τα πρώτα {free}, χτυπούν κατά {pct} πιο δυνατά. Ένας στρατός με λίγα είδη είναι η απάντηση σε μια βάση Επαγρύπνησης." },
   "scout.profile": { "en": "Tempered: Reach {reach} · Blast {blast} · Watch {watch}", "text": "Σφυρηλάτηση: Βεληνεκές {reach} · Έκρηξη {blast} · Επαγρύπνηση {watch}" },
   "stake.label": { "en": "Stake", "text": "Στοίχημα" },
   "stake.none": { "en": "No stake", "text": "Χωρίς στοίχημα" },

@@ -27,13 +27,28 @@ function place(s: BattleSim, troop: string, x: number, y: number): number {
 const shot = (s: BattleSim, ti: number, fromX: number, fromY: number, damage = 10) =>
   s.projectiles.push({ id: 5000 + s.projectiles.length + s.tick, kind: 'acorn', fromX, fromY, toX: s.troops[ti].x, toY: s.troops[ti].y, total: 1, left: 1, damage, splash: 0, targetTroop: ti, targetBuilding: -1, hitsAir: true, hitsGround: true, arc: false, sourceBuilding: 1 });
 
-describe('the planned heroes', () => {
-  it('are not in the shipped data and are added only by withPreview', () => {
-    for (const id of ['iron_matriarch', 'sky_admiral', 'grand_sensei']) {
-      expect(defaultData.battle.heroes?.[id]).toBeUndefined();
-      expect(P.battle.heroes?.[id]).toBeDefined();
+describe('the heroes (SIM_RULES 10: the Iron Matriarch and the Sky Admiral are live, the Grand Sensei planned)', () => {
+  it('the live two are in the shipped data; the Grand Sensei is added only by withPreview', () => {
+    for (const id of ['iron_matriarch', 'sky_admiral']) expect(defaultData.battle.heroes?.[id]).toBeDefined();
+    expect(defaultData.battle.heroes?.grand_sensei).toBeUndefined();
+    expect(P.battle.heroes?.grand_sensei).toBeDefined();
+    expect(previewHeroIds()).toEqual(['grand_sensei']);
+  });
+
+  it('the live two keep the derivation, with their tuned factors (Bell Warden x12 HP; Lantern Balloon x40 HP, x7 damage)', () => {
+    const live: Record<string, { ref: string; hpPerHousing: number; damagePerHousing: number }> = {
+      iron_matriarch: { ref: 'bell_warden', hpPerHousing: 12, damagePerHousing: 3 },
+      sky_admiral: { ref: 'lantern_balloon', hpPerHousing: 40, damagePerHousing: 7 },
+    };
+    for (const [id, spec] of Object.entries(live)) {
+      PREVIEW.heroes[id] = { ...spec, kit: {} };
+      try {
+        const derived = previewHeroDef(id, defaultData).levels.map((l) => [l.hp, l.damage]);
+        expect(derived, id).toEqual(defaultData.battle.heroes![id].levels.map((l) => [l.hp, l.damage]));
+      } finally {
+        delete PREVIEW.heroes[id];
+      }
     }
-    expect(previewHeroIds()).toEqual(['iron_matriarch', 'sky_admiral', 'grand_sensei']);
   });
 
   it('follow the Shadow Captain\'s derivation (tier-3 warrior of the role at the Keep\'s cap, per housing, HP x10, damage x3)', () => {
@@ -58,23 +73,25 @@ describe('the planned heroes', () => {
   });
 });
 
-describe('Iron Matriarch: Bulwark', () => {
-  it('on her first hit, blocks 60% of defense fire from her forward cone on warriors near her', () => {
-    const s = sim('iron_matriarch', [b('k', 'acorn_cannon', 20, 10)], { iron_matriarch: 1, beetle_brute: 1 });
+describe('Iron Matriarch: Bulwark (live, SIM_RULES 10)', () => {
+  it('on her first hit, every warrior on the field takes 60% less defense fire for 20 s, from any side, once per battle', () => {
+    const s = sim('iron_matriarch', [b('k', 'acorn_cannon', 20, 10)], { iron_matriarch: 1, beetle_brute: 1 }, defaultData);
+    expect(defaultData.battle.heroes!.iron_matriarch.kit).toMatchObject({ radius: 99, strength: 0.6, durationTicks: 200, coneCos: -1 });
     s.buildings[1].combat = null;
     const m = place(s, 'iron_matriarch', 18.5, 11.5);
     const ally = place(s, 'beetle_brute', 18, 12);
+    const raised = s.tick;
     attackDamage(s, s.troops[m], s.buildings[1]);
-    expect(s.troops[m].bulwarkUntil).toBeGreaterThan(s.tick);
+    expect(s.troops[m].bulwarkUntil).toBe(raised + 200);
     const t = s.troops[ally];
     let hp = t.hp;
     shot(s, ally, 21.5, 11.5); // from in front (the tower's side)
     step(s);
     expect(hp - t.hp).toBeCloseTo(10 * (1 - 0.6), 6);
     hp = t.hp;
-    shot(s, ally, 10, 12); // from behind
+    shot(s, ally, 10, 12); // from behind: the field-wide wall covers every side now
     step(s);
-    expect(hp - t.hp).toBeCloseTo(10, 6);
+    expect(hp - t.hp).toBeCloseTo(10 * (1 - 0.6), 6);
     // Once per battle: a second first hit does not start another.
     const until = s.troops[m].bulwarkUntil;
     s.troops[m].firstHit = true;
@@ -83,24 +100,33 @@ describe('Iron Matriarch: Bulwark', () => {
   });
 });
 
-describe('Sky Admiral: Squall', () => {
-  // P4-10 step 5 (restated): the cut is the kit's strength (0.5 -> 0.7, BNL-03).
-  it('pushes every flyer toward its target and cuts the damage defenses do to them by the kit\'s strength', () => {
-    const s = sim('sky_admiral', [b('k', 'firefly_tower', 20, 10)], { sky_admiral: 1, owl_bomber: 1, beetle_brute: 1 });
+describe('Sky Admiral: Squall (live, SIM_RULES 10)', () => {
+  // The cut is the kit's strength (0.85) for flyers and strength x groundShare (0.4) for ground warriors, 30 s.
+  it('pushes every flyer toward its target, cuts defense damage to flyers by the strength and to ground warriors by its ground share', () => {
+    const s = sim('sky_admiral', [b('k', 'firefly_tower', 20, 10)], { sky_admiral: 1, owl_bomber: 1, beetle_brute: 1 }, defaultData);
+    const kit = defaultData.battle.heroes!.sky_admiral.kit!;
+    expect(kit).toMatchObject({ strength: 0.85, durationTicks: 300, pushTiles: 3, groundShare: 0.4 });
     s.buildings[1].combat = null;
     const admiral = place(s, 'sky_admiral', 19, 11);
     const kite = place(s, 'owl_bomber', 10, 11);
     const ground = place(s, 'beetle_brute', 18, 12);
     s.troops[kite].target = 1;
     attackDamage(s, s.troops[admiral], s.buildings[1]);
-    expect(s.troops[kite].x).toBeCloseTo(12, 6);
-    expect(s.troops[ground].squallUntil).toBeUndefined();
+    expect(s.troops[kite].x).toBeCloseTo(13, 6);
+    // Ground warriors are sheltered too (no push).
+    expect(s.troops[ground].squallUntil).toBeGreaterThan(s.tick);
+    expect(s.troops[ground].x).toBeCloseTo(18, 6);
     const t = s.troops[kite];
     t.stunnedUntil = 1e9;
     const hp = t.hp;
     shot(s, kite, 21, 11);
     step(s);
-    expect(hp - t.hp).toBeCloseTo(10 * (1 - withPreview(defaultData).battle.heroes!.sky_admiral.kit!.strength!), 6);
+    expect(hp - t.hp).toBeCloseTo(10 * (1 - kit.strength!), 6);
+    const g = s.troops[ground];
+    const hg = g.hp;
+    shot(s, ground, 21, 11);
+    step(s);
+    expect(hg - g.hp).toBeCloseTo(10 * (1 - kit.strength! * kit.groundShare!), 6);
   });
 });
 

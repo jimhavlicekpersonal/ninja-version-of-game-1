@@ -84,7 +84,9 @@
         "accent": "#7fd3ff",
         "weapon": "lightning-etched katana"
       },
-      "liveTroop": "storm_sovereign"
+      "liveTroop": "storm_sovereign",
+      "hpScale": 1.15,
+      "dpsScale": 1.15
     },
     {
       "id": "kunai_adept",
@@ -171,8 +173,9 @@
         "accent": "#f4ead6",
         "weapon": "needle quiver and launcher"
       },
-      "dpsScale": 0.8,
-      "liveTroop": "thousand_needle"
+      "dpsScale": 0.92,
+      "liveTroop": "thousand_needle",
+      "hpScale": 1.15
     },
     {
       "id": "armored_guardian",
@@ -262,7 +265,9 @@
         "weapon": "giant spiked club",
         "armor": "black lacquer with horned helm"
       },
-      "liveTroop": "oni_breaker"
+      "liveTroop": "oni_breaker",
+      "hpScale": 1.15,
+      "dpsScale": 1.15
     },
     {
       "id": "saboteur",
@@ -347,7 +352,9 @@
         "accent": "#8ad0ff",
         "weapon": "lantern of silence"
       },
-      "liveTroop": "ghost_engineer"
+      "liveTroop": "ghost_engineer",
+      "hpScale": 1.15,
+      "dpsScale": 1.15
     },
     {
       "id": "tunnel_runner",
@@ -675,7 +682,8 @@
         "accent": "#ff6b3c",
         "weapon": "giant bomb on back"
       },
-      "liveTroop": "bomb_carrier"
+      "liveTroop": "bomb_carrier",
+      "lateScale": 1.6
     },
     {
       "id": "siege_bombardier",
@@ -925,7 +933,7 @@
       "ability": {
         "id": "bulwark",
         "name": "Bulwark",
-        "text": "Raises a wall of shields that blocks defense fire in a cone for 12 seconds."
+        "text": "On her first strike she raises a wall of shields: every warrior takes 60% less defense fire for 20 seconds, once per battle."
       },
       "look": {
         "gi": "#3d4a5c",
@@ -943,7 +951,7 @@
       "ability": {
         "id": "squall",
         "name": "Squall",
-        "text": "Pushes all flyers forward and shields them from anti-air for 10 seconds."
+        "text": "On his first strike a gale pushes every flyer forward: flyers take 85% less defense fire and ground warriors 34% less for 30 seconds, once per battle."
       },
       "look": {
         "gi": "#3a3f6a",

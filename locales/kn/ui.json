@@ -182,6 +182,7 @@
   "temper.done": { "en": "Tempered: every {building} has its new shape.", "text": "ಹದಗೊಳಿಸಲಾಗಿದೆ: ಪ್ರತಿ {building} ಕಟ್ಟಡಕ್ಕೂ ಹೊಸ ರೂಪ ಬಂದಿದೆ." },
   "temper.reset": { "en": "Back to untempered", "text": "ಹದಗೊಳಿಸುವ ಮೊದಲಿನ ಸ್ಥಿತಿಗೆ" },
   "temper.watchSupport": { "en": "Watch also weakens the raiders' healing, revives, toughness and shield cover across the whole base.", "text": "ಕಾವಲು ಇಡೀ ನೆಲೆಯಾದ್ಯಂತ ದಾಳಿಕೋರರ ಚಿಕಿತ್ಸೆ, ಪುನರುಜ್ಜೀವನ, ಗಟ್ಟಿತನ ಮತ್ತು ಗುರಾಣಿ ರಕ್ಷೆಯನ್ನು ದುರ್ಬಲಗೊಳಿಸುತ್ತದೆ." },
+  "temper.watchKinds": { "en": "Watch-tempered towers read varied armies: for each kind of warrior beyond {free} on the field, they hit {pct} harder. A focused army answers a Watch base.", "text": "ಕಾವಲು ಹದಗೊಳಿಸಿದ ಗೋಪುರಗಳು ಮಿಶ್ರ ಸೇನೆಗಳನ್ನು ಗುರುತಿಸುತ್ತವೆ: ಮೈದಾನದಲ್ಲಿ ಯೋಧರ ಬಗೆಗಳು {free} ಸಂಖ್ಯೆಯನ್ನು ಮೀರಿದರೆ, ಪ್ರತಿ ಹೆಚ್ಚುವರಿ ಬಗೆಗೆ ಅವು {pct} ಹೆಚ್ಚು ಬಲವಾಗಿ ಹೊಡೆಯುತ್ತವೆ. ಕೆಲವೇ ಬಗೆಗಳ ಸೇನೆ ಕಾವಲು ನೆಲೆಗೆ ಉತ್ತರ." },
   "scout.profile": { "en": "Tempered: Reach {reach} · Blast {blast} · Watch {watch}", "text": "ಹದಗೊಳಿಸಿದ್ದು: ವ್ಯಾಪ್ತಿ {reach} · ಸ್ಫೋಟ {blast} · ಕಾವಲು {watch}" },
   "stake.label": { "en": "Stake", "text": "ಪಣ" },
   "stake.none": { "en": "No stake", "text": "ಪಣ ಇಲ್ಲ" },

@@ -182,6 +182,7 @@
   "temper.done": { "en": "Tempered: every {building} has its new shape.", "text": "Călit: fiecare {building} are noul model." },
   "temper.reset": { "en": "Back to untempered", "text": "Înapoi la necălit" },
   "temper.watchSupport": { "en": "Watch also weakens the raiders' healing, revives, toughness and shield cover across the whole base.", "text": "Veghea slăbește și, în toată baza, vindecarea, reînvierile, rezistența și acoperirea cu scuturi ale atacatorilor." },
+  "temper.watchKinds": { "en": "Watch-tempered towers read varied armies: for each kind of warrior beyond {free} on the field, they hit {pct} harder. A focused army answers a Watch base.", "text": "Turnurile călite pe Veghe citesc armatele variate: pentru fiecare tip de războinic de pe câmp peste primele {free}, lovesc cu {pct} mai tare. O armată cu puține tipuri este răspunsul la o bază cu Veghe." },
   "scout.profile": { "en": "Tempered: Reach {reach} · Blast {blast} · Watch {watch}", "text": "Călire: Rază {reach} · Explozie {blast} · Veghe {watch}" },
   "stake.label": { "en": "Stake", "text": "Miză" },
   "stake.none": { "en": "No stake", "text": "Fără miză" },

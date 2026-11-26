@@ -182,6 +182,7 @@
   "temper.done": { "en": "Tempered: every {building} has its new shape.", "text": "An tsara: kowane gini na {building} yana da sabon tsarinsa." },
   "temper.reset": { "en": "Back to untempered", "text": "Koma ba tare da tsari ba" },
   "temper.watchSupport": { "en": "Watch also weakens the raiders' healing, revives, toughness and shield cover across the whole base.", "text": "Tsaro yana kuma raunana warkarwa, rayarwa, ƙarfin jure wa da kariyar garkuwa ta maharan a duk sansanin." },
+  "temper.watchKinds": { "en": "Watch-tempered towers read varied armies: for each kind of warrior beyond {free} on the field, they hit {pct} harder. A focused army answers a Watch base.", "text": "Hasumiyoyin da aka tsara da Tsaro suna gane rundunoni masu gauraye: idan irin mayaƙa a fagen daga sun wuce {free}, kowane ƙarin iri yana ƙara ƙarfin harbinsu da {pct}. Runduna mai iri kaɗan na mayaƙa ita ce maganin sansanin Tsaro." },
   "scout.profile": { "en": "Tempered: Reach {reach} · Blast {blast} · Watch {watch}", "text": "An tsara: Nisa {reach} · Fashewa {blast} · Tsaro {watch}" },
   "stake.label": { "en": "Stake", "text": "Alƙawari" },
   "stake.none": { "en": "No stake", "text": "Babu alƙawari" },

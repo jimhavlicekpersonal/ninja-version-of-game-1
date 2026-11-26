@@ -182,6 +182,7 @@
   "temper.done": { "en": "Tempered: every {building} has its new shape.", "text": "Selesai ditempa: semua {building} punya bentuk baru." },
   "temper.reset": { "en": "Back to untempered", "text": "Kembali ke tanpa tempaan" },
   "temper.watchSupport": { "en": "Watch also weakens the raiders' healing, revives, toughness and shield cover across the whole base.", "text": "Jaga juga melemahkan penyembuhan, kebangkitan, ketangguhan, dan perlindungan perisai milik penyerbu di seluruh markas." },
+  "temper.watchKinds": { "en": "Watch-tempered towers read varied armies: for each kind of warrior beyond {free} on the field, they hit {pct} harder. A focused army answers a Watch base.", "text": "Menara dengan tempaan Jaga membaca pasukan yang beragam: untuk setiap jenis prajurit di medan setelah {free} jenis pertama, serangannya {pct} lebih kuat. Pasukan dengan sedikit jenis prajurit menjadi jawaban atas markas Jaga." },
   "scout.profile": { "en": "Tempered: Reach {reach} · Blast {blast} · Watch {watch}", "text": "Tempaan: Jangkauan {reach} · Ledakan {blast} · Jaga {watch}" },
   "stake.label": { "en": "Stake", "text": "Taruhan" },
   "stake.none": { "en": "No stake", "text": "Tanpa taruhan" },

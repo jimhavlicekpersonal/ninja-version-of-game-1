@@ -11,7 +11,7 @@ import { describe, expect, it } from 'vitest';
 import { maxHousingAtHall, troopEarliestKeep } from '../../../src/gameplay/sim/army';
 import { defaultData as data } from '../../../src/gameplay/sim/data';
 import roster from '../../../src/gameplay/data/roster.json';
-import { armyScore, kitValue } from '../../../tools/balance/kitValue';
+import { armyScore, kitValue, pairScores } from '../../../tools/balance/kitValue';
 import { bestByProfile } from '../../../tools/balance/temperPanel';
 
 const KIT_FLOOR = 2;
@@ -23,7 +23,12 @@ const KIT_FLOOR = 2;
 // SIM_RULES 9 (2026-11-22, combat rebalance), re-measured: eclipse_ninja now reaches +2 and left the list (void_walker
 // stays: at 1.03, held down by the solo gate, its kit is still under +2); mole_king and phantom_gate entered it (their HP and damage rose 1.21x and 1.3x so they beat the tier below, and
 // the kit is a smaller share of that).
-const KIT_KNOWN_BELOW = new Set(['bear_warrior', 'blowgun_hunter', 'bomb_carrier', 'dragon_kite_armada', 'drum_monk', 'herbalist', 'hound_handler', 'lantern_balloon', 'mirage_twin', 'mist_weaver', 'mole_king', 'night_blade', 'phantom_gate', 'ram_crew', 'sage_of_clouds', 'shadow_stalker', 'spirit_caller', 'thunder_kite', 'tiger_lord', 'twin_fang_dancer', 'void_walker']);
+// SIM_RULES 10 (2026-11-25), re-measured on the rules-10 bases (live counters and the Hero Hall in generated bases,
+// the Keep 13 tier x1.15): bear_warrior, dragon_kite_armada, lantern_balloon, mirage_twin and phantom_gate now reach
+// +2 and left the list; boar_rider, eclipse_ninja and fuse_master entered it (their kits are worth less against bases
+// that now hold a Steam Vent, a Mirror Screen and a Lightning Rod). These are 10-battle kit values: the same noise as
+// the old tier check, so a kit within a few points of the floor can move either way with any data change.
+const KIT_KNOWN_BELOW = new Set(['blowgun_hunter', 'boar_rider', 'bomb_carrier', 'drum_monk', 'eclipse_ninja', 'fuse_master', 'herbalist', 'hound_handler', 'mist_weaver', 'mole_king', 'night_blade', 'ram_crew', 'sage_of_clouds', 'shadow_stalker', 'spirit_caller', 'thunder_kite', 'tiger_lord', 'twin_fang_dancer', 'void_walker']);
 /** Keep 15 scores where a newer tier is below the previous one in its role ("newer<older"). */
 // Beast Mode follow-up (2026-11-22, measured, not shipped): raising the Keep 13 tier x1.25 with every defense level past
 // Keep 12 x1.5 (so Keep 15 raids stay 1-2 stars) fixed its four pairs but put 16 pairs out of order (x1.25 defenses: 17);
@@ -32,7 +37,16 @@ const KIT_KNOWN_BELOW = new Set(['bear_warrior', 'blowgun_hunter', 'bomb_carrier
 // before them). The rest stay: boosting a Keep 13-15 tier also strengthens that Keep's bot army (matched Keep 15 farmed),
 // and crane_glider / bomb_carrier do not respond to stats. The shadow line is in order with the solo
 // gate held: night_blade 1.02 (79.7), void_walker 1.03 (80.9; a lone army flattened Keep 15 at 1.04), eclipse_ninja 1.08 (85.1; at 1.12).
-const TIER_KNOWN_BELOW = new Set(['boar_rider<hawk_tamer', 'oni_breaker<mountain_shield', 'thousand_needle<chain_sickle_reaper', 'bomb_carrier<fire_monk', 'crane_glider<owl_bomber', 'ghost_engineer<fuse_master', 'wind_step_assassin<twin_fang_dancer', 'storm_sovereign<moonblade_master']);
+// SIM_RULES 10 (2026-11-25, GT-04). The old check compared two 10-battle scores, and each warrior was added to the full
+// Keep 15 bot mix: a pair's order was mostly layout luck (any data change moved scores 4-10 points), and the four Keep
+// 15 bot warriors were scored on top of a mix already full of themselves. Now (`pairScores`): both warriors join the
+// same army without either of them, over 4 bases per layout (40 battles a side), and a pair fails only when the newer
+// tier is significantly below the older one (one-sided 95%: difference < -1.645 standard errors; ~3.5-4.3 points).
+// Measured that way, rules 9 had one real inversion (Bomb Carrier below Fire Monk, -7.5 +- 4.2); the other seven
+// listed pairs were noise. Fixed by the endgame shift (roster.json `lateScale`, tools/progression/endgameshift.mjs,
+// research levels past Keep 12 only): Bomb Carrier x1.6, and the Keep 13 tier x1.15 so late raids keep pace with the
+// new counters. Pairs move only when one of their two warriors, the Keep 15 bot mix or the generated bases change.
+const TIER_KNOWN_BELOW = new Set<string>([]);
 
 const ROLE: Record<string, string> = Object.fromEntries((roster.warriors as { role: string; liveTroop?: string }[]).filter((w) => w.liveTroop).map((w) => [w.liveTroop!, w.role]));
 const ids = Object.keys(data.troops).sort();
@@ -50,14 +64,15 @@ describe('P4-05 lab gates (known gaps listed, not hidden)', () => {
     }
   });
 
-  it('at Keep 15 no warrior scores below the previous tier in its own role', { timeout: 600_000 }, () => {
+  it('at Keep 15 no warrior is significantly below the previous tier in its own role (shared base, 4 bases a layout)', { timeout: 3_600_000 }, () => {
     const byRole: Record<string, string[]> = {};
     for (const x of ids) (byRole[ROLE[x]] ??= []).push(x);
     for (const list of Object.values(byRole)) {
       list.sort((a, b) => troopEarliestKeep(a, data) - troopEarliestKeep(b, data));
       for (let i = 1; i < list.length; i++) {
         const key = `${list[i]}<${list[i - 1]}`;
-        const below = at15.get(list[i])!.score < at15.get(list[i - 1])!.score;
+        const p = pairScores(list[i], list[i - 1], 15, data);
+        const below = p.newer - p.older < -1.645 * p.se;
         if (TIER_KNOWN_BELOW.has(key)) expect(below, `${key} is fixed: remove it from TIER_KNOWN_BELOW`).toBe(true);
         else expect(below, key).toBe(false);
       }
@@ -73,11 +88,11 @@ describe('P4-06 (CMB-03): no single-warrior army flattens Keep 15', () => {
     }
   });
 
-  // Beast Mode GT-07: measured, not a todo (tools/balance/temperPanel.ts, the audit's Keep 12 panel, 5 layouts x 2
-  // plans). Rules 9: the searched mix is best on every profile (plain 92.7, Reach 95.5, Blast 88.5, Watch 73.3 against
-  // Reaper + Mountain Shield 70.8). Watch's support cuts already sit at their 0.9 ceiling for that base (raising
-  // troopCuts.watch to 1.6 left Watch at 71.3 / 70.8), so closing it needs a new Watch lever: a recorded gap.
-  it.fails('KNOWN GAP (GT-07): at Keep 12 no single army is best on all four temper profiles', { timeout: 900_000 }, () => {
+  // Beast Mode GT-07 (tools/balance/temperPanel.ts, the audit's Keep 12 panel, 5 layouts x 2 plans). Rules 9: the
+  // searched mix was best on every profile (Watch 73.3 against Reaper + Mountain Shield 70.8). SIM_RULES 10 gives Watch
+  // its new lever: Watch-tempered Kunai and Shuriken Towers read varied armies (battle.json temper `kindsFree` 5,
+  // `perKind` 0.15), so the eight-kind searched mix falls to 59.2 on Watch and Reaper + Mountain Shield (70.8) is best.
+  it('GT-07: at Keep 12 no single army is best on all four temper profiles', { timeout: 900_000 }, () => {
     const best = Object.values(bestByProfile(12, data)).map((x) => x.best);
     expect(new Set(best).size).toBeGreaterThan(1);
   });

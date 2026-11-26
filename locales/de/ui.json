@@ -182,6 +182,7 @@
   "temper.done": { "en": "Tempered: every {building} has its new shape.", "text": "Abgestimmt: Jeder {building} hat seine neue Form." },
   "temper.reset": { "en": "Back to untempered", "text": "Zurück zu nicht abgestimmt" },
   "temper.watchSupport": { "en": "Watch also weakens the raiders' healing, revives, toughness and shield cover across the whole base.", "text": "Wache schwächt außerdem in der ganzen Basis die Heilung, Wiederbelebungen, Zähigkeit und den Schildschutz der Angreifer." },
+  "temper.watchKinds": { "en": "Watch-tempered towers read varied armies: for each kind of warrior beyond {free} on the field, they hit {pct} harder. A focused army answers a Watch base.", "text": "Auf Wache abgestimmte Türme durchschauen gemischte Armeen: Für jede Kriegerart auf dem Feld über {free} hinaus treffen sie {pct} härter. Gegen eine Wache-Basis hilft eine Armee aus wenigen Kriegerarten." },
   "scout.profile": { "en": "Tempered: Reach {reach} · Blast {blast} · Watch {watch}", "text": "Abgestimmt: Reichweite {reach} · Wucht {blast} · Wache {watch}" },
   "stake.label": { "en": "Stake", "text": "Einsatz" },
   "stake.none": { "en": "No stake", "text": "Kein Einsatz" },

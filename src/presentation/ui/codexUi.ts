@@ -46,6 +46,9 @@ function rulesSection(host: CodexHost): HTMLElement {
   if (ex) wrap.append(h('p', { class: 'small' }, t('codex.exhaustionRule', { hours: ex.windowHours, pct: fmtPercent(ex.factor * 100) })));
   if (temper) {
     wrap.append(h('p', { class: 'small' }, t('codex.temperRule', { level: temper.unlockKeep })));
+    // SIM_RULES 10 (GT-07): Watch reads varied armies (the first tempered type that has the rule gives the numbers).
+    const kinds = Object.values(temper.types).map((d) => d.watch).find((w) => w?.perKind);
+    if (kinds?.perKind) wrap.append(h('p', { class: 'small', 'data-id': 'codex-watch-kinds' }, t('temper.watchKinds', { free: kinds.kindsFree ?? 0, pct: fmtPercent(kinds.perKind * 100) })));
     // Each clan's leaning: the axis its home tempers weigh most.
     for (const clan of gd.names.rivalClans ?? []) {
       const tempers = temper.rivals?.[clan.id]?.tempers ?? {};

@@ -564,6 +564,10 @@
         "bitter_incense_burner": {
           "count": 1,
           "maxLevel": 3
+        },
+        "mirror_screen": {
+          "count": 1,
+          "maxLevel": 1
         }
       }
     },
@@ -661,6 +665,10 @@
           "maxLevel": 4
         },
         "kite_cutter_ballista": {
+          "count": 1,
+          "maxLevel": 2
+        },
+        "mirror_screen": {
           "count": 1,
           "maxLevel": 2
         }
@@ -762,6 +770,18 @@
         "kite_cutter_ballista": {
           "count": 1,
           "maxLevel": 3
+        },
+        "steam_vent": {
+          "count": 1,
+          "maxLevel": 1
+        },
+        "mirror_screen": {
+          "count": 1,
+          "maxLevel": 3
+        },
+        "hero_shrine": {
+          "count": 1,
+          "maxLevel": 1
         }
       }
     },
@@ -861,6 +881,18 @@
         "kite_cutter_ballista": {
           "count": 1,
           "maxLevel": 4
+        },
+        "steam_vent": {
+          "count": 1,
+          "maxLevel": 3
+        },
+        "mirror_screen": {
+          "count": 1,
+          "maxLevel": 4
+        },
+        "hero_shrine": {
+          "count": 1,
+          "maxLevel": 3
         }
       }
     },
@@ -960,6 +992,18 @@
         "kite_cutter_ballista": {
           "count": 2,
           "maxLevel": 5
+        },
+        "steam_vent": {
+          "count": 1,
+          "maxLevel": 4
+        },
+        "mirror_screen": {
+          "count": 1,
+          "maxLevel": 6
+        },
+        "hero_shrine": {
+          "count": 1,
+          "maxLevel": 4
         }
       }
     },
@@ -1063,6 +1107,18 @@
         "longbow_yagura": {
           "count": 1,
           "maxLevel": 3
+        },
+        "steam_vent": {
+          "count": 1,
+          "maxLevel": 6
+        },
+        "mirror_screen": {
+          "count": 1,
+          "maxLevel": 7
+        },
+        "hero_shrine": {
+          "count": 1,
+          "maxLevel": 6
         }
       }
     },
@@ -1166,6 +1222,22 @@
         "longbow_yagura": {
           "count": 1,
           "maxLevel": 5
+        },
+        "steam_vent": {
+          "count": 1,
+          "maxLevel": 7
+        },
+        "lightning_rod_pagoda": {
+          "count": 1,
+          "maxLevel": 1
+        },
+        "mirror_screen": {
+          "count": 1,
+          "maxLevel": 8
+        },
+        "hero_shrine": {
+          "count": 1,
+          "maxLevel": 7
         }
       }
     },
@@ -1269,6 +1341,22 @@
         "longbow_yagura": {
           "count": 2,
           "maxLevel": 7
+        },
+        "steam_vent": {
+          "count": 1,
+          "maxLevel": 9
+        },
+        "lightning_rod_pagoda": {
+          "count": 1,
+          "maxLevel": 5
+        },
+        "mirror_screen": {
+          "count": 1,
+          "maxLevel": 9
+        },
+        "hero_shrine": {
+          "count": 1,
+          "maxLevel": 9
         }
       }
     },
@@ -1371,6 +1459,22 @@
         },
         "longbow_yagura": {
           "count": 2,
+          "maxLevel": 10
+        },
+        "steam_vent": {
+          "count": 1,
+          "maxLevel": 10
+        },
+        "lightning_rod_pagoda": {
+          "count": 1,
+          "maxLevel": 8
+        },
+        "mirror_screen": {
+          "count": 1,
+          "maxLevel": 10
+        },
+        "hero_shrine": {
+          "count": 1,
           "maxLevel": 10
         }
       }

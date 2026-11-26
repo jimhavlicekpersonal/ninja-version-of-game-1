@@ -3039,5 +3039,390 @@
         "damage": 8779.07
       }
     ]
+  },
+  "steam_vent": {
+    "name": "Steam Vent",
+    "$comment": "Live from SIM_RULES 10 (2026-11-25): derived from acorn_cannon as planned.json described (Kunai Tower's HP; half a Kunai shot each second to every ground warrior within 2 tiles, hidden ones too.). Build times follow kite_cutter_ballista (the live counter of the same Keep band): a counter level takes at most 4 days (GT-05).",
+    "buildCapSeconds": 345600,
+    "description": "Blasts scalding steam in a 2-tile circle. It needs no target, so it hurts hidden warriors, blows smoke away from its tiles, and cannot be dodged.",
+    "size": 2,
+    "category": "defense",
+    "inShop": true,
+    "combat": {
+      "targets": "ground",
+      "range": 2,
+      "fireIntervalTicks": 10,
+      "projectile": "steam",
+      "projectileSpeed": 1
+    },
+    "effect": {
+      "kind": "no_projectile_aoe",
+      "radius": 2,
+      "clearsSmoke": true
+    },
+    "levels": [
+      {
+        "level": 1,
+        "cost": {
+          "acorns": 609725
+        },
+        "buildSeconds": 7200,
+        "hp": 12103,
+        "damage": 340.665
+      },
+      {
+        "level": 2,
+        "cost": {
+          "acorns": 884101
+        },
+        "buildSeconds": 15840,
+        "hp": 15590,
+        "damage": 438.77
+      },
+      {
+        "level": 3,
+        "cost": {
+          "acorns": 1281947
+        },
+        "buildSeconds": 34848,
+        "hp": 22208,
+        "damage": 625.035
+      },
+      {
+        "level": 4,
+        "cost": {
+          "acorns": 1858823
+        },
+        "buildSeconds": 76666,
+        "hp": 30193,
+        "damage": 849.835
+      },
+      {
+        "level": 5,
+        "cost": {
+          "acorns": 2695293
+        },
+        "buildSeconds": 168664,
+        "hp": 40278,
+        "damage": 1133.68
+      },
+      {
+        "level": 6,
+        "cost": {
+          "acorns": 3908175
+        },
+        "buildSeconds": 345600,
+        "hp": 53734,
+        "damage": 1512.335
+      },
+      {
+        "level": 7,
+        "cost": {
+          "acorns": 5666854
+        },
+        "buildSeconds": 345600,
+        "hp": 62331,
+        "damage": 1754.309
+      },
+      {
+        "level": 8,
+        "cost": {
+          "acorns": 8216938
+        },
+        "buildSeconds": 345600,
+        "hp": 72304,
+        "damage": 2034.998
+      },
+      {
+        "level": 9,
+        "cost": {
+          "acorns": 11914560
+        },
+        "buildSeconds": 345600,
+        "hp": 83873,
+        "damage": 2360.598
+      },
+      {
+        "level": 10,
+        "cost": {
+          "acorns": 17276112
+        },
+        "buildSeconds": 345600,
+        "hp": 97293,
+        "damage": 2738.293
+      }
+    ]
+  },
+  "lightning_rod_pagoda": {
+    "name": "Lightning Rod Tower",
+    "$comment": "Live from SIM_RULES 10 (2026-11-25): derived from longbow_yagura as planned.json described (Longbow Yagura's HP and price, no shot of its own; fires the absorbed lightning back once it holds half its HP.). Build times follow longbow_yagura (the live counter of the same Keep band): a counter level takes at most 4 days (GT-05).",
+    "buildCapSeconds": 345600,
+    "description": "Grounds lightning: chained slashes and lightning strikes within 3 tiles hit the rod instead, charging it. When fully charged it fires the lightning back.",
+    "size": 2,
+    "category": "defense",
+    "inShop": true,
+    "effect": {
+      "kind": "absorb_lightning",
+      "radius": 3,
+      "capacity": 0.5,
+      "returnPct": 1,
+      "troops": [
+        "thunder_kite",
+        "storm_sovereign"
+      ]
+    },
+    "levels": [
+      {
+        "level": 1,
+        "cost": {
+          "acorns": 4284200
+        },
+        "buildSeconds": 28800,
+        "hp": 22120
+      },
+      {
+        "level": 2,
+        "cost": {
+          "acorns": 7240200
+        },
+        "buildSeconds": 63360,
+        "hp": 33639
+      },
+      {
+        "level": 3,
+        "cost": {
+          "acorns": 9412300
+        },
+        "buildSeconds": 139392,
+        "hp": 44486
+      },
+      {
+        "level": 4,
+        "cost": {
+          "acorns": 12236000
+        },
+        "buildSeconds": 306662,
+        "hp": 51163
+      },
+      {
+        "level": 5,
+        "cost": {
+          "acorns": 15906700
+        },
+        "buildSeconds": 345600,
+        "hp": 58836
+      },
+      {
+        "level": 6,
+        "cost": {
+          "acorns": 23064715
+        },
+        "buildSeconds": 345600,
+        "hp": 68250
+      },
+      {
+        "level": 7,
+        "cost": {
+          "acorns": 33443837
+        },
+        "buildSeconds": 345600,
+        "hp": 79170
+      },
+      {
+        "level": 8,
+        "cost": {
+          "acorns": 48493563
+        },
+        "buildSeconds": 345600,
+        "hp": 91837
+      }
+    ]
+  },
+  "mirror_screen": {
+    "name": "Bronze Mirror Screen",
+    "$comment": "Live from SIM_RULES 10 (2026-11-25): derived from acorn_cannon as planned.json described (A Kunai Tower's HP (P4-10 step 5: 1.5x -> 1x, BNL-04: its body alone cost melee 20 points), no shot of its own; every second warrior projectile flies back at full damage (SIM_RULES 10, 2026-11-25: every third measured -2.2/-2.4/-2.8 against the armies it beats, every second -4.1 at Keep 11 and -5.8 at Keep 15, the go-live gate's -3).). Build times follow bitter_incense_burner (the live counter of the same Keep band): a counter level takes at most 4 days (GT-05). Body at 0.6x a Kunai Tower's HP (SIM_RULES 10 campaign: the casual explorer's Keeps 8-15 mean was 0.57 with a full body, 0.70 with 0.6x; the reflection itself is unchanged).",
+    "buildCapSeconds": 345600,
+    "description": "Polished bronze panels: every second projectile that hits the screen flies back at whoever threw it.",
+    "size": 2,
+    "category": "defense",
+    "inShop": true,
+    "effect": {
+      "kind": "reflect_projectiles",
+      "every": 2,
+      "reflectPct": 1
+    },
+    "levels": [
+      {
+        "level": 1,
+        "cost": {
+          "acorns": 420500
+        },
+        "buildSeconds": 3600,
+        "hp": 5632
+      },
+      {
+        "level": 2,
+        "cost": {
+          "acorns": 609725
+        },
+        "buildSeconds": 7920,
+        "hp": 7262
+      },
+      {
+        "level": 3,
+        "cost": {
+          "acorns": 884101
+        },
+        "buildSeconds": 17424,
+        "hp": 9354
+      },
+      {
+        "level": 4,
+        "cost": {
+          "acorns": 1281947
+        },
+        "buildSeconds": 38333,
+        "hp": 13325
+      },
+      {
+        "level": 5,
+        "cost": {
+          "acorns": 1858823
+        },
+        "buildSeconds": 84332,
+        "hp": 18116
+      },
+      {
+        "level": 6,
+        "cost": {
+          "acorns": 2695293
+        },
+        "buildSeconds": 185531,
+        "hp": 24167
+      },
+      {
+        "level": 7,
+        "cost": {
+          "acorns": 3908175
+        },
+        "buildSeconds": 345600,
+        "hp": 32240
+      },
+      {
+        "level": 8,
+        "cost": {
+          "acorns": 5666854
+        },
+        "buildSeconds": 345600,
+        "hp": 37399
+      },
+      {
+        "level": 9,
+        "cost": {
+          "acorns": 8216938
+        },
+        "buildSeconds": 345600,
+        "hp": 43382
+      },
+      {
+        "level": 10,
+        "cost": {
+          "acorns": 11914560
+        },
+        "buildSeconds": 345600,
+        "hp": 50324
+      }
+    ]
+  },
+  "hero_shrine": {
+    "name": "Hero Hall",
+    "$comment": "Live from SIM_RULES 10 (2026-11-25): derived from burrow_barracks as planned.json described (Hero Hall: built and priced like the Training Dojo. With heroChoice, the player picks one unlocked hero; the Hall's level decides which heroes can be chosen, never their level (BNL-11).). Its last levels take the Training Dojo top time (buildCapSeconds).",
+    "buildCapSeconds": 134695,
+    "description": "Home of your clan heroes: its level decides which hero you can choose.",
+    "size": 3,
+    "category": "military",
+    "inShop": true,
+    "levels": [
+      {
+        "level": 1,
+        "cost": {
+          "dew": 58000
+        },
+        "buildSeconds": 1188,
+        "hp": 1457
+      },
+      {
+        "level": 2,
+        "cost": {
+          "dew": 84100
+        },
+        "buildSeconds": 2614,
+        "hp": 1944
+      },
+      {
+        "level": 3,
+        "cost": {
+          "dew": 121945
+        },
+        "buildSeconds": 5750,
+        "hp": 2983
+      },
+      {
+        "level": 4,
+        "cost": {
+          "dew": 176820
+        },
+        "buildSeconds": 12650,
+        "hp": 3974
+      },
+      {
+        "level": 5,
+        "cost": {
+          "dew": 256389
+        },
+        "buildSeconds": 27830,
+        "hp": 5304
+      },
+      {
+        "level": 6,
+        "cost": {
+          "dew": 371765
+        },
+        "buildSeconds": 61225,
+        "hp": 8137
+      },
+      {
+        "level": 7,
+        "cost": {
+          "dew": 539059
+        },
+        "buildSeconds": 134695,
+        "hp": 10854
+      },
+      {
+        "level": 8,
+        "cost": {
+          "dew": 781636
+        },
+        "buildSeconds": 134695,
+        "hp": 12591
+      },
+      {
+        "level": 9,
+        "cost": {
+          "dew": 1133372
+        },
+        "buildSeconds": 134695,
+        "hp": 14605
+      },
+      {
+        "level": 10,
+        "cost": {
+          "dew": 1643389
+        },
+        "buildSeconds": 134695,
+        "hp": 16942
+      }
+    ]
   }
 }

@@ -129,6 +129,8 @@ export const PLAYER_COMMANDS: ReadonlySet<Command['type']> = new Set<Command['ty
   'drillEnd',
   // P5-08 (2026-11-18): a Keep's seal.
   'claimKeepSeal',
+  // SIM_RULES 10 (2026-11-25): hero choice is live; the server's copy must know the chosen hero (`heroFor`).
+  'chooseHero',
 ]);
 
 /** Commands that re-run a whole battle on the server (CPU): a batch may carry only a few. */
