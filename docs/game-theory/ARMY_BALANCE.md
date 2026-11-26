@@ -20,31 +20,31 @@ A composition takes the three newest unlocked troops of each family it uses:
 
 | Army | Keep 4 | Keep 6 | Keep 7 | Keep 8 | Keep 10 | Keep 12 | Keep 15 |
 |---|---|---|---|---|---|---|---|
-| Mixed (raid bot mix) | 56 (6%) | 62 (6%) | 67 (22%) | 61 (11%) | 67 (17%) | 50 (0%) | 69 (11%) |
-| Melee rush | 73 (33%) | 63 (17%) | 56 (17%) | 36 (6%) | 46 (0%) | 42 (0%) | 41 (0%) |
-| Artillery-heavy | 64 (11%) | 81 (39%) | 56 (0%) | 52 (0%) | 62 (6%) | 47 (0%) | 57 (6%) |
-| Support-heavy | 77 (44%) | 75 (33%) | 48 (6%) | 29 (0%) | 58 (11%) | 40 (0%) | 47 (0%) |
-| Air | 56 (6%) | 54 (0%) | 46 (0%) | 28 (0%) | 46 (0%) | 29 (0%) | 42 (0%) |
-| Shadow strike | 83 (39%) | 75 (28%) | 70 (22%) | 52 (11%) | 47 (0%) | 39 (0%) | 48 (0%) |
-| Siege | 78 (39%) | 77 (39%) | 49 (6%) | 31 (6%) | 41 (0%) | 30 (0%) | 36 (0%) |
-| Melee + ranged, light support | 70 (22%) | 83 (50%) | 51 (0%) | 52 (6%) | 64 (11%) | 44 (0%) | 51 (0%) |
-| Breach wedge | 63 (11%) | 85 (56%) | 53 (0%) | 54 (6%) | 58 (6%) | 44 (0%) | 50 (0%) |
+| Mixed (raid bot mix) | 56 (6%) | 62 (6%) | 69 (28%) | 65 (28%) | 68 (17%) | 51 (0%) | 81 (33%) |
+| Melee rush | 73 (33%) | 63 (17%) | 61 (17%) | 42 (17%) | 46 (0%) | 43 (0%) | 41 (0%) |
+| Artillery-heavy | 64 (11%) | 81 (39%) | 54 (6%) | 47 (0%) | 64 (11%) | 48 (0%) | 64 (17%) |
+| Support-heavy | 77 (44%) | 75 (33%) | 50 (11%) | 34 (6%) | 60 (17%) | 42 (0%) | 52 (6%) |
+| Air | 56 (6%) | 54 (0%) | 47 (0%) | 33 (0%) | 47 (0%) | 30 (0%) | 44 (0%) |
+| Shadow strike | 83 (39%) | 75 (28%) | 64 (17%) | 57 (11%) | 48 (0%) | 39 (0%) | 57 (0%) |
+| Siege | 78 (39%) | 77 (39%) | 48 (0%) | 44 (22%) | 42 (0%) | 31 (0%) | 41 (0%) |
+| Melee + ranged, light support | 70 (22%) | 83 (50%) | 52 (0%) | 54 (11%) | 66 (17%) | 47 (0%) | 54 (0%) |
+| Breach wedge | 63 (11%) | 85 (56%) | 57 (6%) | 59 (6%) | 60 (17%) | 44 (0%) | 55 (0%) |
 
-## What the five live counters' effects cost each army
+## What the 8 live counters' effects cost each army
 
-Destruction lost to the counter abilities: the same bases, deployments and Infiltration Points, fought once with the Paper Lantern Line, Repair Crane, Incense Burner, Kite-Cutter Ballista and Longbow Yagura effects on and once with only those effects switched off (the buildings stay and still count; the Ballista and Yagura still shoot).
+Destruction lost to the counter abilities: the same bases, deployments and Infiltration Points, fought once with the Paper Lantern Line, Clockwork Repair Crane, Bitter Smoke Brazier, Kite-Cutter Ballista, Longbow Yagura, Steam Vent, Lightning Rod Tower and Bronze Mirror Screen effects on and once with only those effects switched off (the buildings stay and still count; the Kite-Cutter Ballista, Longbow Yagura and Steam Vent still shoot).
 
 | Army | Keep 4 | Keep 6 | Keep 7 | Keep 8 | Keep 10 | Keep 12 | Keep 15 |
 |---|---|---|---|---|---|---|---|
-| Mixed (raid bot mix) | 0.0 | 0.0 | -2.4 | -1.1 | -11.1 | -4.6 | -6.2 |
-| Melee rush | 0.0 | 0.0 | -0.4 | -7.6 | -8.2 | -10.4 | -11.4 |
-| Artillery-heavy | 0.0 | 0.5 | -7.9 | -3.1 | -8.2 | -3.7 | -8.8 |
-| Support-heavy | 0.0 | -0.3 | -0.4 | -0.4 | -3.4 | -5.9 | -13.6 |
-| Air | 0.0 | 0.0 | -2.7 | -19.1 | -5.9 | -4.0 | -9.7 |
-| Shadow strike | 0.0 | 0.0 | -2.2 | -0.7 | -8.1 | -4.2 | -9.4 |
-| Siege | 0.0 | 0.0 | -0.2 | -9.7 | -1.5 | -2.3 | -5.1 |
-| Melee + ranged, light support | 0.0 | -1.1 | -2.6 | 0.8 | -7.9 | -4.2 | -4.3 |
-| Breach wedge | 0.0 | 0.0 | -3.4 | 1.4 | -4.5 | -3.7 | -5.4 |
+| Mixed (raid bot mix) | 0.0 | 0.0 | -1.8 | 0.6 | -9.9 | -4.9 | -3.6 |
+| Melee rush | 0.0 | 0.0 | 1.2 | -1.1 | -9.4 | -10.7 | -11.1 |
+| Artillery-heavy | 0.0 | 0.5 | -8.6 | -2.9 | -7.7 | -2.2 | -6.0 |
+| Support-heavy | 0.0 | -0.3 | -3.0 | -3.4 | -1.7 | -4.8 | -9.3 |
+| Air | 0.0 | 0.0 | -2.8 | -21.0 | -7.1 | -4.2 | -8.3 |
+| Shadow strike | 0.0 | 0.0 | -0.6 | -0.6 | -11.3 | -3.6 | -8.6 |
+| Siege | 0.0 | 0.0 | -0.4 | -2.4 | -0.5 | -2.4 | -5.2 |
+| Melee + ranged, light support | 0.0 | -1.1 | -4.0 | -2.1 | -6.7 | -2.3 | -5.4 |
+| Breach wedge | 0.0 | 0.0 | -3.0 | -2.5 | -1.4 | -3.7 | -7.0 |
 
 ## Investment per army
 

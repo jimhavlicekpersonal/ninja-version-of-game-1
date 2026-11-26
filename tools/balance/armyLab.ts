@@ -262,8 +262,13 @@ export function labMarkdown(rows: LabRow[], opts: LabOptions): string {
     L.push(`| ${c.name} | ${keeps.map((k) => { const v = byKeep?.get(k); return v ? `${v.destruction.toFixed(0)} (${Math.round(v.threeStar * 100)}%)` : '–'; }).join(' | ')} |`);
   }
   if (opts.compareCounters) {
-    L.push('', '## What the five live counters\' effects cost each army', '');
-    L.push('Destruction lost to the counter abilities: the same bases, deployments and Infiltration Points, fought once with the Paper Lantern Line, Repair Crane, Incense Burner, Kite-Cutter Ballista and Longbow Yagura effects on and once with only those effects switched off (the buildings stay and still count; the Ballista and Yagura still shoot).', '');
+    // Named from the data, so the text follows COUNTERS (it said "five" after SIM_RULES 10 made eight live).
+    const data = opts.data ?? defaultData;
+    const ids = [...COUNTERS].filter((id) => data.buildings[id]);
+    const list = (names: string[]) => (names.length > 1 ? `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}` : names.join(''));
+    const shooters = ids.filter((id) => data.buildings[id].combat).map((id) => data.buildings[id].name);
+    L.push('', `## What the ${ids.length} live counters' effects cost each army`, '');
+    L.push(`Destruction lost to the counter abilities: the same bases, deployments and Infiltration Points, fought once with the ${list(ids.map((id) => data.buildings[id].name))} effects on and once with only those effects switched off (the buildings stay and still count${shooters.length ? `; the ${list(shooters)} still shoot` : ''}).`, '');
     L.push(`| Army | ${keeps.map((k) => `Keep ${k}`).join(' | ')} |`, `|---|${keeps.map(() => '---').join('|')}|`);
     for (const c of COMPOSITIONS) {
       const byKeep = s.get(c.id);
