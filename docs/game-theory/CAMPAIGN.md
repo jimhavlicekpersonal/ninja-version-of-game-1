@@ -137,7 +137,7 @@ Play time (GT-15 estimate, playerModel `PLAY_TIME`): 46.3 h to Keep 15, 53.6 h o
 
 Keep reached (day): 1: 0 [0.0–0.0] · 2: 0 [0.0–0.0] · 3: 0 [0.0–0.0] · 4: 1.9 [1.6–2.3] · 5: 7.5 [6.5–8.4] · 6: 20.9 [19.6–22.3] · 7: 36.5 [34.3–38.8] · 8: 50.5 [48.8–52.3] · 9: 64.9 [61.8–68.0] · 10: 82.8 [79.5–86.1] · 11: 99.5 [94.7–104.3] · 12: 120.1 [117.0–123.3] · 13: 146.9 [142.8–151.0] · 14: 169.8 [164.8–174.8] · 15: 196.3 [190.4–202.2]. Played 214 days; 200 raids against the village.
 
-Totals: 199,527,359 looted, 300,147,354 taken by raids against the village (150% of the loot), 4,166,001 paid for held raids.
+Totals: 199,185,786 looted, 300,096,484 taken by raids against the village (151% of the loot), 4,166,001 paid for held raids.
 
 Play time (GT-15 estimate, playerModel `PLAY_TIME`): 20.6 h to Keep 15, 22.6 h over the run, about 6.3 minutes a day.
 
@@ -156,7 +156,7 @@ Play time (GT-15 estimate, playerModel `PLAY_TIME`): 20.6 h to Keep 15, 22.6 h o
 | 12 | 161 | 0.53 | 37% | 0% | 42% | 921,641 | 11.1 | 10.94 | 1146 | 198 | 0% | 1,475,465 | 0.0 |
 | 13 | 136 | 0.79 | 51% | 0% | 48% | 1,533,572 | 12.0 | 11.84 | 1058 | 173 | 0% | 2,186,361 | 0.0 |
 | 14 | 159 | 0.90 | 55% | 3% | 51% | 3,257,622 | 13.0 | 12.83 | 1194 | 198 | 0% | 3,445,603 | 0.0 |
-| 15 | 110 | 0.65 | 46% | 0% | 44% | 4,564,818 | 14.0 | 13.57 | 1222 | 135 | 1% | 5,117,581 | -0.3 |
+| 15 | 110 | 0.65 | 45% | 0% | 44% | 4,539,976 | 14.0 | 13.57 | 1222 | 135 | 1% | 5,114,566 | -0.3 |
 
 ## Casual who hires the third artisan with the starting Jade (one visit a day, suggested army, Trials and tasks)
 
@@ -269,7 +269,7 @@ Per-run means. Earned and spent by what moved it: the command (openDailyChest, c
 | casual | 500 | 157 | 434 | 326 | 20 | 0 | 1438 |
 | regular_rusher | 500 | 0 | 616 | 197 | 0 | 0 | 1312 |
 | regular_sandbagger | 500 | 0 | 600 | 203 | 0 | 0 | 1303 |
-| casual_explorer | 500 | 168 | 325 | 367 | 23 | 0 | 1383 |
+| casual_explorer | 500 | 169 | 325 | 367 | 23 | 0 | 1384 |
 | casual_hires | 500 | 136 | 316 | 247 | 15 | 750 (place) | 463 |
 | casual_queues | 500 | 296 | 469 | 208 | 15 | 750 (place) | 737 |
 | regular_online | 500 | 0 | 469 | 183 | 0 | 0 | 1151 |
