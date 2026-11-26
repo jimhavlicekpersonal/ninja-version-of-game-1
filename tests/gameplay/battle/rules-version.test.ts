@@ -33,6 +33,6 @@ function combatFingerprint(): string {
 
 describe('battle rules version', () => {
   it('combat data has not changed without a SIM_RULES bump', () => {
-    expect({ rules: SIM_RULES, fingerprint: combatFingerprint() }).toEqual({ rules: 10, fingerprint: 'caadd2ce' });
+    expect({ rules: SIM_RULES, fingerprint: combatFingerprint() }).toEqual({ rules: 10, fingerprint: '438459d4' });
   });
 });

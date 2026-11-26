@@ -72,7 +72,7 @@
 | 47 | **Mirage Twin** `mirage_twin` | Shadow | 2 Adept | 6 | Decoy: Leaves a decoy that draws fire for 4 seconds. | 191 / 48 | 18 | 1760 / 440 | 6920 | yes (`mirage_twin`) |
 | 48 | **Night Blade** `night_blade` | Shadow | 3 Veteran | 9 | Smoke Hunter: Deals double damage to buildings inside smoke. | 424 / 106 | 16 | 1867 / 467 | 8190 | yes (`night_blade`) |
 | 49 | **Void Walker** `void_walker` | Shadow | 4 Master | 12 | Shadow Step: Steps through shadows straight onto its target. | 805 / 201 | 14 | 1962 / 490 | 9692 | yes (`void_walker`) |
-| 50 | **Eclipse Ninja** `eclipse_ninja` | Shadow | 5 Legend | 15 | Eclipse: Unseen until its first attack, immune to traps, and has a 25% chance of double damage on each hit. | 1927 / 535 | 12 | 1927 / 535 | 11k | yes (`eclipse_ninja`) |
+| 50 | **Eclipse Ninja** `eclipse_ninja` | Shadow | 5 Legend | 15 | Eclipse: Unseen until its first attack, immune to traps, and has a 25% chance of double damage on each hit. | 2120 / 589 | 12 | 2120 / 589 | 11k | yes (`eclipse_ninja`) |
 
 ## Heroes
 
