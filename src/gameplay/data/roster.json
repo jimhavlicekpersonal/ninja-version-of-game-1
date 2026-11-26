@@ -900,9 +900,9 @@
         "accent": "#e9b44c",
         "weapon": "eclipse ring blade"
       },
-      "hpScale": 0.972,
+      "hpScale": 1.069,
       "liveTroop": "eclipse_ninja",
-      "dpsScale": 1.08
+      "dpsScale": 1.188
     }
   ],
   "heroes": [
