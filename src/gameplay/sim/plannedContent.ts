@@ -1,6 +1,7 @@
 /**
- * Content batch 2026-11-14: the designed-but-not-live content (the fifteen non-live counters, the Hero Hall
- * and the three non-live heroes) and the features behind flags (Warrior Mastery, hero choice), for playtesting.
+ * Content batch 2026-11-14: the designed-but-not-live content, for playtesting. Since SIM_RULES 10 (2026-11-25: the
+ * Steam Vent, Lightning Rod Tower, Bronze Mirror Screen, Hero Hall, Iron Matriarch and Sky Admiral went live, with
+ * hero choice and Warrior Mastery) that is the twelve counters still under the go-live gate and the Grand Sensei.
  *
  * `withPreview(data)` returns a COPY of the game data with `data/planned.json` merged in; the shipped data
  * (`defaultData`) never contains any of it, so the live game, its replays, the server and every gate are
