@@ -13,138 +13,111 @@ Each planned building is added at its catalog max level for the Keep (the Living
 | `whirling_blade_tower` | 4 | raid mix | 60.1 | 51.1 | -9.0 | -4.0 | 1.8 | 0.0 |
 | `whirling_blade_tower` | 4 | it beats | 61.1 | 44.9 | -16.2 | -12.6 | 2.8 | 0.0 |
 | `whirling_blade_tower` | 4 | beats it | 96.4 | 81.6 | -14.7 | -14.5 | 3.1 | 0.0 |
-| `whirling_blade_tower` | 10 | raid mix | 70.9 | 61.3 | -9.6 | -5.2 | 1.8 | 0.0 |
-| `whirling_blade_tower` | 10 | it beats | 44.6 | 40.9 | -3.8 | -1.3 | 0.9 | 0.0 |
-| `whirling_blade_tower` | 10 | beats it | 58.0 | 45.4 | -12.6 | -5.2 | 1.6 | 0.0 |
-| `whirling_blade_tower` | 15 | raid mix | 82.9 | 74.4 | -8.5 | -8.1 | 1.9 | 0.0 |
-| `whirling_blade_tower` | 15 | it beats | 40.4 | 35.9 | -4.5 | -1.0 | 0.8 | 0.0 |
-| `whirling_blade_tower` | 15 | beats it | 46.2 | 42.5 | -3.7 | -2.6 | 1.1 | 0.0 |
+| `whirling_blade_tower` | 10 | raid mix | 66.2 | 57.0 | -9.3 | -7.1 | 2.2 | 0.0 |
+| `whirling_blade_tower` | 10 | it beats | 40.7 | 37.5 | -3.2 | -0.5 | 0.6 | 0.0 |
+| `whirling_blade_tower` | 10 | beats it | 45.0 | 41.5 | -3.5 | -2.8 | 0.8 | 0.0 |
+| `whirling_blade_tower` | 15 | raid mix | 83.9 | 75.1 | -8.8 | -8.0 | 2.0 | 0.0 |
+| `whirling_blade_tower` | 15 | it beats | 41.3 | 41.8 | +0.5 | -0.4 | 0.2 | 0.0 |
+| `whirling_blade_tower` | 15 | beats it | 45.6 | 43.1 | -2.5 | -1.5 | 0.4 | 0.0 |
 | `rain_barrel_tower` | 5 | raid mix | 66.9 | 61.7 | -5.2 | +0.0 | 0.0 | 0.0 |
-| `rain_barrel_tower` | 5 | it beats | 73.8 | 61.6 | -12.3 | +0.0 | 0.0 | 0.0 |
-| `rain_barrel_tower` | 5 | beats it | 66.4 | 60.3 | -6.1 | +0.0 | 0.0 | 0.0 |
-| `rain_barrel_tower` | 10 | raid mix | 70.9 | 66.2 | -4.6 | +0.0 | 0.0 | 0.0 |
-| `rain_barrel_tower` | 10 | it beats | 48.3 | 47.2 | -1.1 | +0.0 | 0.0 | 7.5 |
-| `rain_barrel_tower` | 10 | beats it | 38.2 | 37.2 | -1.0 | +0.0 | 0.0 | 0.0 |
-| `rain_barrel_tower` | 15 | raid mix | 82.9 | 81.7 | -1.2 | -0.7 | 1.5 | 0.0 |
-| `rain_barrel_tower` | 15 | it beats | 41.1 | 37.2 | -3.9 | +0.0 | 0.0 | 4.5 |
-| `rain_barrel_tower` | 15 | beats it | 36.6 | 32.4 | -4.2 | -0.1 | 0.1 | 0.0 |
+| `rain_barrel_tower` | 5 | it beats | 74.5 | 61.9 | -12.6 | +0.0 | 0.0 | 0.0 |
+| `rain_barrel_tower` | 5 | beats it | 67.6 | 63.1 | -4.6 | +0.0 | 0.0 | 0.0 |
+| `rain_barrel_tower` | 10 | raid mix | 66.2 | 56.6 | -9.6 | +0.0 | 0.0 | 0.0 |
+| `rain_barrel_tower` | 10 | it beats | 42.4 | 41.0 | -1.4 | +0.0 | 0.0 | 8.1 |
+| `rain_barrel_tower` | 10 | beats it | 32.6 | 34.2 | +1.6 | +0.0 | 0.0 | 0.0 |
+| `rain_barrel_tower` | 15 | raid mix | 83.9 | 86.0 | +2.1 | +3.3 | 1.1 | 0.0 |
+| `rain_barrel_tower` | 15 | it beats | 45.3 | 46.4 | +1.1 | -0.1 | 0.1 | 8.1 |
+| `rain_barrel_tower` | 15 | beats it | 38.8 | 38.0 | -0.8 | +0.0 | 0.1 | 0.0 |
 | `listening_jars` | 5 | raid mix | 66.9 | 65.2 | -1.7 | +0.0 | 0.0 | 0.8 |
-| `listening_jars` | 5 | it beats | 82.4 | 82.0 | -0.4 | +0.0 | 0.6 | 7.4 |
-| `listening_jars` | 5 | beats it | 33.5 | 33.8 | +0.3 | +0.0 | 0.0 | 0.0 |
-| `listening_jars` | 10 | raid mix | 70.9 | 72.3 | +1.4 | +0.0 | 0.0 | 0.0 |
-| `listening_jars` | 10 | it beats | 41.7 | 42.1 | +0.4 | +0.0 | 0.0 | 1.4 |
-| `listening_jars` | 10 | beats it | 40.2 | 37.4 | -2.8 | +0.0 | 0.0 | 0.0 |
-| `listening_jars` | 15 | raid mix | 82.9 | 80.8 | -2.1 | +0.0 | 0.0 | 0.0 |
-| `listening_jars` | 15 | it beats | 41.8 | 40.4 | -1.5 | +0.0 | 0.0 | 1.8 |
-| `listening_jars` | 15 | beats it | 31.5 | 30.5 | -1.0 | +0.0 | 0.0 | 0.0 |
+| `listening_jars` | 5 | it beats | 82.6 | 84.4 | +1.7 | -0.2 | 0.6 | 7.4 |
+| `listening_jars` | 5 | beats it | 37.1 | 38.4 | +1.3 | +0.0 | 0.0 | 0.0 |
+| `listening_jars` | 10 | raid mix | 66.2 | 65.4 | -0.9 | +0.0 | 0.0 | 0.0 |
+| `listening_jars` | 10 | it beats | 38.2 | 38.2 | +0.0 | -0.1 | 0.1 | 1.1 |
+| `listening_jars` | 10 | beats it | 36.3 | 35.8 | -0.5 | +0.0 | 0.0 | 0.0 |
+| `listening_jars` | 15 | raid mix | 83.9 | 80.6 | -3.3 | +0.0 | 0.0 | 0.0 |
+| `listening_jars` | 15 | it beats | 45.8 | 46.5 | +0.8 | +0.0 | 0.0 | 2.3 |
+| `listening_jars` | 15 | beats it | 35.5 | 37.6 | +2.0 | +0.0 | 0.0 | 0.0 |
 | `living_bamboo_wall` | 6 | raid mix | 67.3 | 63.1 | -4.2 | -1.1 | 0.4 | 0.0 |
-| `living_bamboo_wall` | 6 | it beats | 30.7 | 30.2 | -0.5 | +0.1 | 2.8 | 0.0 |
-| `living_bamboo_wall` | 6 | beats it | 76.3 | 70.3 | -6.0 | -2.8 | 2.6 | 0.0 |
-| `living_bamboo_wall` | 11 | raid mix | 79.8 | 69.3 | -10.5 | -1.8 | 1.7 | 0.0 |
-| `living_bamboo_wall` | 11 | it beats | 16.3 | 14.5 | -1.8 | -1.2 | 1.0 | 0.0 |
-| `living_bamboo_wall` | 11 | beats it | 33.4 | 32.5 | -0.9 | +0.5 | 0.4 | 0.0 |
-| `living_bamboo_wall` | 15 | raid mix | 82.9 | 81.1 | -1.8 | +1.0 | 2.4 | 0.0 |
-| `living_bamboo_wall` | 15 | it beats | 37.8 | 36.4 | -1.4 | -0.3 | 0.7 | 0.0 |
-| `living_bamboo_wall` | 15 | beats it | 36.1 | 32.9 | -3.1 | +0.0 | 0.1 | 0.0 |
+| `living_bamboo_wall` | 6 | it beats | 34.5 | 36.7 | +2.2 | +1.5 | 0.9 | 0.0 |
+| `living_bamboo_wall` | 6 | beats it | 80.1 | 73.1 | -7.0 | -3.7 | 3.3 | 0.0 |
+| `living_bamboo_wall` | 11 | raid mix | 66.6 | 63.0 | -3.7 | -1.4 | 0.6 | 0.0 |
+| `living_bamboo_wall` | 11 | it beats | 17.2 | 14.2 | -2.9 | -1.5 | 0.4 | 0.0 |
+| `living_bamboo_wall` | 11 | beats it | 35.2 | 34.2 | -1.0 | -0.2 | 0.4 | 0.0 |
+| `living_bamboo_wall` | 15 | raid mix | 83.9 | 81.2 | -2.7 | +2.4 | 2.5 | 0.0 |
+| `living_bamboo_wall` | 15 | it beats | 46.1 | 45.2 | -0.9 | -2.4 | 1.2 | 0.0 |
+| `living_bamboo_wall` | 15 | beats it | 39.9 | 39.9 | +0.0 | -0.0 | 0.2 | 0.0 |
 | `straw_scarecrow` | 6 | raid mix | 67.3 | 65.7 | -1.6 | +0.0 | 0.0 | 0.0 |
-| `straw_scarecrow` | 6 | it beats | 46.2 | 46.3 | +0.1 | +0.4 | 1.2 | 0.0 |
-| `straw_scarecrow` | 6 | beats it | 88.5 | 84.2 | -4.3 | +0.0 | 0.0 | 0.0 |
-| `straw_scarecrow` | 11 | raid mix | 79.8 | 75.7 | -4.1 | +0.0 | 0.0 | 0.0 |
-| `straw_scarecrow` | 11 | it beats | 33.5 | 34.0 | +0.5 | -0.7 | 0.4 | 0.0 |
-| `straw_scarecrow` | 11 | beats it | 46.3 | 47.0 | +0.8 | +0.0 | 0.0 | 0.0 |
-| `straw_scarecrow` | 15 | raid mix | 82.9 | 82.3 | -0.6 | +0.0 | 0.0 | 0.0 |
-| `straw_scarecrow` | 15 | it beats | 36.2 | 33.1 | -3.1 | +0.2 | 0.3 | 0.0 |
-| `straw_scarecrow` | 15 | beats it | 43.5 | 43.4 | -0.1 | +0.3 | 0.2 | 0.0 |
-| `mirror_screen` | 7 | raid mix | 71.3 | 67.7 | -3.6 | -1.5 | 0.5 | 45.1 |
-| `mirror_screen` | 7 | it beats | 52.3 | 53.4 | +1.2 | -2.2 | 0.6 | 80.8 |
-| `mirror_screen` | 7 | beats it | 76.4 | 75.6 | -0.8 | +0.0 | 0.0 | 0.0 |
-| `mirror_screen` | 11 | raid mix | 79.8 | 69.2 | -10.6 | -1.6 | 0.7 | 76.8 |
-| `mirror_screen` | 11 | it beats | 52.6 | 47.5 | -5.1 | -4.6 | 1.8 | 114.5 |
-| `mirror_screen` | 11 | beats it | 52.7 | 52.3 | -0.3 | +0.0 | 0.0 | 0.0 |
-| `mirror_screen` | 15 | raid mix | 82.9 | 80.3 | -2.6 | -1.8 | 0.9 | 103.4 |
-| `mirror_screen` | 15 | it beats | 53.6 | 49.7 | -3.9 | -1.8 | 0.7 | 51.8 |
-| `mirror_screen` | 15 | beats it | 50.5 | 48.8 | -1.7 | +0.0 | 0.0 | 0.0 |
-| `sand_bucket_post` | 7 | raid mix | 71.3 | 71.5 | +0.2 | +0.0 | 0.0 | 0.0 |
-| `sand_bucket_post` | 7 | it beats | 62.4 | 62.8 | +0.5 | -0.1 | 0.2 | 0.0 |
-| `sand_bucket_post` | 7 | beats it | 50.7 | 52.4 | +1.8 | -0.3 | 0.3 | 0.0 |
-| `sand_bucket_post` | 11 | raid mix | 79.8 | 70.8 | -9.0 | +0.0 | 0.0 | 0.1 |
-| `sand_bucket_post` | 11 | it beats | 46.0 | 47.1 | +1.0 | -0.2 | 0.1 | 0.1 |
-| `sand_bucket_post` | 11 | beats it | 41.1 | 39.8 | -1.3 | -0.1 | 0.2 | 0.1 |
-| `sand_bucket_post` | 15 | raid mix | 82.9 | 81.6 | -1.3 | +0.0 | 0.7 | 0.0 |
-| `sand_bucket_post` | 15 | it beats | 39.6 | 40.5 | +0.8 | +0.0 | 0.1 | 0.0 |
-| `sand_bucket_post` | 15 | beats it | 46.5 | 45.5 | -1.1 | -0.1 | 0.1 | 0.0 |
-| `discipline_banner` | 9 | raid mix | 83.0 | 81.6 | -1.4 | +0.4 | 0.4 | 0.0 |
-| `discipline_banner` | 9 | it beats | 49.7 | 50.5 | +0.8 | -0.2 | 0.1 | 0.0 |
-| `discipline_banner` | 9 | beats it | 26.4 | 28.5 | +2.1 | +0.0 | 0.0 | 0.0 |
-| `discipline_banner` | 12 | raid mix | 66.3 | 62.5 | -3.7 | +0.0 | 0.0 | 0.0 |
-| `discipline_banner` | 12 | it beats | 41.3 | 38.3 | -3.0 | -0.1 | 0.1 | 0.0 |
-| `discipline_banner` | 12 | beats it | 46.4 | 39.0 | -7.4 | +0.0 | 0.0 | 0.0 |
-| `discipline_banner` | 15 | raid mix | 82.9 | 81.8 | -1.1 | +0.0 | 0.0 | 0.0 |
-| `discipline_banner` | 15 | it beats | 48.8 | 44.7 | -4.1 | +0.0 | 0.0 | 0.0 |
-| `discipline_banner` | 15 | beats it | 48.5 | 49.6 | +1.1 | +0.0 | 0.0 | 0.0 |
-| `spotter_perch` | 9 | raid mix | 83.0 | 81.8 | -1.2 | +0.1 | 0.1 | 0.0 |
-| `spotter_perch` | 9 | it beats | 49.2 | 49.7 | +0.4 | +0.0 | 0.0 | 0.0 |
-| `spotter_perch` | 9 | beats it | 36.3 | 36.7 | +0.3 | -0.1 | 0.1 | 0.0 |
-| `spotter_perch` | 12 | raid mix | 66.3 | 64.4 | -1.8 | +0.0 | 0.0 | 0.0 |
-| `spotter_perch` | 12 | it beats | 40.6 | 38.5 | -2.1 | +0.0 | 0.0 | 0.0 |
-| `spotter_perch` | 12 | beats it | 31.5 | 29.7 | -1.8 | +0.0 | 0.0 | 0.0 |
-| `spotter_perch` | 15 | raid mix | 82.9 | 81.0 | -1.9 | +0.0 | 0.0 | 0.0 |
-| `spotter_perch` | 15 | it beats | 45.0 | 42.0 | -3.0 | +0.3 | 0.3 | 0.0 |
-| `spotter_perch` | 15 | beats it | 48.4 | 46.5 | -1.9 | +0.0 | 0.0 | 0.0 |
-| `steam_vent` | 9 | raid mix | 83.0 | 74.5 | -8.5 | -6.4 | 1.8 | 0.0 |
-| `steam_vent` | 9 | it beats | 51.4 | 42.6 | -8.8 | -6.2 | 2.6 | 0.0 |
-| `steam_vent` | 9 | beats it | 52.7 | 53.3 | +0.5 | -1.4 | 1.2 | 0.0 |
-| `steam_vent` | 12 | raid mix | 66.3 | 58.6 | -7.7 | -4.0 | 1.4 | 0.0 |
-| `steam_vent` | 12 | it beats | 46.2 | 38.1 | -8.1 | -0.2 | 0.2 | 0.0 |
-| `steam_vent` | 12 | beats it | 51.1 | 48.4 | -2.7 | -0.1 | 0.1 | 0.0 |
-| `steam_vent` | 15 | raid mix | 82.9 | 70.0 | -12.9 | -6.3 | 1.8 | 0.0 |
-| `steam_vent` | 15 | it beats | 49.5 | 43.6 | -5.9 | -1.0 | 0.5 | 0.0 |
-| `steam_vent` | 15 | beats it | 67.2 | 59.0 | -8.2 | -0.6 | 0.2 | 0.0 |
-| `sleep_dart_tower` | 10 | raid mix | 70.9 | 66.7 | -4.2 | -0.0 | 0.2 | 13.1 |
-| `sleep_dart_tower` | 10 | it beats | 51.3 | 47.4 | -3.9 | -0.2 | 0.4 | 9.9 |
-| `sleep_dart_tower` | 10 | beats it | 44.8 | 40.9 | -3.9 | +0.2 | 0.2 | 8.6 |
-| `sleep_dart_tower` | 13 | raid mix | 81.6 | 77.6 | -4.0 | -1.4 | 1.7 | 12.4 |
-| `sleep_dart_tower` | 13 | it beats | 52.1 | 50.9 | -1.1 | +0.6 | 1.4 | 20.9 |
-| `sleep_dart_tower` | 13 | beats it | 41.1 | 40.6 | -0.4 | +1.3 | 2.4 | 15.1 |
-| `sleep_dart_tower` | 15 | raid mix | 82.9 | 80.7 | -2.2 | +0.2 | 0.7 | 13.3 |
-| `sleep_dart_tower` | 15 | it beats | 47.9 | 40.5 | -7.3 | +0.1 | 0.2 | 7.7 |
-| `sleep_dart_tower` | 15 | beats it | 50.7 | 49.3 | -1.4 | +0.3 | 1.0 | 9.3 |
-| `rolling_log_chute` | 8 | raid mix | 67.6 | 62.4 | -5.2 | +0.0 | 0.0 | 0.0 |
-| `rolling_log_chute` | 8 | it beats | 22.3 | 24.4 | +2.1 | +0.0 | 0.0 | 0.0 |
-| `rolling_log_chute` | 8 | beats it | 13.3 | 13.4 | +0.1 | +0.0 | 0.0 | 0.0 |
-| `rolling_log_chute` | 12 | raid mix | 66.3 | 60.4 | -5.9 | -0.6 | 0.6 | 0.0 |
-| `rolling_log_chute` | 12 | it beats | 48.7 | 48.0 | -0.7 | -0.4 | 0.3 | 0.0 |
-| `rolling_log_chute` | 12 | beats it | 35.3 | 33.9 | -1.4 | +0.0 | 0.0 | 0.0 |
-| `rolling_log_chute` | 15 | raid mix | 82.9 | 80.4 | -2.5 | -0.8 | 0.5 | 0.0 |
-| `rolling_log_chute` | 15 | it beats | 48.9 | 47.0 | -1.9 | -0.7 | 0.6 | 0.0 |
-| `rolling_log_chute` | 15 | beats it | 39.8 | 38.2 | -1.6 | +0.0 | 0.0 | 0.0 |
-| `moonlit_gravel` | 12 | raid mix | 66.3 | 64.2 | -2.0 | +0.0 | 0.0 | 0.0 |
-| `moonlit_gravel` | 12 | it beats | 30.8 | 30.6 | -0.1 | +0.0 | 0.0 | 0.2 |
-| `moonlit_gravel` | 12 | beats it | 31.0 | 32.1 | +1.1 | +0.0 | 0.0 | 0.0 |
-| `moonlit_gravel` | 14 | raid mix | 81.4 | 80.1 | -1.3 | +0.0 | 0.0 | 0.0 |
-| `moonlit_gravel` | 14 | it beats | 49.0 | 48.3 | -0.7 | +0.0 | 0.0 | 0.9 |
-| `moonlit_gravel` | 14 | beats it | 34.7 | 35.4 | +0.7 | +0.0 | 0.0 | 0.0 |
-| `moonlit_gravel` | 15 | raid mix | 82.9 | 81.8 | -1.1 | +0.0 | 0.0 | 0.0 |
-| `moonlit_gravel` | 15 | it beats | 35.4 | 33.6 | -1.8 | -0.2 | 0.2 | 1.6 |
-| `moonlit_gravel` | 15 | beats it | 42.0 | 39.8 | -2.2 | +0.0 | 0.0 | 0.0 |
-| `ink_seal_post` | 12 | raid mix | 66.3 | 61.8 | -4.4 | +0.0 | 0.0 | 1.4 |
-| `ink_seal_post` | 12 | it beats | 41.5 | 39.8 | -1.7 | +0.0 | 0.1 | 2.7 |
-| `ink_seal_post` | 12 | beats it | 46.3 | 45.1 | -1.1 | +0.0 | 0.0 | 2.3 |
-| `ink_seal_post` | 14 | raid mix | 81.4 | 84.1 | +2.7 | +0.0 | 0.0 | 6.9 |
-| `ink_seal_post` | 14 | it beats | 43.1 | 38.2 | -4.9 | +0.0 | 0.0 | 3.5 |
-| `ink_seal_post` | 14 | beats it | 56.9 | 53.4 | -3.4 | +0.0 | 0.0 | 6.6 |
-| `ink_seal_post` | 15 | raid mix | 82.9 | 82.2 | -0.7 | +0.0 | 0.0 | 7.6 |
-| `ink_seal_post` | 15 | it beats | 43.2 | 39.5 | -3.7 | +0.0 | 0.0 | 3.6 |
-| `ink_seal_post` | 15 | beats it | 51.3 | 45.7 | -5.6 | +0.0 | 0.0 | 6.2 |
-| `lightning_rod_pagoda` | 13 | raid mix | 81.6 | 75.2 | -6.4 | -5.7 | 2.2 | 25.6 |
-| `lightning_rod_pagoda` | 13 | it beats | 57.3 | 46.9 | -10.4 | -5.8 | 1.5 | 36.1 |
-| `lightning_rod_pagoda` | 13 | beats it | 62.4 | 63.4 | +1.0 | +0.0 | 0.0 | 0.0 |
-| `lightning_rod_pagoda` | 14 | raid mix | 81.4 | 70.4 | -11.0 | -7.7 | 2.4 | 26.5 |
-| `lightning_rod_pagoda` | 14 | it beats | 43.9 | 37.8 | -6.1 | -3.8 | 1.5 | 33.8 |
-| `lightning_rod_pagoda` | 14 | beats it | 65.4 | 60.0 | -5.4 | +0.0 | 0.0 | 0.0 |
-| `lightning_rod_pagoda` | 15 | raid mix | 82.9 | 76.3 | -6.6 | -6.8 | 2.8 | 34.5 |
-| `lightning_rod_pagoda` | 15 | it beats | 42.4 | 35.5 | -7.0 | -3.0 | 0.8 | 43.3 |
-| `lightning_rod_pagoda` | 15 | beats it | 56.5 | 54.3 | -2.2 | +0.0 | 0.0 | 0.0 |
+| `straw_scarecrow` | 6 | it beats | 50.5 | 49.9 | -0.5 | +0.6 | 1.1 | 0.0 |
+| `straw_scarecrow` | 6 | beats it | 83.6 | 77.1 | -6.6 | +0.0 | 0.0 | 0.0 |
+| `straw_scarecrow` | 11 | raid mix | 66.6 | 64.6 | -2.0 | +0.0 | 0.0 | 0.0 |
+| `straw_scarecrow` | 11 | it beats | 34.9 | 36.3 | +1.4 | +0.2 | 0.4 | 0.0 |
+| `straw_scarecrow` | 11 | beats it | 45.1 | 43.9 | -1.1 | +0.0 | 0.0 | 0.0 |
+| `straw_scarecrow` | 15 | raid mix | 83.9 | 84.9 | +1.0 | +0.0 | 0.0 | 0.0 |
+| `straw_scarecrow` | 15 | it beats | 37.1 | 37.5 | +0.3 | -0.5 | 0.3 | 0.0 |
+| `straw_scarecrow` | 15 | beats it | 45.1 | 47.3 | +2.2 | -0.1 | 0.1 | 0.0 |
+| `sand_bucket_post` | 7 | raid mix | 71.2 | 70.4 | -0.8 | +0.0 | 0.0 | 0.0 |
+| `sand_bucket_post` | 7 | it beats | 50.1 | 49.5 | -0.6 | -0.5 | 0.2 | 0.0 |
+| `sand_bucket_post` | 7 | beats it | 50.3 | 51.1 | +0.8 | -0.5 | 0.2 | 0.0 |
+| `sand_bucket_post` | 11 | raid mix | 66.6 | 68.5 | +1.8 | +0.0 | 0.0 | 0.1 |
+| `sand_bucket_post` | 11 | it beats | 43.0 | 39.5 | -3.4 | -0.1 | 0.1 | 0.1 |
+| `sand_bucket_post` | 11 | beats it | 37.5 | 34.5 | -3.0 | -0.1 | 0.1 | 0.1 |
+| `sand_bucket_post` | 15 | raid mix | 83.9 | 82.0 | -1.9 | +0.4 | 0.8 | 0.0 |
+| `sand_bucket_post` | 15 | it beats | 44.8 | 44.6 | -0.2 | -0.1 | 0.1 | 0.0 |
+| `sand_bucket_post` | 15 | beats it | 41.2 | 41.3 | +0.1 | +0.0 | 0.0 | 0.0 |
+| `discipline_banner` | 9 | raid mix | 71.8 | 72.3 | +0.6 | +0.1 | 0.1 | 0.0 |
+| `discipline_banner` | 9 | it beats | 44.4 | 45.5 | +1.1 | +0.1 | 0.1 | 0.0 |
+| `discipline_banner` | 9 | beats it | 27.3 | 25.9 | -1.4 | +0.0 | 0.0 | 0.0 |
+| `discipline_banner` | 12 | raid mix | 52.3 | 52.3 | -0.0 | +0.0 | 0.0 | 0.0 |
+| `discipline_banner` | 12 | it beats | 38.9 | 38.2 | -0.7 | -0.2 | 0.2 | 0.0 |
+| `discipline_banner` | 12 | beats it | 45.2 | 44.5 | -0.8 | +0.0 | 0.0 | 0.0 |
+| `discipline_banner` | 15 | raid mix | 83.9 | 86.6 | +2.7 | +0.0 | 0.0 | 0.0 |
+| `discipline_banner` | 15 | it beats | 46.8 | 46.4 | -0.4 | +0.0 | 0.0 | 0.0 |
+| `discipline_banner` | 15 | beats it | 45.1 | 49.5 | +4.4 | +0.0 | 0.0 | 0.0 |
+| `spotter_perch` | 9 | raid mix | 71.8 | 69.5 | -2.3 | -1.1 | 0.8 | 0.0 |
+| `spotter_perch` | 9 | it beats | 38.2 | 36.7 | -1.5 | +0.1 | 0.1 | 0.0 |
+| `spotter_perch` | 9 | beats it | 31.4 | 33.1 | +1.7 | +0.4 | 0.4 | 0.0 |
+| `spotter_perch` | 12 | raid mix | 52.3 | 53.4 | +1.1 | +0.0 | 0.0 | 0.0 |
+| `spotter_perch` | 12 | it beats | 46.4 | 43.7 | -2.7 | +0.0 | 0.0 | 0.0 |
+| `spotter_perch` | 12 | beats it | 32.3 | 31.6 | -0.7 | +0.0 | 0.0 | 0.0 |
+| `spotter_perch` | 15 | raid mix | 83.9 | 83.3 | -0.6 | -0.2 | 0.2 | 0.0 |
+| `spotter_perch` | 15 | it beats | 53.0 | 49.0 | -4.0 | +0.1 | 1.4 | 0.0 |
+| `spotter_perch` | 15 | beats it | 53.2 | 56.9 | +3.7 | +0.1 | 0.1 | 0.0 |
+| `sleep_dart_tower` | 10 | raid mix | 66.2 | 63.5 | -2.7 | -0.3 | 0.6 | 12.3 |
+| `sleep_dart_tower` | 10 | it beats | 46.9 | 44.7 | -2.2 | -0.1 | 0.1 | 8.4 |
+| `sleep_dart_tower` | 10 | beats it | 40.7 | 39.3 | -1.5 | -0.4 | 0.3 | 7.8 |
+| `sleep_dart_tower` | 13 | raid mix | 85.1 | 80.3 | -4.8 | -0.2 | 1.3 | 11.2 |
+| `sleep_dart_tower` | 13 | it beats | 50.9 | 47.9 | -3.0 | +0.6 | 0.8 | 18.7 |
+| `sleep_dart_tower` | 13 | beats it | 40.8 | 39.4 | -1.4 | -2.6 | 1.5 | 15.3 |
+| `sleep_dart_tower` | 15 | raid mix | 83.9 | 80.0 | -3.9 | -2.1 | 1.5 | 14.6 |
+| `sleep_dart_tower` | 15 | it beats | 48.2 | 47.1 | -1.0 | +0.5 | 0.4 | 8.2 |
+| `sleep_dart_tower` | 15 | beats it | 56.5 | 58.5 | +2.1 | +0.2 | 1.2 | 10.7 |
+| `rolling_log_chute` | 8 | raid mix | 60.2 | 64.1 | +3.9 | +0.0 | 0.0 | 0.0 |
+| `rolling_log_chute` | 8 | it beats | 25.1 | 21.9 | -3.2 | -0.1 | 0.1 | 0.0 |
+| `rolling_log_chute` | 8 | beats it | 17.8 | 17.4 | -0.4 | +0.0 | 0.0 | 0.0 |
+| `rolling_log_chute` | 12 | raid mix | 52.3 | 52.1 | -0.2 | -0.3 | 0.2 | 0.0 |
+| `rolling_log_chute` | 12 | it beats | 49.2 | 47.3 | -1.9 | -0.2 | 0.2 | 0.0 |
+| `rolling_log_chute` | 12 | beats it | 36.6 | 34.3 | -2.3 | -0.1 | 0.1 | 0.0 |
+| `rolling_log_chute` | 15 | raid mix | 83.9 | 81.1 | -2.8 | -0.1 | 0.1 | 0.0 |
+| `rolling_log_chute` | 15 | it beats | 47.3 | 48.6 | +1.3 | -0.2 | 0.2 | 0.0 |
+| `rolling_log_chute` | 15 | beats it | 41.2 | 42.8 | +1.6 | -0.1 | 0.1 | 0.0 |
+| `moonlit_gravel` | 12 | raid mix | 52.3 | 55.1 | +2.7 | +0.0 | 0.0 | 0.0 |
+| `moonlit_gravel` | 12 | it beats | 37.3 | 32.7 | -4.6 | +0.0 | 0.0 | 0.2 |
+| `moonlit_gravel` | 12 | beats it | 33.3 | 32.8 | -0.4 | +0.0 | 0.0 | 0.0 |
+| `moonlit_gravel` | 14 | raid mix | 83.8 | 82.5 | -1.3 | +0.0 | 0.0 | 0.0 |
+| `moonlit_gravel` | 14 | it beats | 48.1 | 46.6 | -1.5 | -0.1 | 0.1 | 2.9 |
+| `moonlit_gravel` | 14 | beats it | 31.4 | 30.4 | -1.0 | +0.0 | 0.0 | 0.0 |
+| `moonlit_gravel` | 15 | raid mix | 83.9 | 82.9 | -1.0 | +0.0 | 0.0 | 0.0 |
+| `moonlit_gravel` | 15 | it beats | 43.8 | 43.0 | -0.8 | +0.0 | 0.0 | 1.9 |
+| `moonlit_gravel` | 15 | beats it | 47.3 | 48.9 | +1.7 | +0.0 | 0.0 | 0.0 |
+| `ink_seal_post` | 12 | raid mix | 52.3 | 50.8 | -1.5 | +0.0 | 0.0 | 1.6 |
+| `ink_seal_post` | 12 | it beats | 44.5 | 42.3 | -2.2 | -0.1 | 0.1 | 1.4 |
+| `ink_seal_post` | 12 | beats it | 37.9 | 37.4 | -0.5 | +0.0 | 0.0 | 1.1 |
+| `ink_seal_post` | 14 | raid mix | 83.8 | 81.4 | -2.4 | +0.0 | 0.0 | 7.6 |
+| `ink_seal_post` | 14 | it beats | 44.8 | 42.3 | -2.5 | -0.2 | 0.2 | 3.7 |
+| `ink_seal_post` | 14 | beats it | 54.2 | 50.9 | -3.3 | +0.0 | 0.0 | 6.8 |
+| `ink_seal_post` | 15 | raid mix | 83.9 | 83.8 | -0.1 | +0.0 | 0.0 | 4.1 |
+| `ink_seal_post` | 15 | it beats | 42.8 | 41.5 | -1.3 | +0.0 | 0.0 | 2.2 |
+| `ink_seal_post` | 15 | beats it | 47.1 | 46.9 | -0.2 | +0.0 | 0.0 | 2.8 |
 
 ## Heroes
 
@@ -152,21 +125,9 @@ The same army with no hero, with the live Shadow Captain at the Keep's level, an
 
 | Hero | Keep | Army | No hero % | Shadow Captain % | Hero first % | Hero last % | Best vs Captain |
 |---|---|---|---|---|---|---|---|
-| `iron_matriarch` | 9 | raid mix | 83.0 | 91.5 | 84.6 | 87.1 | -4.4 |
-| `iron_matriarch` | 9 | guardian family | 43.6 | 53.2 | 47.2 | 45.2 | -6.0 |
-| `iron_matriarch` | 12 | raid mix | 66.3 | 71.6 | 71.1 | 70.5 | -0.5 |
-| `iron_matriarch` | 12 | guardian family | 39.1 | 49.4 | 43.5 | 42.0 | -6.0 |
-| `iron_matriarch` | 15 | raid mix | 82.9 | 89.2 | 88.0 | 85.9 | -1.1 |
-| `iron_matriarch` | 15 | guardian family | 44.0 | 52.6 | 48.8 | 46.3 | -3.8 |
-| `sky_admiral` | 11 | raid mix | 79.8 | 83.9 | 77.6 | 80.4 | -3.5 |
-| `sky_admiral` | 11 | sky family | 18.3 | 31.0 | 20.4 | 19.2 | -10.6 |
-| `sky_admiral` | 13 | raid mix | 81.6 | 85.5 | 80.1 | 79.4 | -5.4 |
-| `sky_admiral` | 13 | sky family | 22.1 | 31.2 | 23.7 | 22.3 | -7.5 |
-| `sky_admiral` | 15 | raid mix | 82.9 | 89.2 | 82.7 | 83.3 | -5.9 |
-| `sky_admiral` | 15 | sky family | 38.6 | 44.6 | 43.8 | 42.1 | -0.8 |
-| `grand_sensei` | 13 | raid mix | 81.6 | 85.5 | 90.0 | 97.6 | +12.0 |
-| `grand_sensei` | 13 | mystic family | 48.1 | 56.6 | 36.5 | 62.5 | +5.9 |
-| `grand_sensei` | 14 | raid mix | 81.4 | 87.2 | 85.8 | 97.2 | +10.0 |
-| `grand_sensei` | 14 | mystic family | 56.8 | 62.6 | 49.1 | 58.9 | -3.8 |
-| `grand_sensei` | 15 | raid mix | 82.9 | 89.2 | 87.3 | 97.6 | +8.4 |
-| `grand_sensei` | 15 | mystic family | 51.6 | 60.4 | 43.9 | 63.2 | +2.9 |
+| `grand_sensei` | 13 | raid mix | 85.1 | 89.3 | 90.9 | 98.1 | +8.8 |
+| `grand_sensei` | 13 | mystic family | 53.2 | 61.5 | 36.7 | 66.4 | +4.8 |
+| `grand_sensei` | 14 | raid mix | 83.8 | 84.9 | 87.2 | 95.3 | +10.4 |
+| `grand_sensei` | 14 | mystic family | 61.3 | 68.5 | 51.8 | 59.8 | -8.7 |
+| `grand_sensei` | 15 | raid mix | 83.9 | 88.7 | 90.8 | 96.2 | +7.5 |
+| `grand_sensei` | 15 | mystic family | 53.6 | 63.0 | 50.2 | 61.2 | -1.8 |
