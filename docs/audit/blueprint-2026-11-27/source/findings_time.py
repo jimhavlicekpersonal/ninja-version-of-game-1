@@ -1,0 +1,40 @@
+"""Findings from the time-bomb and content-integrity lens."""
+
+TIME = [
+    dict(id='TIME-1', sev='MEDIUM', lane='TIME', proof='Reproduced',
+         title='One session with the phone\'s date set ahead freezes a device-held village for as long as the error, once the date is corrected',
+         where='`src/gameplay/sim/resources.ts:41` and `src/gameplay/sim/offline.ts:38-39` (elapsed time is clamped at zero; nothing compares the save\'s stamps with the clock on load); the daily chest, calendar, stipend, tasks and season roll all key on the stored day.',
+         what='A date one year ahead for a five-minute session (typed wrong after a reset, or set ahead for another game), then corrected: for the next 365 days the daily chest, the 28-day calendar and a bought Clan Stipend all say "come back tomorrow", the same three tasks stay, collectors produce nothing, the upgrade started in that session keeps its builder busy for a year, and no season or league chest rolls over. A day ahead locks a day. The village looks alive and pays nothing; support sees a refund request with nothing in the save to explain it. Earlier audits recorded that the clock is not checked (and that a forward jump pays rewards); none recorded the lock-out or the paid product inside it. Server-held villages are not affected.',
+         fix='On load, beside the existing queue repair: when stored stamps are later than now by more than a small slack, pull day and week indices back to today, collector and raid stamps to now, shift running timers by the same offset, and tell the player once that the device date changed.',
+         checked='Reproduced by driving the simulation with a fake clock (a session behind was also run: nothing is wiped and the village recovers). Not run through the app.'),
+    dict(id='DATA-1', sev='MEDIUM', lane='TIME', proof='Re-checked',
+         title='A Trial catch-up clear counts as one tier, so late starters can never finish the Trial Walker achievement',
+         where='`src/gameplay/sim/village.ts:2320` (`trialsCleared++` after a clear that skipped tiers); `src/gameplay/data/achievements.json` `trial_walker` (steps at 5, 25, 40 and 53 tiers).',
+         what='Recorded as done (P3-06), still broken: the work item required a catch-up clear to add every skipped tier, and the existing test never clears the tier. The app always offers the catch-up tier, so the player cannot choose a lower one. A Keep 10 player starting Trials can reach at most 30 on the counter (losing the 40 and 53 steps: 175 Jade); at Keep 15, at most 10. The Trials panel says "tiers 1 to 29 cleared" beside an achievement at 1 of 5.',
+         fix='Add the number of tiers passed instead of 1, add the test the work item names, and repair saves on load (`trialsCleared` at least `trials.best`). Decide whether a catch-up clear should also finish the "clear 2 new Trial tiers" task.',
+         checked='Reproduced through the real command at Keeps 5, 10 and 15; the line re-read by the lead.'),
+    dict(id='DATA-2', sev='MEDIUM', lane='TIME', proof='Read',
+         title='The last step of the Master Artisan achievement (1,000 upgrades, 100 Jade) cannot be reached',
+         where='`src/gameplay/data/achievements.json` `busy_beaver`; `src/gameplay/sim/village.ts:377,677`; `tests/gameplay/balance/achievements-reachable.test.ts:35-36`.',
+         what='Since the exploit fix of 2026-11-20, wall, decoration and obstacle upgrades no longer count. What still counts in a fully built Keep 15 village is 775 upgrades, and nothing can be sold or rebuilt. The reachability test still counts walls (its ceiling is 2,424), so it passes. Villages that counted walls before that date keep them, so two identical villages show different progress.',
+         fix='Lower the last step to about 700, or count walls for this achievement through a separate counter; make the test use the same exclusion as the game.',
+         checked='Computed from the building tables and the two code paths; not played through.'),
+    dict(id='TIME-2', sev='LOW', lane='TIME', proof='Reproduced',
+         title='A loop sized by the saved best Trial tier has no upper bound',
+         where='`src/gameplay/sim/pass.ts` `taskEligible` (one loop step per tier beyond the ceiling); `src/gameplay/sim/save.ts:431` (`trials.best` only has to be a non-negative whole number).',
+         what='A save with `trials.best` of 100 million passes validation and makes each task check take 295 ms, linear in the number; a larger number hangs the day roll. A damaged or edited device save can therefore freeze the game on load, and the same function runs where the server replays commands.',
+         fix='Cap the loop the way `trialInfo` already does, and bound `trials.best` in `validateVillage`.',
+         checked='Timed with a scratch test (48 ms at 10 million, 295 ms at 100 million). Whether an imported save can carry the value to the server was read, not run.'),
+    dict(id='DATA-3', sev='LOW', lane='TIME', proof='Read',
+         title='"Day 28 gives a Keep look" stays on screen after the looks have run out',
+         where='`src/presentation/ui/dailyUi.ts:82`; `locales/en/ui.json` `calendar.about`.',
+         what='From the seventh 28-day cycle, day 28 pays 40 Jade instead of a look, while the calendar still promises a look. A small breach of the project\'s own rule that a reward screen only shows what it gives.',
+         fix='Choose the sentence from what day 28 will actually pay.',
+         checked='Read in source and data.'),
+]
+
+SOUND_TIME = [
+    'No schedule is a finite list that runs out: seasons, events, festivals, wars, leagues and the 28-day calendar are all computed from an epoch or the UTC calendar.',
+    'The daily-chest odds shown to players match the real draw (400,000 draws against the published 30/30/20/15/5).',
+    'Every server time column is a 64-bit millisecond count; a device date set behind wipes nothing; about 50 numbers quoted in English text match the data; pack values and level tables are monotonic.',
+]

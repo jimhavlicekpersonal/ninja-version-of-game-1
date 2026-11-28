@@ -1,0 +1,77 @@
+// Object-level authorisation: can B act on A's or C's friend requests, invites, troop requests, messages, tokens, codes?
+import { call, register } from './lib.mjs';
+const STAFF = 'staff-token-0123456789abcdefghij';
+const s = (r) => `${r.status}${r.json?.message ? ' ' + r.json.message : ''}`;
+const out = {};
+const A = await register('Idor Alpha'), B = await register('Idor Bravo'), C = await register('Idor Charlie');
+// friend requests
+const req = await call('POST', '/v1/friends/requests', { token: A.token, body: { name: C.name } });
+const rid = req.json.request.id;
+out.friend_BanswersAtoC = s(await call('POST', `/v1/friends/requests/${rid}`, { token: B.token, body: { accept: true } }));
+out.friend_BcancelsAtoC = s(await call('DELETE', `/v1/friends/requests/${rid}`, { token: B.token }));
+out.friend_requestStillOpenForA = (await call('GET', '/v1/friends', { token: A.token })).json.outgoing.some((x) => x.id === rid);
+out.friend_BbyIdToStranger = s(await call('POST', '/v1/friends/requests', { token: B.token, body: { playerId: C.id } }));
+await call('PUT', '/v1/me/privacy', { token: C.token, body: { findable: 'nobody' } });
+out.friend_BbyIdToHiddenStranger = s(await call('POST', '/v1/friends/requests', { token: B.token, body: { playerId: C.id } }));
+out.friend_CacceptsA = s(await call('POST', `/v1/friends/requests/${rid}`, { token: C.token, body: { accept: true } }));
+out.friend_BunfriendsAC = s(await call('DELETE', `/v1/friends/${C.id}`, { token: B.token }));
+out.friend_AstillHasC = (await call('GET', '/v1/friends', { token: A.token })).json.friends.some((f) => f.id === C.id);
+// gang
+const gang = await call('POST', '/v1/squad', { token: A.token, body: { name: 'Idor Gang' } });
+const inv = await call('POST', '/v1/squad/invites', { token: A.token, body: { friendId: C.id } });
+const invId = (await call('GET', '/v1/squad', { token: C.token })).json.invites[0]?.id;
+out.gang_created = s(gang) + ' / invite ' + s(inv);
+out.gang_BacceptsCsInvite = s(await call('POST', `/v1/squad/invites/${invId}`, { token: B.token, body: { accept: true } }));
+out.gang_AinvitesNonFriendB = s(await call('POST', '/v1/squad/invites', { token: A.token, body: { friendId: B.id } }));
+out.gang_BtakesLeadership = s(await call('POST', '/v1/squad/leader', { token: B.token, body: { playerId: B.id } }));
+await call('POST', `/v1/squad/invites/${invId}`, { token: C.token, body: { accept: true } });
+out.gang_memberChandsLeaderToSelf = s(await call('POST', '/v1/squad/leader', { token: C.token, body: { playerId: C.id } }));
+out.gang_BreadsChat = s(await call('GET', '/v1/squad/chat', { token: B.token }));
+out.duel_BticketOnStranger = s(await call('POST', '/v1/duels/ticket', { token: B.token, body: { friendId: A.id } }));
+out.duel_BchallengesStranger = s(await call('POST', '/v1/duels/challenges', { token: B.token, body: { friendId: A.id } }));
+// alliances: two alliances, a troop request and a message in X; B is in Y
+const X = await call('POST', '/v1/groves', { token: A.token, body: { name: 'Idor Xray' } });
+await call('POST', '/v1/groves', { token: B.token, body: { name: 'Idor Yankee' } });
+const msg = await call('POST', '/v1/grove/chat', { token: A.token, body: { text: 'a private plan for the war' } });
+const troop = await call('POST', '/v1/grove/requests', { token: A.token, body: { capacity: 10 } });
+out.alliance_troopRequest = s(troop);
+out.alliance_BdonatesAcross = troop.json?.id ? s(await call('POST', `/v1/grove/requests/${troop.json.id}/donate`, { token: B.token, body: { troop: 'ashigaru', count: 1, level: 1 } })) : 'no request made';
+out.alliance_BreportsMessageOfX = s(await call('POST', '/v1/reports', { token: B.token, body: { kind: 'chat', messageId: msg.json.id, reason: 'spam' } }));
+out.alliance_BreadsOwnChatOnly = !(await call('GET', '/v1/grove/chat', { token: B.token })).json.messages.some((m) => m.id === msg.json.id);
+out.alliance_BreadsXChatAfterJoinLeave = 'see API-1 (join is open)';
+// tokens, codes, notices
+const tok = 'pushtoken-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
+out.push_Aregisters = s(await call('PUT', '/v1/push/tokens', { token: A.token, body: { token: tok, platform: 'ios', types: ['raided'], tzOffsetMinutes: 0 } }));
+out.push_BdeletesAs = s(await call('DELETE', `/v1/push/tokens?token=${tok}`, { token: B.token }));
+out.push_BregistersSameToken = s(await call('PUT', '/v1/push/tokens', { token: B.token, body: { token: tok, platform: 'ios', types: ['raided'], tzOffsetMinutes: 0 } }));
+const codeA = (await call('POST', '/v1/me/deletion-code', { token: A.token })).json.code;
+out.deletion_AcodeWithBsId = JSON.stringify((await call('POST', '/v1/account/deletion-requests', { body: { playerId: B.id, code: codeA } })).json?.verified);
+out.deletion_AcodeWithAsId = JSON.stringify((await call('POST', '/v1/account/deletion-requests', { body: { playerId: A.id, code: codeA } })).json?.verified);
+out.deletion_codeAgain = JSON.stringify((await call('POST', '/v1/account/deletion-requests', { body: { playerId: A.id, code: codeA } })).json?.verified);
+// staff API
+out.staff_noToken = s(await call('GET', '/admin/v1/players?q=Idor'));
+out.staff_playerToken = s(await call('GET', '/admin/v1/players?q=Idor', { token: A.token }));
+out.staff_encodedPath = s(await call('GET', '/%61dmin/v1/players?q=Idor', { token: A.token }));
+out.staff_postNoToken = s(await call('POST', `/admin/v1/players/${A.id}/ban`, { body: { hours: 1, reason: 'x' } }));
+// --- client address behind one proxy (TRUST_PROXY=1): which X-Forwarded-For entry counts?
+const ip = async (xff) => (await call('GET', '/admin/v1/ip', { token: STAFF, headers: { 'x-forwarded-for': xff } })).json;
+out.xff_single = (await ip('1.2.3.4')).ip;
+out.xff_clientPrepended = (await ip('9.9.9.9, 1.2.3.4')).ip;
+out.xff_v6key = (await ip('2001:db8:1:2:aaaa:bbbb:cccc:dddd')).rateKey;
+// the no-token forms count per /64: twelve /64s of one /48
+const codes = {};
+for (let n = 1; n <= 12; n++) for (let k = 0; k < 5; k++) {
+  const r = await call('POST', '/v1/account/deletion-requests', { headers: { 'x-forwarded-for': `2001:db8:77:${n.toString(16)}::1` }, body: { playerId: `junk-${n}-${k}` } });
+  codes[r.status] = (codes[r.status] ?? 0) + 1;
+}
+out.deletionRequests_12x64_of_one48 = codes;
+const cc = {};
+for (let n = 1; n <= 12; n++) for (let k = 0; k < 20; k++) {
+  const r = await call('POST', '/v1/complaints', { headers: { 'x-forwarded-for': `2001:db8:78:${n.toString(16)}::1` }, body: { subject: `junk ${n}-${k}`, reason: 'a reason long enough to pass' } });
+  cc[r.status] = (cc[r.status] ?? 0) + 1;
+}
+out.complaints_12x64_of_one48 = cc;
+const genuine = await call('POST', '/v1/complaints', { headers: { 'x-forwarded-for': '203.0.113.9' }, body: { subject: 'a real complaint', reason: 'a member posts threats in chat' } });
+const cq = await call('GET', '/admin/v1/complaints', { token: STAFF });
+out.complaintQueue = { shown: cq.json.complaints.length, genuineVisible: cq.json.complaints.some((c) => c.id === genuine.json.id) };
+console.log(JSON.stringify(out, null, 1));

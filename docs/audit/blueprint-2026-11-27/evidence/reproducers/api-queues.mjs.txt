@@ -1,0 +1,39 @@
+// Staff queues: what is shown once more than 200 open items exist, and the per-route limits on the no-token forms.
+import { call, register } from './lib.mjs';
+const STAFF = 'staff-token-0123456789abcdefghij';
+const out = {};
+// --- 1. shared-replay lookups: the limit with no token, and with a random Authorization header each time.
+const code = 'ABCDEFGHJK';
+let first429 = null;
+for (let i = 1; i <= 40 && !first429; i++) if ((await call('GET', `/v1/replays/shared/${code}`)).status === 429) first429 = i;
+let junk429 = null;
+for (let i = 1; i <= 200 && !junk429; i++) if ((await call('GET', `/v1/replays/shared/${code}`, { token: `junk-${Math.random()}` })).status === 429) junk429 = i;
+out.sharedReplayLookup = { noToken_first429AtRequest: first429, randomBearer_first429AtRequest: junk429 ?? 'none in 200' };
+
+// --- 2. deletion requests and complaints from one address.
+const del = [];
+for (let i = 0; i < 7; i++) del.push((await call('POST', '/v1/account/deletion-requests', { body: { playerId: `not-a-player-${i}`, note: 'x'.repeat(1000) } })).status);
+out.deletionRequestsFromOneAddress = del;
+
+// --- 3. reports: free accounts, any target id, 30 an hour each.
+const target = [];
+for (let i = 0; i < 31; i++) target.push(await register(`Tgt ${i}${Math.random().toString(36).slice(2, 5)}`));
+const reporters = [];
+for (let i = 0; i < 7; i++) reporters.push(await register(`Rep ${i}${Math.random().toString(36).slice(2, 5)}`));
+let filed = 0;
+const codes = {};
+for (const r of reporters) {
+  for (const t of target) {
+    const x = await call('POST', '/v1/reports', { token: r.token, body: { kind: 'player', playerId: t.id, reason: 'cheating', note: 'junk' } });
+    codes[x.status] = (codes[x.status] ?? 0) + 1;
+    if (x.status === 201) filed++;
+  }
+}
+out.junkReports = { filed, statuses: codes };
+// A genuine report made afterwards.
+const honest = await register('Honest Reporter');
+const genuine = await call('POST', '/v1/reports', { token: honest.token, body: { kind: 'player', playerId: target[0].id, reason: 'harassment', note: 'a real problem' } });
+const q = await call('GET', '/admin/v1/reports', { token: STAFF });
+const qAll = await call('GET', '/admin/v1/reports?status=all', { token: STAFF });
+out.staffQueue = { genuineReport: genuine.status, openShown: q.json.reports.length, genuineVisibleInOpen: q.json.reports.some((r) => r.id === genuine.json.id), allShown: qAll.json.reports.length, genuineVisibleInAll: qAll.json.reports.some((r) => r.id === genuine.json.id) };
+console.log(JSON.stringify(out, null, 1));

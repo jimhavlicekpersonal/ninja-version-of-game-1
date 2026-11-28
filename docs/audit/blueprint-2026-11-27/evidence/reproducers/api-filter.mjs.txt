@@ -1,0 +1,24 @@
+// Does a right-to-left override or a zero-width character carry contacts and filtered words through chat?
+import { call, register } from './lib.mjs';
+const RLO = String.fromCharCode(0x202e), ZW = String.fromCharCode(0x200b);
+const rev = (s) => RLO + Array.from(s).reverse().join('');
+const a = await register('Filter Probe A');
+const g = await call('POST', '/v1/groves', { token: a.token, body: { name: 'Filter Probe Clan' } });
+const plain = ['visit example.com now', 'add me on discord user#1234', 'my telegram is t.me/abcde', 'insta @some.name', 'whatsapp me', 'you idiot', 'snap: kagefan99'];
+const out = [];
+for (const p of plain) {
+  const row = { text: p };
+  for (const [k, t] of [['plain', p], ['reversedWithOverride', rev(p)], ['zeroWidth', p.replace(/([a-z])([a-z])/g, `$1${ZW}$2`)]]) {
+    const r = await call('POST', '/v1/grove/chat', { token: a.token, body: { text: t } });
+    const stored = r.json?.text ?? `(${r.status} ${r.json?.message})`;
+    // What a reader sees: the override reverses the stored characters again.
+    const seen = stored.startsWith(RLO) ? Array.from(stored.slice(1)).reverse().join('') : stored.replaceAll(ZW, '');
+    row[k] = seen === p ? 'PASSES (reader sees the original)' : `filtered -> ${JSON.stringify(seen)}`;
+    await new Promise((r) => setTimeout(r, 30));
+  }
+  out.push(row);
+}
+// The same trick in an Alliance name and a player name.
+const b = await register('Filter Probe B');
+const nameTests = { allianceReversed: await call('POST', '/v1/groves', { token: b.token, body: { name: rev('visit example.com') } }), playerReversed: await call('PUT', '/v1/me', { token: b.token, body: { name: rev('Moderator') } }) };
+console.log(JSON.stringify({ out, names: Object.fromEntries(Object.entries(nameTests).map(([k, r]) => [k, `${r.status} ${JSON.stringify(r.json?.name ?? r.json?.message)}`])) }, null, 1));

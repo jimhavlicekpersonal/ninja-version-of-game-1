@@ -1,0 +1,57 @@
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+import { describe, expect, it } from 'vitest';
+import { deserialize, serialize } from '../../src/gameplay/sim/save';
+import { applyCommand, type Command } from '../../src/gameplay/sim/village';
+import { armyHousing, housingCapacity, queueHousing, trainingQueueLimit } from '../../src/gameplay/sim/army';
+import { replayVillage } from '../../server/core/villageReplay';
+import { data } from './lib';
+
+describe('repro: prototype-key deployment poisons army housing', () => {
+  it('abandonBattle {troop: hasOwnProperty}', () => {
+    const file = JSON.parse(readFileSync(resolve(__dirname, '../fixtures/saves/v24-keep8.json'), 'utf8'));
+    let s = deserialize(file, data);
+    let now = s.lastSeenAt + 1000;
+    const log = (tag: string) => console.log(tag, 'army', JSON.stringify(s.army), 'housing', armyHousing(s.army, data), '/', housingCapacity(s, data), 'queue', s.training.length, queueHousing(s.training, data), 'limit', trainingQueueLimit(s, data), 'res', JSON.stringify(s.resources));
+    log('start');
+    // normal play: fill camps and the next-army queue
+    const troop = Object.keys(s.army)[0] ?? 'hedgehog_roller';
+    s.resources.acorns = 1e7; s.resources.dew = 1e7;
+    for (let i = 0; i < 20; i++) {
+      const r = applyCommand(s, { type: 'train', troop, count: 40 }, now, data);
+      if (!r.ok) { console.log('train stops:', r.code); break; }
+      s = r.state;
+    }
+    log('queued');
+    now += 3 * 86_400_000;
+    // server-side: a batch through replayVillage
+    const stored = JSON.parse(JSON.stringify(serialize(s, now)));
+    const poison: Command = { type: 'abandonBattle', record: { at: now, opponentName: 'x', setup: { seed: 1, base: { name: 'x', hallLevel: 1, buildings: [] }, army: {} }, deployments: [{ tick: 0, troop: 'hasOwnProperty', x: 0, y: 0 }] } } as unknown as Command;
+    const job = { file: stored, at: now, now: now + 1000, earliest: now - 12 * 3600_000, earliestTimer: now - 600_000, skewMs: 60_000, steps: [
+      { seq: 1, clientAt: now + 1, command: JSON.parse(JSON.stringify(poison)), error: null },
+      { seq: 2, clientAt: now + 2, command: { type: 'train', troop, count: 40 } as Command, error: null },
+      { seq: 3, clientAt: now + 3, command: { type: 'train', troop, count: 40 } as Command, error: null },
+      { seq: 4, clientAt: now + 4, command: { type: 'train', troop, count: 40 } as Command, error: null },
+    ] };
+    const base = replayVillage({ ...job, steps: job.steps.slice(1) }, data);
+    const s0 = deserialize(JSON.parse(JSON.stringify(base.file ?? stored)), data);
+    console.log('WITHOUT poison:', base.outcomes.map((o) => `${o.seq}:${o.ok ? 'ok' : o.error}`).join(' '), 'army housing', armyHousing(s0.army, data), '/', housingCapacity(s0, data), 'queue housing', queueHousing(s0.training, data));
+    const out = replayVillage(job, data);
+    console.log('WITH poison:', out.outcomes.map((o) => `${o.seq}:${o.ok ? 'ok' : o.error}`).join(' '));
+    const s1 = deserialize(JSON.parse(JSON.stringify(out.file)), data);
+    s = s1;
+    log('after batch (reloaded)');
+    expect(armyHousing(s1.army, data)).toBeGreaterThan(housingCapacity(s1, data));
+    // next day: second batch with poison again: the newly queued walk in too
+    now += 3 * 86_400_000;
+    const job2 = { ...job, file: JSON.parse(JSON.stringify(out.file)), at: out.at, now: now + 1000, earliest: now - 12 * 3600_000, earliestTimer: now - 600_000, steps: [
+      { seq: 5, clientAt: now + 1, command: JSON.parse(JSON.stringify(poison)), error: null },
+      { seq: 6, clientAt: now + 2, command: { type: 'collect', id: 'nope' } as Command, error: null },
+      { seq: 7, clientAt: now + 3, command: { type: 'train', troop, count: 40 } as Command, error: null },
+    ] };
+    const out2 = replayVillage(job2, data);
+    console.log('batch 2:', out2.outcomes.map((o) => `${o.seq}:${o.ok ? 'ok' : o.error}`).join(' '));
+    s = deserialize(JSON.parse(JSON.stringify(out2.file)), data);
+    log('after batch 2 (reloaded)');
+  });
+});

@@ -1,0 +1,50 @@
+// Chat text: invisible characters, direction overrides, stacked marks. And the size of the friends answer per friend.
+import { call, register } from './lib.mjs';
+const out = {};
+const a = await register('Chat Probe A');
+const b = await register('Chat Probe B');
+const g = await call('POST', '/v1/groves', { token: a.token, body: { name: 'Chat Probe Clan' } });
+await call('POST', `/v1/groves/${g.json.id}/join`, { token: b.token });
+const cp = (s) => Array.from(s).map((c) => 'U+' + c.codePointAt(0).toString(16).toUpperCase().padStart(4, '0'));
+const tests = {
+  rtlOverride: 'hello \u202Egnirts desrever\u202C world',
+  zeroWidthInside: 'vis\u200Bit ka\u200Bge\u2060site',
+  zalgo: 'Z' + '\u0300\u0301\u0302\u0303\u0304\u0305\u0306\u0307\u0308\u0309'.repeat(15),
+  lineSeparators: 'line one\u2028line two\u2029line three',
+  tagChars: 'ok\u{E0061}\u{E0062}\u{E0063}',
+  objectText: null,
+};
+out.chat = {};
+for (const [k, text] of Object.entries(tests)) {
+  const body = k === 'objectText' ? { text: { toString: 'x' } } : { text };
+  const r = await call('POST', '/v1/grove/chat', { token: b.token, body });
+  const stored = r.json?.text;
+  out.chat[k] = {
+    status: r.status,
+    error: r.json?.message,
+    storedLength: stored?.length,
+    keptOverride: stored ? /[\u202A-\u202E\u2066-\u2069]/.test(stored) : undefined,
+    keptZeroWidth: stored ? /[\u200B\u200C\u200D\u2060\uFEFF]/.test(stored) : undefined,
+    marks: stored ? (stored.match(/\p{M}/gu) ?? []).length : undefined,
+    keptSeparators: stored ? /[\u2028\u2029]/.test(stored) : undefined,
+    keptTags: stored ? /[\u{E0000}-\u{E007F}]/u.test(stored) : undefined,
+  };
+}
+out.sampleStored = cp((await call('GET', '/v1/grove/chat', { token: a.token })).json.messages.find((m) => m.kind === 'chat')?.text ?? '').slice(0, 12);
+
+// Friends answer size: 0, then 8 friends.
+const base = await call('PUT', '/v1/me/privacy', { token: a.token, body: { showOnline: true } });
+const friends = [];
+for (let i = 0; i < 8; i++) {
+  const f = await register(`Friend Probe ${i}${Math.random().toString(36).slice(2, 5)}`);
+  const req = await call('POST', '/v1/friends/requests', { token: a.token, body: { name: f.name } });
+  const acc = await call('POST', `/v1/friends/requests/${req.json.request.id}`, { token: f.token, body: { accept: true } });
+  friends.push(acc.status);
+}
+const with8 = await call('PUT', '/v1/me/privacy', { token: a.token, headers: { 'idempotency-key': 'priv-1' }, body: { showOnline: true } });
+out.privacyAnswer = { accepts: friends, bytes0: base.size, bytes8: with8.size, perFriend: Math.round((with8.size - base.size) / 8), at100Friends: base.size + Math.round(((with8.size - base.size) / 8) * 100) };
+// 60 writes with fresh keys: each is answered (and kept for a day), no rule besides the per-player 240/min.
+let ok = 0;
+for (let i = 0; i < 60; i++) ok += (await call('PUT', '/v1/me/privacy', { token: a.token, headers: { 'idempotency-key': `priv-flood-${i}` }, body: { showOnline: true } })).status === 200 ? 1 : 0;
+out.privacyFlood = { sent: 60, ok };
+console.log(JSON.stringify(out, null, 1));

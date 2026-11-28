@@ -1,0 +1,32 @@
+// Probe helpers for the local server (127.0.0.1:58081 only).
+export const BASE = process.env.BASE || 'http://127.0.0.1:58081';
+
+export async function call(method, path, { token, body, headers = {}, raw = false } = {}) {
+  const h = { ...headers };
+  if (token) h.authorization = `Bearer ${token}`;
+  let payload;
+  if (body !== undefined) {
+    h['content-type'] = h['content-type'] ?? 'application/json';
+    payload = typeof body === 'string' || body instanceof Uint8Array ? body : JSON.stringify(body);
+  }
+  const res = await fetch(BASE + path, { method, headers: h, body: payload });
+  const text = await res.text();
+  let json = null;
+  try {
+    json = text ? JSON.parse(text) : null;
+  } catch {
+    /* not json */
+  }
+  return { status: res.status, json, text: raw ? text : undefined, size: text.length, headers: Object.fromEntries(res.headers.entries()) };
+}
+
+export async function register(name) {
+  const r = await call('POST', '/v1/players', { body: { name } });
+  if (r.status !== 201) throw new Error(`register ${name}: ${r.status} ${JSON.stringify(r.json)}`);
+  const token = r.json.token;
+  const me = await call('GET', '/v1/me', { token });
+  await call('PUT', '/v1/me/rules', { token, body: { version: 2 } });
+  return { id: r.json.playerId, token, name: me.json.name };
+}
+
+export const sleep = (ms) => new Promise((r) => setTimeout(r, ms));

@@ -1,0 +1,36 @@
+import { writeFileSync } from 'node:fs';
+import { it } from 'vitest';
+import { createBattle, step, result } from '../../src/gameplay/sim/battle/battle';
+import type { BaseLayout, BattleSetup, Deployment } from '../../src/gameplay/sim/battle/types';
+import { data } from './lib';
+
+const hall = 'elder_toadstool';
+const wall = 'bramble_hedge';
+/** A Keep with a closed wall ring `gap` tiles away from it (gap 0 = touching), and nothing else. */
+function base(gap: number | null, keep = 3): BaseLayout {
+  const b: BaseLayout['buildings'] = [{ id: 'k', type: hall, level: keep, x: 20, y: 20 }];
+  const size = data.buildings[hall].size;
+  const wl = data.buildings[wall].levels.at(-1)!.level;
+  if (gap !== null) { const k = gap + 1; let i = 0; for (let y = 20 - k; y < 20 + size + k; y++) for (let x = 20 - k; x < 20 + size + k; x++) if (x === 20 - k || y === 20 - k || x === 20 + size + k - 1 || y === 20 + size + k - 1) b.push({ id: `w${i++}`, type: wall, level: wl, x, y }); }
+  return { name: `gap${gap}`, hallLevel: keep, buildings: b };
+}
+it('walls', () => {
+  const out: unknown[] = [];
+  for (const troop of ['hedgehog_roller', 'beetle_brute']) for (const gap of [null, 0, 1, 2]) {
+    const n = troop === 'hedgehog_roller' ? 20 : 4;
+    const setup: BattleSetup = { seed: 3, base: base(gap), army: { [troop]: n }, levels: { [troop]: 1 }, infiltration: true };
+    const sim = createBattle(setup, data);
+    const p = sim.entry!.points[0];
+    const deps: Deployment[] = Array.from({ length: n }, () => ({ tick: 0, troop, x: p.x, y: p.y }));
+    let minInside = Infinity; let insideWall = 0;
+    const t0 = performance.now();
+    while (!sim.ended) {
+      step(sim, sim.tick === 0 ? deps : undefined);
+      for (const t of sim.troops) { const c = sim.grid.cells[Math.floor(t.y) * sim.grid.size + Math.floor(t.x)]; if (!t.dead && c === 2) insideWall++; }
+      void minInside;
+    }
+    const r = result(sim);
+    out.push({ troop, n, ring: gap === null ? 'no walls' : `closed ring ${gap} tile(s) from the Keep`, walls: sim.buildings.filter((b) => b.kind === 'hedge').length, wallsDestroyed: sim.buildings.filter((b) => b.kind === 'hedge' && b.destroyed).length, wallsDamaged: sim.buildings.filter((b) => b.kind === 'hedge' && b.hp < b.maxHp).length, keepDestroyedAtTick: r.hallDestroyed ? r.ticks : null, end: r.endReason, stars: r.stars, troopTicksStandingOnAWallTile: insideWall, ms: Math.round(performance.now() - t0) });
+  }
+  writeFileSync('(session scratch, not kept)/fuzz/walls.json', JSON.stringify(out, null, 1));
+}, 300_000);

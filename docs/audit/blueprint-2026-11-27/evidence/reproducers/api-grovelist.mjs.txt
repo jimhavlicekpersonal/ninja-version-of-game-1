@@ -1,0 +1,28 @@
+// Alliance browse: only the 200 oldest alliances are ever candidates for the default list.
+import { call, register } from './lib.mjs';
+const out = {};
+const t0 = Date.now();
+let made = 0;
+for (let i = 0; i < 200; i++) {
+  const p = await register(`Sq ${i} ${Math.random().toString(36).slice(2, 6)}`);
+  const g = await call('POST', '/v1/groves', { token: p.token, body: { name: `Join us ${i}` } });
+  if (g.status === 201) made++;
+  else {
+    out.failedAt = { i, status: g.status, body: g.json };
+    break;
+  }
+}
+out.squatAlliances = made;
+out.ms = Date.now() - t0;
+const real = await register('Real Leader');
+const realGrove = await call('POST', '/v1/groves', { token: real.token, body: { name: 'Honest Clan' } });
+out.realCreated = realGrove.status;
+const newcomer = await register('New Player');
+const browse = await call('GET', '/v1/groves', { token: newcomer.token });
+out.browse = { status: browse.status, listed: browse.json.groves.length, honestClanListed: browse.json.groves.some((g) => g.name === 'Honest Clan'), sample: browse.json.groves.slice(0, 3).map((g) => g.name) };
+const search = await call('GET', '/v1/groves?q=Honest', { token: newcomer.token });
+out.searchByName = { listed: search.json.groves.length, honestClanListed: search.json.groves.some((g) => g.name === 'Honest Clan') };
+// A partial word the squatters also carry: "o" is in "Join us" and in "Honest Clan".
+const common = await call('GET', '/v1/groves?q=o', { token: newcomer.token });
+out.searchCommonLetter = { listed: common.json.groves.length, honestClanListed: common.json.groves.some((g) => g.name === 'Honest Clan') };
+console.log(JSON.stringify(out, null, 1));

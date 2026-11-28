@@ -1,0 +1,99 @@
+import { describe, expect, it } from 'vitest';
+import { applyCommand, createNewVillage, advance } from '../../src/gameplay/sim/village';
+import { computeOfflineProgress } from '../../src/gameplay/sim/offline';
+import { chestReady, nextChestAt } from '../../src/gameplay/sim/daily';
+import { calendarView } from '../../src/gameplay/sim/calendar';
+import { collectorAmount } from '../../src/gameplay/sim/resources';
+import { currentTasks, passSeason } from '../../src/gameplay/sim/pass';
+import { seasonOf } from '../../src/gameplay/sim/ranks';
+import { stipendStatus } from '../../src/gameplay/sim/stipend';
+import type { VillageState } from '../../src/gameplay/sim/types';
+import { data } from '../gameplay/sim/helpers';
+
+const H = 3_600_000, D = 24 * H;
+const iso = (t: number) => new Date(t).toISOString().slice(0, 16);
+function must(s: VillageState, cmd: any, now: number): VillageState { const r = applyCommand(s, cmd, now, data); if (!r.ok) throw new Error(`${cmd.type}: ${r.code} ${r.message}`); return r.state; }
+function tryc(s: VillageState, cmd: any, now: number) { const r = applyCommand(s, cmd, now, data); return r.ok ? 'ok' : `${r.code}: ${r.message}`; }
+
+function setup() {
+  const t0 = Date.UTC(2026, 10, 20, 9, 0, 0);
+  let s = createNewVillage(t0, data);
+  s = { ...s, resources: { ...s.resources, moonstones: 500 }, profile: { under18: false, ageBand: 'adult' } as any };
+  // place a coin mint
+  let placed = 0; let why = '';
+  const n = data.economy.mapSize;
+  for (let x = 1; x < n - 3 && !placed; x++) for (let y = 1; y < n - 3 && !placed; y++) { const r = applyCommand(s, { type: 'place', buildingType: 'acorn_orchard', x, y } as any, t0, data); if (r.ok) { s = r.state; placed++; } else why = r.code + ' ' + r.message; }
+  if (!placed) throw new Error('could not place: ' + why);
+  s = advance(s, t0 + 3_600_000, data).state;
+  return { t0, s };
+}
+
+describe('device clock jumps', () => {
+  it('A: one session with the clock a year ahead, then corrected', () => {
+    let { t0, s } = setup();
+    // day 2, real time: normal session
+    let now = t0 + 1 * D;
+    s = computeOfflineProgress(s, now, data, { botRaids: true }).state;
+    s = must(s, { type: 'openDailyChest', entropy: 1 }, now);
+    s = must(s, { type: 'claimCalendar' }, now);
+    s = must(s, { type: 'grantPurchase', productId: 'clan_stipend', transactionId: 't1', verified: true } as any, now);
+    console.log('stipend', JSON.stringify(s.stipend), tryc(s, { type: 'claimStipend' }, now));
+    s = must(s, { type: 'claimStipend' }, now);
+    // day 3: the device date is a year ahead for one 5-minute session
+    const wrong = t0 + 2 * D + 365 * D;
+    let r = computeOfflineProgress(s, wrong, data, { botRaids: true });
+    s = r.state;
+    console.log('A wrong-clock session: awayMs days', r.summary.awayMs / D, 'raids', r.summary.raids.length, 'league seasons paid', r.summary.seasons.length, 'scroll', !!r.summary.scroll);
+    s = must(s, { type: 'openDailyChest', entropy: 2 }, wrong);
+    s = must(s, { type: 'claimCalendar' }, wrong);
+    s = must(s, { type: 'claimStipend' }, wrong);
+    const mint = s.buildings.find((b) => b.type === 'acorn_orchard')!;
+    console.log('collect', tryc(s, { type: 'collect', id: mint.id }, wrong));
+    { const r1 = applyCommand(s, { type: 'collect', id: mint.id } as any, wrong, data); if (r1.ok) s = r1.state; const r2 = applyCommand(s, { type: 'upgrade', id: mint.id } as any, wrong, data); console.log('upgrade in wrong session:', r2.ok ? 'ok' : r2.message); if (r2.ok) s = r2.state; }
+    console.log('upgrade started in wrong session ends', iso(s.buildings.find((b) => b.id === mint.id)!.upgrade?.endsAt ?? 0));
+    // clock corrected; next day real time
+    now = t0 + 3 * D;
+    r = computeOfflineProgress(s, now, data, { botRaids: true });
+    s = r.state;
+    const m2 = s.buildings.find((b) => b.id === mint.id)!;
+    console.log('A after correction, real', iso(now));
+    console.log('  chest ready', chestReady(s, now, data), 'next chest at', iso(nextChestAt(s, now, data)), ' open:', tryc(s, { type: 'openDailyChest', entropy: 3 }, now));
+    const cv = calendarView(s, now, 1, data)!;
+    console.log('  calendar ready', cv.ready, 'claim:', tryc(s, { type: 'claimCalendar' }, now), 'calendar.lastDay', s.calendar.lastDay, 'today', Math.floor((now - data.pass.epoch) / D));
+    console.log('  stipend', JSON.stringify(stipendStatus(s, now, data)), tryc(s, { type: 'claimStipend' }, now));
+    console.log('  tasks.day', s.tasks.day, 'pass.season', s.pass.season, 'real pass season', passSeason(now, data), 'league season', s.season, 'real', seasonOf(now));
+    console.log('  mint upgrade', JSON.stringify(m2.upgrade), 'level', m2.level, 'collector', JSON.stringify(m2.collector), 'amount now', collectorAmount(m2, now, data), 'amount +30d', collectorAmount(m2, now + 30 * D, data));
+    console.log('  shieldUntil', iso(s.shieldUntil), 'raidCheckAt', iso(s.raidCheckAt), 'lastSeenAt', iso(s.lastSeenAt));
+    // how long is the lock: find first day chest opens
+    let k = 0; while (!chestReady(s, now + k * D, data) && k < 800) k++;
+    console.log('  chest locked for days:', k);
+    const tasks = currentTasks(s, 1, data);
+    console.log('  tasks', tasks.map((t) => `${t.id}:${t.progress}/${t.target}${t.claimed ? ' claimed' : ''}`).join(' | '));
+    expect(true).toBe(true);
+  });
+
+  it('B: clock a day / a year behind for one session, then corrected', () => {
+    for (const back of [1 * D, 400 * D]) {
+      let { t0, s } = setup();
+      let now = t0 + 5 * D;
+      s = computeOfflineProgress(s, now, data, { botRaids: true }).state;
+      s = must(s, { type: 'openDailyChest', entropy: 1 }, now);
+      const mint = s.buildings.find((b) => b.type === 'acorn_orchard')!;
+      { const r1 = applyCommand(s, { type: 'collect', id: mint.id } as any, now, data); if (r1.ok) s = r1.state; const r2 = applyCommand(s, { type: 'upgrade', id: mint.id } as any, now, data); console.log('upgrade:', r2.ok ? 'ok' : r2.message); if (r2.ok) s = r2.state; }
+      const ends = s.buildings.find((b) => b.id === mint.id)!.upgrade?.endsAt ?? 0;
+      // wrong (behind) session, a real 6 hours later
+      const wrong = now + 6 * H - back;
+      let r = computeOfflineProgress(s, wrong, data, { botRaids: true });
+      s = r.state;
+      console.log(`B back ${back / D}d: wrong session at`, iso(wrong), 'lastSeenAt', iso(s.lastSeenAt), 'upgrade ends', iso(ends), 'chest', tryc(s, { type: 'openDailyChest', entropy: 5 }, wrong), '| tasks.day', s.tasks.day, '| season', s.season, 'pass', s.pass.season);
+      const b2 = s.buildings.find((b) => b.type === 'army_camp');
+      console.log('   train', tryc(s, { type: 'train', troop: 'hedgehog_roller', count: 1 }, wrong));
+      // back to the real clock a real day later
+      now = now + 30 * H;
+      r = computeOfflineProgress(s, now, data, { botRaids: true });
+      s = r.state;
+      console.log('   corrected: awayMs days', (r.summary.awayMs / D).toFixed(2), 'raids', r.summary.raids.length, 'seasons', r.summary.seasons.length, 'collectorGains', JSON.stringify(r.summary.collectorGains), 'chest', tryc(s, { type: 'openDailyChest', entropy: 6 }, now));
+    }
+    expect(true).toBe(true);
+  });
+});

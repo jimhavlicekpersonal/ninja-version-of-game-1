@@ -1,0 +1,36 @@
+import { describe, expect, it } from 'vitest';
+import { chestOdds, chestOutcome } from '../../src/gameplay/sim/daily';
+import { dayIndex } from '../../src/gameplay/sim/pass';
+import { data } from '../gameplay/sim/helpers';
+
+describe('chest odds vs roll', () => {
+  it('monte carlo across seeds', () => {
+    const odds = chestOdds(data);
+    console.log(JSON.stringify(odds.map((o) => [o.id, o.percent])));
+    const day0 = dayIndex(Date.UTC(2026, 10, 27), data);
+    const count: Record<string, number> = {};
+    const N = 400000;
+    let seed = 12345;
+    for (let i = 0; i < N; i++) {
+      seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
+      const o = chestOutcome(seed, day0 + (i % 400), data);
+      count[o] = (count[o] ?? 0) + 1;
+    }
+    for (const o of odds) console.log('across seeds', o.id, o.percent, ((count[o.id] ?? 0) * 100 / N).toFixed(3));
+    // one seed, sequential days for 20000 days
+    for (const s of [1, 2, 0xdeadbeef, 123456789]) {
+      const c: Record<string, number> = {};
+      for (let d = 0; d < 20000; d++) { const o = chestOutcome(s, day0 + d, data); c[o] = (c[o] ?? 0) + 1; }
+      console.log('seed', s, odds.map((o) => `${o.id}:${((c[o.id] ?? 0) / 200).toFixed(2)}`).join(' '));
+    }
+    // sequential seeds same day (new villages created with adjacent seeds?)
+    const c2: Record<string, number> = {};
+    for (let s = 0; s < 100000; s++) { const o = chestOutcome(s, day0, data); c2[o] = (c2[o] ?? 0) + 1; }
+    console.log('seq seeds', odds.map((o) => `${o.id}:${((c2[o.id] ?? 0) / 1000).toFixed(2)}`).join(' '));
+    // first 400 days of 2026/27 for small-day indexes
+    const c3: Record<string, number> = {};
+    for (let s = 1; s <= 2000; s++) for (let d = 300; d < 400; d++) { const o = chestOutcome(s * 7919, d, data); c3[o] = (c3[o] ?? 0) + 1; }
+    console.log('days 300-400', odds.map((o) => `${o.id}:${((c3[o.id] ?? 0) / 2000).toFixed(2)}`).join(' '));
+    expect(odds.reduce((s, o) => s + o.percent, 0)).toBeCloseTo(100, 9);
+  });
+});

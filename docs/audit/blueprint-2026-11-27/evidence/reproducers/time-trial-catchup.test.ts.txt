@@ -1,0 +1,28 @@
+import { describe, expect, it } from 'vitest';
+import { trialBase, trialCatchUpTier } from '../../src/gameplay/sim/trials';
+import { applyCommand, trialBattleSeed } from '../../src/gameplay/sim/village';
+import { achievementViews } from '../../src/gameplay/sim/achievements';
+import type { VillageState } from '../../src/gameplay/sim/types';
+import { data, entryDeployments, newGame } from '../gameplay/sim/helpers';
+
+describe('catch-up clear vs trialsCleared', () => {
+  for (const keep of [5, 10, 15]) {
+    it(`keep ${keep}`, () => {
+      const { state, clock } = newGame({ acorns: 0, dew: 0 });
+      const troop = 'hedgehog_roller';
+      const lv: Record<string, number> = {}; for (const [id, d] of Object.entries(data.troops)) lv[id] = d.levels.length;
+      const s0: VillageState = { ...state, research: { ...(state.research as any), levels: lv }, army: { [troop]: 400 }, buildings: state.buildings.map((b) => (data.buildings[b.type].category === 'hall' ? { ...b, level: keep } : b)) };
+      const tier = trialCatchUpTier(s0.trials, keep, data)!;
+      const base = trialBase(tier, data, 0);
+      const setup = { seed: trialBattleSeed(s0.seed, s0.nextSeed, tier), base, army: s0.army, levels: { [troop]: lv[troop] } };
+      const deployments = entryDeployments(setup as any, [[troop, 400]]);
+      const r = applyCommand(s0, { type: 'trialEnd', tier, record: { at: clock.now(), opponentName: 'x', setup, deployments } } as any, clock.now(), data);
+      if (!r.ok) throw new Error(r.message);
+      const rec = r.state.battleLog[r.state.battleLog.length - 1];
+      console.log(`keep ${keep}: catch-up tier ${tier}, deployed ${deployments.length}, stars ${rec.result.stars}, best ${r.state.trials.best}, trialsCleared ${r.state.stats.trialsCleared}`);
+      const tw = achievementViews(r.state, keep, data).find((a) => a.def.id === 'trial_walker')!;
+      console.log('  trial_walker value', tw.value, 'tiers', JSON.stringify(tw.def.tiers), ' max possible with cap 58 =', r.state.stats.trialsCleared + (58 - r.state.trials.best));
+      expect(r.state.trials.best).toBe(tier);
+    });
+  }
+});

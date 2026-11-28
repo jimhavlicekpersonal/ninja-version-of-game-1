@@ -1,0 +1,36 @@
+// How long does the server keep (a) an idle socket, (b) half-sent headers, (c) full headers + a body that never arrives?
+import net from 'node:net';
+const HOLD_MS = Number(process.argv[2] || 150_000);
+const cases = {
+  idle: '',
+  partialHeaders: 'POST /v1/complaints HTTP/1.1\r\nHost: 127.0.0.1\r\nContent-Type: application/json\r\n',
+  partialBody: 'POST /v1/complaints HTTP/1.1\r\nHost: 127.0.0.1\r\nContent-Type: application/json\r\nContent-Length: 1000\r\n\r\n{"subject":"x',
+  partialBodyAuthed: 'POST /v1/grove/chat HTTP/1.1\r\nHost: 127.0.0.1\r\nAuthorization: Bearer junkjunkjunkjunkjunkjunkjunkjunk\r\nContent-Type: application/json\r\nContent-Length: 1000\r\n\r\n{"text":"x',
+};
+const start = Date.now();
+const out = {};
+await Promise.all(
+  Object.entries(cases).map(
+    ([name, first]) =>
+      new Promise((resolve) => {
+        const s = net.connect(58081, '127.0.0.1', () => first && s.write(first));
+        let got = '';
+        s.on('data', (d) => (got += d.toString()));
+        const done = (why) => {
+          if (out[name]) return;
+          out[name] = { closedBy: why, afterMs: Date.now() - start, response: got.split('\r\n')[0] || null };
+          resolve();
+        };
+        s.on('close', () => done('server'));
+        s.on('error', () => done('error'));
+        setTimeout(() => {
+          if (!out[name]) {
+            out[name] = { closedBy: 'nobody (still open; probe gave up)', afterMs: Date.now() - start, response: got.split('\r\n')[0] || null };
+            s.destroy();
+            resolve();
+          }
+        }, HOLD_MS);
+      }),
+  ),
+);
+console.log(JSON.stringify(out, null, 1));

@@ -1,0 +1,75 @@
+// Alliance probes: reserved names, join/leave churn, system-message flood, member scraping, report brigading.
+import { call, register } from './lib.mjs';
+
+const out = {};
+const leader = await register('Hanzo Probe');
+const victim = await register('Victim Probe');
+const troll = await register('Troll Probe');
+
+// 1. Alliance names vs player names: reserved words.
+out.reserved = {};
+for (const name of ['Kagemura Support', 'Moderator', 'Admin Team', 'System', 'Kagemura Staff']) {
+  const asPlayer = await call('PUT', '/v1/me', { token: troll.token, body: { name } });
+  const a = await register(`Namer ${Math.random().toString(36).slice(2, 7)}`);
+  const asAlliance = await call('POST', '/v1/groves', { token: a.token, body: { name } });
+  const asGang = await call('POST', '/v1/squad', { token: a.token, body: { name } });
+  out.reserved[name] = { playerRename: `${asPlayer.status} ${asPlayer.json?.message ?? ''}`, alliance: `${asAlliance.status} ${asAlliance.json?.name ?? asAlliance.json?.message ?? ''}`, gang: `${asGang.status} ${asGang.json?.message ?? asGang.json?.squad?.name ?? ''}` };
+}
+
+// 2. A real alliance with a leader and a member who chats.
+const g = await call('POST', '/v1/groves', { token: leader.token, body: { name: 'Quiet Pines' } });
+const groveId = g.json.id;
+await call('POST', `/v1/groves/${groveId}/join`, { token: victim.token });
+const said = await call('POST', '/v1/grove/chat', { token: victim.token, body: { text: 'hello everyone, war starts at nine' } });
+
+// 3. The troll joins: what does one join reveal?
+const joined = await call('POST', `/v1/groves/${groveId}/join`, { token: troll.token });
+out.scrape = { status: joined.status, members: joined.json.members.map((m) => ({ id: m.id, name: m.name, trophies: m.trophies, hallLevel: m.hallLevel, lastSeenAt: m.lastSeenAt ?? null })) };
+await call('POST', '/v1/grove/leave', { token: troll.token });
+
+// 4. The leader blocks the troll; staff are not involved. Then the troll churns join/leave.
+await call('POST', '/v1/blocks', { token: leader.token, body: { playerId: troll.id } });
+const N = 100;
+const t0 = Date.now();
+const codes = {};
+for (let i = 0; i < N; i++) {
+  const j = await call('POST', `/v1/groves/${groveId}/join`, { token: troll.token });
+  const l = await call('POST', '/v1/grove/leave', { token: troll.token });
+  codes[`${j.status}/${l.status}`] = (codes[`${j.status}/${l.status}`] ?? 0) + 1;
+}
+out.churn = { cycles: N, ms: Date.now() - t0, statuses: codes };
+
+// 5. What the leader (who blocked the troll) now sees in chat.
+const chat = await call('GET', '/v1/grove/chat', { token: leader.token });
+const msgs = chat.json.messages;
+out.leaderChat = {
+  returned: msgs.length,
+  system: msgs.filter((m) => m.kind === 'system').length,
+  victimMessageStillVisible: msgs.some((m) => m.id === said.json.id),
+  sample: msgs.slice(-3).map((m) => ({ kind: m.kind, from: m.from, text: m.text })),
+};
+// 6. Can a system message be reported?
+const sys = msgs.find((m) => m.kind === 'system');
+const rep = await call('POST', '/v1/reports', { token: leader.token, body: { kind: 'chat', messageId: sys.id, reason: 'spam' } });
+out.reportSystemMessage = `${rep.status} ${rep.json?.message ?? JSON.stringify(rep.json)}`;
+
+// 7. Report brigading: three fresh accounts join, report the victim's fresh message, and it is hidden for everyone.
+const fresh = await call('POST', '/v1/grove/chat', { token: victim.token, body: { text: 'second message from the victim' } });
+const before = (await call('GET', '/v1/grove/chat', { token: leader.token })).json;
+const pups = [];
+for (let i = 0; i < 3; i++) {
+  const p = await register(`Sock ${Math.random().toString(36).slice(2, 7)}`);
+  const j = await call('POST', `/v1/groves/${groveId}/join`, { token: p.token });
+  const r = await call('POST', '/v1/reports', { token: p.token, body: { kind: 'chat', messageId: fresh.json.id, reason: 'harassment' } });
+  pups.push({ join: j.status, report: r.status, body: r.json });
+  await call('POST', '/v1/grove/leave', { token: p.token });
+}
+const after = (await call('GET', '/v1/grove/chat', { token: leader.token })).json;
+out.brigade = {
+  reportReasonsTried: pups,
+  visibleBefore: before.messages.some((m) => m.id === fresh.json.id),
+  visibleAfter: after.messages.some((m) => m.id === fresh.json.id),
+  hiddenIds: after.hidden,
+  victimSeesOwn: (await call('GET', '/v1/grove/chat', { token: victim.token })).json.messages.some((m) => m.id === fresh.json.id),
+};
+console.log(JSON.stringify(out, null, 1));

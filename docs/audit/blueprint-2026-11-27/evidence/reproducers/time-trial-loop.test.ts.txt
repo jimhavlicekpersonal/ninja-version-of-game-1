@@ -1,0 +1,25 @@
+import { describe, expect, it } from 'vitest';
+import { taskEligible, rollPeriods } from '../../src/gameplay/sim/pass';
+import { validateVillage } from '../../src/gameplay/sim/save';
+import { trialInfo, trialReward } from '../../src/gameplay/sim/trials';
+import type { VillageState } from '../../src/gameplay/sim/types';
+import { data, newGame } from '../gameplay/sim/helpers';
+
+describe('a huge saved best Trial tier', () => {
+  it('times taskEligible at Keep 15', () => {
+    const { state, clock } = newGame();
+    const tpl = data.pass.weeklyChallenges.find((t) => t.stat === 'trialsCleared')!;
+    for (const best of [1e6, 1e7, 1e8]) {
+      const s: VillageState = { ...state, trials: { best }, buildings: state.buildings.map((b) => (data.buildings[b.type].category === 'hall' ? { ...b, level: 15 } : b)) };
+      const problems = (validateVillage as any)(s, data);
+      const t0 = performance.now();
+      const ok = taskEligible(tpl, 2, s, data, 7, clock.now());
+      const ms = performance.now() - t0;
+      console.log(`best ${best}: validateVillage problems=${JSON.stringify(problems)} taskEligible=${ok} took ${ms.toFixed(0)} ms`);
+      if (best === 1e7) { const s2 = structuredClone(s); s2.tasks.day -= 1; s2.tasks.week -= 1; const t1 = performance.now(); rollPeriods(s2, clock.now(), data); console.log(`  rollPeriods on a new day and week took ${(performance.now() - t1).toFixed(0)} ms`); }
+    }
+    const i = trialInfo(1e6, data); const r = trialReward(1e6, data);
+    console.log('trialInfo(1e6)', i.power, i.wallPower, 'reward', JSON.stringify(r), 'trialInfo(2**53)', trialInfo(2 ** 53, data).power);
+    expect(true).toBe(true);
+  }, 120000);
+});

@@ -1,0 +1,28 @@
+const { chromium } = require('playwright');
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+(async () => {
+  const browser = await chromium.launch();
+  const ctx = await browser.newContext({ viewport: { width: 360, height: 640 }, deviceScaleFactor: 1, isMobile: true, hasTouch: true, serviceWorkers: 'block' });
+  await ctx.addInitScript(() => { try { localStorage.setItem('tk.ageAskedAfterTutorial', JSON.stringify({ count: 3, last: Date.now() })); localStorage.setItem('tk.notifyAsked', '1'); } catch {} });
+  const page = await ctx.newPage(); const cdp = await ctx.newCDPSession(page);
+  await cdp.send('HeapProfiler.enable');
+  await page.goto('http://localhost:5312/?debug', { waitUntil: 'load' });
+  await page.waitForFunction(() => window.tk && document.querySelector('#boot')?.classList.contains('done'), null, { timeout: 180000 });
+  await page.evaluate(() => { const tk = window.tk; if (!tk.controller.state.tutorial.done) tk.controller.dispatch({ type: 'tutorial', step: 9, done: true }); tk.hud.closeAllModals(); });
+  await sleep(1000);
+  const read = async () => { for (let i = 0; i < 3; i++) await cdp.send('HeapProfiler.collectGarbage'); const d = await cdp.send('Memory.getDOMCounters'); const s = await page.evaluate(() => ({ set: window.tk.hud.econ.liveBuyButtons.size, connected: [...window.tk.hud.econ.liveBuyButtons].filter((b) => b.isConnected).length, attached: document.getElementsByTagName('*').length, pay: window.tk.controller.payments.name })); return { nodes: d.nodes, listeners: d.jsEventListeners, ...s }; };
+  const open = async (tabClicks) => { await page.evaluate(() => window.tk.hud.econ.openStore()); await sleep(150); for (let k = 0; k < tabClicks; k++) { await page.evaluate((k) => document.querySelectorAll('.shop-tabs button')[(k % 3) + 1]?.click(), k); await sleep(80); } await page.evaluate(() => window.tk.hud.closeAllModals()); await sleep(350); };
+  await open(0); await open(0);
+  const a = await read();
+  for (let i = 0; i < 30; i++) await open(0);
+  const b = await read();
+  for (let i = 0; i < 10; i++) await open(3);
+  const c = await read();
+  console.log('before', JSON.stringify(a)); console.log('after 30 Store opens', JSON.stringify(b), 'per open: nodes', ((b.nodes - a.nodes) / 30).toFixed(1), 'listeners', ((b.listeners - a.listeners) / 30).toFixed(1), 'set', ((b.set - a.set) / 30).toFixed(1));
+  console.log('after 10 more opens with 3 tab switches each', JSON.stringify(c), 'per open: nodes', ((c.nodes - b.nodes) / 10).toFixed(1), 'listeners', ((c.listeners - b.listeners) / 10).toFixed(1), 'set', ((c.set - b.set) / 10).toFixed(1));
+  // Proof of the retaining path: empty the set, GC, read again.
+  await page.evaluate(() => window.tk.hud.econ.liveBuyButtons.clear());
+  const d = await read();
+  console.log('after clearing liveBuyButtons + GC', JSON.stringify(d));
+  await browser.close();
+})();
